@@ -6,6 +6,10 @@ import { Layout } from '@/components/Layout'
 import 'focus-visible'
 import '@/styles/tailwind.css'
 
+// Pages that render WITHOUT the docs chrome (sidebar/header/on-this-page).
+// These are application flows (account, checkout), not documentation.
+const STANDALONE_PAGES = new Set(['/account'])
+
 function getNodeText(node) {
   let text = ''
   for (let child of node.children ?? []) {
@@ -48,7 +52,24 @@ function collectHeadings(nodes, slugify = slugifyWithCounter()) {
   return sections
 }
 
-export default function App({ Component, pageProps }) {
+export default function App({ Component, pageProps, router }) {
+  // Application pages (account, checkout) render without the docs Layout.
+  if (STANDALONE_PAGES.has(router.pathname)) {
+    return (
+      <>
+        <Head>
+          <title>Account - Root My Android</title>
+          <meta
+            name="description"
+            content="Create an account number and add time to your Root My Android account."
+          />
+          <script defer data-domain="rootmyandroid.com" src="https://plausible.io/js/script.js"></script>
+        </Head>
+        <Component {...pageProps} />
+      </>
+    )
+  }
+
   let title = pageProps.markdoc?.frontmatter.title
 
   let pageTitle =
