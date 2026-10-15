@@ -1,0 +1,17 @@
+{
+  "name": "rootmyandroid",
+  "version": "23.1.0",
+  "private": true,
+  "description": "Root My Android — ADB-based device analysis for rooting and upgrade planning.",
+  "scripts": {
+    "dev": "pnpm --filter rootmyandroid-web dev",
+    "build": "pnpm --filter rootmyandroid-web build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
+  },
+  "engines": {
+    "node": ">=18.17.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@11.21.0"
+}
