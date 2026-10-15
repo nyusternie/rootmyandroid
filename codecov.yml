@@ -1,0 +1,30 @@
+# codecov.yml — Codecov configuration.
+#
+# This file lives at the root of BOTH repositories:
+#   - nyusternie/rootmyandroid      (web flag)
+#   - nyusternie/rootmyandroid-api  (api flag)
+# Each repo uploads its own lcov with the matching flag.
+
+coverage:
+  status:
+    project:
+      default:
+        # Don't fail a PR over a tiny coverage dip.
+        threshold: 1%
+    patch:
+      default:
+        # New code should be reasonably covered, but don't block merges.
+        target: 70%
+
+comment:
+  layout: 'reach, diff, flags, files'
+  behavior: default
+
+# Ignore generated/build output and tests themselves.
+ignore:
+  - '**/node_modules/**'
+  - '**/coverage/**'
+  - '**/out/**'
+  - '**/.next/**'
+  - '**/*.test.js'
+  - '**/*.test.jsx'

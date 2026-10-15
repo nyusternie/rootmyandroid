@@ -15,5 +15,12 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./vitest.setup.js'],
     include: ['src/**/*.test.{js,jsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      reportsDirectory: './coverage',
+      include: ['src/**/*.{js,jsx}'],
+      exclude: ['src/**/*.test.{js,jsx}', 'src/pages/_document.jsx'],
+    },
   },
 })
