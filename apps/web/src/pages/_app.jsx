@@ -63,9 +63,17 @@ export default function App({ Component, pageProps, router }) {
             name="description"
             content="Create an account number and add time to your Root My Android account."
           />
-          <script defer data-domain="rootmyandroid.com" src="https://plausible.io/js/script.js"></script>
+          <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
         </Head>
         <Component {...pageProps} />
+        <noscript>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://queue.simpleanalyticscdn.com/noscript.gif"
+            alt=""
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </noscript>
       </>
     )
   }
@@ -87,11 +95,19 @@ export default function App({ Component, pageProps, router }) {
       <Head>
         <title>{pageTitle}</title>
         {description && <meta name="description" content={description} />}
-        <script defer data-domain="rootmyandroid.com" src="https://plausible.io/js/script.js"></script>
+        <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
       </Head>
       <Layout title={title} tableOfContents={tableOfContents}>
         <Component {...pageProps} />
       </Layout>
+      <noscript>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://queue.simpleanalyticscdn.com/noscript.gif"
+          alt=""
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+      </noscript>
     </>
   )
 }
