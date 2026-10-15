@@ -44,3 +44,35 @@ jobs:
 
       - name: Build (static export)
         run: pnpm --filter rootmyandroid-web build
+
+  deploy:
+    name: Deploy to Cloudflare Pages
+    needs: test
+    # Deploy only from main, and only after lint+tests+build pass.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (static export)
+        run: pnpm --filter rootmyandroid-web build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy apps/web/out --project-name rootmyandroid --branch main
