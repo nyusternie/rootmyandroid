@@ -1,5 +1,9 @@
 packages:
   - 'apps/*'
   - 'packages/*'
-allowBuilds:
-  esbuild: set this to true or false
+
+# Approve build scripts for deps that must compile/postinstall (esbuild's
+# binary). pnpm 11 blocks these by default; without this, CI install fails
+# with ERR_PNPM_IGNORED_BUILDS.
+onlyBuiltDependencies:
+  - esbuild
