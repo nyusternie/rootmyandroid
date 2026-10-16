@@ -1,0 +1,76 @@
+---
+// src/layouts/Base.astro — shared shell: header, footer, SEO meta, analytics.
+import '../styles/global.css'
+
+interface Props {
+  title: string
+  description?: string
+}
+
+const {
+  title,
+  description = 'Root My Android — scan your Android device and get a rooting / upgrade plan. No email, no account password. $5/month.',
+} = Astro.props
+
+const pageTitle = title === 'Root My Android' ? title : `${title} — Root My Android`
+const canonical = new URL(Astro.url.pathname, Astro.site)
+const year = new Date().getFullYear()
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>" />
+    <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a class="brand" href="/">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2 4 6v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6l-8-4z" stroke="#3d9df2" stroke-width="2" stroke-linejoin="round" fill="rgba(61,157,242,0.12)"/>
+            <path d="M8.5 12l2.5 2.5 4.5-5" stroke="#3d9df2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Root My Android
+        </a>
+        <nav class="nav">
+          <a href="/guides">Guides</a>
+          <a href="/account">Account</a>
+          <a class="btn btn-primary btn-sm" href="/account">Get account</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <span>© {year} Root My Android</span>
+        <span class="row">
+          <a href="/guides">Guides</a>
+          <a href="/account">Account</a>
+          <a href="https://rootmyandroid.com/v1/health" rel="noopener">API</a>
+        </span>
+      </div>
+    </footer>
+
+    <noscript>
+      <img
+        src="https://queue.simpleanalyticscdn.com/noscript.gif"
+        alt=""
+        referrerpolicy="no-referrer-when-downgrade"
+      />
+    </noscript>
+  </body>
+</html>

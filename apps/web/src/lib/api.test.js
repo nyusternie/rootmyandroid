@@ -1,75 +1,75 @@
-// src/lib/api.test.js
-import { afterEach, describe, expect, it, vi } from 'vitest'
+// src/lib/api.test.js — tests for the API client (ported from the React-era suite).
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createAccount, createCheckout, createCryptoCheckout, getAccount } from './api.js'
 
-import { API_BASE_URL, createAccount, createCheckout, getAccount } from '@/lib/api'
+const BASE = 'https://rootmyandroid.com/v1'
 
-function mockFetchOnce(response, { status = 200 } = {}) {
-  return vi.fn(async () =>
-    new Response(JSON.stringify(response), {
+function mockFetch(impl) {
+  return vi.fn(impl)
+}
+
+beforeEach(() => {
+  vi.stubGlobal('fetch', mockFetch())
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
+function jsonResponse(status, body) {
+  return Promise.resolve(
+    new Response(JSON.stringify(body), {
       status,
       headers: { 'content-type': 'application/json' },
     })
   )
 }
 
-afterEach(() => {
-  vi.unstubAllGlobals()
-})
-
 describe('api client', () => {
-  it('targets the configured base URL', () => {
-    expect(typeof API_BASE_URL).toBe('string')
-    expect(API_BASE_URL).not.toMatch(/\/$/)
-  })
-
-  it('createAccount POSTs to /accounts', async () => {
-    const fetchMock = mockFetchOnce({ ok: true, account_number: '1234 5678 9012 3456', credit_days: 0 }, { status: 201 })
-    vi.stubGlobal('fetch', fetchMock)
-
+  it('createAccount posts to /accounts', async () => {
+    fetch.mockImplementation(() => jsonResponse(201, { account_number: '1234', credit_days: 0 }))
     const res = await createAccount()
     expect(res.ok).toBe(true)
-    expect(res.data.account_number).toBe('1234 5678 9012 3456')
-
-    const [url, init] = fetchMock.mock.calls[0]
-    expect(url).toBe(`${API_BASE_URL}/accounts`)
+    expect(res.data.account_number).toBe('1234')
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/accounts`)
     expect(init.method).toBe('POST')
   })
 
-  it('getAccount encodes the account number in the path', async () => {
-    const fetchMock = mockFetchOnce({ ok: true, credit_days: 30 })
-    vi.stubGlobal('fetch', fetchMock)
-
-    await getAccount('1234 5678 9012 3456')
-    const [url] = fetchMock.mock.calls[0]
-    expect(url).toBe(`${API_BASE_URL}/accounts/1234%205678%209012%203456`)
+  it('getAccount fetches the balance', async () => {
+    fetch.mockImplementation(() => jsonResponse(200, { account_number: '1', credit_days: 42 }))
+    const res = await getAccount('1234 5678')
+    expect(res.data.credit_days).toBe(42)
+    const [url] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/accounts/1234%205678`)
   })
 
-  it('createCheckout POSTs account + plan and returns the invoice url', async () => {
-    const fetchMock = mockFetchOnce({ ok: true, invoice_url: 'https://nowpayments.io/payment/?iid=1' })
-    vi.stubGlobal('fetch', fetchMock)
-
-    const res = await createCheckout({ accountNumber: '1234567890123456', plan: 'monthly' })
-    expect(res.ok).toBe(true)
-    expect(res.data.invoice_url).toContain('nowpayments.io')
-
-    const [url, init] = fetchMock.mock.calls[0]
-    expect(url).toBe(`${API_BASE_URL}/billing/checkout`)
-    expect(init.method).toBe('POST')
-    expect(JSON.parse(init.body)).toEqual({ account_number: '1234567890123456', plan: 'monthly' })
+  it('createCheckout posts plan + account and returns invoice url', async () => {
+    fetch.mockImplementation(() => jsonResponse(201, { invoice_url: 'https://pay.example/i/1' }))
+    const res = await createCheckout({ accountNumber: '1', plan: 'monthly' })
+    expect(res.data.invoice_url).toContain('https://')
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/billing/checkout`)
+    expect(JSON.parse(init.body)).toEqual({ account_number: '1', plan: 'monthly' })
   })
 
-  it('surfaces non-OK responses with status and parsed error body', async () => {
-    const fetchMock = mockFetchOnce({ ok: false, error: 'account_not_found' }, { status: 404 })
-    vi.stubGlobal('fetch', fetchMock)
+  it('createCryptoCheckout hits the crypto endpoint', async () => {
+    fetch.mockImplementation(() => jsonResponse(201, { invoice_url: 'https://btcpay.example/i/9' }))
+    const res = await createCryptoCheckout({ accountNumber: '1', plan: 'yearly' })
+    const [url] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/billing/crypto/checkout`)
+    expect(res.data.invoice_url).toContain('https://')
+  })
 
-    const res = await getAccount('9999999999999999')
+  it('surfaces 503 billing_not_configured', async () => {
+    fetch.mockImplementation(() => jsonResponse(503, { error: 'billing_not_configured' }))
+    const res = await createCheckout({ accountNumber: '1', plan: 'monthly' })
     expect(res.ok).toBe(false)
-    expect(res.status).toBe(404)
-    expect(res.data.error).toBe('account_not_found')
+    expect(res.status).toBe(503)
   })
 
-  it('returns data:null when the body is not JSON', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response('not json', { status: 500 })))
+  it('handles non-JSON responses gracefully', async () => {
+    fetch.mockImplementation(() => Promise.resolve(new Response('<html>error</html>', { status: 500 })))
     const res = await createAccount()
     expect(res.ok).toBe(false)
     expect(res.status).toBe(500)

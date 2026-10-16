@@ -1,0 +1,24 @@
+---
+// src/pages/guides/[...id].astro — render a single guide from the collection.
+import { getCollection, render } from 'astro:content'
+import Base from '../../layouts/Base.astro'
+
+export async function getStaticPaths() {
+  const guides = await getCollection('guides', ({ data }) => !data.draft)
+  return guides.map((guide) => ({
+    params: { id: guide.id },
+    props: { guide },
+  }))
+}
+
+const { guide } = Astro.props
+const { Content } = await render(guide)
+---
+
+<Base title={guide.data.title} description={guide.data.description}>
+  <div class="container prose" style="padding: 3rem 1.25rem">
+    <p><a href="/guides">← All guides</a></p>
+    <h1>{guide.data.title}</h1>
+    <Content />
+  </div>
+</Base>

@@ -1,26 +1,15 @@
-// apps/web/vitest.config.js
-import react from '@vitejs/plugin-react'
-import path from 'node:path'
+// vitest.config.js
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-    },
-  },
   test: {
-    environment: 'jsdom',
-    globals: true,
-    setupFiles: ['./vitest.setup.js'],
-    include: ['src/**/*.test.{js,jsx}'],
+    environment: 'node',
+    include: ['src/**/*.test.{js,ts}'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'lcov', 'html'],
+      reporter: ['text', 'lcov'],
       reportsDirectory: './coverage',
-      include: ['src/**/*.{js,jsx}'],
-      exclude: ['src/**/*.test.{js,jsx}', 'src/pages/_document.jsx'],
+      include: ['src/lib/**', 'src/scripts/**'],
     },
   },
 })

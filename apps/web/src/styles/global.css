@@ -1,0 +1,352 @@
+/* src/styles/global.css — Root My Android design system.
+   Dark, minimal, Mullvad-inspired. System fonts only — no webfont payload. */
+
+:root {
+  --bg: #0d0f12;
+  --bg-raise: #15181d;
+  --bg-inset: #0a0c0e;
+  --line: #23282f;
+  --text: #e8eaed;
+  --text-dim: #9aa3ad;
+  --text-faint: #6b7280;
+  --accent: #3d9df2;
+  --accent-dim: #1c5f9e;
+  --ok: #3fb96b;
+  --warn: #e0a13e;
+  --danger: #e05e5e;
+  --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+  --sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  --maxw: 44rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+code,
+.mono {
+  font-family: var(--mono);
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.container {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+/* ---------- header / nav ---------- */
+.site-header {
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+}
+.site-header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 3.5rem;
+  max-width: 60rem;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.brand:hover {
+  text-decoration: none;
+}
+.brand svg {
+  display: block;
+}
+.nav {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+}
+.nav a {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+.nav a:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+.nav a[aria-current='page'] {
+  color: var(--text);
+}
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-block;
+  font: inherit;
+  font-weight: 600;
+  padding: 0.6rem 1.1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--line);
+  background: var(--bg-raise);
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.btn:hover {
+  text-decoration: none;
+  border-color: var(--text-faint);
+}
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06121d;
+}
+.btn-primary:hover {
+  background: #58adf5;
+  border-color: #58adf5;
+}
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-sm {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.9rem;
+}
+
+/* ---------- panels / cards ---------- */
+.panel {
+  background: var(--bg-raise);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+.panel + .panel {
+  margin-top: 1.25rem;
+}
+.panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+}
+
+/* ---------- forms ---------- */
+input[type='text'] {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  letter-spacing: 0.12em;
+  padding: 0.7rem 0.9rem;
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  color: var(--text);
+}
+input[type='text']:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+input[type='text']::placeholder {
+  color: var(--text-faint);
+  letter-spacing: 0.12em;
+}
+
+/* ---------- notices ---------- */
+.notice {
+  border-radius: 0.5rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.92rem;
+  border: 1px solid;
+}
+.notice-info {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent-dim);
+  color: #bcdcf7;
+}
+.notice-warn {
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
+  color: #f3d9a8;
+}
+.notice-ok {
+  background: color-mix(in srgb, var(--ok) 12%, transparent);
+  border-color: color-mix(in srgb, var(--ok) 45%, transparent);
+  color: #b6e6c6;
+}
+
+/* ---------- misc ---------- */
+.muted {
+  color: var(--text-dim);
+}
+.small {
+  font-size: 0.85rem;
+}
+.faint {
+  color: var(--text-faint);
+}
+.stack > * + * {
+  margin-top: 1rem;
+}
+.row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+}
+@media (min-width: 560px) {
+  .grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* plan option buttons */
+.plan {
+  text-align: left;
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  padding: 1rem;
+  cursor: pointer;
+  color: var(--text);
+  font: inherit;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+.plan:hover {
+  border-color: var(--accent);
+}
+.plan[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.plan .price {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.plan .term {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* hero */
+.hero {
+  padding: 4rem 0 3rem;
+}
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin: 0 0 1rem;
+}
+.hero p.lede {
+  font-size: 1.2rem;
+  color: var(--text-dim);
+  max-width: 36rem;
+}
+
+/* balance readout */
+.balance {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.9rem 1rem;
+  margin-top: 1rem;
+}
+.balance .days {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+.balance .label {
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ---------- footer ---------- */
+.site-footer {
+  border-top: 1px solid var(--line);
+  margin-top: 4rem;
+  padding: 2rem 0 3rem;
+  color: var(--text-faint);
+  font-size: 0.85rem;
+}
+.site-footer .container {
+  max-width: 60rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ---------- prose (guides) ---------- */
+.prose h1 {
+  font-size: 2rem;
+}
+.prose h2 {
+  margin-top: 2rem;
+  font-size: 1.4rem;
+}
+.prose p,
+.prose li {
+  color: var(--text-dim);
+}
+.prose code {
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  border-radius: 0.3rem;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.9em;
+}
+.prose pre {
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+}
+.prose pre code {
+  background: none;
+  border: none;
+  padding: 0;
+}

@@ -1,13 +1,21 @@
-// src/lib/api.js — client for the rootmyandroid-api worker (/v1).
-//
-// Base URL is configurable via NEXT_PUBLIC_API_BASE_URL so we can point the
-// static site at a local `wrangler dev` during development.
+// src/lib/api.js — thin client for the Root My Android API (rootmyandroid.com/v1).
+// Plain browser JS — no framework. Used by the /account page's inline script
+// and unit-tested with Vitest.
 
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'https://rootmyandroid.com/v1'
+// Default to the production API. Override for local dev by serving the site
+// with a <meta name="rma-api-base" content="http://localhost:8787/v1"> or by
+// setting window.__RMA_API_BASE__ before the account script runs.
+const DEFAULT_BASE = 'https://rootmyandroid.com/v1'
+
+export function apiBase() {
+  if (typeof window !== 'undefined' && window.__RMA_API_BASE__) {
+    return window.__RMA_API_BASE__.replace(/\/$/, '')
+  }
+  return DEFAULT_BASE
+}
 
 async function request(path, { method = 'GET', body } = {}) {
-  const res = await fetch(`${API_BASE_URL}${path}`, {
+  const res = await fetch(`${apiBase()}${path}`, {
     method,
     headers: body ? { 'content-type': 'application/json' } : undefined,
     body: body ? JSON.stringify(body) : undefined,
@@ -16,24 +24,28 @@ async function request(path, { method = 'GET', body } = {}) {
   try {
     data = await res.json()
   } catch {
-    data = null
+    /* non-JSON body */
   }
   return { ok: res.ok, status: res.status, data }
 }
 
-/** Create a new Mullvad-style account. Returns { account_number, credit_days }. */
-export async function createAccount() {
+export function createAccount() {
   return request('/accounts', { method: 'POST' })
 }
 
-/** Look up an account by number (raw or formatted). */
-export async function getAccount(accountNumber) {
+export function getAccount(accountNumber) {
   return request(`/accounts/${encodeURIComponent(accountNumber)}`)
 }
 
-/** Create a hosted checkout (NOWPayments invoice). Returns { invoice_url, ... }. */
-export async function createCheckout({ accountNumber, plan }) {
+export function createCheckout({ accountNumber, plan }) {
   return request('/billing/checkout', {
+    method: 'POST',
+    body: { account_number: accountNumber, plan },
+  })
+}
+
+export function createCryptoCheckout({ accountNumber, plan }) {
+  return request('/billing/crypto/checkout', {
     method: 'POST',
     body: { account_number: accountNumber, plan },
   })

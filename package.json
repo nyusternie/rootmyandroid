@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "pnpm --filter rootmyandroid-web dev",
     "build": "pnpm --filter rootmyandroid-web build",
-    "lint": "pnpm -r lint",
+    "check": "pnpm --filter rootmyandroid-web check",
+    "lint": "pnpm --filter rootmyandroid-web check",
     "test": "pnpm -r test"
   },
   "engines": {

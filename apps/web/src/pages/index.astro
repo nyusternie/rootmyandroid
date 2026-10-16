@@ -1,0 +1,67 @@
+---
+// src/pages/index.astro — landing page.
+import Base from '../layouts/Base.astro'
+---
+
+<Base title="Root My Android">
+  <section class="hero">
+    <div class="container">
+      <h1>Free your mobile OS.</h1>
+      <p class="lede">
+        Connect your Android device and get a clear rooting &amp; upgrade plan —
+        bootloader status, root method, and custom-ROM options. No email, no
+        password: your account is just a number.
+      </p>
+      <div class="row" style="margin-top: 1.75rem">
+        <a class="btn btn-primary" href="/account">Get your account number</a>
+        <a class="btn" href="/guides">Browse the guides</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container" style="padding-bottom: 2rem">
+    <div class="grid-2">
+      <div class="panel">
+        <h2>1. Get a number</h2>
+        <p class="muted">
+          Generate a 16-digit account number. That's the whole account — no
+          sign-up, no personal data, Mullvad-style.
+        </p>
+      </div>
+      <div class="panel">
+        <h2>2. Connect your device</h2>
+        <p class="muted">
+          We scan your phone over ADB to detect the bootloader, current build,
+          and which root methods and ROMs actually work on it.
+        </p>
+      </div>
+      <div class="panel">
+        <h2>3. Get your plan</h2>
+        <p class="muted">
+          A step-by-step rooting / upgrade plan matched to your exact device and
+          firmware — not a generic forum thread.
+        </p>
+      </div>
+      <div class="panel">
+        <h2>$5/month</h2>
+        <p class="muted">
+          Basic scanning is free. Advanced analysis and automation are $5/month
+          (or $50/year), payable by card or crypto.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="panel">
+      <h2>Privacy by design</h2>
+      <p class="muted">
+        We don't want your email, name, or payment card on file. Card payments
+        are processed by our payment partner and settled to crypto
+        automatically; crypto payments (BTC/Lightning) go directly. Either way,
+        your account is only ever a number.
+      </p>
+      <a class="btn" href="/account">Create an account</a>
+    </div>
+  </section>
+</Base>

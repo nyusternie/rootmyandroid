@@ -234,3 +234,6 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/node,rust,linux,windows,macos
 
 bin
+
+# Astro
+.astro

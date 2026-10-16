@@ -14,7 +14,8 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
 ```
 /
 ├── apps/
-│   └── web/          # Next.js 13 (pages router) + Markdoc docs site, static export
+│   └── web/          # Astro 7 static site (zero-JS content pages; one vanilla
+│                     # TS module on /account that calls the API at /v1)
 ├── packages/         # shared workspace packages (created as needed)
 ├── pnpm-workspace.yaml
 └── package.json      # root scripts only; private, no publish
@@ -30,9 +31,9 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
 | --------------- | -------------------------- |
 | Install         | `pnpm install`             |
 | Dev server      | `pnpm dev`                 |
-| Lint            | `pnpm lint`                |
+| Type-check      | `pnpm check`               |
 | Test (all pkgs) | `pnpm test`                |
-| Build + export  | `pnpm build`               |
+| Build (static)  | `pnpm build`               |
 
 ## Hard rules for agents
 
@@ -45,13 +46,15 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
 3. **No guessing.** If a fact (device behavior, ADB command semantics, payment
    provider capability) cannot be verified from the repo or an authoritative
    source, say so explicitly and ask — do not invent it.
-4. **Static export.** `apps/web` uses `next build && next export`
-   (`out/` directory). Do not add server-only Next.js features (API routes,
-   SSR `getServerSideProps`, `next/image` loader services) to `apps/web`.
-   Dynamic/backend functionality belongs in a separate worker/package.
-5. **The docs pages under `apps/web/src/pages/docs/` are leftover template
-   content** (CacheAdvance/Tailwind template). Treat them as placeholders to be
-   replaced with real product content, not as source-of-truth product logic.
+4. **Static export.** `apps/web` is a purely static **Astro** site
+   (`astro build` → `dist/`). No SSR, no Astro server adapters. The only
+   client-side JavaScript is the vanilla module on `/account` (and any future
+   page) that talks to the API Worker at `rootmyandroid.com/v1`. Content pages
+   (`/`, `/guides/*`) must ship **zero JavaScript**. All dynamic/backend
+   functionality lives in the separate `rootmyandroid-api` Cloudflare Worker.
+5. **Guides are Astro content collections** (`src/content/guides/*.md`, schema
+   in `src/content.config.ts`). Real, device-accurate content only — per the
+   no-guessing rule, do not invent device behavior.
 
 ## Payments direction (planning)
 

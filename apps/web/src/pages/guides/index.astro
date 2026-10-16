@@ -1,0 +1,29 @@
+---
+// src/pages/guides/index.astro — guides listing.
+import { getCollection } from 'astro:content'
+import Base from '../../layouts/Base.astro'
+
+const guides = (await getCollection('guides', ({ data }) => !data.draft)).sort(
+  (a, b) => (a.data.order ?? 999) - (b.data.order ?? 999)
+)
+---
+
+<Base title="Guides" description="Step-by-step Android rooting, bootloader, and custom-ROM guides.">
+  <div class="container" style="padding: 3rem 1.25rem">
+    <h1 style="margin: 0 0 0.5rem">Guides</h1>
+    <p class="muted">Step-by-step, device-specific. No fluff.</p>
+
+    <div class="stack" style="margin-top: 2rem">
+      {
+        guides.map((g) => (
+          <a class="panel" href={`/guides/${g.id}`} style="display:block; color:inherit">
+            <h2 style="margin: 0 0 0.35rem">{g.data.title}</h2>
+            <p class="muted" style="margin: 0">
+              {g.data.description}
+            </p>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</Base>
