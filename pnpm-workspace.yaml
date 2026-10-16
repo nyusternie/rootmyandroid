@@ -8,5 +8,7 @@ packages:
 # ERR_PNPM_IGNORED_BUILDS.
 allowBuilds:
   esbuild: true
+  workerd: true
 onlyBuiltDependencies:
   - esbuild
+  - workerd

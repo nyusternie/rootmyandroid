@@ -14,5 +14,8 @@
     "node": ">=18.17.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@11.21.0"
+  "packageManager": "pnpm@11.21.0",
+  "devDependencies": {
+    "wrangler": "4.151.0"
+  }
 }
