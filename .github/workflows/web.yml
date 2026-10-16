@@ -3,7 +3,12 @@ name: Web CI
 on:
   push:
     branches: [master]
+  # Repo is PUBLIC and runs on a self-hosted runner: restrict PR runs to PRs
+  # targeting master, and require maintainer approval for outside contributors
+  # (set in repo Actions settings) so forks cannot execute arbitrary code on
+  # the runner.
   pull_request:
+    branches: [master]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -12,7 +17,7 @@ concurrency:
 jobs:
   test:
     name: Lint, test & build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ayumi]
     steps:
       - uses: actions/checkout@v4
 
@@ -50,7 +55,7 @@ jobs:
     needs: test
     # Deploy only from master, and only after lint+tests+build pass.
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ayumi]
     environment: production
     steps:
       - uses: actions/checkout@v4
