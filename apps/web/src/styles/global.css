@@ -112,6 +112,15 @@ h3 {
 .nav a[aria-current='page'] {
   color: var(--text);
 }
+/* A .btn-primary link inside the nav must keep its own color — the bare
+   `.nav a` rule above would otherwise override it and render the label
+   invisible against the primary background. */
+.nav a.btn-primary {
+  color: #06121d;
+}
+.nav a.btn-primary:hover {
+  color: #06121d;
+}
 
 /* ---------- buttons ---------- */
 .btn {

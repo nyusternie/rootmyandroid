@@ -15,7 +15,7 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
 /
 ├── apps/
 │   └── web/          # Astro 7 static site (zero-JS content pages; one vanilla
-│                     # TS module on /account that calls the API at /v1)
+│                     # TS module on /profile that calls the API at /v1)
 ├── packages/         # shared workspace packages (created as needed)
 ├── pnpm-workspace.yaml
 └── package.json      # root scripts only; private, no publish
@@ -48,7 +48,7 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
    source, say so explicitly and ask — do not invent it.
 4. **Static export.** `apps/web` is a purely static **Astro** site
    (`astro build` → `dist/`). No SSR, no Astro server adapters. The only
-   client-side JavaScript is the vanilla module on `/account` (and any future
+   client-side JavaScript is the vanilla module on `/profile` (and any future
    page) that talks to the API Worker at `rootmyandroid.com/v1`. Content pages
    (`/`, `/guides/*`) must ship **zero JavaScript**. All dynamic/backend
    functionality lives in the separate `rootmyandroid-api` Cloudflare Worker.

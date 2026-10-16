@@ -1,73 +1,23 @@
 ---
-// src/pages/account.astro — account creation + add-time.
-// Pure vanilla JS (no framework island): a static <script type="module"> that
-// calls the API at rootmyandroid.com/v1. Same logic as the old React island.
-import Base from '../layouts/Base.astro'
+// src/pages/account.astro — legacy redirect: /account -> /profile.
+// The API's hosted-checkout return URLs point at /account/?paid=1 (and
+// ?cancelled=1); this page forwards them to /profile without dropping the
+// query string, so the success/cancel notice still shows.
 ---
 
-<Base
-  title="Account"
-  description="Create a Root My Android account number and add time. No email, no password."
->
-  <div class="container" style="padding: 3rem 1.25rem">
-    <h1 style="margin: 0 0 0.5rem">Your account</h1>
-    <p class="muted">
-      No email. No password. Your 16-digit account number <em>is</em> your
-      account — keep it safe.
-    </p>
-
-    <div id="notice" class="notice notice-ok" hidden></div>
-    <div id="error" class="notice notice-warn" hidden></div>
-
-    <div class="panel">
-      <h2>Account number</h2>
-      <form id="lookup-form" class="stack">
-        <input
-          id="account-number"
-          type="text"
-          inputmode="numeric"
-          autocomplete="off"
-          spellcheck="false"
-          placeholder="1234 5678 9012 3456"
-        />
-        <div class="row">
-          <button type="submit" class="btn btn-primary" id="lookup-btn">Look up</button>
-          <button type="button" class="btn" id="create-btn">Generate new account</button>
-        </div>
-      </form>
-      <div id="balance" class="balance" hidden>
-        <span>
-          <span class="label">Balance</span><br />
-          <span class="days"><span id="credit-days">0</span> <span class="muted" style="font-size:1rem">days</span></span>
-        </span>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>Add time</h2>
-      <div class="grid-2">
-        <button class="plan" data-plan="monthly" disabled>
-          <div class="price">$5</div>
-          <div class="term">1 month · 30 days</div>
-        </button>
-        <button class="plan" data-plan="yearly" disabled>
-          <div class="price">$50</div>
-          <div class="term">12 months · 365 days</div>
-        </button>
-      </div>
-      <p class="small faint" id="plan-hint">Enter or generate an account number above to add time.</p>
-      <div class="row" style="margin-top: 0.75rem">
-        <label class="small muted"><input type="radio" name="rail" value="card" checked /> Card</label>
-        <label class="small muted"><input type="radio" name="rail" value="crypto" /> Crypto (BTC / Lightning)</label>
-      </div>
-      <p class="small faint">
-        Card payments are handled by our payment partner and converted to crypto
-        automatically. You're redirected to a secure hosted checkout to finish.
-      </p>
-    </div>
-  </div>
-
-  <script>
-    import '../scripts/account.ts'
-  </script>
-</Base>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content="0; url=/profile/" />
+    <link rel="canonical" href="https://rootmyandroid.com/profile/" />
+    <title>Profile — Root My Android</title>
+    <script is:inline>
+      // Preserve ?paid=1 / ?cancelled=1 (and any other params) on the way to /profile.
+      window.location.replace('/profile/' + window.location.search + window.location.hash)
+    </script>
+  </head>
+  <body>
+    <p><a href="/profile/">This page has moved to /profile</a>.</p>
+  </body>
+</html>
