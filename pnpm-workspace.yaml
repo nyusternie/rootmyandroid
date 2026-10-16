@@ -2,8 +2,11 @@ packages:
   - 'apps/*'
   - 'packages/*'
 
-# Approve build scripts for deps that must compile/postinstall (esbuild's
-# binary). pnpm 11 blocks these by default; without this, CI install fails
-# with ERR_PNPM_IGNORED_BUILDS.
+# Approve dependency build scripts (esbuild's postinstall compiles its
+# binary). pnpm 11 requires BOTH the allowBuilds map and onlyBuiltDependencies
+# for a clean --frozen-lockfile install; otherwise CI fails with
+# ERR_PNPM_IGNORED_BUILDS.
+allowBuilds:
+  esbuild: true
 onlyBuiltDependencies:
   - esbuild
