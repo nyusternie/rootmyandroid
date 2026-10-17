@@ -1,4 +1,4 @@
-// src/scripts/profile.ts — /profile page logic (framework-free).
+// src/scripts/account.ts — /account page logic (framework-free).
 // Calls the Root My Android API (rootmyandroid.com/v1). Bundled by Astro and
 // loaded as a module; the rest of the site ships zero JavaScript.
 import {
