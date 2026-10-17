@@ -1,0 +1,56 @@
+---
+// src/pages/roms/index.astro — custom ROM catalog.
+// Lists vetted custom ROMs. We link out to each project's official source by
+// default; we only serve a mirrored download once that ROM's redistribution
+// terms have been verified (mirrorVerified). See AGENTS.md.
+import { getCollection } from 'astro:content'
+import Base from '../../layouts/Base.astro'
+
+const roms = (await getCollection('roms', ({ data }) => !data.draft)).sort(
+  (a, b) => (a.data.order ?? 999) - (b.data.order ?? 999)
+)
+---
+
+<Base
+  title="Custom ROMs"
+  description="A curated catalog of custom Android ROMs — LineageOS, GrapheneOS, and more — with official sources and device support."
+>
+  <div class="container" style="padding: 3rem 1.25rem">
+    <h1 style="margin: 0 0 0.5rem">Custom ROMs</h1>
+    <p class="muted">
+      Vetted, device-specific. We link to each project's official source; we
+      only host a mirrored download once its redistribution terms are verified.
+    </p>
+
+    <div class="stack" style="margin-top: 2rem">
+      {
+        roms.map((r) => (
+          <div class="panel">
+            <div class="row" style="justify-content: space-between; align-items: baseline">
+              <h2 style="margin: 0 0 0.35rem">{r.data.name}</h2>
+              {r.data.android && <span class="small faint">Android {r.data.android}</span>}
+            </div>
+            <p class="muted" style="margin: 0 0 0.5rem">{r.data.description}</p>
+            <p class="small faint" style="margin: 0 0 0.75rem">
+              {r.data.vendor}
+              {r.data.devices.length > 0 && <> · {r.data.devices.join(', ')}</>}
+            </p>
+            <div class="row">
+              {r.data.mirrorVerified && r.data.mirror ? (
+                <a class="btn btn-primary btn-sm" href={r.data.mirror}>Download (mirrored)</a>
+              ) : (
+                <a class="btn btn-sm" href={r.data.source} rel="noopener noreferrer">Official source</a>
+              )}
+              <a class="btn btn-sm" href={r.data.homepage} rel="noopener noreferrer">Project page</a>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    <p class="small faint" style="margin-top: 2rem">
+      Always verify a build supports your exact device model before flashing.
+      Flashing the wrong image can brick your device.
+    </p>
+  </div>
+</Base>
