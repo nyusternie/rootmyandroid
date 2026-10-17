@@ -17,7 +17,7 @@ concurrency:
 jobs:
   test:
     name: Lint, test & build
-    runs-on: [self-hosted, ayumi]
+    runs-on: [self-hosted, blackhost]
     steps:
       - uses: actions/checkout@v4
 
@@ -55,7 +55,7 @@ jobs:
     needs: test
     # Deploy only from master, and only after lint+tests+build pass.
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    runs-on: [self-hosted, ayumi]
+    runs-on: [self-hosted, blackhost]
     environment: production
     steps:
       - uses: actions/checkout@v4
