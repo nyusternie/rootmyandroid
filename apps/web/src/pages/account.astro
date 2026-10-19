@@ -44,15 +44,25 @@ import Base from '../layouts/Base.astro'
     </div>
 
     <div class="panel">
+      <h2>Nitro</h2>
+      {/* MOCK: static placeholder balance until the API exposes Nitro. */}
+      <a class="nitro-bar" href="/nitro" aria-label="Nitro balance: 62 of 100 — open the Nitro page">
+        <span class="nitro-label">Nitro</span>
+        <span class="nitro-track"><span class="nitro-fill" style="width: 62%"></span></span>
+        <span class="nitro-value">62</span>
+      </a>
+      <p class="small faint">
+        Nitro is the energy your account burns to keep PRO features running.
+        Balance is a placeholder for now. <a href="/nitro">Learn more</a>.
+      </p>
+    </div>
+
+    <div class="panel">
       <h2>Add time</h2>
       <div class="grid-2">
         <button class="plan" data-plan="monthly" disabled>
           <div class="price">$5</div>
-          <div class="term">1 month · 30 days</div>
-        </button>
-        <button class="plan" data-plan="yearly" disabled>
-          <div class="price">$50</div>
-          <div class="term">12 months · 365 days</div>
+          <div class="term">30 days</div>
         </button>
       </div>
       <p class="small faint" id="plan-hint">Enter or generate an account number above to add time.</p>

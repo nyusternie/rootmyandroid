@@ -12,3 +12,14 @@ allowBuilds:
 onlyBuiltDependencies:
   - esbuild
   - workerd
+
+# pnpm 11 reads overrides from here (not package.json). Redirect the large
+# hermes-compiler tarball to a vendored local copy — the 19MB registry
+# download exceeds pnpm's fetch timeout on this host's slow link.
+overrides:
+  hermes-compiler: file:./.vendor/hermes-compiler-260318099.0.4.tgz
+
+# React Native's tooling (Metro, the Android gradle plugin) hardcodes relative
+# paths into node_modules and cannot traverse pnpm's symlinked .pnpm layout.
+# Use a flat, hoisted node_modules so RN resolves modules correctly.
+nodeLinker: hoisted

@@ -312,6 +312,47 @@ input[type='text']::placeholder {
   letter-spacing: 0.06em;
 }
 
+/* nitro energy bar (also the link to /nitro) */
+.nitro-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.9rem 1rem;
+  margin-top: 1rem;
+}
+a.nitro-bar:hover {
+  border-color: var(--text-faint);
+}
+.nitro-bar .nitro-label {
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.nitro-bar .nitro-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line);
+  overflow: hidden;
+}
+.nitro-bar .nitro-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+}
+.nitro-bar .nitro-value {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--accent);
+}
+
 /* ---------- footer ---------- */
 .site-footer {
   border-top: 1px solid var(--line);

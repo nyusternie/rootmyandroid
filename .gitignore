@@ -237,3 +237,11 @@ bin
 
 # Astro
 .astro
+
+# Android release signing material (never commit)
+.keystore/
+apps/*/android/app/release.keystore
+apps/*/android/gradle.properties
+
+# Vendored hermes-compiler tarball is intentional (slow registry workaround)
+!.vendor/*.tgz

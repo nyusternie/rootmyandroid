@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Guardian Angel</string>
+    <string name="device_admin_description">Guardian Angel uses device administrator access to protect this device: while protection is on, the app cannot be removed without deactivating it first.</string>
+</resources>

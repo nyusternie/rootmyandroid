@@ -1,0 +1,73 @@
+---
+// src/pages/nitro.astro — Nitro: the energy unit that powers PRO features.
+// MOCKED for now: the balance below is a static placeholder until the API
+// exposes real Nitro balances. Static content page — ships zero JavaScript.
+import Base from '../layouts/Base.astro'
+---
+
+<Base
+  title="Nitro"
+  description="Nitro is the energy your Root My Android account burns to keep PRO features running. $5 = 100 Nitro. 1 Nitro = 1 device-day."
+>
+  <div class="container" style="padding: 3rem 1.25rem">
+    <h1 style="margin: 0 0 0.5rem">Nitro</h1>
+    <p class="muted">
+      Nitro is the energy your account burns to keep PRO features running.
+      Top up once and it burns down automatically — no subscription to manage.
+    </p>
+
+    <div class="panel">
+      <h2>Your balance <span class="small faint">(mock)</span></h2>
+      <div class="nitro-bar" aria-label="Nitro balance: 62 of 100">
+        <span class="nitro-label">Nitro</span>
+        <span class="nitro-track"><span class="nitro-fill" style="width: 62%"></span></span>
+        <span class="nitro-value">62</span>
+      </div>
+      <p class="small faint">
+        Placeholder balance shown for design preview — real balances appear here
+        once the API exposes Nitro.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h2>How it works</h2>
+      <p class="small muted">
+        <strong>$5 = 100 Nitro.</strong> One pack, one price — no plans, no tiers.
+      </p>
+      <p class="small muted">
+        <strong>1 Nitro = 1 device-day.</strong> Each paired Guardian Angel
+        device burns 1 Nitro per day while PRO is active. More devices, faster
+        burn — top up any time.
+      </p>
+      <p class="small muted">
+        <strong>Automatic.</strong> Nitro is consumed in the background. Your
+        account number is the only credential; the balance follows it
+        everywhere.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h2>Buy Nitro</h2>
+      <div class="grid-2">
+        <a class="plan" href="/account">
+          <div class="price">$5</div>
+          <div class="term">100 Nitro</div>
+        </a>
+      </div>
+      <p class="small faint">
+        Nitro checkout is being wired up — purchases go through the existing
+        card / crypto rails on the <a href="/account">account page</a> for now.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h2>When Nitro runs out</h2>
+      <p class="small muted">
+        PRO features — hiding the Guardian Angel launcher icon, remote access to
+        on-device encrypted data, and upcoming Rooted tools — pause until you
+        top up. Free features (device scan, guides, ROM catalog) keep working,
+        and any remaining balance is never lost.
+      </p>
+    </div>
+  </div>
+</Base>
