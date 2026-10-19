@@ -1,19 +1,33 @@
 ---
 // src/pages/nitro.astro — Nitro: the energy unit that powers PRO features.
 // MOCKED for now: the balance below is a static placeholder until the API
-// exposes real Nitro balances. Static content page — ships zero JavaScript.
+// exposes real Nitro balances. Pack tiers implement the locked pricing model:
+// base rate $5 = 100 Nitro, tiered packs, up to 40% off at the top tier.
+// Static content page — ships zero JavaScript.
 import Base from '../layouts/Base.astro'
+
+// Nitro purchase packs. Base rate is locked at $5 = 100 Nitro; higher tiers
+// discount the per-Nitro price, capped at 40% off. Edit here — the API will
+// serve these same tiers once Nitro checkout is wired up.
+const PACKS = [
+  { price: 5, nitro: 100, off: 0 },
+  { price: 20, nitro: 500, off: 20 },
+  { price: 30, nitro: 1000, off: 40 },
+]
+const perNitro = (p: { price: number; nitro: number }) =>
+  `$${(p.price / p.nitro).toFixed(3)}`
 ---
 
 <Base
   title="Nitro"
-  description="Nitro is the energy your Root My Android account burns to keep PRO features running. $5 = 100 Nitro. 1 Nitro = 1 device-day."
+  description="Nitro is the energy your Root My Android account burns to run PRO features. $5 = 100 Nitro, tiered packs up to 40% off. You only burn Nitro when you use PRO."
 >
   <div class="container" style="padding: 3rem 1.25rem">
     <h1 style="margin: 0 0 0.5rem">Nitro</h1>
     <p class="muted">
-      Nitro is the energy your account burns to keep PRO features running.
-      Top up once and it burns down automatically — no subscription to manage.
+      Nitro is the energy your account burns to run PRO features — in Rooted
+      and Guardian Angel alike. Top up once, then spend it on the PRO actions
+      you actually use. No subscription, no daily drain.
     </p>
 
     <div class="panel">
@@ -32,27 +46,36 @@ import Base from '../layouts/Base.astro'
     <div class="panel">
       <h2>How it works</h2>
       <p class="small muted">
-        <strong>$5 = 100 Nitro.</strong> One pack, one price — no plans, no tiers.
+        <strong>$5 = 100 Nitro.</strong> That's the base rate. Bigger packs
+        discount it — up to 40% off at the top tier.
       </p>
       <p class="small muted">
-        <strong>1 Nitro = 1 device-day.</strong> Each paired Guardian Angel
-        device burns 1 Nitro per day while PRO is active. More devices, faster
-        burn — top up any time.
+        <strong>À la carte, not a meter.</strong> Every PRO action has its own
+        Nitro cost, shown before it runs — hide a Guardian Angel launcher icon,
+        pull encrypted data off a device remotely, fire a PRO Rooted tool.
+        You only burn Nitro when you use PRO.
       </p>
       <p class="small muted">
-        <strong>Automatic.</strong> Nitro is consumed in the background. Your
-        account number is the only credential; the balance follows it
-        everywhere.
+        <strong>One balance, both apps.</strong> The same Nitro powers Rooted
+        PRO and Guardian Angel PRO. Your account number is the only credential;
+        the balance follows it everywhere.
       </p>
     </div>
 
     <div class="panel">
       <h2>Buy Nitro</h2>
-      <div class="grid-2">
-        <a class="plan" href="/account">
-          <div class="price">$5</div>
-          <div class="term">100 Nitro</div>
-        </a>
+      <div class="grid-3">
+        {
+          PACKS.map((p) => (
+            <a class="plan" href="/account">
+              <div class="price">${p.price}</div>
+              <div class="term">{p.nitro.toLocaleString('en-US')} Nitro</div>
+              <div class="save">
+                {perNitro(p)} / Nitro{p.off > 0 ? ` · ${p.off}% off` : ' · base rate'}
+              </div>
+            </a>
+          ))
+        }
       </div>
       <p class="small faint">
         Nitro checkout is being wired up — purchases go through the existing

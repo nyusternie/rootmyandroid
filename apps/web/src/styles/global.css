@@ -246,6 +246,16 @@ input[type='text']::placeholder {
     grid-template-columns: 1fr 1fr;
   }
 }
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+}
+@media (min-width: 560px) {
+  .grid-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
 
 /* plan option buttons */
 .plan {
@@ -274,6 +284,11 @@ input[type='text']::placeholder {
 .plan .term {
   color: var(--text-dim);
   font-size: 0.9rem;
+}
+.plan .save {
+  color: var(--ok);
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
 }
 
 /* hero */
