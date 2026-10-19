@@ -55,6 +55,15 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
 5. **Guides are Astro content collections** (`src/content/guides/*.md`, schema
    in `src/content.config.ts`). Real, device-accurate content only — per the
    no-guessing rule, do not invent device behavior.
+6. **Never wipe third-party app data.** Do NOT run `pm clear`, `pm uninstall`,
+   or any other data-destroying command on any package other than our own two
+   (`com.rootmyandroid.rooted`, `com.rootmyandroid.guardian`). Even for our own
+   packages — and ALWAYS for anything system-level such as the launcher
+   (`com.google.android.apps.nexuslauncher`) — a wipe requires a separate,
+   explicit, same-turn user confirmation whose prompt names the exact
+   consequence (e.g. "this erases your entire home-screen layout"). (Rule added
+   2026-10-19 after a launcher `pm clear` destroyed the user's home-screen
+   layout; restored from Google backup via `bmgr restore`.)
 
 ## Payments direction (planning)
 
