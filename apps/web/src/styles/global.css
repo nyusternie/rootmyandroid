@@ -353,6 +353,122 @@ a.nitro-bar:hover {
   color: var(--accent);
 }
 
+/* ---------- backup audit (/backup-audit) ----------
+   All rules scoped under .audit so no other page is affected. */
+.audit .kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.95rem;
+}
+.audit .kv:last-child {
+  border-bottom: none;
+}
+.audit .kv .k {
+  color: var(--text-faint);
+}
+.audit .kv .v {
+  text-align: right;
+}
+.audit .stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+@media (min-width: 560px) {
+  .audit .stat-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.audit .stat {
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  padding: 0.9rem 1rem;
+}
+.audit .stat .num {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+.audit .stat .lbl {
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.audit .coverage {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 0.9rem 1rem;
+  margin-top: 1rem;
+}
+/* The coverage bar reuses the nitro-bar part classes, but .nitro-bar's child
+   rules are scoped to it — duplicate them under .coverage or the bar breaks. */
+.audit .coverage .nitro-label {
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.audit .coverage .nitro-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line);
+  overflow: hidden;
+}
+.audit .coverage .nitro-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+}
+.audit .coverage .nitro-value {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--accent);
+}
+.audit .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.audit .chip {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  border-radius: 2rem;
+  padding: 0.2rem 0.7rem;
+  color: var(--text-dim);
+}
+.audit .chip-ok {
+  border-color: color-mix(in srgb, var(--ok) 45%, transparent);
+  color: #b6e6c6;
+}
+.audit .chip-danger {
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  color: #f0b4b4;
+}
+.audit .panel-danger {
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+}
+.audit .panel h3 {
+  margin: 1.25rem 0 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+}
+
 /* ---------- footer ---------- */
 .site-footer {
   border-top: 1px solid var(--line);
