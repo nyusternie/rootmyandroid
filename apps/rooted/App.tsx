@@ -14,13 +14,15 @@
  * @format
  */
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Modal,
+  NativeModules,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -175,9 +177,54 @@ type ScanResult = {
   integrityTone?: 'good' | 'warn';
 };
 
+type AuditPackageEntry = {
+  package: string;
+  label: string;
+  allow_backup: boolean;
+  system_app: boolean;
+  target_sdk: number;
+};
+
+type AuditSnapshot = {
+  os: string;
+  build_fingerprint: string;
+  counts: {
+    installed_total: number;
+    user_apps: number;
+    participating: number;
+    excluded: number;
+  };
+  packages: AuditPackageEntry[];
+};
+
+type AuditSummary = {
+  participating: number;
+  excluded: number;
+  userApps: number;
+  excludedLabels: string[];
+};
+
+// Native module (android/app/.../AuditModule.kt): PackageManager backup
+// participation scan + persisted audit device id. Undefined under jest.
+const AuditModule = NativeModules.AuditModule as {
+  collectBackupAudit(): Promise<AuditSnapshot>;
+  getDeviceId(): Promise<string>;
+  getDeviceName(): Promise<string>;
+};
+
+const API_BASE = 'https://rootmyandroid.com/v1';
+
 function ScanScreen() {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
+  const [auditing, setAuditing] = useState(false);
+  const [audit, setAudit] = useState<AuditSummary | null>(null);
+  const [auditError, setAuditError] = useState('');
+  const [auditAccount, setAuditAccount] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState('');
+  const [syncOk, setSyncOk] = useState(false);
+  const auditSnapshot = useRef<AuditSnapshot | null>(null);
 
   const runScan = () => {
     if (scanning) return;
@@ -196,6 +243,82 @@ function ScanScreen() {
       });
       setScanning(false);
     }, 1200);
+  };
+
+  // Real scan: backup participation of every installed app, read from the OS.
+  const runAudit = async () => {
+    if (auditing) return;
+    setAuditing(true);
+    setAuditError('');
+    setSyncMsg('');
+    try {
+      const snapshot = await AuditModule.collectBackupAudit();
+      auditSnapshot.current = snapshot;
+      const excludedLabels = snapshot.packages
+        .filter((p) => !p.allow_backup && !p.system_app)
+        .map((p) => p.label)
+        .sort();
+      setAudit({
+        participating: snapshot.counts.participating,
+        excluded: snapshot.counts.excluded,
+        userApps: snapshot.counts.user_apps,
+        excludedLabels,
+      });
+    } catch (e: any) {
+      setAuditError(e?.message || 'Backup audit failed on this device.');
+    } finally {
+      setAuditing(false);
+    }
+  };
+
+  // Sync the collected snapshot to the account as audit_type "backup".
+  const syncAudit = async () => {
+    if (syncing || !auditSnapshot.current) return;
+    const accountNumber = auditAccount.replace(/\s/g, '');
+    if (!/^\d{16}$/.test(accountNumber)) {
+      setSyncOk(false);
+      setSyncMsg('Enter the 16-digit account number.');
+      return;
+    }
+    setSyncing(true);
+    setSyncMsg('');
+    try {
+      const [deviceId, deviceName] = await Promise.all([
+        AuditModule.getDeviceId(),
+        AuditModule.getDeviceName(),
+      ]);
+      const res = await fetch(`${API_BASE}/device/audit`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          account_number: accountNumber,
+          device_id: deviceId,
+          audit_type: 'backup',
+          device_name: deviceName,
+          collected_at: new Date().toISOString(),
+          snapshot: auditSnapshot.current,
+        }),
+      });
+      const body = await res.json().catch(() => null);
+      if (res.ok) {
+        setSyncOk(true);
+        setSyncMsg('Synced. The audit is on your account — view it at rootmyandroid.com/audit.');
+      } else if (res.status === 404) {
+        setSyncOk(false);
+        setSyncMsg('Account not found. Check the number and try again.');
+      } else if (res.status === 400) {
+        setSyncOk(false);
+        setSyncMsg('That does not look like a valid 16-digit account number.');
+      } else {
+        setSyncOk(false);
+        setSyncMsg(body?.error || 'Could not sync the audit. Please try again.');
+      }
+    } catch {
+      setSyncOk(false);
+      setSyncMsg('Network error. Is the device online?');
+    } finally {
+      setSyncing(false);
+    }
   };
 
   return (
@@ -218,6 +341,44 @@ function ScanScreen() {
       <Text style={styles.faint}>
         Scanning runs on-device. Nothing is sent until you choose to back up.
       </Text>
+      <Panel title="Backup audit">
+        <Text style={styles.muted}>
+          Which installed apps are covered by Android backup, and which opted
+          out entirely. Read live from the OS — no root required.
+        </Text>
+        <PrimaryButton label={auditing ? 'Auditing…' : 'Run backup audit'} onPress={runAudit} />
+        {auditError ? <Text style={[styles.faint, { color: colors.warn }]}>{auditError}</Text> : null}
+        {audit ? (
+          <View>
+            <Row label="Participating in backup" value={String(audit.participating)} tone="good" />
+            <Row label="Not covered at all" value={String(audit.excluded)} tone="warn" />
+            <Row label="Third-party apps installed" value={String(audit.userApps)} />
+            {audit.excludedLabels.length > 0 ? (
+              <Text style={styles.faint}>
+                Opted out of backup: {audit.excludedLabels.slice(0, 12).join(', ')}
+                {audit.excludedLabels.length > 12 ? ` +${audit.excludedLabels.length - 12} more` : ''}
+              </Text>
+            ) : null}
+            <Text style={styles.faint}>
+              Sync this audit to your account number to see it at rootmyandroid.com/audit.
+            </Text>
+            <TextInput
+              style={styles.input}
+              placeholder="1234 5678 9012 3456"
+              placeholderTextColor={colors.faint}
+              keyboardType="number-pad"
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={auditAccount}
+              onChangeText={setAuditAccount}
+            />
+            <PrimaryButton label={syncing ? 'Syncing…' : 'Sync audit to account'} onPress={syncAudit} />
+            {syncMsg ? (
+              <Text style={[styles.faint, { color: syncOk ? colors.good : colors.warn }]}>{syncMsg}</Text>
+            ) : null}
+          </View>
+        ) : null}
+      </Panel>
     </View>
   );
 }
@@ -446,6 +607,17 @@ const styles = StyleSheet.create({
   tabBtnActive: { borderTopWidth: 2, borderTopColor: colors.accent },
   tabBtnText: { color: colors.muted, fontSize: 14, fontWeight: '500' },
   tabBtnTextActive: { color: colors.text },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    color: colors.text,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    marginTop: 8,
+    marginBottom: 4,
+  },
 });
 
 export default App;

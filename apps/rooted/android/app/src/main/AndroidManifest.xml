@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- The backup audit reads backup participation for every installed app;
+         Android 11+ package visibility would otherwise hide most of them.
+         Not used for any other purpose. -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <application
       android:name=".MainApplication"
