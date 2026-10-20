@@ -50,3 +50,35 @@ export function createCryptoCheckout({ accountNumber, plan }) {
     body: { account_number: accountNumber, plan },
   })
 }
+
+// GET /device/whoami — the caller's network identity echoed from edge
+// metadata. Used by the /audit live scan.
+export function whoami() {
+  return request('/device/whoami')
+}
+
+// POST /device/audit — store an audit snapshot (audit_type classifies the
+// audit: "device" for the web live scan, "backup" for the Rooted app's
+// backup coverage, ...). Undefined fields are dropped by JSON.stringify.
+export function saveAudit({ accountNumber, deviceId, auditType, deviceName, collectedAt, snapshot }) {
+  return request('/device/audit', {
+    method: 'POST',
+    body: {
+      account_number: accountNumber,
+      device_id: deviceId,
+      audit_type: auditType,
+      device_name: deviceName,
+      collected_at: collectedAt,
+      snapshot,
+    },
+  })
+}
+
+// POST /device/audit/list — latest audit snapshot per device for an account,
+// optionally restricted to one audit class.
+export function listAudits({ accountNumber, auditType }) {
+  return request('/device/audit/list', {
+    method: 'POST',
+    body: { account_number: accountNumber, audit_type: auditType },
+  })
+}

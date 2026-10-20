@@ -368,7 +368,7 @@ a.nitro-bar:hover {
   color: var(--accent);
 }
 
-/* ---------- backup audit (/backup-audit) ----------
+/* ---------- device audit (/audit) ----------
    All rules scoped under .audit so no other page is affected. */
 .audit .kv {
   display: flex;

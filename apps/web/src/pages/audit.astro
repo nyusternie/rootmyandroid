@@ -1,0 +1,261 @@
+---
+// src/pages/audit.astro — Device Audit: a real-time scan of the device
+// viewing this page, plus the audit classes synced to the API (backup
+// coverage first, more to come). The live scan runs in a vanilla module
+// script (same pattern as /account); everything below it is static content.
+// The backup audit below is a real capture from a Pixel 5 (Android 14) on
+// 2026-10-19, shown as a static sample until the Rooted app syncs live
+// per-device data to the API.
+import Base from '../layouts/Base.astro'
+---
+
+<Base
+  title="Device Audit"
+  description="Audit any device in real time — OS, hardware, network identity — and see exactly what an Android device backs up, and which apps aren't covered at all."
+>
+  <div class="container audit" style="padding: 3rem 1.25rem">
+    <h1 style="margin: 0 0 0.5rem">Device Audit</h1>
+    <p class="muted">
+      One audit system, many audit classes. Run a live scan of the device
+      you're on right now, or see a sample <strong>backup</strong> audit from a
+      real Android device below. More audit classes are on the way.
+    </p>
+
+    <div id="notice" class="notice notice-ok" hidden></div>
+    <div id="error" class="notice notice-warn" hidden></div>
+
+    <div class="panel">
+      <h2>Live scan — this device</h2>
+      <p class="small muted">
+        Runs entirely in your browser. Nothing is sent anywhere unless you
+        choose to save the result to your account number at the end.
+      </p>
+      <noscript>
+        <p class="small faint">The live scan needs JavaScript — everything below it is static.</p>
+      </noscript>
+      <div class="row">
+        <button id="scan-btn" class="btn btn-primary">Scan this device</button>
+      </div>
+
+      <div id="scan-results" hidden>
+        <h3>Device &amp; browser <span class="small faint">(browser-reported)</span></h3>
+        <div id="scan-device"></div>
+        <h3>Hardware &amp; display</h3>
+        <div id="scan-hardware"></div>
+        <h3>Connection</h3>
+        <div id="scan-connection"></div>
+        <h3>Network identity <span class="small faint">(from our API edge)</span></h3>
+        <div id="scan-edge"></div>
+
+        <h3>Save this scan to your account</h3>
+        <p class="small faint">
+          Optional. Stored as audit class <span class="mono">device</span>
+          against your account number — the same place the Rooted app's
+          <span class="mono">backup</span> audits land.
+        </p>
+        <form id="save-form" class="stack">
+          <input
+            id="save-account-number"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="1234 5678 9012 3456"
+          />
+          <input
+            id="save-device-name"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Device label (optional) — e.g. My laptop"
+          />
+          <div class="row">
+            <button type="submit" class="btn" id="save-btn">Save scan to account</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Audit classes</h2>
+      <div class="kv"><span class="k mono">device</span><span class="v">Live above — what this device is, right now</span></div>
+      <div class="kv"><span class="k mono">backup</span><span class="v">Android backup coverage — sample below, live via the Rooted app</span></div>
+      <p class="small faint" style="margin-top: 0.9rem">
+        More classes (storage, root integrity, ROM &amp; OTA posture) land as
+        the Rooted app's scanners ship — same page, same account.
+      </p>
+    </div>
+
+    <h2 style="margin-top: 2.5rem">Sample · Backup audit <span class="small faint">(audit class: backup)</span></h2>
+    <p class="muted">
+      What this device is <em>actually</em> uploading — and what it isn't.
+      Most people assume "backup is on" means everything is safe. It doesn't.
+      <span class="small faint">Sample data captured Oct 19 from a Pixel 5 running Android 14.</span>
+    </p>
+
+    <div class="notice notice-ok">
+      <strong>Proof it works:</strong> on Oct 19 this device's entire
+      home-screen layout was wiped — and fully restored from the
+      Oct&nbsp;17, 9:09&nbsp;PM snapshot in the backup set below.
+    </div>
+
+    <div class="panel">
+      <h2>Backup status</h2>
+      <div class="kv"><span class="k">State</span><span class="v">Enabled · setup complete</span></div>
+      <div class="kv"><span class="k">Auto-restore</span><span class="v">On</span></div>
+      <div class="kv"><span class="k">Destination</span><span class="v">Google account (Android Auto Backup)</span></div>
+      <div class="kv"><span class="k">Schedule</span><span class="v">Automatic · weekly</span></div>
+      <div class="kv"><span class="k">Last backup pass</span><span class="v">Oct 19, 11:33 AM</span></div>
+      <div class="kv"><span class="k">Next scheduled</span><span class="v">Oct 26, 11:33 AM</span></div>
+      <div class="kv"><span class="k">Home-screen snapshot</span><span class="v">Oct 17, 9:09 PM ✓</span></div>
+      <div class="kv"><span class="k">Backup set</span><span class="v mono">313b189c…21d7</span></div>
+    </div>
+
+    <div class="panel">
+      <h2>Coverage</h2>
+      <div class="stat-grid">
+        <div class="stat"><div class="num">90</div><div class="lbl">Registered</div></div>
+        <div class="stat"><div class="num" style="color: var(--ok)">62</div><div class="lbl">Backed up</div></div>
+        <div class="stat"><div class="num" style="color: var(--warn)">48</div><div class="lbl">Pending</div></div>
+        <div class="stat"><div class="num">192</div><div class="lbl">Queued</div></div>
+      </div>
+      <div class="coverage" aria-label="Backup coverage: 62 of 90 registered apps have completed a backup">
+        <span class="nitro-label">Coverage</span>
+        <span class="nitro-track"><span class="nitro-fill" style="width: 69%; background: var(--ok)"></span></span>
+        <span class="nitro-value" style="color: var(--ok)">69%</span>
+      </div>
+      <p class="small faint">
+        62 of 90 registered apps have completed a backup. 48 are pending their
+        next key/value upload; 192 apps sit in the full-backup queue awaiting a
+        first or follow-up pass.
+      </p>
+    </div>
+
+    <div class="panel panel-danger">
+      <h2 style="color: var(--danger)">Not covered — at all</h2>
+      <p class="small muted">
+        These installed apps are not registered for backup in any way. This
+        phone is the <strong>only</strong> place their data exists — if it's
+        lost or wiped, only your own in-app backups (seed phrases, export
+        files) can recover them.
+      </p>
+      <div class="chips">
+        <span class="chip chip-danger">Cake Wallet</span>
+        <span class="chip chip-danger">Phoenix</span>
+        <span class="chip chip-danger">Breez</span>
+        <span class="chip chip-danger">Muun</span>
+        <span class="chip chip-danger">Trust Wallet</span>
+        <span class="chip chip-danger">Exodus</span>
+        <span class="chip chip-danger">Samourai</span>
+        <span class="chip chip-danger">BitPay</span>
+        <span class="chip chip-danger">OPTN</span>
+        <span class="chip chip-danger">EvoNext</span>
+        <span class="chip chip-danger">Sidecoin</span>
+      </div>
+      <p class="small faint" style="margin-top: 0.9rem">
+        Electron Cash isn't backed up yet either, but it <em>is</em> queued for
+        its first backup. Most wallets exclude themselves from cloud backup by
+        design — whether that trade-off is right for you is a decision we
+        surface, not one we make for you.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h2>Backed up</h2>
+      <h3>Third-party apps</h3>
+      <div class="chips">
+        <span class="chip chip-ok">Chrome</span>
+        <span class="chip chip-ok">Accrescent</span>
+        <span class="chip chip-ok">Selene</span>
+        <span class="chip chip-ok">Bitcoin Cash Register</span>
+        <span class="chip chip-ok">Coin ATM Radar</span>
+        <span class="chip chip-ok">Farcaster</span>
+        <span class="chip chip-ok">Odysee</span>
+        <span class="chip chip-ok">NEAR Mobile</span>
+        <span class="chip chip-ok">zelcore</span>
+        <span class="chip chip-ok">ThorWallet</span>
+        <span class="chip chip-ok">Atomic Wallet</span>
+        <span class="chip chip-ok">eCash Wallet</span>
+        <span class="chip chip-ok">a0.dev</span>
+        <span class="chip chip-ok">ShareTheMeal</span>
+        <span class="chip chip-ok">TSM</span>
+        <span class="chip chip-ok">Remote Capture</span>
+        <span class="chip chip-ok">Firebase App Distribution</span>
+        <span class="chip chip-ok">Expo</span>
+      </div>
+      <h3>System &amp; Google</h3>
+      <div class="chips">
+        <span class="chip">Call log</span>
+        <span class="chip">Device settings</span>
+        <span class="chip">Wallpapers</span>
+        <span class="chip">Blocked numbers</span>
+        <span class="chip">User dictionary</span>
+        <span class="chip">Contacts</span>
+        <span class="chip">Messages (SMS)</span>
+        <span class="chip">Phone</span>
+        <span class="chip">Calendar</span>
+        <span class="chip">Clock</span>
+        <span class="chip">GBoard</span>
+        <span class="chip">Camera settings</span>
+        <span class="chip">Photos app data</span>
+        <span class="chip">SystemUI</span>
+        <span class="chip">NFC</span>
+        <span class="chip">Package-manager state</span>
+        <span class="chip">Play Store</span>
+        <span class="chip">Play services</span>
+        <span class="chip">Digital Wellbeing</span>
+        <span class="chip">Health data</span>
+        <span class="chip">Android Auto</span>
+        <span class="chip">Accessibility services</span>
+        <span class="chip">Files</span>
+        <span class="chip">Device Health Services</span>
+      </div>
+      <p class="small faint" style="margin-top: 0.9rem">
+        Plus the remaining Google / Pixel system components — 62 backed-up
+        packages in total.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h2>What this means</h2>
+      <p class="small muted">
+        <strong>Apps choose whether to participate.</strong> Android lets any
+        app opt out of backup entirely — every wallet in the red list above has
+        done exactly that.
+      </p>
+      <p class="small muted">
+        <strong>Coverage ≠ contents.</strong> Apps that do participate decide
+        what their backup includes. An app being "backed up" does not guarantee
+        its most sensitive data (like keys) is part of the upload.
+      </p>
+      <p class="small muted">
+        <strong>App data only.</strong> This audit reflects Android's app-data
+        backup. Your photo/video library is handled by a separate sync system
+        (Google Photos) that this page doesn't inspect.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h2>How Rooted delivers this <span class="small faint">(preview)</span></h2>
+      <p class="small muted">
+        The Rooted app reads every installed app's backup participation
+        straight from the OS — no root required for the coverage map. With
+        elevated access (root or our ADB tooling) it also reads last-backup
+        timestamps and schedule: the full picture you see here.
+      </p>
+      <p class="small muted">
+        Synced to your account number, this page becomes a live, per-device
+        backup audit — re-checked on every scan, with alerts when an important
+        app drops out of coverage.
+      </p>
+      <p class="small faint">
+        Sample data captured Oct 19 from a Pixel 5 running Android 14. Live
+        per-device data arrives with the Rooted app's device sync.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    import '../scripts/audit.ts'
+  </script>
+</Base>

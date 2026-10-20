@@ -1,6 +1,14 @@
 // src/lib/api.test.js — tests for the API client (ported from the React-era suite).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createAccount, createCheckout, createCryptoCheckout, getAccount } from './api.js'
+import {
+  createAccount,
+  createCheckout,
+  createCryptoCheckout,
+  getAccount,
+  listAudits,
+  saveAudit,
+  whoami,
+} from './api.js'
 
 const BASE = 'https://rootmyandroid.com/v1'
 
@@ -66,6 +74,52 @@ describe('api client', () => {
     const res = await createCheckout({ accountNumber: '1', plan: 'monthly' })
     expect(res.ok).toBe(false)
     expect(res.status).toBe(503)
+  })
+
+  it('whoami GETs /device/whoami', async () => {
+    fetch.mockImplementation(() => jsonResponse(200, { ok: true, ip: '203.0.113.7' }))
+    const res = await whoami()
+    expect(res.ok).toBe(true)
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/device/whoami`)
+    expect(init.method).toBe('GET')
+  })
+
+  it('saveAudit posts the snapshot with its audit_type', async () => {
+    fetch.mockImplementation(() => jsonResponse(201, { ok: true, device_id: 'd-1', audit_type: 'device' }))
+    const snapshot = { os: 'Android 14', browser: 'Chrome 140' }
+    const res = await saveAudit({
+      accountNumber: '1234 5678 9012 3456',
+      deviceId: 'd-1',
+      auditType: 'device',
+      deviceName: 'Pixel 5',
+      collectedAt: '2026-10-19T18:40:00Z',
+      snapshot,
+    })
+    expect(res.ok).toBe(true)
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/device/audit`)
+    expect(init.method).toBe('POST')
+    expect(JSON.parse(init.body)).toEqual({
+      account_number: '1234 5678 9012 3456',
+      device_id: 'd-1',
+      audit_type: 'device',
+      device_name: 'Pixel 5',
+      collected_at: '2026-10-19T18:40:00Z',
+      snapshot,
+    })
+  })
+
+  it('listAudits posts the account number and optional type filter', async () => {
+    fetch.mockImplementation(() => jsonResponse(200, { ok: true, audits: [] }))
+    const res = await listAudits({ accountNumber: '1234 5678 9012 3456', auditType: 'backup' })
+    expect(res.ok).toBe(true)
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/device/audit/list`)
+    expect(JSON.parse(init.body)).toEqual({
+      account_number: '1234 5678 9012 3456',
+      audit_type: 'backup',
+    })
   })
 
   it('handles non-JSON responses gracefully', async () => {
