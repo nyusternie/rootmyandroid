@@ -4,7 +4,10 @@ import {
   createAccount,
   createCheckout,
   createCryptoCheckout,
+  createNitroCheckout,
+  createNitroCryptoCheckout,
   getAccount,
+  getNitroBalance,
   listAudits,
   saveAudit,
   whoami,
@@ -120,6 +123,36 @@ describe('api client', () => {
       account_number: '1234 5678 9012 3456',
       audit_type: 'backup',
     })
+  })
+
+  it('createNitroCheckout posts pack + account to the Nitro card rail', async () => {
+    fetch.mockImplementation(() =>
+      jsonResponse(200, { ok: true, invoice_url: 'https://nowpayments.io/payment/?iid=1', pack: 'nitro_500', nitro: 500 })
+    )
+    const res = await createNitroCheckout({ accountNumber: '1', pack: 'nitro_500' })
+    expect(res.data.pack).toBe('nitro_500')
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/billing/nitro/checkout`)
+    expect(JSON.parse(init.body)).toEqual({ account_number: '1', pack: 'nitro_500' })
+  })
+
+  it('createNitroCryptoCheckout hits the Nitro crypto endpoint', async () => {
+    fetch.mockImplementation(() => jsonResponse(200, { invoice_url: 'https://btcpay.example/i/9' }))
+    const res = await createNitroCryptoCheckout({ accountNumber: '1', pack: 'nitro_1000' })
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/billing/nitro/crypto/checkout`)
+    expect(JSON.parse(init.body)).toEqual({ account_number: '1', pack: 'nitro_1000' })
+    expect(res.data.invoice_url).toContain('https://')
+  })
+
+  it('getNitroBalance posts the account number to /nitro', async () => {
+    fetch.mockImplementation(() => jsonResponse(200, { ok: true, nitro_balance: 500, recent: [] }))
+    const res = await getNitroBalance('1234 5678 9012 3456')
+    expect(res.data.nitro_balance).toBe(500)
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/nitro`)
+    expect(init.method).toBe('POST')
+    expect(JSON.parse(init.body)).toEqual({ account_number: '1234 5678 9012 3456' })
   })
 
   it('handles non-JSON responses gracefully', async () => {

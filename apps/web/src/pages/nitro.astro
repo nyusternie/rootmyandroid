@@ -1,14 +1,16 @@
 ---
 // src/pages/nitro.astro — Nitro: the energy unit that powers PRO features.
-// MOCKED for now: the balance below is a static placeholder until the API
-// exposes real Nitro balances. Pack tiers implement the locked pricing model:
-// base rate $5 = 100 Nitro, tiered packs, up to 40% off at the top tier.
+// The balance below is a static example (this is a zero-JS content page);
+// real balances are looked up by account number on /account. Pack tiers
+// implement the locked pricing model: base rate $5 = 100 Nitro, tiered
+// packs, up to 40% off at the top tier.
 // Static content page — ships zero JavaScript.
 import Base from '../layouts/Base.astro'
 
 // Nitro purchase packs. Base rate is locked at $5 = 100 Nitro; higher tiers
-// discount the per-Nitro price, capped at 40% off. Edit here — the API will
-// serve these same tiers once Nitro checkout is wired up.
+// discount the per-Nitro price, capped at 40% off. These mirror the
+// server-side NITRO_PACKS catalog in rootmyandroid-api (src/lib/nitro.js),
+// which is authoritative at checkout time.
 const PACKS = [
   { price: 5, nitro: 100, off: 0 },
   { price: 20, nitro: 500, off: 20 },
@@ -31,15 +33,15 @@ const perNitro = (p: { price: number; nitro: number }) =>
     </p>
 
     <div class="panel">
-      <h2>Your balance <span class="small faint">(mock)</span></h2>
-      <div class="nitro-bar" aria-label="Nitro balance: 62 of 100">
+      <h2>Your balance <span class="small faint">(example)</span></h2>
+      <div class="nitro-bar" aria-label="Example Nitro balance: 62 of 100">
         <span class="nitro-label">Nitro</span>
         <span class="nitro-track"><span class="nitro-fill" style="width: 62%"></span></span>
         <span class="nitro-value">62</span>
       </div>
       <p class="small faint">
-        Placeholder balance shown for design preview — real balances appear here
-        once the API exposes Nitro.
+        Example balance shown for illustration — your real balance is tied to
+        your account number. Look it up on the <a href="/account">account page</a>.
       </p>
     </div>
 
@@ -78,8 +80,9 @@ const perNitro = (p: { price: number; nitro: number }) =>
         }
       </div>
       <p class="small faint">
-        Nitro checkout is being wired up — purchases go through the existing
-        card / crypto rails on the <a href="/account">account page</a> for now.
+        Purchases go through the card / crypto rails on the
+        <a href="/account">account page</a> — enter your account number there
+        and pick a pack. Nitro lands on your balance once the payment settles.
       </p>
     </div>
 

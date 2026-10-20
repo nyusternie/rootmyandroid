@@ -3,8 +3,8 @@
 // loaded as a module; the rest of the site ships zero JavaScript.
 import {
   createAccount,
-  createCheckout,
-  createCryptoCheckout,
+  createNitroCheckout,
+  createNitroCryptoCheckout,
   getAccount,
 } from '../lib/api.js'
 
@@ -19,10 +19,20 @@ const notice = $('notice')
 const error = $('error')
 const balance = $('balance')
 const creditDays = $('credit-days')
+const nitroFill = $('nitro-fill')
+const nitroValue = $('nitro-value')
 const lookupBtn = $('lookup-btn') as HTMLButtonElement
 const createBtn = $('create-btn') as HTMLButtonElement
 const planHint = $('plan-hint')
 const planButtons = [...document.querySelectorAll('.plan')] as HTMLButtonElement[]
+
+// Render the account's Nitro balance on the energy bar. The fill is capped
+// at 100% of the base pack (100 Nitro); the number always shows the real
+// balance.
+function setNitroBalance(n: number): void {
+  nitroValue.textContent = String(n)
+  nitroFill.style.width = `${Math.max(0, Math.min(100, n))}%`
+}
 
 let busy = false
 
@@ -70,6 +80,7 @@ createBtn.addEventListener('click', async () => {
     if (res.ok && res.data?.account_number) {
       numberInput.value = res.data.account_number
       creditDays.textContent = String(res.data.credit_days ?? 0)
+      setNitroBalance(res.data.nitro_balance ?? 0)
       balance.hidden = false
       show(notice, 'Save this number — it is the only way to access your account.')
     } else {
@@ -90,6 +101,7 @@ $('lookup-form').addEventListener('submit', async (e) => {
     const res = await getAccount(accountNumber())
     if (res.ok) {
       creditDays.textContent = String(res.data.credit_days ?? 0)
+      setNitroBalance(res.data.nitro_balance ?? 0)
       balance.hidden = false
     } else if (res.status === 404) {
       balance.hidden = true
@@ -111,13 +123,13 @@ planButtons.forEach((btn) =>
   btn.addEventListener('click', async () => {
     setBusy(true)
     clearMessages()
-    const plan = btn.dataset.plan || 'monthly'
+    const pack = btn.dataset.pack || 'nitro_100'
     const rail = selectedRail()
     try {
       const res =
         rail === 'crypto'
-          ? await createCryptoCheckout({ accountNumber: accountNumber(), plan })
-          : await createCheckout({ accountNumber: accountNumber(), plan })
+          ? await createNitroCryptoCheckout({ accountNumber: accountNumber(), pack })
+          : await createNitroCheckout({ accountNumber: accountNumber(), pack })
       if (res.ok && res.data?.invoice_url) {
         window.location.href = res.data.invoice_url
         return

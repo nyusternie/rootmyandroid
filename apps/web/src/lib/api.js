@@ -51,6 +51,34 @@ export function createCryptoCheckout({ accountNumber, plan }) {
   })
 }
 
+// POST /billing/nitro/checkout — buy a Nitro pack on the card rail
+// (NOWPayments). Pack ids are server-defined (nitro_100 / nitro_500 /
+// nitro_1000); prices are enforced server-side.
+export function createNitroCheckout({ accountNumber, pack }) {
+  return request('/billing/nitro/checkout', {
+    method: 'POST',
+    body: { account_number: accountNumber, pack },
+  })
+}
+
+// POST /billing/nitro/crypto/checkout — buy a Nitro pack on the crypto rail
+// (BTCPay: BTC / Lightning).
+export function createNitroCryptoCheckout({ accountNumber, pack }) {
+  return request('/billing/nitro/crypto/checkout', {
+    method: 'POST',
+    body: { account_number: accountNumber, pack },
+  })
+}
+
+// POST /nitro — an account's Nitro balance plus its recent ledger entries.
+// (POST so the account number travels in the body, not the URL/logs.)
+export function getNitroBalance(accountNumber) {
+  return request('/nitro', {
+    method: 'POST',
+    body: { account_number: accountNumber },
+  })
+}
+
 // GET /device/whoami — the caller's network identity echoed from edge
 // metadata. Used by the /audit live scan.
 export function whoami() {

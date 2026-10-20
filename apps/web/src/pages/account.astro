@@ -1,5 +1,5 @@
 ---
-// src/pages/account.astro — account: account number creation + add-time.
+// src/pages/account.astro — account: account number creation + buy Nitro.
 // Pure vanilla JS (no framework island): a static <script type="module"> that
 // calls the API at rootmyandroid.com/v1. Same logic as the old React island.
 import Base from '../layouts/Base.astro'
@@ -45,27 +45,38 @@ import Base from '../layouts/Base.astro'
 
     <div class="panel">
       <h2>Nitro</h2>
-      {/* MOCK: static placeholder balance until the API exposes Nitro. */}
-      <a class="nitro-bar" href="/nitro" aria-label="Nitro balance: 62 of 100 — open the Nitro page">
+      {/* Real balance: filled in from the API after an account lookup/create. */}
+      <a class="nitro-bar" href="/nitro" aria-label="Nitro balance — open the Nitro page">
         <span class="nitro-label">Nitro</span>
-        <span class="nitro-track"><span class="nitro-fill" style="width: 62%"></span></span>
-        <span class="nitro-value">62</span>
+        <span class="nitro-track"><span class="nitro-fill" id="nitro-fill" style="width: 0%"></span></span>
+        <span class="nitro-value" id="nitro-value">0</span>
       </a>
-      <p class="small faint">
+      <p class="small faint" id="nitro-hint">
         Nitro is the energy your account burns to keep PRO features running.
-        Balance is a placeholder for now. <a href="/nitro">Learn more</a>.
+        Look up your account to see your balance. <a href="/nitro">Learn more</a>.
       </p>
     </div>
 
     <div class="panel">
-      <h2>Add time</h2>
-      <div class="grid-2">
-        <button class="plan" data-plan="monthly" disabled>
+      <h2>Buy Nitro</h2>
+      <div class="grid-3">
+        <button class="plan" data-pack="nitro_100" disabled>
           <div class="price">$5</div>
-          <div class="term">30 days</div>
+          <div class="term">100 Nitro</div>
+          <div class="save">base rate</div>
+        </button>
+        <button class="plan" data-pack="nitro_500" disabled>
+          <div class="price">$20</div>
+          <div class="term">500 Nitro</div>
+          <div class="save">20% off</div>
+        </button>
+        <button class="plan" data-pack="nitro_1000" disabled>
+          <div class="price">$30</div>
+          <div class="term">1,000 Nitro</div>
+          <div class="save">40% off</div>
         </button>
       </div>
-      <p class="small faint" id="plan-hint">Enter or generate an account number above to add time.</p>
+      <p class="small faint" id="plan-hint">Enter or generate an account number above to buy Nitro.</p>
       <div class="row" style="margin-top: 0.75rem">
         <label class="small muted"><input type="radio" name="rail" value="card" checked /> Card</label>
         <label class="small muted"><input type="radio" name="rail" value="crypto" /> Crypto (BTC / Lightning)</label>
