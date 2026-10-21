@@ -142,8 +142,8 @@ planButtons.forEach((btn) =>
         show(
           error,
           rail === 'crypto'
-            ? 'Crypto payments are not enabled yet. Please check back soon.'
-            : 'Card payments are not enabled yet. Please check back soon.'
+            ? 'BTC / Lightning checkout is coming soon. Please use the 300+ coins option for now.'
+            : 'Checkout is temporarily unavailable. Please try again later.'
         )
       } else {
         show(error, res.data?.error || 'Could not start checkout.')
