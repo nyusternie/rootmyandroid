@@ -79,6 +79,15 @@ export function getNitroBalance(accountNumber) {
   })
 }
 
+// POST /redeem — redeem a single-use voucher code, crediting its Nitro to
+// the account. Codes are single-use; a redeemed code returns 409.
+export function redeemCode({ accountNumber, code }) {
+  return request('/redeem', {
+    method: 'POST',
+    body: { account_number: accountNumber, code },
+  })
+}
+
 // GET /device/whoami — the caller's network identity echoed from edge
 // metadata. Used by the /audit live scan.
 export function whoami() {

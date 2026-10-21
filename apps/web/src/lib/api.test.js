@@ -9,6 +9,7 @@ import {
   getAccount,
   getNitroBalance,
   listAudits,
+  redeemCode,
   saveAudit,
   whoami,
 } from './api.js'
@@ -153,6 +154,24 @@ describe('api client', () => {
     expect(url).toBe(`${BASE}/nitro`)
     expect(init.method).toBe('POST')
     expect(JSON.parse(init.body)).toEqual({ account_number: '1234 5678 9012 3456' })
+  })
+
+  it('redeemCode posts the account number and code to /redeem', async () => {
+    fetch.mockImplementation(() =>
+      jsonResponse(200, { ok: true, redeemed: 100, nitro_balance: 100 })
+    )
+    const res = await redeemCode({
+      accountNumber: '1234 5678 9012 3456',
+      code: 'ABCD-EFGH-JKMN-PQRS',
+    })
+    expect(res.data.redeemed).toBe(100)
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/redeem`)
+    expect(init.method).toBe('POST')
+    expect(JSON.parse(init.body)).toEqual({
+      account_number: '1234 5678 9012 3456',
+      code: 'ABCD-EFGH-JKMN-PQRS',
+    })
   })
 
   it('handles non-JSON responses gracefully', async () => {

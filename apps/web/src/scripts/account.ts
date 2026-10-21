@@ -6,6 +6,7 @@ import {
   createNitroCheckout,
   createNitroCryptoCheckout,
   getAccount,
+  redeemCode,
 } from '../lib/api.js'
 
 function $(id: string): HTMLElement {
@@ -25,6 +26,8 @@ const lookupBtn = $('lookup-btn') as HTMLButtonElement
 const createBtn = $('create-btn') as HTMLButtonElement
 const planHint = $('plan-hint')
 const planButtons = [...document.querySelectorAll('.plan')] as HTMLButtonElement[]
+const redeemInput = $('redeem-code') as HTMLInputElement
+const redeemBtn = $('redeem-btn') as HTMLButtonElement
 
 // Render the account's Nitro balance on the energy bar. The fill is capped
 // at 100% of the base pack (100 Nitro); the number always shows the real
@@ -60,6 +63,7 @@ function accountNumber(): string {
 function syncPlans(): void {
   const has = accountNumber().length > 0
   planButtons.forEach((b) => (b.disabled = busy || !has))
+  redeemBtn.disabled = busy || !has
   planHint.hidden = has
 }
 
@@ -151,6 +155,42 @@ planButtons.forEach((btn) =>
     }
   })
 )
+
+redeemBtn.addEventListener('click', async () => {
+  setBusy(true)
+  clearMessages()
+  try {
+    const res = await redeemCode({ accountNumber: accountNumber(), code: redeemInput.value })
+    if (res.ok) {
+      setNitroBalance(res.data?.nitro_balance ?? 0)
+      balance.hidden = false
+      redeemInput.value = ''
+      show(notice, `Code redeemed — ${res.data?.redeemed} Nitro added to your account.`)
+    } else if (res.status === 409) {
+      show(error, 'That code has already been redeemed.')
+    } else if (res.status === 404) {
+      show(
+        error,
+        res.data?.error === 'account_not_found'
+          ? 'Account not found. Check the number and try again.'
+          : 'That code is not valid. Check it and try again.'
+      )
+    } else if (res.status === 400) {
+      show(
+        error,
+        res.data?.error === 'invalid_code'
+          ? 'That does not look like a valid code.'
+          : 'That does not look like a valid 16-digit account number.'
+      )
+    } else {
+      show(error, res.data?.error || 'Redemption failed.')
+    }
+  } catch {
+    show(error, 'Network error. Is the API reachable?')
+  } finally {
+    setBusy(false)
+  }
+})
 
 // Reflect ?paid=1 / ?cancelled=1 return URLs from the hosted checkout.
 const q = new URLSearchParams(location.search)

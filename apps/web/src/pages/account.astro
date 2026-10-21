@@ -88,6 +88,25 @@ import Base from '../layouts/Base.astro'
     </div>
 
     <div class="panel">
+      <h2>Redeem a code</h2>
+      <p class="small muted">
+        Have a voucher code? Enter it here to credit its Nitro to the account
+        number above.
+      </p>
+      <div class="row">
+        <input
+          id="redeem-code"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="XXXX-XXXX-XXXX-XXXX"
+          style="flex: 1"
+        />
+        <button type="button" class="btn btn-primary" id="redeem-btn" disabled>Redeem</button>
+      </div>
+    </div>
+
+    <div class="panel">
       <h2>Device audit</h2>
       <p class="small muted">
         Scan any device in real time — and see which apps on an Android device
