@@ -32,8 +32,8 @@ import Base from '../layouts/Base.astro'
       </li>
       <li>
         <strong>Payment records</strong> — payment IDs, amounts, currencies, and transaction
-        status as reported by the payment rail you used. For our self-hosted crypto processor
-        (BTCPay Server), we additionally see the paying transaction ID. We never see or store
+        status as reported by the payment rail you used (currently NOWPayments,
+        including the paying transaction ID). We never see or store
         card numbers, bank details, or your name.
       </li>
       <li>
@@ -62,10 +62,9 @@ import Base from '../layouts/Base.astro'
       The Service runs on Cloudflare (website, API, database, and backup storage). Cloudflare
       processes standard edge connection metadata (IP addresses, TLS parameters) to deliver and
       protect the site; our <code>/v1/device/whoami</code> endpoint echoes this metadata back to
-      you on request and stores none of it. Payment processing for crypto rails is split between
-      our self-hosted BTCPay Server and NOWPayments; card / Apple Pay purchases, when offered,
-      are handled by a third-party on-ramp — each provider processes your payment under its own
-      privacy policy.
+      you on request and stores none of it. Crypto payments are processed by NOWPayments;
+      card / Apple Pay purchases, when offered, are handled by a third-party on-ramp —
+      each provider processes your payment under its own privacy policy.
     </p>
 
     <h2>5. Children's privacy</h2>
