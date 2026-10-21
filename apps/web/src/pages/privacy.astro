@@ -1,0 +1,103 @@
+---
+// src/pages/privacy.astro — Privacy Policy. Static content page, zero JS.
+import Base from '../layouts/Base.astro'
+---
+
+<Base
+  title="Privacy Policy"
+  description="Root My Android collects no email, no password, and no personal identifiers. This policy lists exactly what is stored and why."
+>
+  <div class="container prose" style="padding: 3rem 1.25rem">
+    <h1>Privacy Policy</h1>
+    <p class="faint"><em>Last updated: October 20, 2026</em></p>
+
+    <p>
+      Root My Android is designed around data minimalism: accounts are random numbers, and the
+      default flow collects nothing about you. This policy describes exactly what is stored, why,
+      and what never is.
+    </p>
+
+    <h2>1. What we store</h2>
+    <ul>
+      <li>
+        <strong>Account record</strong> — your randomly generated 16-digit account number, its
+        creation time, credit balance, Nitro balance, and the Nitro ledger (purchases and
+        consumption) attached to that number.
+      </li>
+      <li>
+        <strong>Device audit snapshots</strong> — only when you explicitly sync them: device
+        model, Android version, and audit results (for example, which installed apps participate
+        in Android backup), keyed by an app-generated device ID. Each snapshot is overwritten by
+        the next sync of the same device and audit type.
+      </li>
+      <li>
+        <strong>Payment records</strong> — payment IDs, amounts, currencies, and transaction
+        status as reported by the payment rail you used. For our self-hosted crypto processor
+        (BTCPay Server), we additionally see the paying transaction ID. We never see or store
+        card numbers, bank details, or your name.
+      </li>
+      <li>
+        <strong>Guardian pairing data</strong> — when you pair the Guardian Angel app to an
+        account, the pairing record between that account number and the managed device's ID.
+      </li>
+    </ul>
+
+    <h2>2. What we never collect</h2>
+    <ul>
+      <li>Email addresses, passwords, names, or phone numbers (there is no field to enter them).</li>
+      <li>The contents of your backups — they are encrypted on your device with a key only you hold.</li>
+      <li>Contacts, messages, photos, or files from your device.</li>
+      <li>Advertising identifiers or cross-site tracking of any kind.</li>
+    </ul>
+
+    <h2>3. Website analytics</h2>
+    <p>
+      The website uses <a href="https://simpleanalytics.com" rel="noopener">Simple Analytics</a>,
+      a privacy-focused service that collects no personal data, sets no cookies, and does not
+      track visitors across sites. No other analytics or advertising scripts are used.
+    </p>
+
+    <h2>4. Infrastructure</h2>
+    <p>
+      The Service runs on Cloudflare (website, API, database, and backup storage). Cloudflare
+      processes standard edge connection metadata (IP addresses, TLS parameters) to deliver and
+      protect the site; our <code>/v1/device/whoami</code> endpoint echoes this metadata back to
+      you on request and stores none of it. Payment processing for crypto rails is split between
+      our self-hosted BTCPay Server and NOWPayments; card / Apple Pay purchases, when offered,
+      are handled by a third-party on-ramp — each provider processes your payment under its own
+      privacy policy.
+    </p>
+
+    <h2>5. Children's privacy</h2>
+    <p>
+      The Guardian Angel application is a tool for parents and legal guardians to manage devices
+      used by their minor children. It is installed and configured by the parent and syncs to the
+      parent's account number. We do not knowingly collect any information directly from
+      children, and no personal profile of a child is created or stored — the only records are
+      the parent's account number and the managed device's audit data described above.
+    </p>
+
+    <h2>6. Data sharing and disclosure</h2>
+    <p>
+      We do not sell, rent, or share your data with anyone. Because accounts are anonymous, the
+      only way data can be associated with you is through your account number or a payment trail
+      on the rail you chose. We would disclose stored data only if legally compelled, and only to
+      the extent it exists.
+    </p>
+
+    <h2>7. Retention and deletion</h2>
+    <p>
+      Account and ledger records are kept for the life of the account. Device audit snapshots are
+      replaced on each new sync. To request deletion of data attached to an account number you
+      control, contact
+      <a href="mailto:support@rootmyandroid.com">support@rootmyandroid.com</a> from the device or
+      payment trail that proves control of the account.
+    </p>
+
+    <h2>8. Changes</h2>
+    <p>
+      The current version of this policy is always published at
+      <a href="/privacy">rootmyandroid.com/privacy</a> with its revision date.
+    </p>
+  </div>
+</Base>

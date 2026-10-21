@@ -1,0 +1,59 @@
+---
+// src/pages/refunds.astro — Refund Policy. Static content page, zero JS.
+import Base from '../layouts/Base.astro'
+---
+
+<Base
+  title="Refund Policy"
+  description="Root My Android's refund policy: cryptocurrency payments are irreversible; Nitro purchases are final with narrow exceptions."
+>
+  <div class="container prose" style="padding: 3rem 1.25rem">
+    <h1>Refund Policy</h1>
+    <p class="faint"><em>Last updated: October 20, 2026</em></p>
+
+    <h2>1. Cryptocurrency payments</h2>
+    <p>
+      Payments to Root My Android are made in cryptocurrency (or, when offered, via a third-party
+      on-ramp that converts card / Apple Pay payments to cryptocurrency on our behalf).
+      Cryptocurrency transactions are <strong>irreversible by design</strong> — once confirmed on
+      the network, they cannot be charged back or recalled.
+    </p>
+
+    <h2>2. Nitro purchases</h2>
+    <p>
+      Nitro purchases are <strong>final</strong>. Nitro is a prepaid credit with no cash or
+      cryptocurrency value and is not redeemable outside the Service (see our
+      <a href="/terms">Terms of Service</a>). We will, however, make things right when the fault
+      is ours:
+    </p>
+    <ul>
+      <li><strong>Credit never arrived</strong> — if your payment confirmed but the Nitro was not
+        credited, contact us with the payment ID or transaction hash and your account number; we
+        will credit it manually.</li>
+      <li><strong>Duplicate charge</strong> — an accidental duplicate payment for the same order
+        will be re-credited as Nitro or returned in the original cryptocurrency, at our
+        discretion.</li>
+      <li><strong>Service failure</strong> — if a PRO feature consumed Nitro but failed due to a
+        defect on our side, the Nitro will be re-credited.</li>
+    </ul>
+
+    <h2>3. Voucher codes</h2>
+    <p>
+      Voucher (redeem) codes are non-refundable once redeemed. Unredeemed codes purchased from an
+      authorized reseller are subject to that reseller's own refund terms.
+    </p>
+
+    <h2>4. Free tier</h2>
+    <p>
+      Device scanning, guides, and the ROM catalog are free. No payment means nothing to refund —
+      but if something is broken, we still want to hear about it.
+    </p>
+
+    <h2>5. How to request</h2>
+    <p>
+      Email <a href="mailto:support@rootmyandroid.com">support@rootmyandroid.com</a> with your
+      16-digit account number and the payment ID or transaction hash. We aim to respond within 5
+      business days.
+    </p>
+  </div>
+</Base>
