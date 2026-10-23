@@ -70,6 +70,22 @@ export function createNitroCryptoCheckout({ accountNumber, pack }) {
   })
 }
 
+// POST /billing/nitro/payment — buy a Nitro pack on the whitelabel rail:
+// the API returns a deposit address + amount in the chosen coin, and the
+// /account page renders the checkout UI itself (no hosted page, no redirect).
+export function createNitroPayment({ accountNumber, pack, payCurrency }) {
+  return request('/billing/nitro/payment', {
+    method: 'POST',
+    body: { account_number: accountNumber, pack, pay_currency: payCurrency },
+  })
+}
+
+// GET /billing/payment/{id} — poll a whitelabel payment's status while the
+// deposit panel is open (waiting -> confirming -> finished).
+export function getPaymentStatus(paymentId) {
+  return request(`/billing/payment/${encodeURIComponent(paymentId)}`)
+}
+
 // POST /nitro — an account's Nitro balance plus its recent ledger entries.
 // (POST so the account number travels in the body, not the URL/logs.)
 export function getNitroBalance(accountNumber) {

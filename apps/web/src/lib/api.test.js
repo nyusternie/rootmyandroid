@@ -6,8 +6,10 @@ import {
   createCryptoCheckout,
   createNitroCheckout,
   createNitroCryptoCheckout,
+  createNitroPayment,
   getAccount,
   getNitroBalance,
+  getPaymentStatus,
   listAudits,
   redeemCode,
   saveAudit,
@@ -144,6 +146,28 @@ describe('api client', () => {
     expect(url).toBe(`${BASE}/billing/nitro/crypto/checkout`)
     expect(JSON.parse(init.body)).toEqual({ account_number: '1', pack: 'nitro_1000' })
     expect(res.data.invoice_url).toContain('https://')
+  })
+
+  it('createNitroPayment posts pack + account + coin to the whitelabel rail', async () => {
+    fetch.mockImplementation(() =>
+      jsonResponse(200, { ok: true, payment_id: '6427529765', pay_address: 'MQ...', pay_amount: 0.08538997, pay_currency: 'ltc', payment_status: 'waiting' })
+    )
+    const res = await createNitroPayment({ accountNumber: '1', pack: 'nitro_100', payCurrency: 'ltc' })
+    expect(res.data.payment_id).toBe('6427529765')
+    expect(res.data.pay_address).toBe('MQ...')
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/billing/nitro/payment`)
+    expect(init.method).toBe('POST')
+    expect(JSON.parse(init.body)).toEqual({ account_number: '1', pack: 'nitro_100', pay_currency: 'ltc' })
+  })
+
+  it('getPaymentStatus reads a payment by id', async () => {
+    fetch.mockImplementation(() => jsonResponse(200, { ok: true, payment_status: 'confirming' }))
+    const res = await getPaymentStatus('6427529765')
+    expect(res.data.payment_status).toBe('confirming')
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/billing/payment/6427529765`)
+    expect(init.method).toBe('GET')
   })
 
   it('getNitroBalance posts the account number to /nitro', async () => {

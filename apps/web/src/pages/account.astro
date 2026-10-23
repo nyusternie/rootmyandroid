@@ -77,11 +77,36 @@ import Base from '../layouts/Base.astro'
         </button>
       </div>
       <p class="small faint" id="plan-hint">Enter or generate an account number above to buy Nitro.</p>
+      <div class="row" style="margin-top: 0.75rem">
+        <label class="small muted" for="pay-currency">Pay with</label>
+        <select id="pay-currency">
+          <option value="ltc" selected>LTC — Litecoin</option>
+          <option value="btc">BTC — Bitcoin</option>
+          <option value="eth">ETH — Ethereum</option>
+          <option value="usdttrc20">USDT — TRC-20</option>
+          <option value="usdc">USDC</option>
+          <option value="xmr">XMR — Monero</option>
+          <option value="sol">SOL — Solana</option>
+        </select>
+      </div>
       <p class="small faint">
-        Payments are processed by NOWPayments — BTC, ETH, USDT, and hundreds of
-        other coins. You're redirected to a secure hosted checkout to finish.
-        Card / Apple Pay support is planned via a fiat on-ramp.
+        Pick a pack and a coin — you pay right here on this page. Your Nitro is
+        credited automatically once the network confirms. Card / Apple Pay
+        support is planned via a fiat on-ramp.
       </p>
+    </div>
+
+    <div class="panel" id="deposit" hidden>
+      <h2>Complete your payment</h2>
+      <p class="small" id="deposit-amount-line"></p>
+      <div class="row">
+        <code id="deposit-address" style="flex: 1; word-break: break-all"></code>
+        <button type="button" class="btn" id="copy-address">Copy</button>
+      </div>
+      <p><img id="deposit-qr" alt="Payment QR code" width="180" height="180" /></p>
+      <p class="small muted" id="deposit-status">Waiting for payment&hellip;</p>
+      <p class="small faint" id="deposit-expiry"></p>
+      <button type="button" class="btn" id="deposit-close">Close</button>
     </div>
 
     <div class="panel">
