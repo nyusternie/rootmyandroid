@@ -46,6 +46,13 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
 3. **No guessing.** If a fact (device behavior, ADB command semantics, payment
    provider capability) cannot be verified from the repo or an authoritative
    source, say so explicitly and ask — do not invent it.
+3a. **Public repo — private matters stay out of the record.** This repository
+   (commits, messages, code comments, issues, CI logs) is PUBLIC. Never put
+   billing internals, payment-provider account details, business/entity
+   formation details (LLC registration, agents, addresses), account numbers,
+   wallet addresses, or any other private business matter into git history or
+   committed files. Commit messages describe code changes only. Discuss those
+   topics in chat, not in the repo.
 4. **Static export.** `apps/web` is a purely static **Astro** site
    (`astro build` → `dist/`). No SSR, no Astro server adapters. The only
    client-side JavaScript is the vanilla module on `/profile` (and any future
