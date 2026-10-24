@@ -1,10 +1,10 @@
 ---
-// src/pages/account/payment.astro — standalone whitelabel invoice page.
+// src/pages/pay.astro — standalone whitelabel invoice page.
 // Served for /account/payment/<id> via a Pages _redirects rewrite; the script
 // reads the payment id from the URL path, fetches it, and renders the shared
 // deposit panel (address + QR + live status). No account lookup needed.
-import Base from '../../layouts/Base.astro'
-import DepositPanel from '../../components/DepositPanel.astro'
+import Base from '../layouts/Base.astro'
+import DepositPanel from '../components/DepositPanel.astro'
 ---
 
 <Base
@@ -31,6 +31,6 @@ import DepositPanel from '../../components/DepositPanel.astro'
   </div>
 
   <script>
-    import '../../scripts/payment.ts'
+    import '../scripts/payment.ts'
   </script>
 </Base>
