@@ -1,0 +1,18 @@
+---
+// src/components/DepositPanel.astro — whitelabel checkout deposit panel.
+// Shared by /account (in-page checkout) and /account/payment/<id> (standalone
+// invoice page). Pure markup; driven by src/scripts/deposit.ts.
+---
+
+<div class="panel" id="deposit" hidden>
+  <h2>Complete your payment</h2>
+  <p class="small" id="deposit-amount-line"></p>
+  <div class="row">
+    <code id="deposit-address" style="flex: 1; word-break: break-all"></code>
+    <button type="button" class="btn" id="copy-address">Copy</button>
+  </div>
+  <p><img id="deposit-qr" alt="Payment QR code" width="180" height="180" /></p>
+  <p class="small muted" id="deposit-status">Waiting for payment&hellip;</p>
+  <p class="small faint" id="deposit-expiry"></p>
+  <button type="button" class="btn" id="deposit-close">Close</button>
+</div>

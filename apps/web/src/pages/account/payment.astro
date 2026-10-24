@@ -1,0 +1,36 @@
+---
+// src/pages/account/payment.astro — standalone whitelabel invoice page.
+// Served for /account/payment/<id> via a Pages _redirects rewrite; the script
+// reads the payment id from the URL path, fetches it, and renders the shared
+// deposit panel (address + QR + live status). No account lookup needed.
+import Base from '../../layouts/Base.astro'
+import DepositPanel from '../../components/DepositPanel.astro'
+---
+
+<Base
+  title="Payment"
+  description="Complete your Root My Android payment: deposit address, QR code, and live confirmation status."
+>
+  <div class="container" style="padding: 3rem 1.25rem">
+    <h1 style="margin: 0 0 0.5rem">Payment</h1>
+    <p class="muted">
+      Send the exact amount to the address below. Your Nitro is credited
+      automatically once the network confirms.
+    </p>
+
+    <div id="notice" class="notice notice-ok" hidden></div>
+    <div id="error" class="notice notice-warn" hidden></div>
+
+    <p class="small muted" id="loading">Loading payment&hellip;</p>
+
+    <DepositPanel />
+
+    <p class="small faint">
+      <a href="/account">Back to your account</a>
+    </p>
+  </div>
+
+  <script>
+    import '../../scripts/payment.ts'
+  </script>
+</Base>

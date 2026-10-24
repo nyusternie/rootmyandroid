@@ -3,6 +3,7 @@
 // Pure vanilla JS (no framework island): a static <script type="module"> that
 // calls the API at rootmyandroid.com/v1. Same logic as the old React island.
 import Base from '../layouts/Base.astro'
+import DepositPanel from '../components/DepositPanel.astro'
 ---
 
 <Base
@@ -96,18 +97,7 @@ import Base from '../layouts/Base.astro'
       </p>
     </div>
 
-    <div class="panel" id="deposit" hidden>
-      <h2>Complete your payment</h2>
-      <p class="small" id="deposit-amount-line"></p>
-      <div class="row">
-        <code id="deposit-address" style="flex: 1; word-break: break-all"></code>
-        <button type="button" class="btn" id="copy-address">Copy</button>
-      </div>
-      <p><img id="deposit-qr" alt="Payment QR code" width="180" height="180" /></p>
-      <p class="small muted" id="deposit-status">Waiting for payment&hellip;</p>
-      <p class="small faint" id="deposit-expiry"></p>
-      <button type="button" class="btn" id="deposit-close">Close</button>
-    </div>
+    <DepositPanel />
 
     <div class="panel">
       <h2>Redeem a code</h2>
