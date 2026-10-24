@@ -132,13 +132,14 @@ function showDeposit(data: {
   pay_currency: string
   price_amount: number
   price_currency: string
-  nitro: number
+  nitro?: number | null
   expires_at: string | null
 }): void {
   stopStatusPolling()
   activePaymentId = data.payment_id
   const coin = data.pay_currency.toUpperCase()
-  depositAmountLine.textContent = `Send exactly ${data.pay_amount} ${coin} ($${data.price_amount} ${String(data.price_currency).toUpperCase()} → ${data.nitro} Nitro) to:`
+  const nitroPart = data.nitro ? ` → ${data.nitro} Nitro` : ''
+  depositAmountLine.textContent = `Send exactly ${data.pay_amount} ${coin} ($${data.price_amount} ${String(data.price_currency).toUpperCase()}${nitroPart}) to:`
   depositAddress.textContent = data.pay_address
   const qr = qrcode(0, 'M')
   qr.addData(data.pay_address)
@@ -282,5 +283,41 @@ redeemBtn.addEventListener('click', async () => {
 const q = new URLSearchParams(location.search)
 if (q.get('paid')) show(notice, 'Payment received — your balance will update shortly.')
 if (q.get('cancelled')) show(error, 'Checkout cancelled. No charge was made.')
+
+// Deep link: ?payment=<id> rebuilds the deposit panel for an in-flight
+// whitelabel payment, e.g. after closing the page or switching devices.
+// The Nitro amount is recovered from the order id ("<account>:<pack>").
+const NITRO_BY_PACK: Record<string, number> = {
+  nitro_100: 100,
+  nitro_500: 500,
+  nitro_1000: 1000,
+}
+
+const paymentParam = q.get('payment')
+if (paymentParam) {
+  getPaymentStatus(paymentParam)
+    .then((res) => {
+      if (res.ok && res.data?.pay_address) {
+        const pack = String(res.data.order_id || '').split(':')[1]
+        showDeposit({
+          payment_id: String(res.data.payment_id),
+          pay_address: res.data.pay_address,
+          pay_amount: res.data.pay_amount,
+          pay_currency: res.data.pay_currency,
+          price_amount: res.data.price_amount,
+          price_currency: res.data.price_currency,
+          nitro: NITRO_BY_PACK[pack] ?? null,
+          expires_at: res.data.expires_at ?? null,
+        })
+        // Surface the current status immediately rather than waiting 15s.
+        pollPaymentStatus()
+      } else if (res.status === 400) {
+        show(error, 'That does not look like a valid payment id.')
+      } else {
+        show(error, 'Could not load that payment. It may have expired.')
+      }
+    })
+    .catch(() => show(error, 'Network error. Is the API reachable?'))
+}
 
 syncPlans()
