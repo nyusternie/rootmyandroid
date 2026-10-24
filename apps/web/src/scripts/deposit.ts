@@ -54,6 +54,23 @@ export function depositDataFromStatus(data: Record<string, any>): DepositData | 
   }
 }
 
+// BIP-21-style payment URIs (<scheme>:<address>?amount=<n>) so a wallet scan
+// pre-fills the amount. Native coins only — token contracts (USDT, USDC)
+// carry no amount semantics in a bare URI, so those keep the plain address.
+const PAYMENT_URI_SCHEMES: Record<string, string> = {
+  btc: 'bitcoin',
+  ltc: 'litecoin',
+  eth: 'ethereum',
+  xmr: 'monero',
+  sol: 'solana',
+}
+
+function paymentUri(data: DepositData): string {
+  const scheme = PAYMENT_URI_SCHEMES[data.pay_currency.toLowerCase()]
+  if (!scheme) return data.pay_address
+  return `${scheme}:${data.pay_address}?amount=${data.pay_amount}`
+}
+
 export function initDepositPanel(hooks: DepositHooks = {}) {
   const deposit = $('deposit')
   const depositAmountLine = $('deposit-amount-line')
@@ -95,7 +112,7 @@ export function initDepositPanel(hooks: DepositHooks = {}) {
         stopStatusPolling()
         activePaymentId = null
         await hooks.onFinished?.()
-      } else if (status === 'failed' || status === 'expired' || status === 'refunded') {
+      } else if (TERMINAL_STATUSES.has(status)) {
         depositStatus.textContent = `Payment ${status}. No Nitro was credited.`
         stopStatusPolling()
         activePaymentId = null
@@ -115,7 +132,7 @@ export function initDepositPanel(hooks: DepositHooks = {}) {
     depositAmountLine.textContent = `Send exactly ${data.pay_amount} ${coin} ($${data.price_amount} ${String(data.price_currency).toUpperCase()}${nitroPart}) to:`
     depositAddress.textContent = data.pay_address
     const qr = qrcode(0, 'M')
-    qr.addData(data.pay_address)
+    qr.addData(paymentUri(data))
     qr.make()
     depositQr.src = qr.createDataURL(6, 4)
     depositStatus.textContent = 'Waiting for payment…'
