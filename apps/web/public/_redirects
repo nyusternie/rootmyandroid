@@ -1,4 +1,4 @@
 # Cloudflare Pages rewrites (public/_redirects → dist/_redirects).
 # Standalone whitelabel invoice page: serve the payment shell for any
 # /account/payment/<id> URL; the client script reads the id from the path.
-/account/payment/*  /account/payment  200
+/account/payment/*  /account/payment/index.html  200
