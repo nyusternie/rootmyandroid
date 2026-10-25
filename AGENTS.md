@@ -82,6 +82,27 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
 - Mullvad-style accounts: random account number, no personal data, time-based
   credit. Design all billing code around that model.
 
+## Nitro economy (live)
+
+Nitro is the in-account credit unit that PRO features burn. Base rate:
+$5 = 100 Nitro, with tiered pack discounts. Three PRO services are gated by
+Nitro, priced server-side in the API (owner-approved 2026-10-24):
+
+| Service         | Nitro | Billed on                                                   |
+| --------------- | ----- | ----------------------------------------------------------- |
+| `cloud_backup`  | 20    | Registering one encrypted backup (5 GB per-account cap)     |
+| `guardian_sync` | 10    | Pairing a NEW Guardian device (re-syncs are free)           |
+| `audit_report`  | 5     | First save into a (device, audit_type) slot (refresh free)  |
+
+- The API's price table is the single source of truth; `GET /v1/nitro/services`
+  publishes the catalog so sites/apps render prices dynamically. Never
+  hard-code prices in clients.
+- Changing any price requires explicit owner approval; a pinned API test
+  locks the table.
+- Payment crediting is self-healing: the status-polling endpoint reconciles
+  terminal payments server-side, so webhook delivery is not on the critical
+  path.
+
 ## ADB / device analysis direction (planning)
 
 - The product will communicate with devices via ADB (WebUSB in the browser is
