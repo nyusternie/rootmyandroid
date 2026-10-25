@@ -1,5 +1,6 @@
 // apps/web/astro.config.mjs
 import { defineConfig } from 'astro/config'
+import sitemap from '@astrojs/sitemap'
 
 // Purely static marketing/docs site. No SSR, no adapters — `astro build`
 // emits plain HTML/CSS to dist/, deployed to Cloudflare Pages.
@@ -8,6 +9,8 @@ import { defineConfig } from 'astro/config'
 export default defineConfig({
   site: 'https://rootmyandroid.com',
   output: 'static',
+  // Auto-generated sitemap-index.xml (+ per-page sitemaps) at build time.
+  integrations: [sitemap()],
   build: {
     // /account -> /account/index.html etc. (clean URLs, Pages-friendly)
     format: 'directory',

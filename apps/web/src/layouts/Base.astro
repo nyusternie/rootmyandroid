@@ -14,7 +14,24 @@ const {
 
 const pageTitle = title === 'Root My Android' ? title : `${title} — Root My Android`
 const canonical = new URL(Astro.url.pathname, Astro.site)
+const ogImage = new URL('/og-image.png', Astro.site)
 const year = new Date().getFullYear()
+
+// Sitewide structured data (JSON-LD). Page-specific schema (e.g.
+// SoftwareApplication on the landing page) lives in the page itself.
+const orgSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Root My Android',
+  url: Astro.site,
+  logo: new URL('/apple-touch-icon.png', Astro.site).href,
+}
+const siteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Root My Android',
+  url: Astro.site,
+}
 ---
 
 <!doctype html>
@@ -29,7 +46,20 @@ const year = new Date().getFullYear()
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>" />
+    <meta property="og:site_name" content="Root My Android" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Root My Android — device-matched rooting plans" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="theme-color" content="#0d0f12" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script type="application/ld+json" set:html={JSON.stringify(orgSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(siteSchema)} />
     <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
   </head>
   <body>

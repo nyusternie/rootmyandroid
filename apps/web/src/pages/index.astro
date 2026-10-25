@@ -1,6 +1,25 @@
 ---
 // src/pages/index.astro — landing page.
 import Base from '../layouts/Base.astro'
+
+// Landing-only structured data: the product + its $5/month offer.
+// Mirrors the visible pricing copy below; keep the two in sync.
+const appSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Root My Android',
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Android',
+  url: 'https://rootmyandroid.com',
+  description:
+    'Scan your Android device over ADB and get a rooting / upgrade plan matched to your exact model and firmware. No email, no password.',
+  offers: {
+    '@type': 'Offer',
+    price: '5.00',
+    priceCurrency: 'USD',
+    description: 'PRO — $5/month. Basic scanning is free.',
+  },
+}
 ---
 
 <Base title="Root My Android">
@@ -64,4 +83,6 @@ import Base from '../layouts/Base.astro'
       <a class="btn" href="/account">Create an account</a>
     </div>
   </section>
+
+  <script type="application/ld+json" set:html={JSON.stringify(appSchema)} />
 </Base>
