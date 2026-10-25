@@ -59,6 +59,14 @@ import DepositPanel from '../components/DepositPanel.astro'
     </div>
 
     <div class="panel">
+      <h2>PRO services</h2>
+      {/* Prices are rendered from the API's service catalog (no hard-coding). */}
+      <div id="services-list">
+        <p class="small faint">Loading prices…</p>
+      </div>
+    </div>
+
+    <div class="panel">
       <h2>Buy Nitro</h2>
       <div class="grid-3">
         <button class="plan" data-pack="nitro_100" disabled>

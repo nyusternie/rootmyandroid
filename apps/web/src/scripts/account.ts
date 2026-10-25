@@ -5,6 +5,7 @@ import {
   createAccount,
   createNitroPayment,
   getAccount,
+  getNitroServices,
   redeemCode,
 } from '../lib/api.js'
 import { initDepositPanel } from './deposit.js'
@@ -66,6 +67,53 @@ function syncPlans(): void {
   planButtons.forEach((b) => (b.disabled = busy || !has))
   redeemBtn.disabled = busy || !has
   planHint.hidden = has
+}
+
+// Human-facing labels + descriptions for the PRO service catalog. Prices
+// come from the API (GET /v1/nitro/services); only presentation lives here.
+const SERVICE_LABELS: Record<string, { name: string; desc: string }> = {
+  cloud_backup: {
+    name: 'Cloud Backup',
+    desc: 'Encrypted, per-device backups you can restore from anywhere.',
+  },
+  guardian_sync: {
+    name: 'Guardian Sync',
+    desc: 'Pair a new Guardian Angel device to your account.',
+  },
+  audit_report: {
+    name: 'Audit Report',
+    desc: 'Save a device audit snapshot to your history.',
+  },
+}
+
+// Render the PRO services catalog from the API (prices are never hard-coded
+// here — the server's price table is the single source of truth).
+async function loadServiceCatalog(): Promise<void> {
+  const servicesList = $('services-list')
+  try {
+    const res = await getNitroServices()
+    const services = res.data?.services
+    if (!res.ok || !Array.isArray(services) || services.length === 0) {
+      servicesList.innerHTML =
+        '<p class="small faint">PRO services are being priced — check back soon.</p>'
+      return
+    }
+    servicesList.innerHTML = services
+      .map((s: { service: string; price_nitro: number }) => {
+        const label = SERVICE_LABELS[s.service] ?? { name: s.service, desc: '' }
+        const usd = (s.price_nitro * 0.05).toFixed(2)
+        return `<div class="row" style="justify-content: space-between">` +
+          `<span><strong>${label.name}</strong>` +
+          (label.desc ? `<br /><span class="small muted">${label.desc}</span>` : '') +
+          `</span>` +
+          `<span class="price">${s.price_nitro} Nitro<br /><span class="small muted">≈ $${usd}</span></span>` +
+          `</div>`
+      })
+      .join('')
+  } catch {
+    servicesList.innerHTML =
+      '<p class="small faint">Prices are temporarily unavailable — check back soon.</p>'
+  }
 }
 
 // Whitelabel checkout panel (address + QR + status polling), shared with
@@ -206,3 +254,6 @@ if (paymentParam) {
 }
 
 syncPlans()
+
+// Prices come from the API's service catalog; load them once on page open.
+loadServiceCatalog()

@@ -95,6 +95,12 @@ export function getNitroBalance(accountNumber) {
   })
 }
 
+// GET /nitro/services — public catalog of PRO services + Nitro prices, so
+// pages render pricing from the server-side table instead of hard-coding.
+export function getNitroServices() {
+  return request('/nitro/services')
+}
+
 // POST /redeem — redeem a single-use voucher code, crediting its Nitro to
 // the account. Codes are single-use; a redeemed code returns 409.
 export function redeemCode({ accountNumber, code }) {

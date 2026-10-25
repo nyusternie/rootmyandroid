@@ -9,6 +9,7 @@ import {
   createNitroPayment,
   getAccount,
   getNitroBalance,
+  getNitroServices,
   getPaymentStatus,
   listAudits,
   redeemCode,
@@ -88,6 +89,18 @@ describe('api client', () => {
     expect(res.ok).toBe(true)
     const [url, init] = fetch.mock.calls[0]
     expect(url).toBe(`${BASE}/device/whoami`)
+    expect(init.method).toBe('GET')
+  })
+
+  it('getNitroServices GETs /nitro/services', async () => {
+    fetch.mockImplementation(() =>
+      jsonResponse(200, { ok: true, services: [{ service: 'cloud_backup', price_nitro: 20 }] })
+    )
+    const res = await getNitroServices()
+    expect(res.ok).toBe(true)
+    expect(res.data.services[0]).toEqual({ service: 'cloud_backup', price_nitro: 20 })
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/nitro/services`)
     expect(init.method).toBe('GET')
   })
 
