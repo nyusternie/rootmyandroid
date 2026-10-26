@@ -2,6 +2,10 @@
 
 Guidance for AI agents (and humans) working in this repository.
 
+> **New team?** Read [HANDOFF.md](HANDOFF.md) first for the full system tour
+> (architecture, deploy pipeline, roadmap), then come back here for the
+> working rules.
+
 ## Mission
 
 Restore and modernize rootmyandroid.com as a paid service (~$5/mo, Mullvad-style
@@ -14,16 +18,25 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
 ```
 /
 ├── apps/
-│   └── web/          # Astro 7 static site (zero-JS content pages; one vanilla
-│                     # TS module on /profile that calls the API at /v1)
+│   ├── web/          # Astro 7 static site (zero-JS content pages; vanilla TS
+│   │                 # modules on the app pages that call the API at /v1)
+│   ├── rooted/       # React Native 0.88 app (com.rootmyandroid.rooted), jest
+│   └── guardian/     # React Native 0.88 app (com.rootmyandroid.guardian), jest
 ├── packages/         # shared workspace packages (created as needed)
+├── .github/workflows/web.yml   # Web CI + Cloudflare Pages deploy gate
+├── .vendor/          # Vendored tarballs (hermes-compiler; see overrides in
+│                     # pnpm-workspace.yaml)
 ├── pnpm-workspace.yaml
 └── package.json      # root scripts only; private, no publish
 ```
 
 - Package manager: **pnpm 11.x** (see `packageManager` in root package.json).
   Do not commit `node_modules`, `yarn.lock`, or `package-lock.json`.
-- Node >= 18.17 required.
+- Node >= 18.17 required (CI uses Node 22).
+- The API Worker (`rootmyandroid-api`, serving `rootmyandroid.com/v1`) is a
+  separate codebase — it is NOT in this repository.
+- `nodeLinker: hoisted` is set in `pnpm-workspace.yaml` because React Native
+  tooling cannot traverse pnpm's symlinked layout. Do not remove it.
 
 ## Commands
 
@@ -34,6 +47,10 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
 | Type-check      | `pnpm check`               |
 | Test (all pkgs) | `pnpm test`                |
 | Build (static)  | `pnpm build`               |
+
+CI mirrors these exactly: every push to `master` runs check → test:coverage →
+build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
+`.github/workflows/web.yml`).
 
 ## Hard rules for agents
 
@@ -54,11 +71,12 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
    committed files. Commit messages describe code changes only. Discuss those
    topics in chat, not in the repo.
 4. **Static export.** `apps/web` is a purely static **Astro** site
-   (`astro build` → `dist/`). No SSR, no Astro server adapters. The only
-   client-side JavaScript is the vanilla module on `/profile` (and any future
-   page) that talks to the API Worker at `rootmyandroid.com/v1`. Content pages
-   (`/`, `/guides/*`) must ship **zero JavaScript**. All dynamic/backend
-   functionality lives in the separate `rootmyandroid-api` Cloudflare Worker.
+   (`astro build` → `dist/`). No SSR, no Astro server adapters. Client-side
+   JavaScript is limited to the vanilla TS modules on the app pages
+   (`/account`, `/audit`, `/pay`, `/profile`) that talk to the API Worker at
+   `rootmyandroid.com/v1`. Content pages (`/`, `/guides/*`) must ship
+   **zero JavaScript**. All dynamic/backend functionality lives in the
+   separate `rootmyandroid-api` Cloudflare Worker.
 5. **Guides are Astro content collections** (`src/content/guides/*.md`, schema
    in `src/content.config.ts`). Real, device-accurate content only — per the
    no-guessing rule, do not invent device behavior.
@@ -71,6 +89,22 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
    consequence (e.g. "this erases your entire home-screen layout"). (Rule added
    2026-10-19 after a launcher `pm clear` destroyed the user's home-screen
    layout; restored from Google backup via `bmgr restore`.)
+
+## Web SEO (live)
+
+- `public/robots.txt` and the auto-generated sitemap (`@astrojs/sitemap`, see
+  `astro.config.mjs`) ship from `apps/web`. Keep every indexable page in the
+  sitemap; keep app-shell-only pages out of search if that is ever decided
+  (`noindex`, not `robots.txt` disallow).
+- `src/layouts/Base.astro` owns sitewide meta: OG/Twitter cards
+  (`public/og-image.png`, 1200×630), `theme-color`, favicons, and
+  Organization + WebSite JSON-LD. Page-specific schema lives in the page
+  itself (e.g. SoftwareApplication + Offer on `/`).
+- Structured data MUST mirror visible page copy — pricing above all. Never
+  publish schema (offers, ratings, FAQs) for content that is not on the page,
+  and never invent ratings or reviews.
+- The landing-page SEO roadmap (Phases 2–3: keyword-targeted rebuild, FAQ +
+  FAQPage schema, illustration set) is specified in HANDOFF.md.
 
 ## Payments direction (planning)
 
