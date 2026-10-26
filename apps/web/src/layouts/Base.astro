@@ -1,5 +1,7 @@
 ---
-// src/layouts/Base.astro — shared shell: header, footer, SEO meta, analytics.
+// src/layouts/Base.astro — shared shell: header, footer, SEO meta.
+// Analytics: no-JS browsers are counted by the first-party pixel at the
+// bottom of <body> (no scripts on content pages — see AGENTS.md rule 4).
 import '../styles/global.css'
 
 interface Props {
@@ -102,5 +104,18 @@ const siteSchema = {
       </div>
     </footer>
 
+    {/* First-party analytics pixel for visitors with JavaScript disabled.
+        Same-origin, no cookies — see src/scripts/analytics.ts (app pages)
+        and /privacy. */}
+    <noscript>
+      <img
+        src={`/v1/analytics/t.gif?path=${encodeURIComponent(Astro.url.pathname)}`}
+        width="1"
+        height="1"
+        alt=""
+        loading="lazy"
+        decoding="async"
+      />
+    </noscript>
   </body>
 </html>
