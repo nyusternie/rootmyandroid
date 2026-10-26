@@ -1,0 +1,46 @@
+---
+// src/pages/download.astro — App downloads. Static content page, zero JS.
+import Base from '../layouts/Base.astro'
+---
+
+<Base
+  title="Download the apps"
+  description="Download the Rooted and Guardian Angel Android apps — direct APK downloads of the latest preview release."
+>
+  <div class="container prose" style="padding: 3rem 1.25rem">
+    <h1>Download the apps</h1>
+    <p class="faint"><em>Preview release v1.0.0 — direct APK downloads, always pointing to the latest release.</em></p>
+
+    <h2>Rooted</h2>
+    <p>
+      <code>com.rootmyandroid.rooted</code> — the device-analysis app.
+    </p>
+    <p>
+      <a href="https://github.com/nyusternie/rootmyandroid/releases/latest/download/rooted-release.apk">Download rooted-release.apk</a>
+    </p>
+
+    <h2>Guardian Angel</h2>
+    <p>
+      <code>com.rootmyandroid.guardian</code> — the companion-monitoring app.
+    </p>
+    <p>
+      <a href="https://github.com/nyusternie/rootmyandroid/releases/latest/download/guardian-release.apk">Download guardian-release.apk</a>
+    </p>
+
+    <h2>Install</h2>
+    <ol>
+      <li>Download the APK on your Android device.</li>
+      <li>Open it, and allow <strong>install unknown apps</strong> for your browser when Android prompts you.</li>
+      <li>Tap <strong>Install</strong>.</li>
+    </ol>
+    <p>
+      Requires Android 7.0 (API 24) or later. Both APKs are signed with our upload key; you can
+      verify signatures and checksums against the
+      <a href="https://github.com/nyusternie/rootmyandroid/releases/latest">release notes</a>.
+    </p>
+    <p class="faint">
+      These are preview builds — product features are rolling out. The free tier covers basic
+      scanning and documentation.
+    </p>
+  </div>
+</Base>
