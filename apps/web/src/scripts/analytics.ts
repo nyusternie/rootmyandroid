@@ -19,12 +19,16 @@ const ENDPOINT = '/v1/analytics/event'
 const DOWNLOAD_EXT =
   /\.(zip|pdf|apk|img|tar|gz|tgz|xz|7z|rar|exe|dmg|iso|bin|json|csv)$/i
 
+// Wire contract (rootmyandroid-api src/lib/analytics.js — SHORT field names):
+//   {type:'pv',  id, p, r, t, w, h, lang, us, um, uc, uct, ut}
+//   {type:'dur', id, d}         — d = VISIBLE seconds on page
+//   {type:'ev',  name, detail, p}
 interface UtmParams {
-  utm_source?: string
-  utm_medium?: string
-  utm_campaign?: string
-  utm_content?: string
-  utm_term?: string
+  us?: string
+  um?: string
+  uc?: string
+  uct?: string
+  ut?: string
 }
 
 // Stable id for this pageview; the 'dur' follow-up references it.
@@ -61,15 +65,16 @@ function send(payload: Record<string, unknown>): void {
 function utmParams(): UtmParams {
   const q = new URLSearchParams(location.search)
   const utm: UtmParams = {}
-  for (const key of [
-    'utm_source',
-    'utm_medium',
-    'utm_campaign',
-    'utm_content',
-    'utm_term',
-  ] as const) {
-    const value = q.get(key)
-    if (value) utm[key] = value
+  const keys = [
+    ['utm_source', 'us'],
+    ['utm_medium', 'um'],
+    ['utm_campaign', 'uc'],
+    ['utm_content', 'uct'],
+    ['utm_term', 'ut'],
+  ] as const
+  for (const [param, field] of keys) {
+    const value = q.get(param)
+    if (value) utm[field] = value
   }
   return utm
 }
@@ -78,12 +83,12 @@ function sendPageview(): void {
   send({
     type: 'pv',
     id: pageviewId,
-    path: location.pathname,
-    title: document.title,
-    referrer: document.referrer || undefined,
+    p: location.pathname,
+    t: document.title,
+    r: document.referrer || undefined,
     ...utmParams(),
-    screen_w: screen.width,
-    screen_h: screen.height,
+    w: screen.width,
+    h: screen.height,
     lang: navigator.language,
   })
 }
@@ -111,7 +116,7 @@ function visibleSeconds(): number {
 function sendDuration(): void {
   const duration = visibleSeconds()
   if (duration <= 0) return
-  send({ type: 'dur', id: pageviewId, duration })
+  send({ type: 'dur', id: pageviewId, d: duration })
 }
 
 document.addEventListener('visibilitychange', () => {
@@ -156,7 +161,7 @@ function recordEvent(
     }
   }
   if (detailStr && detailStr.length > 500) detailStr = detailStr.slice(0, 500)
-  send({ type: 'ev', name, detail: detailStr, path: location.pathname })
+  send({ type: 'ev', name, detail: detailStr, p: location.pathname })
 }
 
 window.rmaEvent = recordEvent
