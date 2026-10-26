@@ -52,8 +52,25 @@ import Base from '../layouts/Base.astro'
 
     <h2>3. Website analytics</h2>
     <p>
-      The website does not use any third-party analytics service and loads no
-      analytics or advertising scripts.
+      We measure website usage with our own first-party analytics, served from our own
+      domain — no third-party analytics service is involved, and the data is never
+      shared with or sold to anyone.
+    </p>
+    <p>
+      On the interactive app pages (account, audit, checkout), a small first-party
+      script records the page path and title, the referring site's hostname (never
+      the full URL), campaign (UTM) parameters when present, your coarse device type,
+      browser, and operating system (derived from the user-agent), screen size,
+      language, how long the page was visible, and clicks on download and outbound
+      links. All other pages ship no JavaScript at all; there, a tiny first-party
+      pixel image records the page view and the same coarse device class — nothing
+      else.
+    </p>
+    <p>
+      Visitors are counted using a daily-rotating salted hash of IP address and
+      user-agent: your raw IP address is never stored, and the hash rotates at
+      midnight UTC, so you cannot be followed across days. We use no analytics
+      cookies, no fingerprinting, and no cross-site tracking of any kind.
     </p>
 
     <h2>4. Infrastructure</h2>
