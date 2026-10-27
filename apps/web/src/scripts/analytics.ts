@@ -21,7 +21,7 @@ const DOWNLOAD_EXT =
 
 // Wire contract (rootmyandroid-api src/lib/analytics.js — SHORT field names):
 //   {type:'pv',  id, p, r, t, w, h, lang, us, um, uc, uct, ut}
-//   {type:'dur', id, d}         — d = VISIBLE seconds on page
+//   {type:'dur', id, d, sd}     — d = VISIBLE seconds, sd = max scroll %
 //   {type:'ev',  name, detail, p}
 interface UtmParams {
   us?: string
@@ -104,6 +104,33 @@ let visibleStart =
   document.visibilityState === 'visible' ? Date.now() : 0
 let visibleTotal = 0
 
+// Max scroll depth (% of the document reached). Tracked via a passive,
+// rAF-throttled scroll listener; sent with every duration flush (the
+// server keeps the max via last-write-wins on monotonically grown values).
+let maxScrollPct = 0
+let scrollTicking = false
+
+function updateScrollPct(): void {
+  const total = document.documentElement.scrollHeight - window.innerHeight
+  // A page that fits the viewport counts as fully seen.
+  const pct =
+    total <= 0 ? 100 : Math.min(100, Math.round((window.scrollY / total) * 100))
+  if (pct > maxScrollPct) maxScrollPct = pct
+}
+
+window.addEventListener(
+  'scroll',
+  () => {
+    if (scrollTicking) return
+    scrollTicking = true
+    requestAnimationFrame(() => {
+      updateScrollPct()
+      scrollTicking = false
+    })
+  },
+  { passive: true },
+)
+
 function visibleSeconds(): number {
   const total =
     visibleTotal +
@@ -116,7 +143,7 @@ function visibleSeconds(): number {
 function sendDuration(): void {
   const duration = visibleSeconds()
   if (duration <= 0) return
-  send({ type: 'dur', id: pageviewId, d: duration })
+  send({ type: 'dur', id: pageviewId, d: duration, sd: maxScrollPct })
 }
 
 document.addEventListener('visibilitychange', () => {
