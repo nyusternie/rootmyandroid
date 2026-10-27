@@ -74,6 +74,12 @@ import Base from '../layouts/Base.astro'
       midnight UTC, so you cannot be followed across days. We use no analytics
       cookies, no fingerprinting, and no cross-site tracking of any kind.
     </p>
+    <p>
+      Requests from known bots and crawlers are filtered out of all of these
+      metrics at collection time; for those we keep only a count and the bot's
+      own user-agent string (no IP address, no visitor identity) so that we
+      can report how much automated traffic was excluded.
+    </p>
 
     <h2>4. Infrastructure</h2>
     <p>
