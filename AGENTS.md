@@ -34,7 +34,10 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
   Do not commit `node_modules`, `yarn.lock`, or `package-lock.json`.
 - Node >= 18.17 required (CI uses Node 22).
 - The API Worker (`rootmyandroid-api`, serving `rootmyandroid.com/v1`) is a
-  separate codebase — it is NOT in this repository.
+  separate codebase — it is NOT in this repository. Neither is
+  `rootmyandroid-admin` (the analytics dashboard at admin.rootmyandroid.com).
+  Both live in sibling repos; keep their contracts in sync deliberately
+  (beacon wire contract in `src/scripts/analytics.ts`, `src/lib/api.js`).
 - `nodeLinker: hoisted` is set in `pnpm-workspace.yaml` because React Native
   tooling cannot traverse pnpm's symlinked layout. Do not remove it.
 
@@ -73,8 +76,9 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
 4. **Static export.** `apps/web` is a purely static **Astro** site
    (`astro build` → `dist/`). No SSR, no Astro server adapters. Client-side
    JavaScript is limited to the vanilla TS modules on the app pages
-   (`/account`, `/audit`, `/pay`, `/profile`) that talk to the API Worker at
-   `rootmyandroid.com/v1`. Content pages (`/`, `/guides/*`) must ship
+   (`/account`, `/audit`, `/pay`, `/profile`, and `/scan` once it ships)
+   that talk to the API Worker at `rootmyandroid.com/v1`. Content pages
+   (`/`, `/guides/*`) must ship
    **zero JavaScript**. All dynamic/backend functionality lives in the
    separate `rootmyandroid-api` Cloudflare Worker.
 5. **Guides are Astro content collections** (`src/content/guides/*.md`, schema
@@ -137,10 +141,52 @@ Nitro, priced server-side in the API (owner-approved 2026-10-24):
   terminal payments server-side, so webhook delivery is not on the critical
   path.
 
-## ADB / device analysis direction (planning)
+## Analytics (live, first-party)
 
-- The product will communicate with devices via ADB (WebUSB in the browser is
-  the likely transport; verify before committing).
+- The site runs OUR analytics, not a third party: `src/scripts/analytics.ts`
+  (JS beacon on app pages) + a `<noscript>` pixel in `Base.astro`, both
+  posting to `/v1/analytics/*` on the same origin (collector lives in
+  `rootmyandroid-api`). Do NOT re-introduce third-party analytics.
+- The wire contract (short field names, `pv`/`dur`/`ev` types) is documented
+  at the top of `src/scripts/analytics.ts` — change it only together with
+  the API collector.
+- The dashboard is `rootmyandroid-admin` at admin.rootmyandroid.com (SIWE
+  sign-in; daily/weekly/monthly snapshots also readable by trusted agents
+  via bearer token). A scheduled monitor in `rootmyandroid-api`
+  (`.github/workflows/analytics-monitor.yml`) alarms if collection stalls.
+- Instrument new app pages with the existing patterns only
+  (`window.rmaEvent('name', {detail})`, `data-rma-event` attributes);
+  downloads/outbound links are auto-tracked.
+
+## ADB / device analysis direction (ACTIVE — the /scan mission)
+
+`/scan` is the product's free core: anyone with a physical Android device +
+USB cable + a WebUSB-capable desktop browser analyzes their device entirely
+in the browser — no installs, no account needed for the scan itself. The
+full build brief is HANDOFF.md §10; the binding rules are:
+
+- Transport: ADB over WebUSB, client-side only. Verified libraries (npm
+  registry, checked 2026-10-27): `@yume-chan/adb` 2.6.4,
+  `@yume-chan/adb-daemon-webusb` 2.3.2, `@yume-chan/adb-credential-web`
+  2.1.0, `@types/w3c-web-usb` 1.0.14 — all MIT. Importing them from
+  `src/scripts/scan.ts` follows the proven `qrcode-generator` pattern in
+  `src/scripts/deposit.ts` (Astro/Vite bundles npm deps for page modules).
+  No fastboot-over-WebUSB npm package is verified to exist — flashing is
+  OUT OF SCOPE for /scan v1; do not promise it anywhere.
+- READ-ONLY on the device. `getprop` + inspection shell commands only. Never
+  write, never flash, never request `su`, and rule 6 (no data wipes) applies
+  unconditionally.
+- Privacy: nothing leaves the browser until the user explicitly saves the
+  report to an account number (`saveAudit`, audit_type slug e.g. `scan` —
+  the API's audit types are deliberately open-ended, pattern
+  `^[a-z][a-z0-9-]{0,31}$`, so NO API change is needed; billed as
+  `audit_report` per the Nitro table, price rendered dynamically).
+- No guessing device behavior (rule 3): every detection rule cites its
+  source (observed device + date) and unknown values render as "unknown".
+- Detection/parsing logic lives in pure, fixture-tested functions under
+  `src/lib/` — CI has no physical device, so correctness is proven with
+  fixtures captured from real devices (each fixture named with model +
+  capture date).
 - Device scanning, bootloader/unlock detection, and root-method selection are
   the free core; advanced features (automated flashing, backups, fleet
   management) are candidates for the paid tier — still to be defined.
