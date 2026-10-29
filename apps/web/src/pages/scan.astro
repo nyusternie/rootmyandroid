@@ -1,0 +1,114 @@
+---
+// src/pages/scan.astro — /scan: analyze a physical Android device over USB,
+// entirely in the browser (ADB over WebUSB; the browser is the ADB host).
+// This is an app page (JavaScript allowed, AGENTS.md rule 4): the vanilla
+// module in src/scripts/scan.ts drives the interactive flow; everything
+// else here is static content. Spec: HANDOFF.md §10. Detection rules live
+// in the pure, fixture-tested core src/lib/scan-report.ts.
+import Base from '../layouts/Base.astro'
+---
+
+<Base
+  title="Scan your Android device"
+  description="Connect any Android device over USB and scan it right in your browser — brand, build, bootloader and root indicators. No installs, no account, nothing leaves your browser."
+>
+  <div class="container scan" style="padding: 3rem 1.25rem">
+    <h1 style="margin: 0 0 0.5rem">Scan your Android device</h1>
+    <p class="muted">
+      Plug in a physical Android device and this page talks to it directly —
+      ADB over WebUSB, <strong>100% in your browser</strong>. No app to
+      install, no account, and nothing is sent anywhere: the scan runs
+      locally and the result never leaves this page.
+    </p>
+
+    <noscript>
+      <p class="small faint">The device scan needs JavaScript — the rest of this page is static.</p>
+    </noscript>
+
+    <div id="no-webusb" class="notice notice-warn" hidden>
+      <strong>This browser can't talk to USB devices.</strong> The scan needs
+      WebUSB, which is supported in Chrome and Edge (desktop, Chrome 61+) and
+      unsupported in Firefox and Safari — source: MDN browser-compat-data,
+      <span class="mono">api/USB</span>, retrieved 2026-10-29. Open this page
+      in Chrome or Edge on a desktop or laptop and try again.
+    </div>
+
+    <div id="error" class="notice notice-warn" hidden></div>
+
+    <div class="panel" id="connect-panel">
+      <h2>1 · Connect your device</h2>
+      <p class="small muted">On the Android device:</p>
+      <ol class="small muted">
+        <li>Enable <strong>Developer options</strong> (Settings → About phone → tap “Build number” 7 times).</li>
+        <li>In Developer options, turn on <strong>USB debugging</strong>.</li>
+        <li>Plug the device into this computer with a USB data cable.</li>
+      </ol>
+      <p class="small muted">
+        Then click below, pick the device in the browser's chooser, and tap
+        <strong>Allow</strong> on the “Allow USB debugging” prompt on the
+        device.
+      </p>
+      <div class="row">
+        <button id="connect-btn" class="btn btn-primary">Connect device</button>
+      </div>
+    </div>
+
+    <div class="panel" id="status" hidden>
+      <h2>2 · Scanning</h2>
+      <ul id="progress" class="small muted"></ul>
+    </div>
+
+    <div id="report" hidden>
+      <div class="panel">
+        <h2>Device</h2>
+        <div id="report-device"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Build</h2>
+        <div id="report-build"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Bootloader &amp; verified boot</h2>
+        <div id="report-boot"></div>
+        <p class="small faint" style="margin-top: 0.9rem">
+          Detection rules are per-OEM and property-based; anything we can't
+          verify reads <span class="mono">unknown</span>, never a guess.
+        </p>
+      </div>
+
+      <div class="panel">
+        <h2>Root indicators <span class="small faint">(heuristic)</span></h2>
+        <div id="report-root"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Next steps</h2>
+        <div id="report-next" class="stack"></div>
+      </div>
+    </div>
+
+    <h2 style="margin-top: 2.5rem">What the scan does</h2>
+    <div class="panel">
+      <div class="kv"><span class="k">Reads</span><span class="v">System properties (getprop), the installed-package list, and whether an <span class="mono">su</span> binary exists</span></div>
+      <div class="kv"><span class="k">Derives</span><span class="v">Brand, model, Android version, security-patch age, bootloader/verified-boot indicators, heuristic root indicators</span></div>
+      <div class="kv"><span class="k">Never does</span><span class="v">Write to the device, flash anything, run <span class="mono">su</span>, or send your data anywhere</span></div>
+    </div>
+
+    <h2 style="margin-top: 2.5rem">Privacy</h2>
+    <div class="panel">
+      <p class="small muted">
+        The scan runs entirely between this page and your USB cable. No scan
+        data is transmitted, logged, or stored server-side — closing the tab
+        discards everything. (A future option to save a report to your account
+        number will always be an explicit, separate action.)
+      </p>
+    </div>
+  </div>
+
+  <script>
+    import '../scripts/analytics.ts'
+    import '../scripts/scan.ts'
+  </script>
+</Base>

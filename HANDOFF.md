@@ -72,7 +72,7 @@ Android device.)
 │   │   └── public/         # robots.txt, _redirects, favicons, og-image.png
 │   ├── rooted/             # RN 0.88 app — scaffold stage, jest smoke test
 │   └── guardian/           # RN 0.88 app — scaffold stage, jest smoke test
-├── packages/               # Empty; shared workspace packages go here
+├── packages/               # Not created yet — shared packages go here as needed
 ├── .github/workflows/web.yml  # CI + deploy (the only workflow)
 ├── .vendor/                # hermes-compiler tarball (registry fetch workaround)
 ├── pnpm-workspace.yaml     # Hoisted linker + hermes override (do not remove)
@@ -330,7 +330,12 @@ only inspects the browsing device. Build `/scan`.
 - **Bundling pattern proven in this repo**: `src/scripts/deposit.ts`
   imports the npm package `qrcode-generator` and Astro/Vite bundles it into
   the page module — importing `@yume-chan/*` from a new
-  `src/scripts/scan.ts` is the same, working path.
+  `src/scripts/scan.ts` is the same, working path. Every such package MUST
+  be a declared direct dependency of `rootmyandroid-web`: until 2026-10-29
+  `qrcode-generator` resolved only transitively (via the
+  `@types/qrcode-generator` stub + the hoisted node_modules); it was
+  promoted to a declared direct dependency in `apps/web/package.json` on
+  2026-10-29.
 - **No API change needed for saving**: audit types are deliberately
   open-ended (`rootmyandroid-api/src/lib/audit.js`: `AUDIT_TYPE_PATTERN =
   /^[a-z][a-z0-9-]{0,31}$/`, comment: "new audit classes ship without an API

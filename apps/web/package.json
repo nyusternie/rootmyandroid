@@ -13,11 +13,16 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.4",
-    "astro": "7.4.0"
+    "@yume-chan/adb": "2.6.4",
+    "@yume-chan/adb-credential-web": "2.1.0",
+    "@yume-chan/adb-daemon-webusb": "2.3.2",
+    "astro": "7.4.0",
+    "qrcode-generator": "2.0.4"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
     "@types/qrcode-generator": "^1.0.6",
+    "@types/w3c-web-usb": "1.0.14",
     "@vitest/coverage-v8": "3.2.4",
     "typescript": "6.0.3",
     "vitest": "3.2.4"
