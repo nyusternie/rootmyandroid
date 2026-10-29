@@ -45,7 +45,7 @@ Android device.)
 | API                    | `rootmyandroid.com/v1` — Cloudflare Worker `rootmyandroid-api`. **Source is NOT in this repo** (sibling repo, see §9) |
 | Payments               | A single hosted crypto payment rail, integrated in the API worker + the whitelabel checkout pages in `apps/web` (`/account`, `/pay`). Provider account is owned out-of-band |
 | Analytics (collector)  | First-party, in `rootmyandroid-api`: `POST /v1/analytics/event` (JS beacon, `src/scripts/analytics.ts`) + `GET /v1/analytics/t.gif` (`<noscript>` pixel in `Base.astro`). D1 DB `rootmyandroid-analytics`. Bot UA filtering (counter + top-agents only). No third-party analytics anywhere |
-| Analytics (dashboard)  | `rootmyadmin` worker — **separate repo `rootmyandroid-admin`** — at admin.rootmyandroid.com. SIWE sign-in; snapshots endpoint for agents via bearer token (`SNAPSHOT_TOKEN` secret, unset at handoff). Direct-DB reader; fail-soft on missing tables |
+| Analytics (dashboard)  | `rootmyadmin` worker — **separate repo `rootmyandroid-admin`** — at admin.rootmyandroid.com. SIWE sign-in; snapshots endpoint for agents via bearer token (owner-set secret). Direct-DB reader; fail-soft on missing tables |
 | Analytics (monitor)    | `.github/workflows/analytics-monitor.yml` in `rootmyandroid-api`: daily cron probes prod `hits` COUNT/MAX(ts), fails the run on empty table or 72 h staleness (fail-closed) |
 | Coverage               | Codecov (uploaded by CI; `codecov.yml` in repo root)          |
 | Mobile apps            | `apps/rooted` (`com.rootmyandroid.rooted`), `apps/guardian` (`com.rootmyandroid.guardian`) — React Native 0.88 |
@@ -79,9 +79,8 @@ Android device.)
 └── package.json            # Root scripts only
 ```
 
-Sibling repos (separate codebases, NOT in this repo; local checkouts at
-`/root/Workspace/rootmyandroid-api` and `/root/Workspace/rootmyandroid-admin`
-on the previous maintainer's machines):
+Sibling repos (separate codebases, NOT in this repo; check out
+`rootmyandroid-api` and `rootmyandroid-admin` alongside this one):
 
 - `rootmyandroid-api` — the Worker: accounts, Nitro, payments, audits,
   analytics collector, analytics monitor. vitest workers-pool suite.
@@ -113,7 +112,7 @@ at install time; all MIT): `@yume-chan/adb` 2.6.4,
 Single workflow: `.github/workflows/web.yml`.
 
 1. Triggers: push to `master`, PRs targeting `master`. Runs on a
-   **self-hosted runner** labeled `[self-hosted, blackhost]`. Outside-contributor
+   **self-hosted runner** (label in `.github/workflows/web.yml`). Outside-contributor
    PRs require maintainer approval (repo Actions setting) — the repo is public
    and the runner is self-hosted, do not weaken this.
 2. `test` job: `pnpm install --frozen-lockfile` → `pnpm --filter
@@ -276,14 +275,14 @@ private channels (this list contains pointers only, no values):
 - [ ] API worker source code (`rootmyandroid-api`) + its Cloudflare
       configuration, secrets, and price-table test
 - [ ] Admin dashboard source code (`rootmyandroid-admin`) + its SIWE/shared
-      secrets; decide and set `SNAPSHOT_TOKEN` (agent snapshot access)
+      secrets; decide and set the agent-snapshot bearer token
 - [ ] Cloudflare account access (Pages project `rootmyandroid`, the workers,
       the `/v1` route, the analytics D1, the GitHub secrets used by deploys)
 - [ ] Domain registrar / DNS control for rootmyandroid.com (incl.
       admin.rootmyandroid.com)
 - [ ] Payment-rail provider account + its API credentials/webhook config
 - [ ] Codecov project + `CODECOV_TOKEN`
-- [ ] GitHub repo ownership + the self-hosted runner `blackhost` (or migrate
+- [ ] GitHub repo ownership + the self-hosted CI runner (or migrate
       CI to GitHub-hosted runners)
 - [ ] Android release keystore (`.keystore/release.keystore`, untracked) +
       its passwords; Play Console access if listings exist
@@ -436,8 +435,8 @@ applies; never write/flash/`su`):
 
 ## 11. Other open items (after /scan)
 
-1. **Owner actions pending** (2 minutes each): `wrangler secret put
-   SNAPSHOT_TOKEN` in `rootmyandroid-admin` (agent snapshot access); create
+1. **Owner actions pending** (2 minutes each): set the agent-snapshot
+   bearer token secret in `rootmyandroid-admin` (`wrangler secret put`); create
    the first analytics goals (`/guides/*`, `/download`, `payment_completed`,
    plus the `scan_*` events once shipped).
 2. SEO Phase 2 (§6.2) then Phase 3 (§6.3) — the traffic engine; note 6.2's
