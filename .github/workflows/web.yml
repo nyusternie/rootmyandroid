@@ -25,6 +25,12 @@ jobs:
         with:
           version: 11.21.0
 
+      # setup-node caches the path printed by `pnpm store path`; pinning
+      # store-dir keeps that path real (otherwise the post-job cache save
+      # fails the job with "Path Validation Error").
+      - name: Pin pnpm store path
+        run: pnpm config set store-dir /home/gh-runner/pnpm-store/web
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -63,6 +69,12 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           version: 11.21.0
+
+      # setup-node caches the path printed by `pnpm store path`; pinning
+      # store-dir keeps that path real (otherwise the post-job cache save
+      # fails the job with "Path Validation Error").
+      - name: Pin pnpm store path
+        run: pnpm config set store-dir /home/gh-runner/pnpm-store/web
 
       - uses: actions/setup-node@v4
         with:
