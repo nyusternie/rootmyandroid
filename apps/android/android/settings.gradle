@@ -1,14 +1,21 @@
 // pnpm monorepo (nodeLinker: hoisted): dependencies live in the
-// workspace-root node_modules; the app-local symlink farm exists only on
-// machines where it was materialized locally, NOT on fresh runner
-// checkouts. Resolve the RN gradle plugin from whichever location exists.
-def rnGradlePlugin = file("../node_modules/@react-native/gradle-plugin")
-if (!rnGradlePlugin.exists()) {
-    rnGradlePlugin = file("../../node_modules/@react-native/gradle-plugin")
+// workspace-root node_modules; the app-local node_modules symlink farm
+// exists only on machines where it was materialized locally, NOT on fresh
+// runner checkouts. Resolve the RN gradle plugin from whichever location
+// exists. NOTE: pluginManagement {} must be the first block in this file,
+// so the app-local/workspace-root fallback is computed inline here and
+// recomputed below for the trailing includeBuild.
+pluginManagement {
+    def appLocal = "../node_modules/@react-native/gradle-plugin"
+    def workspaceRoot = "../../node_modules/@react-native/gradle-plugin"
+    includeBuild(file(appLocal).exists() ? appLocal : workspaceRoot)
 }
-pluginManagement { includeBuild(rnGradlePlugin) }
 plugins { id("com.facebook.react.settings") }
 extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
 rootProject.name = 'com.rootmyandroid'
 include ':app'
+def rnGradlePlugin = file("../node_modules/@react-native/gradle-plugin")
+if (!rnGradlePlugin.exists()) {
+    rnGradlePlugin = file("../../node_modules/@react-native/gradle-plugin")
+}
 includeBuild(rnGradlePlugin)
