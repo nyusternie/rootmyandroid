@@ -7,7 +7,7 @@ name: Android preview build
 # install with: adb install -r app-release.apk
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 permissions:
   contents: write # rolling prerelease asset upload
