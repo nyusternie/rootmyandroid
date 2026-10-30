@@ -13,11 +13,13 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.4",
+    "@tailwindcss/vite": "^4.3.3",
     "@yume-chan/adb": "2.6.4",
     "@yume-chan/adb-credential-web": "2.1.0",
     "@yume-chan/adb-daemon-webusb": "2.3.2",
     "astro": "7.4.0",
-    "qrcode-generator": "2.0.4"
+    "qrcode-generator": "2.0.4",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",

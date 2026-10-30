@@ -12,7 +12,7 @@ import Base from '../layouts/Base.astro'
   title="Scan your Android device"
   description="Connect any Android device over USB and scan it right in your browser — brand, build, bootloader and root indicators. No installs, no account, nothing leaves your browser."
 >
-  <div class="container scan" style="padding: 3rem 1.25rem">
+  <div class="mx-auto w-full max-w-[54rem] px-[1.25rem] py-[3rem]">
     <h1 style="margin: 0 0 0.5rem">Scan your Android device</h1>
     <p class="muted">
       Plug in a physical Android device and this page talks to it directly —
@@ -55,21 +55,21 @@ import Base from '../layouts/Base.astro'
 
     <div class="panel" id="status" hidden>
       <h2>2 · Scanning</h2>
-      <ul id="progress" class="small muted"></ul>
+      <ul id="progress" class="m-0 list-none space-y-[0.35rem] p-0 text-[0.85rem] text-dim"></ul>
     </div>
 
     <div id="report" hidden>
-      <div class="panel">
+      <div class="panel animate-scan-in motion-reduce:animate-none">
         <h2>Device</h2>
         <div id="report-device"></div>
       </div>
 
-      <div class="panel">
-        <h2>Build</h2>
+      <div class="panel animate-scan-in [animation-delay:0.05s] motion-reduce:animate-none">
+        <h2>Build &amp; patch</h2>
         <div id="report-build"></div>
       </div>
 
-      <div class="panel">
+      <div class="panel animate-scan-in [animation-delay:0.1s] motion-reduce:animate-none">
         <h2>Bootloader &amp; verified boot</h2>
         <div id="report-boot"></div>
         <p class="small faint" style="margin-top: 0.9rem">
@@ -78,12 +78,12 @@ import Base from '../layouts/Base.astro'
         </p>
       </div>
 
-      <div class="panel">
+      <div class="panel animate-scan-in [animation-delay:0.15s] motion-reduce:animate-none">
         <h2>Root indicators <span class="small faint">(heuristic)</span></h2>
         <div id="report-root"></div>
       </div>
 
-      <div class="panel">
+      <div class="panel animate-scan-in [animation-delay:0.2s] motion-reduce:animate-none">
         <h2>Next steps</h2>
         <div id="report-next" class="stack"></div>
       </div>
@@ -91,9 +91,9 @@ import Base from '../layouts/Base.astro'
 
     <h2 style="margin-top: 2.5rem">What the scan does</h2>
     <div class="panel">
-      <div class="kv"><span class="k">Reads</span><span class="v">System properties (getprop), the installed-package list, and whether an <span class="mono">su</span> binary exists</span></div>
-      <div class="kv"><span class="k">Derives</span><span class="v">Brand, model, Android version, security-patch age, bootloader/verified-boot indicators, heuristic root indicators</span></div>
-      <div class="kv"><span class="k">Never does</span><span class="v">Write to the device, flash anything, run <span class="mono">su</span>, or send your data anywhere</span></div>
+      <div class="flex justify-between gap-[1rem] border-b border-line py-[0.45rem] text-[0.95rem]"><span class="text-faint">Reads</span><span class="text-right">System properties (getprop), the installed-package list, and whether an <span class="mono">su</span> binary exists</span></div>
+      <div class="flex justify-between gap-[1rem] border-b border-line py-[0.45rem] text-[0.95rem]"><span class="text-faint">Derives</span><span class="text-right">Brand, model, Android version, security-patch age, bootloader/verified-boot indicators, heuristic root indicators</span></div>
+      <div class="flex justify-between gap-[1rem] py-[0.45rem] text-[0.95rem]"><span class="text-faint">Never does</span><span class="text-right">Write to the device, flash anything, run <span class="mono">su</span>, or send your data anywhere</span></div>
     </div>
 
     <h2 style="margin-top: 2.5rem">Privacy</h2>

@@ -1,6 +1,7 @@
 // apps/web/astro.config.mjs
 import { defineConfig } from 'astro/config'
 import sitemap from '@astrojs/sitemap'
+import tailwindcss from '@tailwindcss/vite'
 
 // Purely static marketing/docs site. No SSR, no adapters — `astro build`
 // emits plain HTML/CSS to dist/, deployed to Cloudflare Pages.
@@ -11,6 +12,9 @@ export default defineConfig({
   output: 'static',
   // Auto-generated sitemap-index.xml (+ per-page sitemaps) at build time.
   integrations: [sitemap()],
+  vite: {
+    plugins: [tailwindcss()],
+  },
   build: {
     // /account -> /account/index.html etc. (clean URLs, Pages-friendly)
     format: 'directory',

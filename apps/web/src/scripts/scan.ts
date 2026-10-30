@@ -34,8 +34,6 @@ const progressList = $('progress')
 const errorBox = $('error')
 const reportBox = $('report')
 
-type Row = [string, string]
-
 function escapeHtml(s: string): string {
   return s.replace(
     /[&<>"']/g,
@@ -46,13 +44,111 @@ function escapeHtml(s: string): string {
   )
 }
 
-function renderRows(el: HTMLElement, rows: Row[]): void {
-  el.innerHTML = rows
-    .map(
-      ([k, v]) =>
-        `<div class="kv"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(v)}</span></div>`
-    )
-    .join('')
+// ---- dashboard rendering -----------------------------------------------------
+// Every dynamic value passes through escapeHtml. Colors only visualize states
+// the report already computed (bootloader state, verified-boot color name,
+// patch age) — no new device claims are introduced here.
+
+type Tone = 'ok' | 'info' | 'warn' | 'danger' | 'dim'
+
+// Full class strings (never interpolated fragments) so the Tailwind scanner
+// sees every utility literally in this file.
+const TONE_TILE_BORDER: Record<Tone, string> = {
+  ok: 'border-t-ok',
+  info: 'border-t-accent',
+  warn: 'border-t-warn',
+  danger: 'border-t-danger',
+  dim: 'border-t-faint',
+}
+const TONE_DOT: Record<Tone, string> = {
+  ok: 'bg-ok shadow-[0_0_6px_var(--color-ok)]',
+  info: 'bg-accent shadow-[0_0_6px_var(--color-accent)]',
+  warn: 'bg-warn shadow-[0_0_6px_var(--color-warn)]',
+  danger: 'bg-danger shadow-[0_0_6px_var(--color-danger)]',
+  dim: 'bg-faint',
+}
+const TONE_STROKE: Record<Tone, string> = {
+  ok: 'stroke-ok',
+  info: 'stroke-accent',
+  warn: 'stroke-warn',
+  danger: 'stroke-danger',
+  dim: 'stroke-faint',
+}
+
+function chip(v: string): string {
+  return `<span class="rounded-full border border-line bg-inset px-[0.65rem] py-[0.2rem] font-mono text-[0.78rem] text-dim">${escapeHtml(v)}</span>`
+}
+
+// Semicircle gauge geometry: viewBox 200x120, center (100,100), r=80 — the
+// arc length of the half-circle is π·80 ≈ 251.33.
+const GAUGE_LEN = Math.PI * 80
+
+function gaugeTick(days: number): string {
+  const a = (Math.min(days, 365) / 365) * Math.PI
+  const x1 = 100 - 74 * Math.cos(a)
+  const y1 = 100 - 74 * Math.sin(a)
+  const x2 = 100 - 66 * Math.cos(a)
+  const y2 = 100 - 66 * Math.sin(a)
+  return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" />`
+}
+
+// Meter color thresholds are a DISPLAY heuristic only (labeled as such in the
+// rendered caption) — not a security audit.
+function patchTone(ageDays: number | null): Tone {
+  if (ageDays === null) return 'dim'
+  if (ageDays < 90) return 'ok'
+  if (ageDays <= 180) return 'warn'
+  return 'danger'
+}
+
+function renderGauge(report: ScanReport): string {
+  const age = report.patchAgeDays
+  const tone = patchTone(age)
+  const frac = age === null ? 0 : Math.min(age / 365, 1)
+  const center =
+    age === null
+      ? `<div class="text-[2.2rem] font-bold leading-none">?</div><div class="mt-[0.25rem] text-[0.72rem] uppercase tracking-[0.06em] text-faint">patch age unknown</div>`
+      : `<div class="text-[2.2rem] font-bold leading-none">${age}</div><div class="mt-[0.25rem] text-[0.72rem] uppercase tracking-[0.06em] text-faint">days since patch</div>`
+  const dateLine =
+    report.securityPatch === null
+      ? 'security patch: unknown'
+      : `patch: ${report.securityPatch}`
+  return `<div class="text-center">
+    <div class="relative mx-auto max-w-[240px]">
+      <svg viewBox="0 0 200 120" role="img" aria-label="Security patch age gauge" class="block w-full">
+        <path class="fill-none stroke-inset" stroke-width="12" stroke-linecap="round" d="M 20 100 A 80 80 0 0 1 180 100" />
+        <path class="fill-none ${TONE_STROKE[tone]} transition-[stroke-dasharray] duration-[900ms] ease-in-out motion-reduce:transition-none" stroke-width="12" stroke-linecap="round" d="M 20 100 A 80 80 0 0 1 180 100" style="stroke-dasharray: 0 ${GAUGE_LEN.toFixed(2)}" data-target="${(frac * GAUGE_LEN).toFixed(2)}" />
+        <g class="stroke-line" stroke-width="2">${[0, 90, 180, 270, 365].map(gaugeTick).join('')}</g>
+      </svg>
+      <div class="pointer-events-none absolute inset-x-0 bottom-[0.35rem]">${center}</div>
+    </div>
+    <div class="mx-auto mt-[0.15rem] flex max-w-[240px] justify-between font-mono text-[0.85rem] text-faint"><span>0d</span><span>365d</span></div>
+    <div class="mt-[0.35rem] text-[0.85rem] text-faint">${escapeHtml(dateLine)}</div>
+  </div>`
+}
+
+// AOSP verified-boot state names ARE colors (green/orange/yellow/red) — map
+// each name to its same-named tone; anything else stays neutral.
+function verifiedBootTone(state: string): Tone {
+  switch (state) {
+    case 'green':
+      return 'ok'
+    case 'orange':
+    case 'yellow':
+      return 'warn'
+    case 'red':
+      return 'danger'
+    default:
+      return 'dim'
+  }
+}
+
+function tile(tone: Tone, label: string, state: string, caption: string): string {
+  return `<div class="rounded-[0.65rem] border border-line border-t-[3px] ${TONE_TILE_BORDER[tone]} bg-inset px-[1rem] py-[0.9rem]">
+    <div class="flex items-center gap-[0.45rem]"><span class="h-[8px] w-[8px] rounded-full ${TONE_DOT[tone]}"></span><span class="text-[0.72rem] uppercase tracking-[0.06em] text-faint">${escapeHtml(label)}</span></div>
+    <div class="mt-[0.4rem] text-[1.35rem] font-bold capitalize">${escapeHtml(state)}</div>
+    <div class="mt-[0.3rem] text-[0.85rem] text-faint">${caption}</div>
+  </div>`
 }
 
 function show(el: HTMLElement, msg: string): void {
@@ -62,6 +158,8 @@ function show(el: HTMLElement, msg: string): void {
 
 function progress(msg: string): void {
   const li = document.createElement('li')
+  li.className =
+    "relative pl-[1.4rem] before:absolute before:left-0 before:font-bold before:text-ok before:content-['✓']"
   li.textContent = msg
   progressList.appendChild(li)
 }
@@ -100,57 +198,91 @@ async function collectFacts(adb: Adb): Promise<RawDeviceFacts> {
 }
 
 function renderReport(report: ScanReport): void {
-  renderRows($('report-device'), [
-    ['Brand', report.brand],
-    ['Manufacturer', report.manufacturer],
-    ['Model', report.model],
-    ['Codename', report.codename],
-    ['Hardware', report.hardware],
-    ['CPU ABI', report.abi],
-  ])
+  // --- Device hero ------------------------------------------------------------
+  const heroChips = [report.codename, report.hardware, report.abi]
+    .filter((v) => v !== 'unknown')
+    .map(chip)
+    .join('')
+  $('report-device').innerHTML = `<div class="flex items-center justify-between gap-[1rem]">
+    <div>
+      <div class="text-[1.8rem] font-bold capitalize tracking-[-0.01em]">${escapeHtml(report.brand)} ${escapeHtml(report.model)}</div>
+      <div class="mt-[0.15rem] text-[0.85rem] capitalize text-faint">${escapeHtml(report.manufacturer)}</div>
+      <div class="mt-[0.7rem] flex flex-wrap gap-[0.4rem]">${heroChips}</div>
+    </div>
+    <svg viewBox="0 0 48 80" aria-hidden="true" class="h-[80px] w-[48px] flex-none fill-inset stroke-faint stroke-2">
+      <rect x="6" y="4" width="36" height="72" rx="8" />
+      <line x1="18" y1="10" x2="30" y2="10" stroke-linecap="round" />
+      <line x1="14" y1="68" x2="34" y2="68" stroke-linecap="round" />
+    </svg>
+  </div>`
 
-  renderRows($('report-build'), [
-    ['Android version', report.androidRelease],
-    ['SDK level', report.sdk === null ? 'unknown' : String(report.sdk)],
-    [
-      'Security patch',
-      report.securityPatch === null
-        ? 'unknown'
-        : report.patchAgeDays === null
-          ? report.securityPatch
-          : `${report.securityPatch} (${report.patchAgeDays} days old)`,
-    ],
-    ['Build fingerprint', report.fingerprint],
-    ['Build tags', report.buildTags],
-  ])
+  // --- Build: patch-age gauge + version stats ---------------------------------
+  $('report-build').innerHTML = `<div class="grid grid-cols-1 items-center gap-[1.25rem] min-[640px]:grid-cols-[240px_1fr]">
+    ${renderGauge(report)}
+    <div class="grid grid-cols-2 gap-[0.9rem]">
+      <div class="rounded-[0.65rem] border border-line bg-inset px-[1rem] py-[0.9rem]"><div class="text-[1.9rem] font-bold">${escapeHtml(report.androidRelease)}</div><div class="text-[0.72rem] uppercase tracking-[0.06em] text-faint">Android</div></div>
+      <div class="rounded-[0.65rem] border border-line bg-inset px-[1rem] py-[0.9rem]"><div class="text-[1.9rem] font-bold">${report.sdk === null ? '?' : report.sdk}</div><div class="text-[0.72rem] uppercase tracking-[0.06em] text-faint">SDK level</div></div>
+    </div>
+  </div>
+  <div class="mt-[1rem] flex flex-wrap items-baseline gap-[0.6rem] text-[0.9rem] text-dim"><span class="text-[0.75rem] uppercase tracking-[0.06em] text-faint">Build tags</span>${chip(report.buildTags)}</div>
+  <div class="mt-[1rem] text-[0.75rem] uppercase tracking-[0.06em] text-faint">Build fingerprint</div>
+  <div class="mt-[0.35rem] overflow-x-auto break-all rounded-[0.5rem] border border-line bg-inset px-[0.8rem] py-[0.6rem] font-mono text-[0.8rem] text-dim">${escapeHtml(report.fingerprint)}</div>
+  <p class="mt-[1rem] text-[0.85rem] text-faint">Meter colors are a display heuristic (green &lt; 90 days, amber 90–180, red &gt; 180) — not a security audit.</p>`
 
-  const bootRows: Row[] = [['Bootloader', report.bootloader.state]]
-  if (report.bootloader.evidence.length > 0) {
-    bootRows.push(['Evidence', report.bootloader.evidence.join(' · ')])
-  }
-  bootRows.push([
-    'OEM-unlocking toggle',
-    report.oemUnlockAllowed === null ? 'unknown' : report.oemUnlockAllowed ? 'allowed' : 'not allowed',
-  ])
-  bootRows.push(['Verified-boot state', report.verifiedBootState])
-  renderRows($('report-boot'), bootRows)
+  // --- Bootloader / verified boot: three status tiles --------------------------
+  // Captions only restate what the report's next-steps logic and the detection
+  // comments already imply — no new device claims.
+  const bootTone: Tone =
+    report.bootloader.state === 'unlocked'
+      ? 'ok'
+      : report.bootloader.state === 'locked'
+        ? 'info'
+        : 'dim'
+  const bootCaption =
+    report.bootloader.state === 'unlocked'
+      ? 'The ROM catalog is your next step — see below.'
+      : report.bootloader.state === 'locked'
+        ? 'The bootloader guide below is the next step.'
+        : "Couldn't be verified — reported unknown, never a guess."
+  const oemLabel =
+    report.oemUnlockAllowed === null
+      ? 'unknown'
+      : report.oemUnlockAllowed
+        ? 'allowed'
+        : 'not allowed'
+  const evidence =
+    report.bootloader.evidence.length > 0
+      ? `<div class="mt-[0.9rem] overflow-x-auto break-all rounded-[0.5rem] border border-line bg-inset px-[0.8rem] py-[0.6rem] font-mono text-[0.8rem] text-faint">${escapeHtml(report.bootloader.evidence.join(' · '))}</div>`
+      : ''
+  $('report-boot').innerHTML = `<div class="grid grid-cols-1 gap-[0.9rem] min-[640px]:grid-cols-3">
+    ${tile(bootTone, 'Bootloader', report.bootloader.state, bootCaption)}
+    ${tile(verifiedBootTone(report.verifiedBootState), 'Verified boot', report.verifiedBootState, '<span class="font-mono">ro.boot.verifiedbootstate</span>')}
+    ${tile(report.oemUnlockAllowed === true ? 'ok' : 'dim', 'OEM-unlocking toggle', oemLabel, 'Developer-options toggle — not the lock state.')}
+  </div>${evidence}`
 
-  renderRows($('report-root'), [
-    ['su binary on PATH', report.rootIndicators.suPresent ? 'FOUND' : 'not found'],
-    [
-      'Known root apps',
-      report.rootIndicators.rootPackages.length > 0
-        ? report.rootIndicators.rootPackages.join(', ')
-        : 'none found',
-    ],
-    ['Caveat', 'Heuristic only — absence does not prove the device is unrooted.'],
-  ])
+  // --- Root indicators (heuristic — HANDOFF §10.4) ----------------------------
+  const su = report.rootIndicators.suPresent
+  const apps = report.rootIndicators.rootPackages
+  $('report-root').innerHTML = `<div class="grid grid-cols-1 gap-[0.9rem] min-[640px]:grid-cols-2">
+    ${tile(su ? 'warn' : 'dim', 'su binary on PATH', su ? 'FOUND' : 'not found', 'Checked with <span class="font-mono">command -v</span> — su is never executed.')}
+    ${tile(apps.length > 0 ? 'warn' : 'dim', 'Known root apps', String(apps.length), apps.length > 0 ? `<span class="mt-[0.4rem] flex flex-wrap gap-[0.4rem]">${apps.map(chip).join('')}</span>` : 'none found')}
+  </div>
+  <p class="mt-[1rem] text-[0.85rem] text-faint">Heuristic only — absence does not prove the device is unrooted.</p>`
 
   $('report-next').innerHTML = report.nextSteps
     .map((s) => `<div><a class="btn" href="${escapeHtml(s.href)}">${escapeHtml(s.label)}</a></div>`)
     .join('')
 
   reportBox.hidden = false
+  // Sweep the gauge arc from 0 to its target on the frame after reveal (the
+  // transition is suppressed under prefers-reduced-motion by the class).
+  const fill = reportBox.querySelector<SVGPathElement>('.transition-[stroke-dasharray]')
+  if (fill) {
+    const target = fill.dataset.target ?? '0'
+    requestAnimationFrame(() => {
+      fill.style.strokeDasharray = `${target} ${GAUGE_LEN.toFixed(2)}`
+    })
+  }
   reportBox.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 

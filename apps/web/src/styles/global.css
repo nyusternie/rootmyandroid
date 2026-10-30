@@ -1,533 +1,350 @@
-/* src/styles/global.css — Root My Android design system.
-   Dark, minimal, Mullvad-inspired. System fonts only — no webfont payload. */
+/* src/styles/global.css — Root My Android design system, Tailwind v4 entry.
+   ALL styling flows through Tailwind: the @theme tokens below are the single
+   source of truth (same palette as before), markup uses utilities, and the
+   legacy component classes are composed here with @apply inside Tailwind
+   layers. Dark, minimal, Mullvad-inspired. System fonts only — no webfont
+   payload. */
+@import 'tailwindcss';
 
-:root {
-  --bg: #0d0f12;
-  --bg-raise: #15181d;
-  --bg-inset: #0a0c0e;
-  --line: #23282f;
-  --text: #e8eaed;
-  --text-dim: #9aa3ad;
-  --text-faint: #6b7280;
-  --accent: #3d9df2;
-  --accent-dim: #1c5f9e;
-  --ok: #3fb96b;
-  --warn: #e0a13e;
-  --danger: #e05e5e;
-  --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
-  --sans:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
-    sans-serif;
-  --maxw: 44rem;
-}
+@theme {
+  --color-page: #0d0f12;
+  --color-raise: #15181d;
+  --color-inset: #0a0c0e;
+  --color-line: #23282f;
+  --color-ink: #e8eaed;
+  --color-dim: #9aa3ad;
+  --color-faint: #6b7280;
+  --color-accent: #3d9df2;
+  --color-accent-dim: #1c5f9e;
+  --color-ok: #3fb96b;
+  --color-warn: #e0a13e;
+  --color-danger: #e05e5e;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas,
+    monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  color-scheme: dark;
-}
-
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--sans);
-  font-size: 1rem;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
-
-a {
-  color: var(--accent);
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
+  /* report-panel entrance (used with motion-reduce:animate-none) */
+  --animate-scan-in: scan-in 0.35s ease both;
+  @keyframes scan-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
-code,
-.mono {
-  font-family: var(--mono);
+/* Base elements. Preflight strips browser defaults, so the UA styles the old
+   stylesheet implicitly relied on (heading sizes/margins, paragraph and list
+   spacing) are restored explicitly here to keep rendered output 1:1. */
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply m-0 bg-page font-sans text-[1rem] leading-[1.6] text-ink antialiased;
+  }
+
+  a {
+    @apply text-accent no-underline hover:underline;
+  }
+
+  code {
+    @apply font-mono;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-bold leading-[1.2] tracking-[-0.01em];
+  }
+  h1 {
+    @apply my-[0.67em] text-[2em];
+  }
+  h2 {
+    @apply my-[0.83em] text-[1.5em];
+  }
+  h3 {
+    @apply my-[1em] text-[1.17em];
+  }
+
+  p {
+    @apply my-[1em];
+  }
+  ul {
+    @apply my-[1em] list-disc pl-[2.5rem];
+  }
+  ol {
+    @apply my-[1em] list-decimal pl-[2.5rem];
+  }
 }
 
-h1,
-h2,
-h3 {
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+/* Component classes (legacy markup contract) composed from Tailwind
+   utilities. Translucent tints use Tailwind's opacity modifier (oklab
+   color-mix) — visually equivalent to the old srgb color-mix on this dark
+   palette. */
+@layer components {
+  .container {
+    @apply mx-auto max-w-[44rem] px-[1.25rem];
+  }
+
+  /* ---------- header / nav ---------- */
+  .site-header {
+    @apply sticky top-0 z-10 border-b border-line bg-page/88 backdrop-blur;
+  }
+  .site-header .container {
+    @apply flex h-[3.5rem] max-w-[60rem] items-center justify-between;
+  }
+  .brand {
+    @apply flex items-center gap-[0.6rem] font-bold tracking-[-0.01em] text-ink hover:no-underline;
+  }
+  .brand svg {
+    @apply block;
+  }
+  .nav {
+    @apply flex items-center gap-[1.25rem];
+  }
+  .nav a {
+    @apply text-[0.95rem] text-dim hover:text-ink hover:no-underline;
+  }
+  .nav a[aria-current='page'] {
+    @apply text-ink;
+  }
+  /* A .btn-primary link inside the nav must keep its own color — the bare
+     `.nav a` rule above would otherwise override it and render the label
+     invisible against the primary background. */
+  .nav a.btn-primary,
+  .nav a.btn-primary:hover {
+    @apply text-[#06121d];
+  }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    @apply inline-block cursor-pointer rounded-[0.5rem] border border-line bg-raise px-[1.1rem] py-[0.6rem] font-semibold text-ink transition-[background,border-color] duration-150 hover:border-faint hover:no-underline;
+  }
+  .btn-primary {
+    @apply border-accent bg-accent text-[#06121d] hover:border-[#58adf5] hover:bg-[#58adf5];
+  }
+  .btn[disabled] {
+    @apply cursor-not-allowed opacity-50;
+  }
+  .btn-sm {
+    @apply px-[0.8rem] py-[0.35rem] text-[0.9rem];
+  }
+
+  /* ---------- panels / cards ---------- */
+  .panel {
+    @apply rounded-[0.75rem] border border-line bg-raise p-[1.5rem];
+  }
+  .panel + .panel {
+    @apply mt-[1.25rem];
+  }
+  .panel h2 {
+    @apply m-0 mb-[1rem] text-[1.15rem];
+  }
+
+  /* ---------- forms ---------- */
+  input[type='text'] {
+    @apply w-full rounded-[0.5rem] border border-line bg-inset px-[0.9rem] py-[0.7rem] font-mono text-[1.1rem] tracking-[0.12em] text-ink focus:border-accent focus:outline-none placeholder:text-faint;
+  }
+
+  /* ---------- notices ---------- */
+  .notice {
+    @apply rounded-[0.5rem] border px-[1rem] py-[0.85rem] text-[0.92rem];
+  }
+  .notice-info {
+    @apply border-accent-dim bg-accent/12 text-[#bcdcf7];
+  }
+  .notice-warn {
+    @apply border-warn/45 bg-warn/12 text-[#f3d9a8];
+  }
+  .notice-ok {
+    @apply border-ok/45 bg-ok/12 text-[#b6e6c6];
+  }
+
+  /* ---------- misc ---------- */
+  .muted {
+    @apply text-dim;
+  }
+  .small {
+    @apply text-[0.85rem];
+  }
+  .faint {
+    @apply text-faint;
+  }
+  .mono {
+    @apply font-mono;
+  }
+  .stack > * + * {
+    @apply mt-[1rem];
+  }
+  .row {
+    @apply flex flex-wrap gap-[0.75rem];
+  }
 }
 
-.container {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 0 1.25rem;
-}
-
-/* ---------- header / nav ---------- */
-.site-header {
-  border-bottom: 1px solid var(--line);
-  position: sticky;
-  top: 0;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(8px);
-  z-index: 10;
-}
-.site-header .container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 3.5rem;
-  max-width: 60rem;
-}
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.01em;
-}
-.brand:hover {
-  text-decoration: none;
-}
-.brand svg {
-  display: block;
-}
-.nav {
-  display: flex;
-  gap: 1.25rem;
-  align-items: center;
-}
-.nav a {
-  color: var(--text-dim);
-  font-size: 0.95rem;
-}
-.nav a:hover {
-  color: var(--text);
-  text-decoration: none;
-}
-.nav a[aria-current='page'] {
-  color: var(--text);
-}
-/* A .btn-primary link inside the nav must keep its own color — the bare
-   `.nav a` rule above would otherwise override it and render the label
-   invisible against the primary background. */
-.nav a.btn-primary {
-  color: #06121d;
-}
-.nav a.btn-primary:hover {
-  color: #06121d;
-}
-
-/* ---------- buttons ---------- */
-.btn {
-  display: inline-block;
-  font: inherit;
-  font-weight: 600;
-  padding: 0.6rem 1.1rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--line);
-  background: var(--bg-raise);
-  color: var(--text);
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-}
-.btn:hover {
-  text-decoration: none;
-  border-color: var(--text-faint);
-}
-.btn-primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #06121d;
-}
-.btn-primary:hover {
-  background: #58adf5;
-  border-color: #58adf5;
-}
-.btn[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.btn-sm {
-  padding: 0.35rem 0.8rem;
-  font-size: 0.9rem;
-}
-
-/* ---------- panels / cards ---------- */
-.panel {
-  background: var(--bg-raise);
-  border: 1px solid var(--line);
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-}
-.panel + .panel {
-  margin-top: 1.25rem;
-}
-.panel h2 {
-  margin: 0 0 1rem;
-  font-size: 1.15rem;
-}
-
-/* ---------- forms ---------- */
-input[type='text'] {
-  width: 100%;
-  font-family: var(--mono);
-  font-size: 1.1rem;
-  letter-spacing: 0.12em;
-  padding: 0.7rem 0.9rem;
-  background: var(--bg-inset);
-  border: 1px solid var(--line);
-  border-radius: 0.5rem;
-  color: var(--text);
-}
-input[type='text']:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-input[type='text']::placeholder {
-  color: var(--text-faint);
-  letter-spacing: 0.12em;
-}
-
-/* ---------- notices ---------- */
-.notice {
-  border-radius: 0.5rem;
-  padding: 0.85rem 1rem;
-  font-size: 0.92rem;
-  border: 1px solid;
-}
-.notice-info {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  border-color: var(--accent-dim);
-  color: #bcdcf7;
-}
-.notice-warn {
-  background: color-mix(in srgb, var(--warn) 12%, transparent);
-  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
-  color: #f3d9a8;
-}
-.notice-ok {
-  background: color-mix(in srgb, var(--ok) 12%, transparent);
-  border-color: color-mix(in srgb, var(--ok) 45%, transparent);
-  color: #b6e6c6;
-}
-
-/* ---------- misc ---------- */
-.muted {
-  color: var(--text-dim);
-}
-.small {
-  font-size: 0.85rem;
-}
-.faint {
-  color: var(--text-faint);
-}
-.stack > * + * {
-  margin-top: 1rem;
-}
-.row {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.9rem;
-}
-@media (min-width: 560px) {
+@layer components {
   .grid-2 {
-    grid-template-columns: 1fr 1fr;
+    @apply grid grid-cols-1 gap-[0.9rem] min-[560px]:grid-cols-2;
   }
-}
-.grid-3 {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.9rem;
-}
-@media (min-width: 560px) {
   .grid-3 {
-    grid-template-columns: 1fr 1fr 1fr;
+    @apply grid grid-cols-1 gap-[0.9rem] min-[560px]:grid-cols-3;
   }
-}
 
-/* plan option buttons */
-.plan {
-  text-align: left;
-  background: var(--bg-inset);
-  border: 1px solid var(--line);
-  border-radius: 0.65rem;
-  padding: 1rem;
-  cursor: pointer;
-  color: var(--text);
-  font: inherit;
-  width: 100%;
-  transition: border-color 0.15s;
-}
-.plan:hover {
-  border-color: var(--accent);
-}
-.plan[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.plan .price {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-.plan .term {
-  color: var(--text-dim);
-  font-size: 0.9rem;
-}
-.plan .save {
-  color: var(--ok);
-  font-size: 0.8rem;
-  margin-top: 0.35rem;
-}
+  /* plan option buttons */
+  .plan {
+    @apply w-full cursor-pointer rounded-[0.65rem] border border-line bg-inset p-[1rem] text-left font-[inherit] text-ink transition-[border-color] duration-150 hover:border-accent;
+  }
+  .plan[disabled] {
+    @apply cursor-not-allowed opacity-50;
+  }
+  .plan .price {
+    @apply text-[1.5rem] font-bold;
+  }
+  .plan .term {
+    @apply text-[0.9rem] text-dim;
+  }
+  .plan .save {
+    @apply mt-[0.35rem] text-[0.8rem] text-ok;
+  }
 
-/* hero */
-.hero {
-  padding: 4rem 0 3rem;
-}
-.hero h1 {
-  font-size: clamp(2rem, 5vw, 3rem);
-  margin: 0 0 1rem;
-}
-.hero p.lede {
-  font-size: 1.2rem;
-  color: var(--text-dim);
-  max-width: 36rem;
-}
+  /* hero */
+  .hero {
+    @apply pb-[3rem] pt-[4rem];
+  }
+  .hero h1 {
+    @apply m-0 mb-[1rem] text-[clamp(2rem,5vw,3rem)];
+  }
+  .hero p.lede {
+    @apply max-w-[36rem] text-[1.2rem] text-dim;
+  }
 
-/* balance readout */
-.balance {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  background: var(--bg-inset);
-  border: 1px solid var(--line);
-  border-radius: 0.5rem;
-  padding: 0.9rem 1rem;
-  margin-top: 1rem;
-}
-.balance .days {
-  font-size: 1.8rem;
-  font-weight: 700;
-}
-.balance .label {
-  color: var(--text-faint);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
+  /* balance readout */
+  .balance {
+    @apply mt-[1rem] flex items-baseline justify-between rounded-[0.5rem] border border-line bg-inset px-[1rem] py-[0.9rem];
+  }
+  .balance .days {
+    @apply text-[1.8rem] font-bold;
+  }
+  .balance .label {
+    @apply text-[0.75rem] uppercase tracking-[0.06em] text-faint;
+  }
 
-/* nitro energy bar (also the link to /nitro) */
-.nitro-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  text-decoration: none;
-  background: var(--bg-inset);
-  border: 1px solid var(--line);
-  border-radius: 0.5rem;
-  padding: 0.9rem 1rem;
-  margin-top: 1rem;
-}
-a.nitro-bar:hover {
-  border-color: var(--text-faint);
-}
-.nitro-bar .nitro-label {
-  color: var(--text-faint);
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.nitro-bar .nitro-track {
-  flex: 1;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--line);
-  overflow: hidden;
-}
-.nitro-bar .nitro-fill {
-  display: block;
-  height: 100%;
-  border-radius: 3px;
-  background: var(--accent);
-}
-.nitro-bar .nitro-value {
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--accent);
+  /* nitro energy bar (also the link to /nitro) */
+  .nitro-bar {
+    @apply mt-[1rem] flex items-center gap-[0.6rem] rounded-[0.5rem] border border-line bg-inset px-[1rem] py-[0.9rem] no-underline;
+  }
+  a.nitro-bar:hover {
+    @apply border-faint;
+  }
+  .nitro-bar .nitro-label {
+    @apply text-[0.75rem] font-bold uppercase tracking-[0.06em] text-faint;
+  }
+  .nitro-bar .nitro-track {
+    @apply h-[6px] flex-1 overflow-hidden rounded-[3px] bg-line;
+  }
+  .nitro-bar .nitro-fill {
+    @apply block h-full rounded-[3px] bg-accent;
+  }
+  .nitro-bar .nitro-value {
+    @apply text-[1.1rem] font-bold text-accent;
+  }
 }
 
 /* ---------- device audit (/audit) ----------
    All rules scoped under .audit so no other page is affected. */
-.audit .kv {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.45rem 0;
-  border-bottom: 1px solid var(--line);
-  font-size: 0.95rem;
-}
-.audit .kv:last-child {
-  border-bottom: none;
-}
-.audit .kv .k {
-  color: var(--text-faint);
-}
-.audit .kv .v {
-  text-align: right;
-}
-.audit .stat-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.9rem;
-}
-@media (min-width: 560px) {
-  .audit .stat-grid {
-    grid-template-columns: repeat(4, 1fr);
+@layer components {
+  .audit .kv {
+    @apply flex justify-between gap-[1rem] border-b border-line py-[0.45rem] text-[0.95rem];
   }
-}
-.audit .stat {
-  background: var(--bg-inset);
-  border: 1px solid var(--line);
-  border-radius: 0.65rem;
-  padding: 0.9rem 1rem;
-}
-.audit .stat .num {
-  font-size: 1.6rem;
-  font-weight: 700;
-}
-.audit .stat .lbl {
-  color: var(--text-faint);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.audit .coverage {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  background: var(--bg-inset);
-  border: 1px solid var(--line);
-  border-radius: 0.5rem;
-  padding: 0.9rem 1rem;
-  margin-top: 1rem;
-}
-/* The coverage bar reuses the nitro-bar part classes, but .nitro-bar's child
-   rules are scoped to it — duplicate them under .coverage or the bar breaks. */
-.audit .coverage .nitro-label {
-  color: var(--text-faint);
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.audit .coverage .nitro-track {
-  flex: 1;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--line);
-  overflow: hidden;
-}
-.audit .coverage .nitro-fill {
-  display: block;
-  height: 100%;
-  border-radius: 3px;
-  background: var(--accent);
-}
-.audit .coverage .nitro-value {
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--accent);
-}
-.audit .chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-.audit .chip {
-  font-family: var(--mono);
-  font-size: 0.8rem;
-  background: var(--bg-inset);
-  border: 1px solid var(--line);
-  border-radius: 2rem;
-  padding: 0.2rem 0.7rem;
-  color: var(--text-dim);
-}
-.audit .chip-ok {
-  border-color: color-mix(in srgb, var(--ok) 45%, transparent);
-  color: #b6e6c6;
-}
-.audit .chip-danger {
-  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
-  color: #f0b4b4;
-}
-.audit .panel-danger {
-  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
-}
-.audit .panel h3 {
-  margin: 1.25rem 0 0.6rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-faint);
-}
+  .audit .kv:last-child {
+    @apply border-b-0;
+  }
+  .audit .kv .k {
+    @apply text-faint;
+  }
+  .audit .kv .v {
+    @apply text-right;
+  }
+  .audit .stat-grid {
+    @apply grid grid-cols-2 gap-[0.9rem] min-[560px]:grid-cols-4;
+  }
+  .audit .stat {
+    @apply rounded-[0.65rem] border border-line bg-inset px-[1rem] py-[0.9rem];
+  }
+  .audit .stat .num {
+    @apply text-[1.6rem] font-bold;
+  }
+  .audit .stat .lbl {
+    @apply text-[0.75rem] uppercase tracking-[0.06em] text-faint;
+  }
+  .audit .coverage {
+    @apply mt-[1rem] flex items-center gap-[0.6rem] rounded-[0.5rem] border border-line bg-inset px-[1rem] py-[0.9rem];
+  }
+  /* The coverage bar reuses the nitro-bar part classes, but .nitro-bar's child
+     rules are scoped to it — duplicate them under .coverage or the bar breaks. */
+  .audit .coverage .nitro-label {
+    @apply text-[0.75rem] font-bold uppercase tracking-[0.06em] text-faint;
+  }
+  .audit .coverage .nitro-track {
+    @apply h-[6px] flex-1 overflow-hidden rounded-[3px] bg-line;
+  }
+  .audit .coverage .nitro-fill {
+    @apply block h-full rounded-[3px] bg-accent;
+  }
+  .audit .coverage .nitro-value {
+    @apply text-[1.1rem] font-bold text-accent;
+  }
+  .audit .chips {
+    @apply flex flex-wrap gap-[0.45rem];
+  }
+  .audit .chip {
+    @apply rounded-[2rem] border border-line bg-inset px-[0.7rem] py-[0.2rem] font-mono text-[0.8rem] text-dim;
+  }
+  .audit .chip-ok {
+    @apply border-ok/45 text-[#b6e6c6];
+  }
+  .audit .chip-danger {
+    @apply border-danger/45 text-[#f0b4b4];
+  }
+  .audit .panel-danger {
+    @apply border-danger/45;
+  }
+  .audit .panel h3 {
+    @apply mb-[0.6rem] mt-[1.25rem] text-[0.85rem] font-bold uppercase tracking-[0.05em] text-faint;
+  }
 
-/* ---------- footer ---------- */
-.site-footer {
-  border-top: 1px solid var(--line);
-  margin-top: 4rem;
-  padding: 2rem 0 3rem;
-  color: var(--text-faint);
-  font-size: 0.85rem;
-}
-.site-footer .container {
-  max-width: 60rem;
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
+  /* ---------- footer ---------- */
+  .site-footer {
+    @apply mt-[4rem] border-t border-line pb-[3rem] pt-[2rem] text-[0.85rem] text-faint;
+  }
+  .site-footer .container {
+    @apply flex max-w-[60rem] flex-wrap justify-between gap-[1rem];
+  }
 
-/* ---------- prose (guides) ---------- */
-.prose h1 {
-  font-size: 2rem;
-}
-.prose h2 {
-  margin-top: 2rem;
-  font-size: 1.4rem;
-}
-.prose p,
-.prose li {
-  color: var(--text-dim);
-}
-.prose code {
-  background: var(--bg-inset);
-  border: 1px solid var(--line);
-  border-radius: 0.3rem;
-  padding: 0.1rem 0.35rem;
-  font-size: 0.9em;
-}
-.prose pre {
-  background: var(--bg-inset);
-  border: 1px solid var(--line);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  overflow-x: auto;
-}
-.prose pre code {
-  background: none;
-  border: none;
-  padding: 0;
+  /* ---------- prose (guides) ---------- */
+  .prose h1 {
+    @apply text-[2rem];
+  }
+  .prose h2 {
+    @apply mt-[2rem] text-[1.4rem];
+  }
+  .prose p,
+  .prose li {
+    @apply text-dim;
+  }
+  .prose code {
+    @apply rounded-[0.3rem] border border-line bg-inset px-[0.35rem] py-[0.1rem] text-[0.9em];
+  }
+  .prose pre {
+    @apply overflow-x-auto rounded-[0.5rem] border border-line bg-inset p-[1rem];
+  }
+  .prose pre code {
+    @apply border-none bg-none p-0;
+  }
 }
