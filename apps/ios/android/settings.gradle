@@ -7,7 +7,7 @@
 // recomputed below for the trailing includeBuild.
 pluginManagement {
     def appLocal = "../node_modules/@react-native/gradle-plugin"
-    def workspaceRoot = "../../node_modules/@react-native/gradle-plugin"
+    def workspaceRoot = "../../../node_modules/@react-native/gradle-plugin"
     includeBuild(file(appLocal).exists() ? appLocal : workspaceRoot)
 }
 plugins { id("com.facebook.react.settings") }
@@ -16,6 +16,6 @@ rootProject.name = 'com.rootmyandroid.preview'
 include ':app'
 def rnGradlePlugin = file("../node_modules/@react-native/gradle-plugin")
 if (!rnGradlePlugin.exists()) {
-    rnGradlePlugin = file("../../node_modules/@react-native/gradle-plugin")
+    rnGradlePlugin = file("../../../node_modules/@react-native/gradle-plugin")
 }
 includeBuild(rnGradlePlugin)
