@@ -98,13 +98,13 @@ jobs:
       # (recalculated every 6-12h) and release assets don't count against
       # it. The repo is public; the APK is a debug-signed preview shell, so
       # public download is acceptable.
+      # blackhost has no gh CLI; this action bundles its own client and
+      # replaces same-named assets on re-run (rolling prerelease).
       - name: Publish APK as rolling prerelease
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release delete preview-apk --yes --cleanup-tag 2>/dev/null || true
-          gh release create preview-apk \
-            apps/ios/android/app/build/outputs/apk/release/app-release.apk \
-            --title "RootMyAndroid preview APK (rolling)" \
-            --notes "Rolling debug-signed preview of the iOS edition, built from master@$(git rev-parse --short HEAD) on blackhost. Install: adb install -r app-release.apk (package com.rootmyandroid.preview)." \
-            --prerelease
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: preview-apk
+          name: RootMyAndroid preview APK (rolling)
+          body: Rolling debug-signed preview of the iOS edition, built from master@${{ github.sha }} on blackhost. Install: `adb install -r app-release.apk` (package `com.rootmyandroid.preview`).
+          prerelease: true
+          files: apps/ios/android/app/build/outputs/apk/release/app-release.apk
