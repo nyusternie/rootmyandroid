@@ -223,7 +223,7 @@ async function run(manager: AdbDaemonWebUsbDeviceManager): Promise<void> {
     } else if (e instanceof AdbDaemonWebUsbDevice.DeviceBusyError) {
       show(
         errorBox,
-        'The device is busy — another browser tab or program already holds its USB interface. Close it and try again.'
+        'The device is busy — another browser tab or program already holds its USB interface. Close it and try again. If a local ADB server is running (adb devices), stop it with `adb kill-server` and retry.'
       )
     } else if (adb === null) {
       // Failure before/while authenticating: the RSA prompt was denied,
