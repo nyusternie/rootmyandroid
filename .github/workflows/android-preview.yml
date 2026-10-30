@@ -1,0 +1,81 @@
+name: Android preview build
+
+# Builds the RootMyAndroid (iOS edition) Android preview shell as a RELEASE
+# APK so the UI can be reviewed on a physical device before the macOS/Xcode
+# runner exists. Manual dispatch only — see .agents/skills/build/SKILL.md.
+# The APK is signed with the public debug key (preview-only, never publish);
+# install with: adb install -r app-release.apk
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Test & build release APK
+    runs-on: [self-hosted, blackhost]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+
+      # setup-node caches the path printed by `pnpm store path`; pinning
+      # store-dir keeps that path real (otherwise the post-job cache save
+      # fails the job with "Path Validation Error").
+      - name: Pin pnpm store path
+        run: pnpm config set store-dir /home/gh-runner/pnpm-store/mobile
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK packages
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "platform-tools" "platforms;android-37" "build-tools;37.0.0" "ndk;27.1.12297006"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --store-dir /home/gh-runner/pnpm-store/mobile
+
+      - name: Run tests (all workspace packages)
+        run: pnpm -r test
+
+      # gradle.properties is gitignored (it can carry local, machine-specific
+      # and secret values), so the runner writes a deterministic one. No
+      # upload-keystore lines here: the preview signs release with the debug
+      # key (see apps/ios/android/app/build.gradle).
+      - name: Write gradle.properties
+        run: |
+          cat > apps/ios/android/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m
+          android.useAndroidX=true
+          reactNativeArchitectures=armeabi-v7a,arm64-v8a
+          newArchEnabled=true
+          hermesEnabled=true
+          edgeToEdgeEnabled=true
+          android.builtInKotlin=false
+          android.newDsl=false
+          EOF
+
+      - name: Build release APK
+        run: cd apps/ios/android && ./gradlew assembleRelease --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rootmyandroid-preview-apk
+          path: apps/ios/android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 14

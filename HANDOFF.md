@@ -48,7 +48,7 @@ Android device.)
 | Analytics (dashboard)  | `rootmyadmin` worker — **separate repo `rootmyandroid-admin`** — at admin.rootmyandroid.com. SIWE sign-in; snapshots endpoint for agents via bearer token (owner-set secret). Direct-DB reader; fail-soft on missing tables |
 | Analytics (monitor)    | `.github/workflows/analytics-monitor.yml` in `rootmyandroid-api`: daily cron probes prod `hits` COUNT/MAX(ts), fails the run on empty table or 72 h staleness (fail-closed) |
 | Coverage               | Codecov (uploaded by CI; `codecov.yml` in repo root)          |
-| Mobile apps            | `apps/rooted` (`com.rootmyandroid.rooted`), `apps/guardian` (`com.rootmyandroid.guardian`) — React Native 0.88 |
+| Mobile apps            | `apps/android` Rooted utility (`com.rootmyandroid`), `apps/ios` RootMyAndroid monitoring edition (bundle id `com.rootmyandroid`; Android preview shell `com.rootmyandroid.preview`), `apps/guardian` (`com.rootmyandroid.guardian`) — React Native 0.88; shared code in `packages/shared` |
 | Android release keystore | `.keystore/` exists on the previous maintainer's machine only — intentionally untracked. Transfer out-of-band |
 
 ## 3. Repository map
@@ -98,7 +98,7 @@ Sibling repos (separate codebases, NOT in this repo; check out
 | @astrojs/sitemap | 3.7.4 | `apps/web/package.json` (no Astro peer dep; build-verified on 7.4.0) |
 | TypeScript | 6.0.3   | `apps/web/package.json`                   |
 | vitest  | 3.2.4      | `apps/web/package.json`                   |
-| React Native | 0.88.0 | `apps/rooted`, `apps/guardian` package.json |
+| React Native | 0.88.0 | `apps/android`, `apps/ios`, `apps/guardian` package.json |
 | React   | 19.3.0     | same                                      |
 | wrangler | 4.151.0   | root `package.json` devDependency         |
 
@@ -234,11 +234,16 @@ upper bound, not the target); `alt` text on every `<img>`.
 
 ## 7. Mobile apps state
 
-Both RN apps are at scaffold stage (RN 0.88 new-app template + a jest smoke
-test, `__tests__/App.test.tsx`). There is no product logic in them yet. The
-package names (`com.rootmyandroid.rooted`, `com.rootmyandroid.guardian`) are
-referenced by AGENTS.md rule 6 — the data-wipe rule that exists because of a
-real incident (a launcher `pm clear` destroyed a home-screen layout).
+The Guardian app is at scaffold stage (RN 0.88 new-app template + a jest
+smoke test, `__tests__/App.test.tsx`). `apps/android` carries the Rooted
+utility UI (mocked data until native probing + /v1 wiring land); `apps/ios`
+carries the RootMyAndroid monitoring shell (account connect + synced-device
+count via `packages/shared`'s typed API client). The package names
+(`com.rootmyandroid`, `com.rootmyandroid.preview`,
+`com.rootmyandroid.guardian`) are referenced by AGENTS.md rule 6 — the
+data-wipe rule that exists because of a real incident (a launcher `pm clear`
+destroyed a home-screen layout). Build rules (no host builds, release-only,
+pull-before-push) live in `.agents/skills/build/SKILL.md`.
 Preserve that rule.
 
 ## 8. Operational gotchas

@@ -20,9 +20,15 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
 ├── apps/
 │   ├── web/          # Astro 7 static site (zero-JS content pages; vanilla TS
 │   │                 # modules on the app pages that call the API at /v1)
-│   ├── rooted/       # React Native 0.88 app (com.rootmyandroid.rooted), jest
+│   ├── android/      # Rooted (Android utility): RN 0.88 app
+│   │                 # (com.rootmyandroid), jest
+│   ├── ios/          # RootMyAndroid (iOS monitoring edition): RN 0.88 app
+│   │                 # (bundle id com.rootmyandroid; android/ is a
+│   │                 #  preview-only shell, com.rootmyandroid.preview), jest
 │   └── guardian/     # React Native 0.88 app (com.rootmyandroid.guardian), jest
-├── packages/         # shared workspace packages (created as needed)
+├── packages/
+│   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client
+│                     # shared by the mobile apps (TS source, no build step)
 ├── .github/workflows/web.yml   # Web CI + Cloudflare Pages deploy gate
 ├── .vendor/          # Vendored tarballs (hermes-compiler; see overrides in
 │                     # pnpm-workspace.yaml)
@@ -86,7 +92,8 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    no-guessing rule, do not invent device behavior.
 6. **Never wipe third-party app data.** Do NOT run `pm clear`, `pm uninstall`,
    or any other data-destroying command on any package other than our own two
-   (`com.rootmyandroid.rooted`, `com.rootmyandroid.guardian`). Even for our own
+   (`com.rootmyandroid`, `com.rootmyandroid.preview`,
+   `com.rootmyandroid.guardian`). Even for our own
    packages — and ALWAYS for anything system-level such as the launcher
    (`com.google.android.apps.nexuslauncher`) — a wipe requires a separate,
    explicit, same-turn user confirmation whose prompt names the exact

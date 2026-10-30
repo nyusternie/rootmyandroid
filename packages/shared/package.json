@@ -1,0 +1,7 @@
+{
+  "name": "rootmyandroid-shared",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Code shared between the Root My Android mobile apps (apps/android, apps/ios).",
+  "main": "src/index.ts"
+}

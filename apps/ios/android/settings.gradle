@@ -1,0 +1,8 @@
+// pnpm monorepo: the app's node_modules is a symlink farm into the hoisted
+// workspace-root store, so the RN gradle plugin resolves via the app-local path.
+pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
+plugins { id("com.facebook.react.settings") }
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+rootProject.name = 'com.rootmyandroid.preview'
+include ':app'
+includeBuild('../node_modules/@react-native/gradle-plugin')
