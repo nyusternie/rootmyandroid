@@ -9,6 +9,9 @@ name: Android preview build
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write # rolling prerelease asset upload
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -90,8 +93,18 @@ jobs:
       - name: Build release APK
         run: cd apps/ios/android && ./gradlew assembleRelease --no-daemon
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: rootmyandroid-preview-apk
-          path: apps/ios/android/app/build/outputs/apk/release/app-release.apk
-          retention-days: 14
+      # Published as a rolling prerelease asset instead of an Actions
+      # artifact: the account's Actions artifact-storage quota is exhausted
+      # (recalculated every 6-12h) and release assets don't count against
+      # it. The repo is public; the APK is a debug-signed preview shell, so
+      # public download is acceptable.
+      - name: Publish APK as rolling prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete preview-apk --yes --cleanup-tag 2>/dev/null || true
+          gh release create preview-apk \
+            apps/ios/android/app/build/outputs/apk/release/app-release.apk \
+            --title "RootMyAndroid preview APK (rolling)" \
+            --notes "Rolling debug-signed preview of the iOS edition, built from master@$(git rev-parse --short HEAD) on blackhost. Install: adb install -r app-release.apk (package com.rootmyandroid.preview)." \
+            --prerelease
