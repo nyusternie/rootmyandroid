@@ -85,3 +85,22 @@ Every push to `master` runs web check → tests → build on `blackhost` and
 only then deploys to Cloudflare Pages (`web.yml`). The preview workflow runs
 `pnpm -r test` (all workspace packages) before building the APK. Never
 deploy with failing tests.
+
+## Physical device
+
+Deploy ONLY the iOS-edition preview (`com.rootmyandroid.preview`) to the
+owner's physical device. Do NOT install Rooted (`com.rootmyandroid.rooted`)
+or Guardian builds on it — those are CI-verified only (owner rule,
+2026-10-30).
+
+## Styling: NativeWind
+
+All three RN apps are styled with NativeWind v4 (`nativewind` +
+`tailwindcss@^3`): className utilities instead of StyleSheet. Per-app
+`tailwind.config.js` hex values MUST stay in sync with
+`packages/shared/src/theme.ts` (`colors` = site palette for apps/ios,
+`rootedColors` = Rooted/Guardian palette). `App.tsx` imports `./global.css`;
+babel sets `jsxImportSource: 'nativewind'` + the `nativewind/babel` preset;
+metro wraps the config with `withNativeWind`. Jest maps `.css` to
+`jest-css-stub.js` and transforms `react-native-css-interop` (it ships raw
+JSX in doctor.native.js).
