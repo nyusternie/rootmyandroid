@@ -105,6 +105,6 @@ jobs:
         with:
           tag_name: preview-apk
           name: RootMyAndroid preview APK (rolling)
-          body: Rolling debug-signed preview of the iOS edition, built from master@${{ github.sha }} on blackhost. Install: `adb install -r app-release.apk` (package `com.rootmyandroid.preview`).
+          body: 'Rolling debug-signed preview of the iOS edition, built from master@${{ github.sha }} on blackhost. Install with `adb install -r app-release.apk` (package `com.rootmyandroid.preview`).'
           prerelease: true
           files: apps/ios/android/app/build/outputs/apk/release/app-release.apk
