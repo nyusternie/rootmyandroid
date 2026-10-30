@@ -74,6 +74,13 @@ const TONE_STROKE: Record<Tone, string> = {
   danger: 'stroke-danger',
   dim: 'stroke-faint',
 }
+const TONE_TEXT: Record<Tone, string> = {
+  ok: 'text-ok',
+  info: 'text-accent',
+  warn: 'text-warn',
+  danger: 'text-danger',
+  dim: 'text-ink',
+}
 
 function chip(v: string): string {
   return `<span class="rounded-full border border-line bg-inset px-[0.65rem] py-[0.2rem] font-mono text-[0.78rem] text-dim">${escapeHtml(v)}</span>`
@@ -108,7 +115,7 @@ function renderGauge(report: ScanReport): string {
   const center =
     age === null
       ? `<div class="text-[2.2rem] font-bold leading-none">?</div><div class="mt-[0.25rem] text-[0.72rem] uppercase tracking-[0.06em] text-faint">patch age unknown</div>`
-      : `<div class="text-[2.2rem] font-bold leading-none">${age}</div><div class="mt-[0.25rem] text-[0.72rem] uppercase tracking-[0.06em] text-faint">days since patch</div>`
+      : `<div class="text-[2.2rem] font-bold leading-none" data-countup="${age}">${age}</div><div class="mt-[0.25rem] text-[0.72rem] uppercase tracking-[0.06em] text-faint">days since patch</div>`
   const dateLine =
     report.securityPatch === null
       ? 'security patch: unknown'
@@ -145,8 +152,8 @@ function verifiedBootTone(state: string): Tone {
 
 function tile(tone: Tone, label: string, state: string, caption: string): string {
   return `<div class="rounded-[0.65rem] border border-line border-t-[3px] ${TONE_TILE_BORDER[tone]} bg-inset px-[1rem] py-[0.9rem]">
-    <div class="flex items-center gap-[0.45rem]"><span class="h-[8px] w-[8px] rounded-full ${TONE_DOT[tone]}"></span><span class="text-[0.72rem] uppercase tracking-[0.06em] text-faint">${escapeHtml(label)}</span></div>
-    <div class="mt-[0.4rem] text-[1.35rem] font-bold capitalize">${escapeHtml(state)}</div>
+    <div class="flex items-center gap-[0.45rem]"><span class="h-[8px] w-[8px] rounded-full ${TONE_DOT[tone]} animate-pulse-dot motion-reduce:animate-none"></span><span class="text-[0.72rem] uppercase tracking-[0.06em] text-faint">${escapeHtml(label)}</span></div>
+    <div class="mt-[0.4rem] text-[1.35rem] font-bold capitalize ${TONE_TEXT[tone]}">${escapeHtml(state)}</div>
     <div class="mt-[0.3rem] text-[0.85rem] text-faint">${caption}</div>
   </div>`
 }
@@ -159,7 +166,7 @@ function show(el: HTMLElement, msg: string): void {
 function progress(msg: string): void {
   const li = document.createElement('li')
   li.className =
-    "relative pl-[1.4rem] before:absolute before:left-0 before:font-bold before:text-ok before:content-['✓']"
+    "relative pl-[1.4rem] animate-scan-in motion-reduce:animate-none before:absolute before:left-0 before:font-bold before:text-ok before:content-['✓']"
   li.textContent = msg
   progressList.appendChild(li)
 }
@@ -209,7 +216,7 @@ function renderReport(report: ScanReport): void {
       <div class="mt-[0.15rem] text-[0.85rem] capitalize text-faint">${escapeHtml(report.manufacturer)}</div>
       <div class="mt-[0.7rem] flex flex-wrap gap-[0.4rem]">${heroChips}</div>
     </div>
-    <svg viewBox="0 0 48 80" aria-hidden="true" class="h-[80px] w-[48px] flex-none fill-inset stroke-faint stroke-2">
+    <svg viewBox="0 0 48 80" aria-hidden="true" class="h-[120px] w-[72px] flex-none fill-inset stroke-faint stroke-2">
       <rect x="6" y="4" width="36" height="72" rx="8" />
       <line x1="18" y1="10" x2="30" y2="10" stroke-linecap="round" />
       <line x1="14" y1="68" x2="34" y2="68" stroke-linecap="round" />
@@ -220,8 +227,8 @@ function renderReport(report: ScanReport): void {
   $('report-build').innerHTML = `<div class="grid grid-cols-1 items-center gap-[1.25rem] min-[640px]:grid-cols-[240px_1fr]">
     ${renderGauge(report)}
     <div class="grid grid-cols-2 gap-[0.9rem]">
-      <div class="rounded-[0.65rem] border border-line bg-inset px-[1rem] py-[0.9rem]"><div class="text-[1.9rem] font-bold">${escapeHtml(report.androidRelease)}</div><div class="text-[0.72rem] uppercase tracking-[0.06em] text-faint">Android</div></div>
-      <div class="rounded-[0.65rem] border border-line bg-inset px-[1rem] py-[0.9rem]"><div class="text-[1.9rem] font-bold">${report.sdk === null ? '?' : report.sdk}</div><div class="text-[0.72rem] uppercase tracking-[0.06em] text-faint">SDK level</div></div>
+      <div class="rounded-[0.65rem] border border-line bg-inset px-[1rem] py-[0.9rem] transition-colors hover:border-faint"><div class="text-[1.9rem] font-bold">${escapeHtml(report.androidRelease)}</div><div class="text-[0.72rem] uppercase tracking-[0.06em] text-faint">Android</div></div>
+      <div class="rounded-[0.65rem] border border-line bg-inset px-[1rem] py-[0.9rem] transition-colors hover:border-faint"><div class="text-[1.9rem] font-bold">${report.sdk === null ? '?' : report.sdk}</div><div class="text-[0.72rem] uppercase tracking-[0.06em] text-faint">SDK level</div></div>
     </div>
   </div>
   <div class="mt-[1rem] flex flex-wrap items-baseline gap-[0.6rem] text-[0.9rem] text-dim"><span class="text-[0.75rem] uppercase tracking-[0.06em] text-faint">Build tags</span>${chip(report.buildTags)}</div>
@@ -269,11 +276,16 @@ function renderReport(report: ScanReport): void {
   </div>
   <p class="mt-[1rem] text-[0.85rem] text-faint">Heuristic only — absence does not prove the device is unrooted.</p>`
 
+  // First next step is the state-driven primary action — emphasize it.
   $('report-next').innerHTML = report.nextSteps
-    .map((s) => `<div><a class="btn" href="${escapeHtml(s.href)}">${escapeHtml(s.label)}</a></div>`)
+    .map(
+      (s, i) =>
+        `<div><a class="btn${i === 0 ? ' btn-primary' : ''}" href="${escapeHtml(s.href)}">${escapeHtml(s.label)}</a></div>`
+    )
     .join('')
 
   reportBox.hidden = false
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   // Sweep the gauge arc from 0 to its target on the frame after reveal (the
   // transition is suppressed under prefers-reduced-motion by the class).
   const fill = reportBox.querySelector<SVGPathElement>('.transition-[stroke-dasharray]')
@@ -283,7 +295,26 @@ function renderReport(report: ScanReport): void {
       fill.style.strokeDasharray = `${target} ${GAUGE_LEN.toFixed(2)}`
     })
   }
-  reportBox.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  // Count the gauge number up in sync with the arc sweep. Skipped under
+  // prefers-reduced-motion — the final value is already rendered.
+  const numEl = reportBox.querySelector<HTMLElement>('[data-countup]')
+  if (numEl && !reducedMotion) {
+    const target = Number(numEl.dataset.countup ?? '0')
+    const start = performance.now()
+    const tick = (now: number) => {
+      const t = Math.min((now - start) / 900, 1)
+      // ease-in-out quad, matching the arc sweep's easing
+      const eased = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2
+      numEl.textContent = String(Math.round(target * eased))
+      if (t < 1) requestAnimationFrame(tick)
+    }
+    numEl.textContent = '0'
+    requestAnimationFrame(tick)
+  }
+  reportBox.scrollIntoView({
+    behavior: reducedMotion ? 'auto' : 'smooth',
+    block: 'start',
+  })
 }
 
 let busy = false

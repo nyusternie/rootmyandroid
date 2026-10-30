@@ -36,6 +36,18 @@
       transform: none;
     }
   }
+
+  /* status-dot pulse (used with motion-reduce:animate-none) */
+  --animate-pulse-dot: pulse-dot 2.2s ease-in-out infinite;
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
 }
 
 /* Base elements. Preflight strips browser defaults, so the UA styles the old
