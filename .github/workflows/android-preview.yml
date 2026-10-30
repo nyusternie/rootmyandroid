@@ -82,6 +82,11 @@ jobs:
           android.newDsl=false
           EOF
 
+      # RN tooling hardcodes app-local node_modules paths; materialize the
+      # symlink farm (untracked local state on dev machines) on the runner.
+      - name: Materialize RN node_modules farm
+        run: .agents/skills/build/scripts/materialize-rn-farm.sh apps/ios
+
       - name: Build release APK
         run: cd apps/ios/android && ./gradlew assembleRelease --no-daemon
 

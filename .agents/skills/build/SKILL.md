@@ -48,6 +48,12 @@ Consequences:
 
 ## 3. Deploy to devices from the host via adb
 
+Fresh runner checkouts lack the app-local `node_modules` symlink farms that
+RN gradle/codegen tooling hardcodes (pnpm hoisted installs only to the
+workspace root; the farms on dev machines are untracked local state). Run
+`scripts/materialize-rn-farm.sh <app-dir>` (bundled with this skill) before
+any gradle/xcode build — the android-preview workflow does exactly this.
+
 The physical test device (Pixel 5) is USB-attached to the host. After a
 runner build finishes:
 
