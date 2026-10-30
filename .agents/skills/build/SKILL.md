@@ -62,8 +62,11 @@ gh run download <run-id> -n rootmyandroid-preview-apk
 adb install -r app-release.apk
 ```
 
-`adb install` is deployment, not a build — allowed on the host. Never run
-data-destroying adb commands on third-party packages (repo AGENTS.md rule 6).
+`adb install` is deployment, not a build — allowed on the host. Deploy ONLY
+the iOS-edition preview (`com.rootmyandroid.preview`) to the physical
+device — do NOT install Rooted or Guardian builds on it (owner rule,
+2026-10-30). Never run data-destroying adb commands on third-party
+packages (repo AGENTS.md rule 6).
 Our package ids: `com.rootmyandroid` (Rooted, Android), `com.rootmyandroid`
 (RootMyAndroid, iOS bundle id), `com.rootmyandroid.preview` (Android preview
 of the iOS edition — distinct id so it never clobbers Rooted on-device),

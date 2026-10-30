@@ -42,23 +42,23 @@ async function request<T>(
   return { ok: res.ok, status: res.status, data };
 }
 
-export function createAccount() {
-  return request('/accounts', { method: 'POST' });
+export function createAccount<T = unknown>() {
+  return request<T>('/accounts', { method: 'POST' });
 }
 
-export function getAccount(accountNumber: string) {
-  return request(`/accounts/${encodeURIComponent(accountNumber)}`);
+export function getAccount<T = unknown>(accountNumber: string) {
+  return request<T>(`/accounts/${encodeURIComponent(accountNumber)}`);
 }
 
-export function createCheckout({ accountNumber, plan }: { accountNumber: string; plan: string }) {
-  return request('/billing/checkout', {
+export function createCheckout<T = unknown>({ accountNumber, plan }: { accountNumber: string; plan: string }) {
+  return request<T>('/billing/checkout', {
     method: 'POST',
     body: { account_number: accountNumber, plan },
   });
 }
 
-export function createCryptoCheckout({ accountNumber, plan }: { accountNumber: string; plan: string }) {
-  return request('/billing/crypto/checkout', {
+export function createCryptoCheckout<T = unknown>({ accountNumber, plan }: { accountNumber: string; plan: string }) {
+  return request<T>('/billing/crypto/checkout', {
     method: 'POST',
     body: { account_number: accountNumber, plan },
   });
@@ -67,8 +67,8 @@ export function createCryptoCheckout({ accountNumber, plan }: { accountNumber: s
 // POST /billing/nitro/checkout — buy a Nitro pack on the card rail
 // (NOWPayments). Pack ids are server-defined (nitro_100 / nitro_500 /
 // nitro_1000); prices are enforced server-side.
-export function createNitroCheckout({ accountNumber, pack }: { accountNumber: string; pack: string }) {
-  return request('/billing/nitro/checkout', {
+export function createNitroCheckout<T = unknown>({ accountNumber, pack }: { accountNumber: string; pack: string }) {
+  return request<T>('/billing/nitro/checkout', {
     method: 'POST',
     body: { account_number: accountNumber, pack },
   });
@@ -76,8 +76,8 @@ export function createNitroCheckout({ accountNumber, pack }: { accountNumber: st
 
 // POST /billing/nitro/crypto/checkout — buy a Nitro pack on the crypto rail
 // (BTCPay: BTC / Lightning).
-export function createNitroCryptoCheckout({ accountNumber, pack }: { accountNumber: string; pack: string }) {
-  return request('/billing/nitro/crypto/checkout', {
+export function createNitroCryptoCheckout<T = unknown>({ accountNumber, pack }: { accountNumber: string; pack: string }) {
+  return request<T>('/billing/nitro/crypto/checkout', {
     method: 'POST',
     body: { account_number: accountNumber, pack },
   });
@@ -86,7 +86,7 @@ export function createNitroCryptoCheckout({ accountNumber, pack }: { accountNumb
 // POST /billing/nitro/payment — buy a Nitro pack on the whitelabel rail:
 // the API returns a deposit address + amount in the chosen coin, and the
 // client renders the checkout UI itself (no hosted page, no redirect).
-export function createNitroPayment({
+export function createNitroPayment<T = unknown>({
   accountNumber,
   pack,
   payCurrency,
@@ -95,7 +95,7 @@ export function createNitroPayment({
   pack: string;
   payCurrency: string;
 }) {
-  return request('/billing/nitro/payment', {
+  return request<T>('/billing/nitro/payment', {
     method: 'POST',
     body: { account_number: accountNumber, pack, pay_currency: payCurrency },
   });
@@ -103,14 +103,14 @@ export function createNitroPayment({
 
 // GET /billing/payment/{id} — poll a whitelabel payment's status while the
 // deposit panel is open (waiting -> confirming -> finished).
-export function getPaymentStatus(paymentId: string) {
-  return request(`/billing/payment/${encodeURIComponent(paymentId)}`);
+export function getPaymentStatus<T = unknown>(paymentId: string) {
+  return request<T>(`/billing/payment/${encodeURIComponent(paymentId)}`);
 }
 
 // POST /nitro — an account's Nitro balance plus its recent ledger entries.
 // (POST so the account number travels in the body, not the URL/logs.)
-export function getNitroBalance(accountNumber: string) {
-  return request('/nitro', {
+export function getNitroBalance<T = unknown>(accountNumber: string) {
+  return request<T>('/nitro', {
     method: 'POST',
     body: { account_number: accountNumber },
   });
@@ -118,14 +118,14 @@ export function getNitroBalance(accountNumber: string) {
 
 // GET /nitro/services — public catalog of PRO services + Nitro prices, so
 // clients render pricing from the server-side table instead of hard-coding.
-export function getNitroServices() {
-  return request('/nitro/services');
+export function getNitroServices<T = unknown>() {
+  return request<T>('/nitro/services');
 }
 
 // POST /redeem — redeem a single-use voucher code, crediting its Nitro to
 // the account. Codes are single-use; a redeemed code returns 409.
-export function redeemCode({ accountNumber, code }: { accountNumber: string; code: string }) {
-  return request('/redeem', {
+export function redeemCode<T = unknown>({ accountNumber, code }: { accountNumber: string; code: string }) {
+  return request<T>('/redeem', {
     method: 'POST',
     body: { account_number: accountNumber, code },
   });
@@ -133,14 +133,14 @@ export function redeemCode({ accountNumber, code }: { accountNumber: string; cod
 
 // GET /device/whoami — the caller's network identity echoed from edge
 // metadata. Used by the /audit live scan.
-export function whoami() {
-  return request('/device/whoami');
+export function whoami<T = unknown>() {
+  return request<T>('/device/whoami');
 }
 
 // POST /device/audit — store an audit snapshot (audit_type classifies the
 // audit: "device" for the web live scan, "backup" for the Rooted app's
 // backup coverage, ...). Undefined fields are dropped by JSON.stringify.
-export function saveAudit({
+export function saveAudit<T = unknown>({
   accountNumber,
   deviceId,
   auditType,
@@ -155,7 +155,7 @@ export function saveAudit({
   collectedAt: string;
   snapshot: unknown;
 }) {
-  return request('/device/audit', {
+  return request<T>('/device/audit', {
     method: 'POST',
     body: {
       account_number: accountNumber,
@@ -170,8 +170,8 @@ export function saveAudit({
 
 // POST /device/audit/list — latest audit snapshot per device for an account,
 // optionally restricted to one audit class.
-export function listAudits({ accountNumber, auditType }: { accountNumber: string; auditType?: string }) {
-  return request('/device/audit/list', {
+export function listAudits<T = unknown>({ accountNumber, auditType }: { accountNumber: string; auditType?: string }) {
+  return request<T>('/device/audit/list', {
     method: 'POST',
     body: { account_number: accountNumber, audit_type: auditType },
   });

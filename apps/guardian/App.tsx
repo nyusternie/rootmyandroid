@@ -13,17 +13,19 @@
  * owner and would suspend the app, so hiding stays on the alias toggle.
  *
  * Dark, minimal UI matching rootmyandroid.com and the Rooted app.
+ * Styled with NativeWind (tailwind.config.js ↔ rootedColors in
+ * packages/shared/src/theme.ts).
  *
  * @format
  */
 
+import './global.css';
 import React, { useEffect, useState } from 'react';
 import {
   AppState,
   NativeModules,
   ScrollView,
   StatusBar,
-  StyleSheet,
   Switch,
   Text,
   TextInput,
@@ -32,20 +34,14 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
+// Shared Rooted/Guardian palette (packages/shared/src/theme.ts) — single
+// source of truth for the mobile-app colors (dynamic props only; static
+// styling lives in NativeWind classes).
+import { rootedColors as colors } from 'rootmyandroid-shared';
+
 const { Uninstall, LauncherIcon, SyncStore, DeviceAdmin } = NativeModules;
 
 const API_BASE = 'https://rootmyandroid.com/v1';
-
-const colors = {
-  bg: '#0b0e11',
-  panel: '#14181d',
-  border: '#232a32',
-  text: '#e6edf3',
-  muted: '#8b98a5',
-  faint: '#5b6670',
-  accent: '#4c8dff',
-  danger: '#e5534b',
-};
 
 type SyncedAccount = {
   /** Full 16-digit number is kept only to derive the last-4 display. */
@@ -157,21 +153,22 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
-      <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Guardian Angel</Text>
+      {/* RN 0.88 types omit StatusBar's Android-only backgroundColor; spread-cast keeps the runtime behavior. */}
+      <StatusBar barStyle="light-content" {...({ backgroundColor: colors.bg } as object)} />
+      <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
+        <View className="border-b border-border px-5 pb-3 pt-5">
+          <Text className="text-xl font-bold text-text">Guardian Angel</Text>
         </View>
 
-        <ScrollView style={styles.body} contentContainerStyle={styles.bodyPad}>
+        <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, paddingBottom: 32 }}>
           {synced === null ? (
             <View>
-              <Text style={styles.muted}>
+              <Text className="mb-4 text-sm leading-5 text-muted">
                 Sync this device to a Rooted account. Enter the 16-digit account
                 number shown in the Rooted app.
               </Text>
               <TextInput
-                style={styles.input}
+                className="mb-4 rounded-[10px] border border-border bg-panel px-4 py-3.5 text-lg tracking-[2px] text-text"
                 value={accountInput}
                 onChangeText={setAccountInput}
                 placeholder="0000 0000 0000 0000"
@@ -182,47 +179,47 @@ function App() {
                 autoCapitalize="none"
               />
               <TouchableOpacity
-                style={[styles.primaryBtn, !canSync && styles.primaryBtnDisabled]}
+                className={`mt-1 items-center rounded-[10px] bg-accent py-3.5 ${!canSync ? 'opacity-40' : ''}`}
                 onPress={onSync}
                 disabled={!canSync}
               >
-                <Text style={styles.primaryBtnText}>
+                <Text className="text-base font-semibold text-white">
                   {syncing ? 'Syncing…' : 'Sync with Rooted'}
                 </Text>
               </TouchableOpacity>
               {syncError !== null && (
-                <Text style={styles.errorText}>{syncError}</Text>
+                <Text className="mt-3 text-[13px] leading-[18px] text-danger">{syncError}</Text>
               )}
             </View>
           ) : (
             <View>
-              <View style={styles.panel}>
-                <Text style={styles.panelTitle}>Synced to Rooted</Text>
-                <View style={styles.row}>
-                  <Text style={styles.rowLabel}>Account</Text>
-                  <Text style={styles.rowValue}>•••• {synced.last4}</Text>
+              <View className="mb-4 rounded-xl border border-border bg-panel p-4">
+                <Text className="mb-2.5 text-[15px] font-semibold text-text">Synced to Rooted</Text>
+                <View className="flex-row justify-between py-1.5">
+                  <Text className="text-sm text-muted">Account</Text>
+                  <Text className="text-sm font-medium text-text">•••• {synced.last4}</Text>
                 </View>
-                <View style={styles.row}>
-                  <Text style={styles.rowLabel}>Name</Text>
-                  <Text style={styles.rowValue}>{synced.name ?? '—'}</Text>
+                <View className="flex-row justify-between py-1.5">
+                  <Text className="text-sm text-muted">Name</Text>
+                  <Text className="text-sm font-medium text-text">{synced.name ?? '—'}</Text>
                 </View>
               </View>
-              <Text style={styles.faint}>
+              <Text className="mt-3.5 text-xs leading-[17px] text-faint">
                 This device is managed from the Rooted app. All settings are
                 controlled there.
               </Text>
               {actionError !== null && (
-                <Text style={styles.errorText}>{actionError}</Text>
+                <Text className="mt-3 text-[13px] leading-[18px] text-danger">{actionError}</Text>
               )}
-              <TouchableOpacity style={styles.dangerBtn} onPress={onUninstall}>
-                <Text style={styles.dangerBtnText}>Uninstall Guardian Angel</Text>
+              <TouchableOpacity className="mt-5 items-center rounded-[10px] border border-danger py-3.5" onPress={onUninstall}>
+                <Text className="text-base font-semibold text-danger">Uninstall Guardian Angel</Text>
               </TouchableOpacity>
             </View>
           )}
 
-          <View style={styles.panel}>
-            <View style={styles.toggleRow}>
-              <Text style={styles.toggleLabel}>Device protection</Text>
+          <View className="mb-4 rounded-xl border border-border bg-panel p-4">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-[15px] font-semibold text-text">Device protection</Text>
               <Switch
                 value={protectionActive}
                 onValueChange={onToggleProtection}
@@ -230,15 +227,15 @@ function App() {
                 thumbColor={colors.text}
               />
             </View>
-            <Text style={styles.toggleHint}>
+            <Text className="mt-2.5 text-xs leading-[17px] text-faint">
               Device administrator access. While on, Guardian Angel cannot be
               uninstalled until protection is turned off.
             </Text>
           </View>
 
-          <View style={styles.panel}>
-            <View style={styles.toggleRow}>
-              <Text style={styles.toggleLabel}>Launcher icon</Text>
+          <View className="mb-4 rounded-xl border border-border bg-panel p-4">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-[15px] font-semibold text-text">Launcher icon</Text>
               <Switch
                 value={iconVisible}
                 onValueChange={onToggleIcon}
@@ -246,7 +243,7 @@ function App() {
                 thumbColor={colors.text}
               />
             </View>
-            <Text style={styles.toggleHint}>
+            <Text className="mt-2.5 text-xs leading-[17px] text-faint">
               When hidden, Guardian Angel keeps running and can be opened from
               the Rooted app or via ADB.
             </Text>
@@ -256,71 +253,5 @@ function App() {
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerTitle: { color: colors.text, fontSize: 20, fontWeight: '700' },
-  body: { flex: 1 },
-  bodyPad: { padding: 20, paddingBottom: 32 },
-  muted: { color: colors.muted, fontSize: 14, lineHeight: 20, marginBottom: 16 },
-  faint: { color: colors.faint, fontSize: 12, lineHeight: 17, marginTop: 14 },
-  input: {
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 10,
-    color: colors.text,
-    fontSize: 18,
-    letterSpacing: 2,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 16,
-  },
-  primaryBtn: {
-    backgroundColor: colors.accent,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  primaryBtnDisabled: { opacity: 0.4 },
-  primaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  panel: {
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  panelTitle: { color: colors.text, fontSize: 15, fontWeight: '600', marginBottom: 10 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
-  rowLabel: { color: colors.muted, fontSize: 14 },
-  rowValue: { color: colors.text, fontSize: 14, fontWeight: '500' },
-  dangerBtn: {
-    borderWidth: 1,
-    borderColor: colors.danger,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  dangerBtnText: { color: colors.danger, fontSize: 16, fontWeight: '600' },
-  toggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  errorText: { color: colors.danger, fontSize: 13, lineHeight: 18, marginTop: 12 },
-  toggleLabel: { color: colors.text, fontSize: 15, fontWeight: '600' },
-  toggleHint: { color: colors.faint, fontSize: 12, lineHeight: 17, marginTop: 10 },
-});
 
 export default App;

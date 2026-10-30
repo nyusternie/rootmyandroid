@@ -1,172 +1,160 @@
-/**
- * RootMyAndroid (iOS edition) — parental monitoring for the Android devices
- * in your family.
- *
- * The iOS app is a CLIENT of the Root My Android API (rootmyandroid.com/v1):
- * it reads the audits + device state that the Rooted app (Android utility)
- * syncs from each monitored Android device. It cannot audit or monitor the
- * iPhone it runs on — monitoring targets are Android devices only.
- *
- * Store listing name: "Root My Android" (App Store Connect metadata).
- * Home-screen label: "RootMyAndroid" (CFBundleDisplayName, short enough to
- * avoid under-icon truncation).
- *
- * Dark, minimal UI matching rootmyandroid.com — colors come from
- * rootmyandroid-shared, never hard-coded per app.
- *
- * @format
- */
-
-import React, { useState } from 'react';
+// apps/ios/App.tsx
+import './global.css';
+import React, {useCallback, useState} from 'react';
 import {
+  ActivityIndicator,
   SafeAreaView,
   ScrollView,
-  StatusBar,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import {colors, getAccount, listAudits} from 'rootmyandroid-shared';
 
-// Shared site-wide palette + typed /v1 API client (packages/shared).
-import { colors, getAccount, listAudits } from 'rootmyandroid-shared';
-
-type ConnectionState =
-  | { status: 'idle' }
-  | { status: 'checking' }
-  | { status: 'connected'; accountNumber: string }
-  | { status: 'error'; message: string };
+type ConnState =
+  | {kind: 'idle'}
+  | {kind: 'busy'}
+  | {kind: 'error'; message: string}
+  | {kind: 'ok'; accountNumber: string; nitro: number; audits: number};
 
 function App(): React.JSX.Element {
   const [accountNumber, setAccountNumber] = useState('');
-  const [connection, setConnection] = useState<ConnectionState>({ status: 'idle' });
-  const [deviceCount, setDeviceCount] = useState<number | null>(null);
+  const [state, setState] = useState<ConnState>({kind: 'idle'});
 
-  const connect = async () => {
-    const trimmed = accountNumber.trim();
-    if (!trimmed) {
-      setConnection({ status: 'error', message: 'Enter your account number first.' });
+  const connect = useCallback(async () => {
+    const acct = accountNumber.trim();
+    if (acct.length === 0 || state.kind === 'busy') {
       return;
     }
-    setConnection({ status: 'checking' });
-    try {
-      const res = await getAccount(trimmed);
-      if (!res.ok) {
-        setConnection({ status: 'error', message: 'Account not found. Check the number and try again.' });
-        return;
-      }
-      setConnection({ status: 'connected', accountNumber: trimmed });
-      // Latest audit snapshot per synced device — each entry is one
-      // monitored Android device.
-      const audits = await listAudits({ accountNumber: trimmed });
-      if (audits.ok && Array.isArray(audits.data)) {
-        setDeviceCount(audits.data.length);
-      }
-    } catch {
-      setConnection({ status: 'error', message: 'Network error. Is the API reachable?' });
+    setState({kind: 'busy'});
+    const account = await getAccount<{nitro_balance?: number}>(acct);
+    if (!account.ok) {
+      setState({
+        kind: 'error',
+        message: `Could not reach rootmyandroid.com (HTTP ${account.status}).`,
+      });
+      return;
     }
-  };
+    const audits = await listAudits<unknown[]>({accountNumber: acct});
+    setState({
+      kind: 'ok',
+      accountNumber: acct,
+      nitro: account.data?.nitro_balance ?? 0,
+      audits: audits.ok ? (audits.data ?? []).length : 0,
+    });
+  }, [accountNumber, state.kind]);
+
+  const statusColor =
+    state.kind === 'ok'
+      ? colors.accent
+      : state.kind === 'error'
+        ? colors.danger
+        : colors.warn;
+  const statusText =
+    state.kind === 'ok'
+      ? 'Connected'
+      : state.kind === 'busy'
+        ? 'Connecting…'
+        : state.kind === 'error'
+          ? 'Connection failed'
+          : 'Not connected';
 
   return (
-    <SafeAreaView style={styles.root}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Root My Android</Text>
-          <Text style={styles.subtitle}>Family monitoring for Android devices</Text>
+    <SafeAreaView className="flex-1 bg-page">
+      <ScrollView contentContainerStyle={{padding: 20, gap: 16}}>
+        <View className="rounded-2xl border border-line bg-raise p-5">
+          <View className="flex-row items-center gap-2.5">
+            <View
+              className="h-2.5 w-2.5 rounded-full"
+              style={{backgroundColor: statusColor}}
+            />
+            <Text className="text-[28px] font-bold tracking-[-0.5px] text-ink">
+              RootMyAndroid
+            </Text>
+          </View>
+          <Text className="mt-1.5 text-sm leading-5 text-dim">
+            Family monitoring for your rooted Android devices. Sign in with
+            your account number to see synced devices and audit reports.
+          </Text>
         </View>
 
-        <View style={styles.panel}>
-          <Text style={styles.panelTitle}>Account</Text>
-          <Text style={styles.panelHint}>
-            Sign in with the account number the monitored devices sync to. No email, no password.
+        <View className="rounded-2xl border border-line bg-raise p-4">
+          <Text className="text-[11px] font-semibold uppercase tracking-[1.2px] text-dim">
+            Account number
           </Text>
           <TextInput
-            style={styles.input}
+            className="mt-3 rounded-xl border border-line bg-inset px-3.5 py-3 text-base text-ink"
             value={accountNumber}
             onChangeText={setAccountNumber}
-            placeholder="1234 5678 9012 3456"
-            placeholderTextColor={colors.faint}
-            keyboardType="number-pad"
+            placeholder="e.g. 1234 5678 9012 3456"
+            placeholderTextColor={colors.dim}
             autoCapitalize="none"
             autoCorrect={false}
-            editable={connection.status !== 'checking'}
+            keyboardType="number-pad"
           />
           <TouchableOpacity
-            style={[styles.button, connection.status === 'checking' && styles.buttonDisabled]}
+            className={`mt-3 items-center rounded-xl bg-accent py-3.5 ${state.kind === 'busy' ? 'opacity-60' : ''}`}
             onPress={connect}
-            disabled={connection.status === 'checking'}
-          >
-            <Text style={styles.buttonText}>
-              {connection.status === 'checking' ? 'Connecting…' : 'Connect'}
-            </Text>
+            disabled={state.kind === 'busy'}
+            activeOpacity={0.8}>
+            {state.kind === 'busy' ? (
+              <ActivityIndicator color="#06121d" />
+            ) : (
+              <Text className="text-base font-bold text-[#06121d]">
+                Connect
+              </Text>
+            )}
           </TouchableOpacity>
-          {connection.status === 'connected' && (
-            <Text style={styles.statusOk}>Connected — {connection.accountNumber}</Text>
-          )}
-          {connection.status === 'error' && <Text style={styles.statusWarn}>{connection.message}</Text>}
+          {state.kind === 'ok' ? (
+            <TouchableOpacity
+              className="mt-3 items-center rounded-xl border border-accent py-2.5"
+              activeOpacity={0.8}>
+              <Text className="text-sm font-semibold text-accent">
+                Copy pairing link
+              </Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
-        <View style={styles.panel}>
-          <Text style={styles.panelTitle}>Monitored devices</Text>
-          {connection.status === 'connected' ? (
-            <Text style={styles.panelHint}>
-              {deviceCount === null
-                ? 'Loading synced devices…'
-                : deviceCount === 0
-                  ? 'No devices syncing yet — install Rooted on an Android device and pair it with this account.'
-                  : `${deviceCount} device${deviceCount === 1 ? '' : 's'} syncing to this account.`}
+        <View className="gap-1 rounded-xl border border-line bg-inset p-3">
+          <Text className="text-sm font-medium text-ink">{statusText}</Text>
+          {state.kind === 'ok' ? (
+            <Text className="text-[13px] leading-[18px] text-dim">
+              {state.nitro} Nitro · {state.audits} synced device
+              {state.audits === 1 ? '' : 's'}
             </Text>
-          ) : (
-            <Text style={styles.panelHint}>Connect your account to see synced Android devices.</Text>
-          )}
+          ) : null}
         </View>
 
-        <Text style={styles.footer}>RootMyAndroid monitors Android devices only.</Text>
+        {state.kind === 'error' ? (
+          <View className="rounded-xl border border-danger bg-[#e05e5e22] p-3">
+            <Text className="text-sm leading-5 text-danger">{state.message}</Text>
+          </View>
+        ) : null}
+
+        {state.kind === 'ok' ? (
+          <View className="gap-2">
+            <View className="rounded-xl border border-line bg-raise px-3.5 py-3">
+              <Text className="text-[15px] font-semibold text-ink">
+                No devices paired yet
+              </Text>
+              <Text className="mt-0.5 text-[13px] text-dim">
+                Install the Rooted app on an Android device and pair it with
+                this account to start monitoring.
+              </Text>
+            </View>
+          </View>
+        ) : null}
+
+        <View className="mt-2 items-center">
+          <Text className="text-xs text-dim">
+            RootMyAndroid monitors Android devices only.
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
-  scroll: { padding: 20, gap: 16 },
-  header: { marginTop: 12, marginBottom: 8 },
-  title: { color: colors.text, fontSize: 28, fontWeight: '700' },
-  subtitle: { color: colors.muted, fontSize: 15, marginTop: 4 },
-  panel: {
-    backgroundColor: colors.panel,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-  },
-  panelTitle: { color: colors.text, fontSize: 18, fontWeight: '600' },
-  panelHint: { color: colors.muted, fontSize: 13, marginTop: 6, lineHeight: 19 },
-  input: {
-    marginTop: 12,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: colors.text,
-    fontSize: 16,
-    fontVariant: ['tabular-nums'],
-  },
-  button: {
-    marginTop: 12,
-    backgroundColor: colors.accent,
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  buttonDisabled: { backgroundColor: colors.accentDim },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  statusOk: { color: colors.good, fontSize: 13, marginTop: 10 },
-  statusWarn: { color: colors.warn, fontSize: 13, marginTop: 10 },
-  footer: { color: colors.faint, fontSize: 12, textAlign: 'center', marginTop: 8 },
-});
 
 export default App;

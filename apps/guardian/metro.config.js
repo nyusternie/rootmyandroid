@@ -17,4 +17,7 @@ const config = {
     unstable_enablePackageExports: true,
   },
 };
-module.exports = mergeConfig(getDefaultConfig(projectRoot), config);
+const { withNativeWind } = require('nativewind/metro');
+module.exports = withNativeWind(mergeConfig(getDefaultConfig(projectRoot), config), {
+  input: './global.css',
+});

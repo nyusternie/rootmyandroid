@@ -1,0 +1,4 @@
+/* apps/guardian/global.css — NativeWind entry (imported once by App.tsx) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

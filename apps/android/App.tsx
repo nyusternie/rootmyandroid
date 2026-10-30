@@ -11,16 +11,19 @@
  * device scan, Devices, and Tools data is mocked for now; real probing and
  * API wiring come from native modules and the /v1 API.
  *
+ * Styled with NativeWind (tailwind.config.js ↔ rootedColors in
+ * packages/shared/src/theme.ts).
+ *
  * @format
  */
 
+import './global.css';
 import React, { useRef, useState } from 'react';
 import {
   Modal,
   NativeModules,
   ScrollView,
   StatusBar,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -30,9 +33,10 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 type Tab = 'scan' | 'devices' | 'backups' | 'tools';
 
-// Shared site-wide palette (packages/shared/src/theme.ts) — single source
-// of truth for app + web colors.
-import { colors } from 'rootmyandroid-shared';
+// Shared Rooted/Guardian palette (packages/shared/src/theme.ts) — single
+// source of truth for app + web colors (dynamic props only; static styling
+// lives in NativeWind classes).
+import { rootedColors as colors } from 'rootmyandroid-shared';
 
 /** Mock Nitro level (0–100) until billing is wired to the API. */
 const MOCK_NITRO = 62;
@@ -43,27 +47,28 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
-      <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Rooted</Text>
+      {/* RN 0.88 types omit StatusBar's Android-only backgroundColor; spread-cast keeps the runtime behavior. */}
+      <StatusBar barStyle="light-content" {...({ backgroundColor: colors.bg } as object)} />
+      <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
+        <View className="flex-row items-center justify-between border-b border-border px-5 pb-3 pt-5">
+          <Text className="text-xl font-bold text-text">Rooted</Text>
           <NitroBar level={MOCK_NITRO} onPress={() => setAccountOpen(true)} />
           <TouchableOpacity
-            style={styles.accountBtn}
+            className="rounded-lg border border-accent px-3 py-1.5"
             onPress={() => setAccountOpen(true)}
           >
-            <Text style={styles.accountBtnText}>Account</Text>
+            <Text className="text-sm font-semibold text-accent">Account</Text>
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.body} contentContainerStyle={styles.bodyPad}>
+        <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, paddingBottom: 32 }}>
           {tab === 'scan' && <ScanScreen />}
           {tab === 'devices' && <DevicesScreen />}
           {tab === 'backups' && <BackupsScreen />}
           {tab === 'tools' && <ToolsScreen />}
         </ScrollView>
 
-        <View style={styles.tabBar}>
+        <View className="flex-row border-t border-border bg-panel">
           <TabButton label="Scan" active={tab === 'scan'} onPress={() => setTab('scan')} />
           <TabButton label="Devices" active={tab === 'devices'} onPress={() => setTab('devices')} />
           <TabButton label="Backups" active={tab === 'backups'} onPress={() => setTab('backups')} />
@@ -75,17 +80,17 @@ function App() {
           animationType="slide"
           onRequestClose={() => setAccountOpen(false)}
         >
-          <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-            <View style={styles.header}>
-              <Text style={styles.headerTitle}>Account</Text>
+          <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
+            <View className="flex-row items-center justify-between border-b border-border px-5 pb-3 pt-5">
+              <Text className="text-xl font-bold text-text">Account</Text>
               <TouchableOpacity
-                style={styles.accountBtn}
+                className="rounded-lg border border-accent px-3 py-1.5"
                 onPress={() => setAccountOpen(false)}
               >
-                <Text style={styles.accountBtnText}>Done</Text>
+                <Text className="text-sm font-semibold text-accent">Done</Text>
               </TouchableOpacity>
             </View>
-            <ScrollView style={styles.body} contentContainerStyle={styles.bodyPad}>
+            <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, paddingBottom: 32 }}>
               <AccountScreen />
             </ScrollView>
           </SafeAreaView>
@@ -98,28 +103,31 @@ function App() {
 function NitroBar({ level, onPress }: { level: number; onPress: () => void }) {
   const fillColor = level <= 20 ? colors.warn : colors.accent;
   return (
-    <TouchableOpacity style={styles.nitroWrap} onPress={onPress}>
-      <Text style={styles.nitroLabel}>NITRO</Text>
-      <View style={styles.nitroTrack}>
-        <View style={[styles.nitroFill, { width: `${level}%`, backgroundColor: fillColor }]} />
+    <TouchableOpacity className="mx-3.5 flex-1 flex-row items-center" onPress={onPress}>
+      <Text className="mr-2 text-[10px] font-bold tracking-[1px] text-faint">NITRO</Text>
+      <View className="h-1.5 flex-1 overflow-hidden rounded-[3px] bg-border">
+        <View className="h-1.5 rounded-[3px]" style={{ width: `${level}%`, backgroundColor: fillColor }} />
       </View>
-      <Text style={[styles.nitroValue, { color: fillColor }]}>{level}</Text>
+      <Text className="ml-2 min-w-[22px] text-right text-[13px] font-bold" style={{ color: fillColor }}>{level}</Text>
     </TouchableOpacity>
   );
 }
 
 function TabButton({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   return (
-    <TouchableOpacity style={[styles.tabBtn, active && styles.tabBtnActive]} onPress={onPress}>
-      <Text style={[styles.tabBtnText, active && styles.tabBtnTextActive]}>{label}</Text>
+    <TouchableOpacity
+      className={`flex-1 items-center py-3.5 ${active ? 'border-t-2 border-accent' : ''}`}
+      onPress={onPress}
+    >
+      <Text className={`text-sm font-medium ${active ? 'text-text' : 'text-muted'}`}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
 function Panel({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
-    <View style={styles.panel}>
-      {title ? <Text style={styles.panelTitle}>{title}</Text> : null}
+    <View className="mb-4 rounded-xl border border-border bg-panel p-4">
+      {title ? <Text className="mb-2.5 text-[15px] font-semibold text-text">{title}</Text> : null}
       {children}
     </View>
   );
@@ -128,32 +136,38 @@ function Panel({ title, children }: { title?: string; children: React.ReactNode 
 function Row({ label, value, tone }: { label: string; value: string; tone?: 'good' | 'warn' }) {
   const valueColor = tone === 'good' ? colors.good : tone === 'warn' ? colors.warn : colors.text;
   return (
-    <View style={styles.row}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={[styles.rowValue, { color: valueColor }]}>{value}</Text>
+    <View className="flex-row justify-between py-1.5">
+      <Text className="text-sm text-muted">{label}</Text>
+      <Text className="text-sm font-medium" style={{ color: valueColor }}>{value}</Text>
     </View>
   );
 }
 
 function PrimaryButton({ label, onPress }: { label: string; onPress?: () => void }) {
   return (
-    <TouchableOpacity style={styles.primaryBtn} onPress={onPress}>
-      <Text style={styles.primaryBtnText}>{label}</Text>
+    <TouchableOpacity className="mt-1 items-center rounded-[10px] bg-accent py-3.5" onPress={onPress}>
+      <Text className="text-base font-semibold text-white">{label}</Text>
     </TouchableOpacity>
   );
 }
 
 function GhostButton({ label, onPress }: { label: string; onPress?: () => void }) {
   return (
-    <TouchableOpacity style={styles.ghostBtn} onPress={onPress}>
-      <Text style={styles.ghostBtnText}>{label}</Text>
+    <TouchableOpacity className="mt-3 items-center rounded-[10px] border border-border py-3.5" onPress={onPress}>
+      <Text className="text-base font-semibold text-text">{label}</Text>
     </TouchableOpacity>
   );
 }
 
 function Badge({ label, pro }: { label: string; pro?: boolean }) {
   return (
-    <Text style={[styles.badge, pro ? styles.badgePro : styles.badgeFree]}>{label}</Text>
+    <Text
+      className={`overflow-hidden rounded-md px-2 py-0.5 text-[11px] font-bold ${
+        pro ? 'bg-accentDim text-accent' : 'bg-border text-muted'
+      }`}
+    >
+      {label}
+    </Text>
   );
 }
 
@@ -314,8 +328,8 @@ function ScanScreen() {
 
   return (
     <View>
-      <Text style={styles.screenTitle}>Device scan</Text>
-      <Text style={styles.muted}>
+      <Text className="mb-1.5 text-2xl font-bold text-text">Device scan</Text>
+      <Text className="mb-4 text-sm leading-5 text-muted">
         Analyze this device to plan a root or upgrade. Scanning is free.
       </Text>
       <Panel title="Device">
@@ -329,32 +343,32 @@ function ScanScreen() {
         <Row label="Integrity" value={result?.integrity ?? '—'} tone={result?.integrityTone} />
       </Panel>
       <PrimaryButton label={scanning ? 'Scanning…' : 'Run scan'} onPress={runScan} />
-      <Text style={styles.faint}>
+      <Text className="mt-3.5 text-xs leading-[17px] text-faint">
         Scanning runs on-device. Nothing is sent until you choose to back up.
       </Text>
       <Panel title="Backup audit">
-        <Text style={styles.muted}>
+        <Text className="mb-4 text-sm leading-5 text-muted">
           Which installed apps are covered by Android backup, and which opted
           out entirely. Read live from the OS — no root required.
         </Text>
         <PrimaryButton label={auditing ? 'Auditing…' : 'Run backup audit'} onPress={runAudit} />
-        {auditError ? <Text style={[styles.faint, { color: colors.warn }]}>{auditError}</Text> : null}
+        {auditError ? <Text className="mt-3.5 text-xs leading-[17px]" style={{ color: colors.warn }}>{auditError}</Text> : null}
         {audit ? (
           <View>
             <Row label="Participating in backup" value={String(audit.participating)} tone="good" />
             <Row label="Not covered at all" value={String(audit.excluded)} tone="warn" />
             <Row label="Third-party apps installed" value={String(audit.userApps)} />
             {audit.excludedLabels.length > 0 ? (
-              <Text style={styles.faint}>
+              <Text className="mt-3.5 text-xs leading-[17px] text-faint">
                 Opted out of backup: {audit.excludedLabels.slice(0, 12).join(', ')}
                 {audit.excludedLabels.length > 12 ? ` +${audit.excludedLabels.length - 12} more` : ''}
               </Text>
             ) : null}
-            <Text style={styles.faint}>
+            <Text className="mt-3.5 text-xs leading-[17px] text-faint">
               Sync this audit to your account number to see it at rootmyandroid.com/audit.
             </Text>
             <TextInput
-              style={styles.input}
+              className="mb-1 mt-2 rounded-[10px] border border-border px-3.5 py-3 text-[15px] text-text"
               placeholder="1234 5678 9012 3456"
               placeholderTextColor={colors.faint}
               keyboardType="number-pad"
@@ -365,7 +379,7 @@ function ScanScreen() {
             />
             <PrimaryButton label={syncing ? 'Syncing…' : 'Sync audit to account'} onPress={syncAudit} />
             {syncMsg ? (
-              <Text style={[styles.faint, { color: syncOk ? colors.good : colors.warn }]}>{syncMsg}</Text>
+              <Text className="mt-3.5 text-xs leading-[17px]" style={{ color: syncOk ? colors.good : colors.warn }}>{syncMsg}</Text>
             ) : null}
           </View>
         ) : null}
@@ -382,24 +396,24 @@ const mockDevices = [
 function DevicesScreen() {
   return (
     <View>
-      <Text style={styles.screenTitle}>Devices</Text>
-      <Text style={styles.muted}>
+      <Text className="mb-1.5 text-2xl font-bold text-text">Devices</Text>
+      <Text className="mb-4 text-sm leading-5 text-muted">
         Guardian devices synced to this account. Pairing is done from the
         Guardian app on the managed device.
       </Text>
       <Panel title="Paired devices">
         {mockDevices.map((d) => (
-          <View key={d.name} style={styles.deviceRow}>
-            <View style={styles.deviceInfo}>
-              <Text style={styles.deviceName}>{d.name}</Text>
-              <Text style={styles.deviceDetail}>{d.detail}</Text>
+          <View key={d.name} className="flex-row items-center py-2">
+            <View className="flex-1">
+              <Text className="text-[15px] font-semibold text-text">{d.name}</Text>
+              <Text className="mt-0.5 text-[13px] text-muted">{d.detail}</Text>
             </View>
             <Badge label={d.pro ? 'PRO' : 'FREE'} pro={d.pro} />
           </View>
         ))}
       </Panel>
       <PrimaryButton label="Pair a new device" />
-      <Text style={styles.faint}>
+      <Text className="mt-3.5 text-xs leading-[17px] text-faint">
         Open Guardian on the device you want to manage and enter this
         account's 16-digit number.
       </Text>
@@ -410,7 +424,7 @@ function DevicesScreen() {
 function AccountScreen() {
   return (
     <View>
-      <Text style={styles.muted}>
+      <Text className="mb-4 text-sm leading-5 text-muted">
         Mullvad-style: a 16-digit account number, no email, no personal data.
       </Text>
       <Panel title="Your account">
@@ -424,7 +438,7 @@ function AccountScreen() {
       </Panel>
       <PrimaryButton label="Buy Nitro — $5 / 100" />
       <GhostButton label="Create new account" />
-      <Text style={styles.faint}>
+      <Text className="mt-3.5 text-xs leading-[17px] text-faint">
         Nitro is the energy your account burns to keep PRO features running.
         It is consumed automatically by active devices. Your account number
         is the only credential. Keep it safe — it cannot be recovered.
@@ -436,8 +450,8 @@ function AccountScreen() {
 function BackupsScreen() {
   return (
     <View>
-      <Text style={styles.screenTitle}>Backups</Text>
-      <Text style={styles.muted}>
+      <Text className="mb-1.5 text-2xl font-bold text-text">Backups</Text>
+      <Text className="mb-4 text-sm leading-5 text-muted">
         Encrypted on this device with a key only you hold. We can't read or
         recover them.
       </Text>
@@ -446,10 +460,10 @@ function BackupsScreen() {
         <Row label="Included" value="5 GB" />
       </Panel>
       <Panel title="Backups">
-        <View style={styles.deviceRow}>
-          <View style={styles.deviceInfo}>
-            <Text style={styles.deviceName}>Full backup</Text>
-            <Text style={styles.deviceDetail}>Oct 15, 2026 · 1.2 GB · encrypted</Text>
+        <View className="flex-row items-center py-2">
+          <View className="flex-1">
+            <Text className="text-[15px] font-semibold text-text">Full backup</Text>
+            <Text className="mt-0.5 text-[13px] text-muted">Oct 15, 2026 · 1.2 GB · encrypted</Text>
           </View>
         </View>
       </Panel>
@@ -460,15 +474,15 @@ function BackupsScreen() {
 
 function ToolRow({ name, desc, pro }: { name: string; desc: string; pro?: boolean }) {
   return (
-    <TouchableOpacity style={styles.toolRow}>
-      <View style={styles.deviceInfo}>
-        <View style={styles.toolHeader}>
-          <Text style={styles.deviceName}>{name}</Text>
+    <TouchableOpacity className="flex-row items-center py-2.5">
+      <View className="flex-1">
+        <View className="flex-row items-center gap-2">
+          <Text className="text-[15px] font-semibold text-text">{name}</Text>
           {pro ? <Badge label="PRO" pro /> : null}
         </View>
-        <Text style={styles.toolDesc}>{desc}</Text>
+        <Text className="mt-0.5 text-[13px] leading-[18px] text-muted">{desc}</Text>
       </View>
-      <Text style={styles.chevron}>›</Text>
+      <Text className="ml-3 text-[22px] text-faint">›</Text>
     </TouchableOpacity>
   );
 }
@@ -476,8 +490,8 @@ function ToolRow({ name, desc, pro }: { name: string; desc: string; pro?: boolea
 function ToolsScreen() {
   return (
     <View>
-      <Text style={styles.screenTitle}>Tools</Text>
-      <Text style={styles.muted}>
+      <Text className="mb-1.5 text-2xl font-bold text-text">Tools</Text>
+      <Text className="mb-4 text-sm leading-5 text-muted">
         Advanced features. PRO tools require time credit on your account.
       </Text>
       <Panel title="Root & ROM">
@@ -508,107 +522,5 @@ function ToolsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerTitle: { color: colors.text, fontSize: 20, fontWeight: '700' },
-  headerSub: { color: colors.accent, fontSize: 13, fontWeight: '600', letterSpacing: 1 },
-  accountBtn: {
-    borderWidth: 1,
-    borderColor: colors.accent,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  accountBtnText: { color: colors.accent, fontSize: 14, fontWeight: '600' },
-  nitroWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', marginHorizontal: 14 },
-  nitroLabel: { color: colors.faint, fontSize: 10, fontWeight: '700', letterSpacing: 1, marginRight: 8 },
-  nitroTrack: { flex: 1, height: 6, borderRadius: 3, backgroundColor: colors.border, overflow: 'hidden' },
-  nitroFill: { height: 6, borderRadius: 3 },
-  nitroValue: { fontSize: 13, fontWeight: '700', marginLeft: 8, minWidth: 22, textAlign: 'right' },
-  body: { flex: 1 },
-  bodyPad: { padding: 20, paddingBottom: 32 },
-  screenTitle: { color: colors.text, fontSize: 24, fontWeight: '700', marginBottom: 6 },
-  muted: { color: colors.muted, fontSize: 14, lineHeight: 20, marginBottom: 16 },
-  faint: { color: colors.faint, fontSize: 12, lineHeight: 17, marginTop: 14 },
-  panel: {
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  panelTitle: { color: colors.text, fontSize: 15, fontWeight: '600', marginBottom: 10 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
-  rowLabel: { color: colors.muted, fontSize: 14 },
-  rowValue: { color: colors.text, fontSize: 14, fontWeight: '500' },
-  primaryBtn: {
-    backgroundColor: colors.accent,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  primaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  ghostBtn: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  ghostBtnText: { color: colors.text, fontSize: 16, fontWeight: '600' },
-  badge: {
-    fontSize: 11,
-    fontWeight: '700',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-    overflow: 'hidden',
-  },
-  badgePro: { color: colors.accent, backgroundColor: colors.accentDim },
-  badgeFree: { color: colors.muted, backgroundColor: colors.border },
-  deviceRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
-  deviceInfo: { flex: 1 },
-  deviceName: { color: colors.text, fontSize: 15, fontWeight: '600' },
-  deviceDetail: { color: colors.muted, fontSize: 13, marginTop: 2 },
-  toolRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
-  toolHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  toolDesc: { color: colors.muted, fontSize: 13, marginTop: 2, lineHeight: 18 },
-  chevron: { color: colors.faint, fontSize: 22, marginLeft: 12 },
-  tabBar: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.panel,
-  },
-  tabBtn: { flex: 1, paddingVertical: 14, alignItems: 'center' },
-  tabBtnActive: { borderTopWidth: 2, borderTopColor: colors.accent },
-  tabBtnText: { color: colors.muted, fontSize: 14, fontWeight: '500' },
-  tabBtnTextActive: { color: colors.text },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 10,
-    color: colors.text,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    marginTop: 8,
-    marginBottom: 4,
-  },
-});
 
 export default App;
