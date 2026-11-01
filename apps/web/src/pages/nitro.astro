@@ -18,6 +18,27 @@ const PACKS = [
 ]
 const perNitro = (p: { price: number; nitro: number }) =>
   `$${(p.price / p.nitro).toFixed(3)}`
+
+// Structured data for the pricing on this page. Derived from PACKS so it
+// always mirrors the visible copy (site SEO rule); the landing page carries
+// no Offer schema because it shows no pricing.
+const offerSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Root My Android',
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Android',
+  url: 'https://rootmyandroid.com/nitro',
+  offers: {
+    '@type': 'AggregateOffer',
+    priceCurrency: 'USD',
+    lowPrice: Math.min(...PACKS.map((p) => p.price)).toFixed(2),
+    highPrice: Math.max(...PACKS.map((p) => p.price)).toFixed(2),
+    offerCount: PACKS.length,
+    description:
+      'Nitro top-up packs — $5 = 100 Nitro base rate, tiered discounts up to 40% off.',
+  },
+}
 ---
 
 <Base
@@ -96,4 +117,6 @@ const perNitro = (p: { price: number; nitro: number }) =>
       </p>
     </div>
   </div>
+
+  <script type="application/ld+json" set:html={JSON.stringify(offerSchema)} />
 </Base>
