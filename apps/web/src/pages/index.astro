@@ -2,9 +2,8 @@
 // src/pages/index.astro — landing page.
 import Base from '../layouts/Base.astro'
 
-// Landing-only structured data: the product + its Nitro top-up offer.
-// Mirrors the visible pricing copy below; keep the two in sync. Pack price
-// range mirrors the API-pinned table (rootmyandroid-api/src/lib/nitro.js).
+// Landing-only structured data: the product + its $5/month offer.
+// Mirrors the visible pricing copy below; keep the two in sync.
 const appSchema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -15,11 +14,10 @@ const appSchema = {
   description:
     'Scan your Android device over ADB and get an unlocking / upgrade plan matched to your exact model and firmware, and manage your child\'s device with Guardian Angel. No email, no password.',
   offers: {
-    '@type': 'AggregateOffer',
-    lowPrice: '5.00',
-    highPrice: '30.00',
+    '@type': 'Offer',
+    price: '5.00',
     priceCurrency: 'USD',
-    description: 'Nitro top-up packs. Basic scanning is free.',
+    description: 'PRO — $5/month. Basic scanning is free.',
   },
 }
 ---
@@ -28,14 +26,15 @@ const appSchema = {
   title="Root My Android"
   description="Android tools for device owners — unlock & customize your device, and manage your child's device with Guardian Angel. No email, no password."
 >
-  <section class="hero hero-warm">
+  <section class="hero">
     <div class="container hero-grid">
       <div>
         <h1>Free your mobile OS.</h1>
         <p class="lede">
-          Connect your Android device and get a clear unlocking &amp; upgrade
-          plan — bootloader status, root method, and custom-ROM options. No
-          email, no password: your account is just a number.
+          Scan your Android device right in your browser — private, read-only,
+          nothing leaves your computer — and get a clear unlocking &amp;
+          upgrade plan. And with Guardian Angel, keep your child's device safe
+          under the same privacy-first approach.
         </p>
         <a
           class="btn btn-primary"
@@ -44,7 +43,7 @@ const appSchema = {
           >SCAN NOW</a
         >
         <div class="row" style="margin-top: 1.75rem">
-          <a class="btn btn-primary" href="/account">Get your account number</a>
+          <a class="btn btn-primary" href="/download">Meet Guardian Angel</a>
           <a class="btn" href="/guides">Browse the guides</a>
         </div>
       </div>
@@ -61,23 +60,7 @@ const appSchema = {
   </section>
 
   <section class="container" style="padding-top: 2.5rem; padding-bottom: 2rem">
-    <div class="grid-3">
-      <div class="panel step-card">
-        <img
-          src="/img/step-account.webp"
-          alt="Illustration of a hand holding an account-number card"
-          width="480"
-          height="480"
-          loading="lazy"
-        />
-        <div class="step-body">
-          <h2>1. Get a number</h2>
-          <p class="muted">
-            Generate a 16-digit account number. That's the whole account — no
-            sign-up, no personal data, Mullvad-style.
-          </p>
-        </div>
-      </div>
+    <div class="grid-3 steps-grid">
       <div class="panel step-card">
         <img
           src="/img/step-connect.webp"
@@ -87,10 +70,27 @@ const appSchema = {
           loading="lazy"
         />
         <div class="step-body">
-          <h2>2. Connect your device</h2>
+          <h2>1. Connect your device</h2>
           <p class="muted">
-            We scan your phone over ADB to detect the bootloader, current build,
-            and which root methods and ROMs actually work on it.
+            Plug in over USB and start a scan right from your browser — no
+            installs, no sign-up.
+          </p>
+        </div>
+      </div>
+      <div class="panel step-card">
+        <img
+          src="/img/step-scan.webp"
+          alt="Illustration of a magnifying glass scanning an Android phone screen with a small padlock, symbolizing a private local scan"
+          width="480"
+          height="480"
+          loading="lazy"
+        />
+        <div class="step-body">
+          <h2>2. Scan locally</h2>
+          <p class="muted">
+            The scan runs on your computer over ADB and is read-only:
+            bootloader status, current build, and which root methods and ROMs
+            actually work on it. Nothing is uploaded.
           </p>
         </div>
       </div>
@@ -112,17 +112,17 @@ const appSchema = {
       </div>
     </div>
     <div class="panel" style="margin-top: 0.9rem">
-      <h2>Top up with Nitro</h2>
+      <h2>$5/month</h2>
       <p class="muted">
-        Basic scanning is free. PRO features run on Nitro — top up once, then
-        spend it on the services you actually use, at your own pace.
+        Basic scanning is free. Advanced analysis and automation are $5/month
+        payable by card or crypto.
       </p>
     </div>
   </section>
 
   <section class="container" style="padding-bottom: 2rem">
     <h2>Two apps, one account number</h2>
-    <div class="grid-2" style="margin-top: 1.5rem">
+    <div class="grid-2 apps-grid" style="margin-top: 1.5rem">
       <div class="panel">
         <img
           class="app-badge"
@@ -182,12 +182,8 @@ const appSchema = {
 </Base>
 
 <style>
-  /* Warm consumer-friendly hero band (page-scoped; global dark theme
-     untouched). Palette matches the generated illustration set. */
-  .hero-warm {
-    background: #fff6ea;
-    border-bottom: 1px solid #f3e2c8;
-  }
+  /* Two-column hero on the standard dark theme; the illustration keeps its
+     warm cream canvas as a rounded art card. */
   .hero-grid {
     display: grid;
     gap: 2rem;
@@ -198,18 +194,19 @@ const appSchema = {
       grid-template-columns: 1.05fr 0.95fr;
     }
   }
-  .hero-warm h1 {
-    color: #2e1f14;
-  }
-  .hero-warm .lede {
-    color: #6b543d;
-  }
   .hero-art img {
     display: block;
     width: 100%;
     height: auto;
     border-radius: 1.25rem;
-    box-shadow: 0 12px 32px rgba(120, 72, 20, 0.18);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Grids lay panels out side-by-side: the global stacked-panel margin
+     (.panel + .panel) must not push grid cards down. */
+  .steps-grid .panel + .panel,
+  .apps-grid .panel + .panel {
+    margin-top: 0;
   }
 
   /* How-it-works cards: illustration on top, copy below. */
@@ -239,6 +236,6 @@ const appSchema = {
     height: 72px;
     border-radius: 1rem;
     margin-bottom: 1rem;
-    box-shadow: 0 6px 18px rgba(120, 72, 20, 0.16);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
   }
 </style>
