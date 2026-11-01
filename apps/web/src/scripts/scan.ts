@@ -342,6 +342,7 @@ async function run(manager: AdbDaemonWebUsbDeviceManager): Promise<void> {
       // Verified in the installed source (manager.js): `undefined` is
       // returned when the picker is cancelled (NotFoundError) OR when the
       // chosen device exposes no ADB interface.
+      window.rmaEvent?.('scan_cancelled')
       show(
         errorBox,
         'No device selected — or the selected device exposes no ADB interface. Pick your Android device in the chooser and try again.'
@@ -381,9 +382,15 @@ async function run(manager: AdbDaemonWebUsbDeviceManager): Promise<void> {
     progress('Scan complete.')
     window.rmaEvent?.('scan_complete')
   } catch (e) {
+    // Failure analytics: the stage detail is what turns '86 connects, 9
+    // completions' into an actionable funnel (server caps detail at 150
+    // chars; rmaEvent itself caps at 500 — pre-truncate to stay inside).
+    const fail = (stage: string) => window.rmaEvent?.('scan_failed', stage.slice(0, 140))
     if (disconnected || (e instanceof Error && e.message === 'disconnected')) {
+      fail('disconnected')
       show(errorBox, 'The device disconnected mid-scan. Reconnect it and try again.')
     } else if (e instanceof AdbDaemonWebUsbDevice.DeviceBusyError) {
+      fail('busy')
       show(
         errorBox,
         'The device is busy — another browser tab or program already holds its USB interface. Close it and try again. If a local ADB server is running (adb devices), stop it with `adb kill-server` and retry.'
@@ -391,11 +398,13 @@ async function run(manager: AdbDaemonWebUsbDeviceManager): Promise<void> {
     } else if (adb === null) {
       // Failure before/while authenticating: the RSA prompt was denied,
       // revoked, or USB debugging is off.
+      fail('auth')
       show(
         errorBox,
         'Could not authorize with the device. Make sure USB debugging is enabled, tap “Allow” on the device prompt, and try again.'
       )
     } else {
+      fail(`collect: ${e instanceof Error ? e.message : 'unknown error'}`)
       show(
         errorBox,
         `Scan failed: ${e instanceof Error ? e.message : 'unknown error'}. Reconnect the device and try again.`
@@ -422,6 +431,10 @@ const manager = AdbDaemonWebUsbDeviceManager.BROWSER
 if (!manager) {
   connectPanel.hidden = true
   noWebusb.hidden = false
+  // Quantifies the structurally disqualified audience (no WebUSB: Safari,
+  // Firefox, ALL mobile browsers) — the denominator for /scan pageviews
+  // that can never reach scan_connect.
+  window.rmaEvent?.('scan_unsupported', 'no_webusb')
 } else {
   connectBtn.addEventListener('click', () => void run(manager))
 }
