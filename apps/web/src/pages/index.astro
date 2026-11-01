@@ -2,8 +2,9 @@
 // src/pages/index.astro — landing page.
 import Base from '../layouts/Base.astro'
 
-// Landing-only structured data: the product + its $5/month offer.
-// Mirrors the visible pricing copy below; keep the two in sync.
+// Landing-only structured data: the product + its Nitro top-up offer.
+// Mirrors the visible pricing copy below; keep the two in sync. Pack price
+// range mirrors the API-pinned table (rootmyandroid-api/src/lib/nitro.js).
 const appSchema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -12,69 +13,156 @@ const appSchema = {
   operatingSystem: 'Android',
   url: 'https://rootmyandroid.com',
   description:
-    'Scan your Android device over ADB and get a rooting / upgrade plan matched to your exact model and firmware. No email, no password.',
+    'Scan your Android device over ADB and get an unlocking / upgrade plan matched to your exact model and firmware, and manage your child\'s device with Guardian Angel. No email, no password.',
   offers: {
-    '@type': 'Offer',
-    price: '5.00',
+    '@type': 'AggregateOffer',
+    lowPrice: '5.00',
+    highPrice: '30.00',
     priceCurrency: 'USD',
-    description: 'PRO — $5/month. Basic scanning is free.',
+    description: 'Nitro top-up packs. Basic scanning is free.',
   },
 }
 ---
 
-<Base title="Root My Android">
-  <section class="hero">
-    <div class="container">
-      <h1>Free your mobile OS.</h1>
-      <p class="lede">
-        Connect your Android device and get a clear rooting &amp; upgrade plan —
-        bootloader status, root method, and custom-ROM options. No email, no
-        password: your account is just a number.
-      </p>
-      <a
-        class="btn btn-primary"
-        href="/scan"
-        style="display: block; margin-top: 1.75rem; padding: 1.5rem 2rem; font-size: 1.75rem; text-align: center; letter-spacing: 0.08em"
-        >SCAN NOW</a
-      >
-      <div class="row" style="margin-top: 1.75rem">
-        <a class="btn btn-primary" href="/account">Get your account number</a>
-        <a class="btn" href="/guides">Browse the guides</a>
+<Base
+  title="Root My Android"
+  description="Android tools for device owners — unlock & customize your device, and manage your child's device with Guardian Angel. No email, no password."
+>
+  <section class="hero hero-warm">
+    <div class="container hero-grid">
+      <div>
+        <h1>Free your mobile OS.</h1>
+        <p class="lede">
+          Connect your Android device and get a clear unlocking &amp; upgrade
+          plan — bootloader status, root method, and custom-ROM options. No
+          email, no password: your account is just a number.
+        </p>
+        <a
+          class="btn btn-primary"
+          href="/scan"
+          style="display: block; margin-top: 1.75rem; padding: 1.5rem 2rem; font-size: 1.75rem; text-align: center; letter-spacing: 0.08em"
+          >SCAN NOW</a
+        >
+        <div class="row" style="margin-top: 1.75rem">
+          <a class="btn btn-primary" href="/account">Get your account number</a>
+          <a class="btn" href="/guides">Browse the guides</a>
+        </div>
+      </div>
+      <div class="hero-art">
+        <img
+          src="/img/hero.webp"
+          alt="Illustration of a coral Android phone with an open golden padlock and a blue shield with a heart, representing device unlocking and parental protection"
+          width="880"
+          height="880"
+          fetchpriority="high"
+        />
       </div>
     </div>
   </section>
 
-  <section class="container" style="padding-bottom: 2rem">
-    <div class="grid-2">
-      <div class="panel">
-        <h2>1. Get a number</h2>
-        <p class="muted">
-          Generate a 16-digit account number. That's the whole account — no
-          sign-up, no personal data, Mullvad-style.
-        </p>
+  <section class="container" style="padding-top: 2.5rem; padding-bottom: 2rem">
+    <div class="grid-3">
+      <div class="panel step-card">
+        <img
+          src="/img/step-account.webp"
+          alt="Illustration of a hand holding an account-number card"
+          width="480"
+          height="480"
+          loading="lazy"
+        />
+        <div class="step-body">
+          <h2>1. Get a number</h2>
+          <p class="muted">
+            Generate a 16-digit account number. That's the whole account — no
+            sign-up, no personal data, Mullvad-style.
+          </p>
+        </div>
       </div>
-      <div class="panel">
-        <h2>2. Connect your device</h2>
-        <p class="muted">
-          We scan your phone over ADB to detect the bootloader, current build,
-          and which root methods and ROMs actually work on it.
-        </p>
+      <div class="panel step-card">
+        <img
+          src="/img/step-connect.webp"
+          alt="Illustration of an Android phone connected by USB cable to a laptop"
+          width="480"
+          height="480"
+          loading="lazy"
+        />
+        <div class="step-body">
+          <h2>2. Connect your device</h2>
+          <p class="muted">
+            We scan your phone over ADB to detect the bootloader, current build,
+            and which root methods and ROMs actually work on it.
+          </p>
+        </div>
       </div>
-      <div class="panel">
-        <h2>3. Get your plan</h2>
-        <p class="muted">
-          A step-by-step rooting / upgrade plan matched to your exact device and
-          firmware — not a generic forum thread.
-        </p>
-      </div>
-      <div class="panel">
-        <h2>$5/month</h2>
-        <p class="muted">
-          Basic scanning is free. Advanced analysis and automation are $5/month
-          payable by card or crypto.
-        </p>
+      <div class="panel step-card">
+        <img
+          src="/img/step-plan.webp"
+          alt="Illustration of a clipboard checklist with a small rocket launching from it"
+          width="480"
+          height="480"
+          loading="lazy"
+        />
+        <div class="step-body">
+          <h2>3. Get your plan</h2>
+          <p class="muted">
+            A step-by-step unlocking / upgrade plan matched to your exact device
+            and firmware — not a generic forum thread.
+          </p>
+        </div>
       </div>
     </div>
+    <div class="panel" style="margin-top: 0.9rem">
+      <h2>Top up with Nitro</h2>
+      <p class="muted">
+        Basic scanning is free. PRO features run on Nitro — top up once, then
+        spend it on the services you actually use, at your own pace.
+      </p>
+    </div>
+  </section>
+
+  <section class="container" style="padding-bottom: 2rem">
+    <h2>Two apps, one account number</h2>
+    <div class="grid-2" style="margin-top: 1.5rem">
+      <div class="panel">
+        <img
+          class="app-badge"
+          src="/img/badge-rooted.webp"
+          alt="Rooted app icon — android robot with an open padlock"
+          width="256"
+          height="256"
+          loading="lazy"
+        />
+        <h2>Rooted</h2>
+        <p class="muted">
+          The unlocking assistant for your own device. Scan over ADB, check the
+          bootloader, and follow a plan matched to your exact model and
+          firmware.
+        </p>
+        <a class="btn" href="/scan">Scan your device</a>
+      </div>
+      <div class="panel">
+        <img
+          class="app-badge"
+          src="/img/badge-guardian.webp"
+          alt="Guardian Angel app icon — shield with a heart and a halo"
+          width="256"
+          height="256"
+          loading="lazy"
+        />
+        <h2>Guardian Angel</h2>
+        <p class="muted">
+          Parental device-management for your minor children. Installed and
+          configured by you on your child's device, it syncs to your account
+          number — no child profile is ever created or stored.
+        </p>
+        <a class="btn" href="/download">Download the apps</a>
+      </div>
+    </div>
+    <p class="muted" style="margin-top: 1.5rem">
+      Both apps are covered by our <a href="/terms">Terms of Service</a>,
+      including the full
+      <a href="/terms">rooting &amp; unlocking risk disclosure</a>.
+    </p>
   </section>
 
   <section class="container">
@@ -92,3 +180,65 @@ const appSchema = {
 
   <script type="application/ld+json" set:html={JSON.stringify(appSchema)} />
 </Base>
+
+<style>
+  /* Warm consumer-friendly hero band (page-scoped; global dark theme
+     untouched). Palette matches the generated illustration set. */
+  .hero-warm {
+    background: #fff6ea;
+    border-bottom: 1px solid #f3e2c8;
+  }
+  .hero-grid {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+  }
+  @media (min-width: 720px) {
+    .hero-grid {
+      grid-template-columns: 1.05fr 0.95fr;
+    }
+  }
+  .hero-warm h1 {
+    color: #2e1f14;
+  }
+  .hero-warm .lede {
+    color: #6b543d;
+  }
+  .hero-art img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 1.25rem;
+    box-shadow: 0 12px 32px rgba(120, 72, 20, 0.18);
+  }
+
+  /* How-it-works cards: illustration on top, copy below. */
+  .step-card {
+    padding: 0;
+    overflow: hidden;
+  }
+  .step-card img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .step-body {
+    padding: 1.25rem 1.5rem 1.5rem;
+  }
+  .step-body h2 {
+    margin: 0 0 0.75rem;
+  }
+  .step-body p {
+    margin: 0;
+  }
+
+  /* App badges on the two-product panels. */
+  .app-badge {
+    display: block;
+    width: 72px;
+    height: 72px;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 6px 18px rgba(120, 72, 20, 0.16);
+  }
+</style>

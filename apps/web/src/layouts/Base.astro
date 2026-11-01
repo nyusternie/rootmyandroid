@@ -11,7 +11,7 @@ interface Props {
 
 const {
   title,
-  description = 'Root My Android — scan your Android device and get a rooting / upgrade plan. No email, no password. $5/month.',
+  description = 'Root My Android — scan your Android device and get a rooting / upgrade plan. No email, no password. Top up with Nitro.',
 } = Astro.props
 
 const pageTitle = title === 'Root My Android' ? title : `${title} — Root My Android`
@@ -52,7 +52,7 @@ const siteSchema = {
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Root My Android — device-matched rooting plans" />
+    <meta property="og:image:alt" content="Root My Android — device unlocking assistant and Guardian Angel parental controls" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
