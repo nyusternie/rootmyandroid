@@ -18,17 +18,17 @@ listed under "Not in this repo" must be transferred out-of-band.
 Root My Android (https://rootmyandroid.com) is a paid service that analyzes a
 physical Android device and produces a rooting / upgrade plan. Account model
 is Mullvad-style: a random 16-digit account number, no email, no password.
-Revenue is Nitro credit (in-account unit; $5 = 100 Nitro, tiered packs) that
+Revenue is Halo credit (in-account unit; $5 = 100 Halos, tiered packs) that
 pays for three PRO services, priced server-side by the API:
 
-| Service         | Nitro | Billed on                                                  |
-| --------------- | ----- | ---------------------------------------------------------- |
-| `cloud_backup`  | 20    | Registering one encrypted backup (5 GB per-account cap)    |
-| `guardian_sync` | 10    | Pairing a NEW Guardian device (re-syncs are free)          |
-| `audit_report`  | 5     | First save into a (device, audit_type) slot (refresh free) |
+| Service         | Halo | Billed on                                                  |
+| --------------- | ---- | ---------------------------------------------------------- |
+| `cloud_backup`  | 20   | Registering one encrypted backup (5 GB per-account cap)    |
+| `guardian_sync` | 10   | Pairing a NEW Guardian device (re-syncs are free)          |
+| `audit_report`  | 5    | First save into a (device, audit_type) slot (refresh free) |
 
 The API's price table is the single source of truth; the web UI renders
-prices dynamically from `GET /v1/nitro/services`. Never hard-code prices in a
+prices dynamically from `GET /v1/halo/services`. Never hard-code prices in a
 client. Changing a price requires owner approval and is locked by an API test.
 
 The product's **free core** — device scanning, bootloader/unlock detection,
@@ -60,7 +60,7 @@ Android device.)
 ├── apps/
 │   ├── web/                # Astro 7 static site → dist/ → Cloudflare Pages
 │   │   ├── src/pages/      # /, /account, /audit, /backup-audit, /download,
-│   │   │                   # /guides, /nitro, /pay, /privacy, /profile,
+│   │   │                   # /guides, /halo, /pay, /privacy, /profile,
 │   │   │                   # /refunds, /roms, /terms (+ /scan — §10, new)
 │   │   ├── src/scripts/    # Vanilla TS: account.ts, analytics.ts, audit.ts,
 │   │   │                   # deposit.ts, payment.ts (the ONLY client JS,
@@ -82,7 +82,7 @@ Android device.)
 Sibling repos (separate codebases, NOT in this repo; check out
 `rootmyandroid-api` and `rootmyandroid-admin` alongside this one):
 
-- `rootmyandroid-api` — the Worker: accounts, Nitro, payments, audits,
+- `rootmyandroid-api` — the Worker: accounts, Halo, payments, audits,
   analytics collector, analytics monitor. vitest workers-pool suite.
 - `rootmyandroid-admin` — the analytics dashboard Worker (SIWE auth,
   snapshots, goals, world/US choropleths, previous-period deltas). vitest
@@ -314,9 +314,9 @@ only inspects the browsing device. Build `/scan`.
    (labeled heuristic), and matched next steps (links to verified
    `/guides/*` / `/roms/*` where they exist).
 3. Optional **Save to account**: the report JSON is stored via
-   `saveAudit(..., auditType: 'scan')` — billed as `audit_report` (5 Nitro,
+   `saveAudit(..., auditType: 'scan')` — billed as `audit_report` (5 Halo,
    first save per (device, audit_type) slot, refresh free), price rendered
-   dynamically from `GET /v1/nitro/services`. Never hard-code the price.
+   dynamically from `GET /v1/halo/services`. Never hard-code the price.
 4. Every non-happy path renders a clear state: no WebUSB in this browser →
    static explainer (which browsers work); picker cancelled; USB debugging
    off; RSA authorization pending/denied; device disconnected mid-scan.
@@ -403,8 +403,8 @@ applies; never write/flash/`su`):
    enabling Developer options + USB debugging, with screenshots deferred to
    Phase-3 asset workflow if needed).
 4. Scanning (progress list of facts as they resolve).
-5. Report rendered + Save-to-account panel (account-number input, Nitro
-   price from `/v1/nitro/services`, insufficient-balance path reusing the
+5. Report rendered + Save-to-account panel (account-number input, Halo
+   price from `/v1/halo/services`, insufficient-balance path reusing the
    existing checkout flows).
 6. Errors: picker cancelled, unauthorized/denied, disconnected mid-scan,
    unsupported device interface — each with a retry path.
@@ -426,7 +426,7 @@ applies; never write/flash/`su`):
 - `/scan` live on Pages; all §10.5 states reachable; report matches §10.1
   on at least one real device per available OEM, with the verification
   matrix (device + date + result) documented in the PR.
-- Save-to-account works end-to-end with a real account (5 Nitro charged on
+- Save-to-account works end-to-end with a real account (5 Halo charged on
   first save, refresh free — verify against the API's pinned price table).
 - `/privacy`, sitemap, and landing "what the scan detects" copy updated in
   the same PR to match the SHIPPED behavior.

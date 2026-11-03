@@ -127,19 +127,19 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
 - Mullvad-style accounts: random account number, no personal data, time-based
   credit. Design all billing code around that model.
 
-## Nitro economy (live)
+## Halo economy (live)
 
-Nitro is the in-account credit unit that PRO features burn. Base rate:
-$5 = 100 Nitro, with tiered pack discounts. Three PRO services are gated by
-Nitro, priced server-side in the API (owner-approved 2026-10-24):
+Halo is the in-account credit unit that PRO features burn. Base rate:
+$5 = 100 Halos, with tiered pack discounts. Three PRO services are gated by
+Halo, priced server-side in the API (owner-approved 2026-10-24):
 
-| Service         | Nitro | Billed on                                                   |
-| --------------- | ----- | ----------------------------------------------------------- |
-| `cloud_backup`  | 20    | Registering one encrypted backup (5 GB per-account cap)     |
-| `guardian_sync` | 10    | Pairing a NEW Guardian device (re-syncs are free)           |
-| `audit_report`  | 5     | First save into a (device, audit_type) slot (refresh free)  |
+| Service         | Halo | Billed on                                                   |
+| --------------- | ---- | ----------------------------------------------------------- |
+| `cloud_backup`  | 20   | Registering one encrypted backup (5 GB per-account cap)     |
+| `guardian_sync` | 10   | Pairing a NEW Guardian device (re-syncs are free)           |
+| `audit_report`  | 5    | First save into a (device, audit_type) slot (refresh free)  |
 
-- The API's price table is the single source of truth; `GET /v1/nitro/services`
+- The API's price table is the single source of truth; `GET /v1/halo/services`
   publishes the catalog so sites/apps render prices dynamically. Never
   hard-code prices in clients.
 - Changing any price requires explicit owner approval; a pinned API test
@@ -187,7 +187,7 @@ full build brief is HANDOFF.md §10; the binding rules are:
   report to an account number (`saveAudit`, audit_type slug e.g. `scan` —
   the API's audit types are deliberately open-ended, pattern
   `^[a-z][a-z0-9-]{0,31}$`, so NO API change is needed; billed as
-  `audit_report` per the Nitro table, price rendered dynamically).
+  `audit_report` per the Halo table, price rendered dynamically).
 - No guessing device behavior (rule 3): every detection rule cites its
   source (observed device + date) and unknown values render as "unknown".
 - Detection/parsing logic lives in pure, fixture-tested functions under
