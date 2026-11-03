@@ -4,3 +4,6 @@
 # from the path. The target must live OUTSIDE the splat's match — rewriting
 # to a path under /account/payment/* loops on Pages' index.html normalization.
 /account/payment/*  /pay/  200
+
+# Halo rebrand (2026-11): the Nitro page moved to /halo; keep inbound links.
+/nitro  /halo  301

@@ -6,8 +6,8 @@
  * key before upload; the API only ever sees ciphertext.
  *
  * Account lives behind the top-right header button (modal), not a tab.
- * The header also carries the Nitro energy bar: Nitro is the billing unit
- * users buy; accounts consume it to keep PRO features running. Nitro,
+ * The header also carries the Halo energy bar: Halo is the billing unit
+ * users buy; accounts consume it to keep PRO features running. Halo,
  * device scan, Devices, and Tools data is mocked for now; real probing and
  * API wiring come from native modules and the /v1 API.
  *
@@ -38,7 +38,7 @@ type Tab = 'scan' | 'devices' | 'backups' | 'tools';
 // lives in NativeWind classes).
 import { rootedColors as colors } from 'rootmyandroid-shared';
 
-/** Mock Nitro level (0–100) until billing is wired to the API. */
+/** Mock Halo level (0–100) until billing is wired to the API. */
 const MOCK_NITRO = 62;
 
 function App() {
@@ -104,7 +104,7 @@ function NitroBar({ level, onPress }: { level: number; onPress: () => void }) {
   const fillColor = level <= 20 ? colors.warn : colors.accent;
   return (
     <TouchableOpacity className="mx-3.5 flex-1 flex-row items-center" onPress={onPress}>
-      <Text className="mr-2 text-[10px] font-bold tracking-[1px] text-faint">NITRO</Text>
+      <Text className="mr-2 text-[10px] font-bold tracking-[1px] text-faint">Halo</Text>
       <View className="h-1.5 flex-1 overflow-hidden rounded-[3px] bg-border">
         <View className="h-1.5 rounded-[3px]" style={{ width: `${level}%`, backgroundColor: fillColor }} />
       </View>
@@ -431,15 +431,15 @@ function AccountScreen() {
         <Row label="Account number" value="1327 3076 2982 9434" />
         <Row label="Storage used" value="1.2 GB of 5 GB" />
       </Panel>
-      <Panel title="Nitro">
+      <Panel title="Halo">
         <Row label="Balance" value="62 / 100" />
-        <Row label="Burn rate" value="1 Nitro / device / day" />
+        <Row label="Burn rate" value="1 Halo / device / day" />
         <Row label="Est. remaining" value="31 days" />
       </Panel>
-      <PrimaryButton label="Buy Nitro — $5 / 100" />
+      <PrimaryButton label="Buy Halo — $5 / 100" />
       <GhostButton label="Create new account" />
       <Text className="mt-3.5 text-xs leading-[17px] text-faint">
-        Nitro is the energy your account burns to keep PRO features running.
+        Halo is the energy your account burns to keep PRO features running.
         It is consumed automatically by active devices. Your account number
         is the only credential. Keep it safe — it cannot be recovered.
       </Text>

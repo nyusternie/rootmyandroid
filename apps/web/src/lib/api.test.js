@@ -5,7 +5,6 @@ import {
   createCheckout,
   createCryptoCheckout,
   createNitroCheckout,
-  createNitroCryptoCheckout,
   createNitroPayment,
   getAccount,
   getNitroBalance,
@@ -95,15 +94,15 @@ describe('api client', () => {
     expect(init.method).toBe('GET')
   })
 
-  it('getNitroServices GETs /nitro/services', async () => {
+  it('getNitroServices GETs /halo/services', async () => {
     fetch.mockImplementation(() =>
-      jsonResponse(200, { ok: true, services: [{ service: 'cloud_backup', price_nitro: 20 }] })
+      jsonResponse(200, { ok: true, services: [{ service: 'cloud_backup', price_halo: 20 }] })
     )
     const res = await getNitroServices()
     expect(res.ok).toBe(true)
-    expect(res.data.services[0]).toEqual({ service: 'cloud_backup', price_nitro: 20 })
+    expect(res.data.services[0]).toEqual({ service: 'cloud_backup', price_halo: 20 })
     const [url, init] = fetch.mock.calls[0]
-    expect(url).toBe(`${BASE}/nitro/services`)
+    expect(url).toBe(`${BASE}/halo/services`)
     expect(init.method).toBe('GET')
   })
 
@@ -144,37 +143,28 @@ describe('api client', () => {
     })
   })
 
-  it('createNitroCheckout posts pack + account to the Nitro card rail', async () => {
+  it('createNitroCheckout posts pack + account to the Halo card rail', async () => {
     fetch.mockImplementation(() =>
-      jsonResponse(200, { ok: true, invoice_url: 'https://nowpayments.io/payment/?iid=1', pack: 'nitro_500', nitro: 500 })
+      jsonResponse(200, { ok: true, invoice_url: 'https://nowpayments.io/payment/?iid=1', pack: 'halo_500', halo: 500 })
     )
-    const res = await createNitroCheckout({ accountNumber: '1', pack: 'nitro_500' })
-    expect(res.data.pack).toBe('nitro_500')
+    const res = await createNitroCheckout({ accountNumber: '1', pack: 'halo_500' })
+    expect(res.data.pack).toBe('halo_500')
     const [url, init] = fetch.mock.calls[0]
-    expect(url).toBe(`${BASE}/billing/nitro/checkout`)
-    expect(JSON.parse(init.body)).toEqual({ account_number: '1', pack: 'nitro_500' })
-  })
-
-  it('createNitroCryptoCheckout hits the Nitro crypto endpoint', async () => {
-    fetch.mockImplementation(() => jsonResponse(200, { invoice_url: 'https://btcpay.example/i/9' }))
-    const res = await createNitroCryptoCheckout({ accountNumber: '1', pack: 'nitro_1000' })
-    const [url, init] = fetch.mock.calls[0]
-    expect(url).toBe(`${BASE}/billing/nitro/crypto/checkout`)
-    expect(JSON.parse(init.body)).toEqual({ account_number: '1', pack: 'nitro_1000' })
-    expect(res.data.invoice_url).toContain('https://')
+    expect(url).toBe(`${BASE}/billing/halo/checkout`)
+    expect(JSON.parse(init.body)).toEqual({ account_number: '1', pack: 'halo_500' })
   })
 
   it('createNitroPayment posts pack + account + coin to the whitelabel rail', async () => {
     fetch.mockImplementation(() =>
       jsonResponse(200, { ok: true, payment_id: '6427529765', pay_address: 'MQ...', pay_amount: 0.08538997, pay_currency: 'ltc', payment_status: 'waiting' })
     )
-    const res = await createNitroPayment({ accountNumber: '1', pack: 'nitro_100', payCurrency: 'ltc' })
+    const res = await createNitroPayment({ accountNumber: '1', pack: 'halo_100', payCurrency: 'ltc' })
     expect(res.data.payment_id).toBe('6427529765')
     expect(res.data.pay_address).toBe('MQ...')
     const [url, init] = fetch.mock.calls[0]
-    expect(url).toBe(`${BASE}/billing/nitro/payment`)
+    expect(url).toBe(`${BASE}/billing/halo/payment`)
     expect(init.method).toBe('POST')
-    expect(JSON.parse(init.body)).toEqual({ account_number: '1', pack: 'nitro_100', pay_currency: 'ltc' })
+    expect(JSON.parse(init.body)).toEqual({ account_number: '1', pack: 'halo_100', pay_currency: 'ltc' })
   })
 
   it('getPaymentStatus reads a payment by id', async () => {
@@ -186,19 +176,19 @@ describe('api client', () => {
     expect(init.method).toBe('GET')
   })
 
-  it('getNitroBalance posts the account number to /nitro', async () => {
-    fetch.mockImplementation(() => jsonResponse(200, { ok: true, nitro_balance: 500, recent: [] }))
+  it('getNitroBalance posts the account number to /halo', async () => {
+    fetch.mockImplementation(() => jsonResponse(200, { ok: true, halo_balance: 500, recent: [] }))
     const res = await getNitroBalance('1234 5678 9012 3456')
-    expect(res.data.nitro_balance).toBe(500)
+    expect(res.data.halo_balance).toBe(500)
     const [url, init] = fetch.mock.calls[0]
-    expect(url).toBe(`${BASE}/nitro`)
+    expect(url).toBe(`${BASE}/halo`)
     expect(init.method).toBe('POST')
     expect(JSON.parse(init.body)).toEqual({ account_number: '1234 5678 9012 3456' })
   })
 
   it('redeemCode posts the account number and code to /redeem', async () => {
     fetch.mockImplementation(() =>
-      jsonResponse(200, { ok: true, redeemed: 100, nitro_balance: 100 })
+      jsonResponse(200, { ok: true, redeemed: 100, halo_balance: 100 })
     )
     const res = await redeemCode({
       accountNumber: '1234 5678 9012 3456',

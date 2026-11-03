@@ -261,7 +261,7 @@
     @apply text-[0.75rem] uppercase tracking-[0.06em] text-faint;
   }
 
-  /* nitro energy bar (also the link to /nitro) */
+  /* nitro energy bar (also the link to /halo) */
   .nitro-bar {
     @apply mt-[1rem] flex items-center gap-[0.6rem] rounded-[0.5rem] border border-line bg-inset px-[1rem] py-[0.9rem] no-underline;
   }

@@ -31,8 +31,8 @@ const redeemInput = $('redeem-code') as HTMLInputElement
 const redeemBtn = $('redeem-btn') as HTMLButtonElement
 const payCurrencySelect = $('pay-currency') as HTMLSelectElement
 
-// Render the account's Nitro balance on the energy bar. The fill is capped
-// at 100% of the base pack (100 Nitro); the number always shows the real
+// Render the account's Halo balance on the energy bar. The fill is capped
+// at 100% of the base pack (100 Halos); the number always shows the real
 // balance.
 function setNitroBalance(n: number): void {
   nitroValue.textContent = String(n)
@@ -70,7 +70,7 @@ function syncPlans(): void {
 }
 
 // Human-facing labels + descriptions for the PRO service catalog. Prices
-// come from the API (GET /v1/nitro/services); only presentation lives here.
+// come from the API (GET /v1/halo/services); only presentation lives here.
 const SERVICE_LABELS: Record<string, { name: string; desc: string }> = {
   cloud_backup: {
     name: 'Cloud Backup',
@@ -99,14 +99,14 @@ async function loadServiceCatalog(): Promise<void> {
       return
     }
     servicesList.innerHTML = services
-      .map((s: { service: string; price_nitro: number }) => {
+      .map((s: { service: string; price_halo: number }) => {
         const label = SERVICE_LABELS[s.service] ?? { name: s.service, desc: '' }
-        const usd = (s.price_nitro * 0.05).toFixed(2)
+        const usd = (s.price_halo * 0.05).toFixed(2)
         return `<div class="row" style="justify-content: space-between">` +
           `<span><strong>${label.name}</strong>` +
           (label.desc ? `<br /><span class="small muted">${label.desc}</span>` : '') +
           `</span>` +
-          `<span class="price">${s.price_nitro} Nitro<br /><span class="small muted">≈ $${usd}</span></span>` +
+          `<span class="price">${s.price_halo} Halos<br /><span class="small muted">≈ $${usd}</span></span>` +
           `</div>`
       })
       .join('')
@@ -124,7 +124,7 @@ const depositPanel = initDepositPanel({
   onFinished: async () => {
     // Refresh the displayed balance from the ledger.
     const bal = await getAccount(accountNumber())
-    if (bal.ok) setNitroBalance(bal.data?.nitro_balance ?? 0)
+    if (bal.ok) setNitroBalance(bal.data?.halo_balance ?? 0)
   },
 })
 
@@ -138,7 +138,7 @@ createBtn.addEventListener('click', async () => {
     if (res.ok && res.data?.account_number) {
       numberInput.value = res.data.account_number
       creditDays.textContent = String(res.data.credit_days ?? 0)
-      setNitroBalance(res.data.nitro_balance ?? 0)
+      setNitroBalance(res.data.halo_balance ?? 0)
       balance.hidden = false
       show(notice, 'Save this number — it is the only way to access your account.')
     } else {
@@ -159,7 +159,7 @@ $('lookup-form').addEventListener('submit', async (e) => {
     const res = await getAccount(accountNumber())
     if (res.ok) {
       creditDays.textContent = String(res.data.credit_days ?? 0)
-      setNitroBalance(res.data.nitro_balance ?? 0)
+      setNitroBalance(res.data.halo_balance ?? 0)
       balance.hidden = false
     } else if (res.status === 404) {
       balance.hidden = true
@@ -181,7 +181,7 @@ planButtons.forEach((btn) =>
   btn.addEventListener('click', async () => {
     setBusy(true)
     clearMessages()
-    const pack = btn.dataset.pack || 'nitro_100'
+    const pack = btn.dataset.pack || 'halo_100'
     try {
       const res = await createNitroPayment({
         accountNumber: accountNumber(),
@@ -211,10 +211,10 @@ redeemBtn.addEventListener('click', async () => {
   try {
     const res = await redeemCode({ accountNumber: accountNumber(), code: redeemInput.value })
     if (res.ok) {
-      setNitroBalance(res.data?.nitro_balance ?? 0)
+      setNitroBalance(res.data?.halo_balance ?? 0)
       balance.hidden = false
       redeemInput.value = ''
-      show(notice, `Code redeemed — ${res.data?.redeemed} Nitro added to your account.`)
+      show(notice, `Code redeemed — ${res.data?.redeemed} Halos added to your account.`)
     } else if (res.status === 409) {
       show(error, 'That code has already been redeemed.')
     } else if (res.status === 404) {

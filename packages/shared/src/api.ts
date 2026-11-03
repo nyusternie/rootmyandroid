@@ -64,26 +64,17 @@ export function createCryptoCheckout<T = unknown>({ accountNumber, plan }: { acc
   });
 }
 
-// POST /billing/nitro/checkout — buy a Nitro pack on the card rail
-// (NOWPayments). Pack ids are server-defined (nitro_100 / nitro_500 /
-// nitro_1000); prices are enforced server-side.
+// POST /billing/halo/checkout — buy a Halo pack on the card rail
+// (NOWPayments). Pack ids are server-defined (halo_100 / halo_500 /
+// halo_1000); prices are enforced server-side.
 export function createNitroCheckout<T = unknown>({ accountNumber, pack }: { accountNumber: string; pack: string }) {
-  return request<T>('/billing/nitro/checkout', {
+  return request<T>('/billing/halo/checkout', {
     method: 'POST',
     body: { account_number: accountNumber, pack },
   });
 }
 
-// POST /billing/nitro/crypto/checkout — buy a Nitro pack on the crypto rail
-// (BTCPay: BTC / Lightning).
-export function createNitroCryptoCheckout<T = unknown>({ accountNumber, pack }: { accountNumber: string; pack: string }) {
-  return request<T>('/billing/nitro/crypto/checkout', {
-    method: 'POST',
-    body: { account_number: accountNumber, pack },
-  });
-}
-
-// POST /billing/nitro/payment — buy a Nitro pack on the whitelabel rail:
+// POST /billing/halo/payment — buy a Halo pack on the whitelabel rail:
 // the API returns a deposit address + amount in the chosen coin, and the
 // client renders the checkout UI itself (no hosted page, no redirect).
 export function createNitroPayment<T = unknown>({
@@ -95,7 +86,7 @@ export function createNitroPayment<T = unknown>({
   pack: string;
   payCurrency: string;
 }) {
-  return request<T>('/billing/nitro/payment', {
+  return request<T>('/billing/halo/payment', {
     method: 'POST',
     body: { account_number: accountNumber, pack, pay_currency: payCurrency },
   });
@@ -107,22 +98,22 @@ export function getPaymentStatus<T = unknown>(paymentId: string) {
   return request<T>(`/billing/payment/${encodeURIComponent(paymentId)}`);
 }
 
-// POST /nitro — an account's Nitro balance plus its recent ledger entries.
+// POST /halo — an account's Halo balance plus its recent ledger entries.
 // (POST so the account number travels in the body, not the URL/logs.)
 export function getNitroBalance<T = unknown>(accountNumber: string) {
-  return request<T>('/nitro', {
+  return request<T>('/halo', {
     method: 'POST',
     body: { account_number: accountNumber },
   });
 }
 
-// GET /nitro/services — public catalog of PRO services + Nitro prices, so
+// GET /halo/services — public catalog of PRO services + Halo prices, so
 // clients render pricing from the server-side table instead of hard-coding.
 export function getNitroServices<T = unknown>() {
-  return request<T>('/nitro/services');
+  return request<T>('/halo/services');
 }
 
-// POST /redeem — redeem a single-use voucher code, crediting its Nitro to
+// POST /redeem — redeem a single-use voucher code, crediting its Halo to
 // the account. Codes are single-use; a redeemed code returns 409.
 export function redeemCode<T = unknown>({ accountNumber, code }: { accountNumber: string; code: string }) {
   return request<T>('/redeem', {
