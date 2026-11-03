@@ -48,6 +48,20 @@
       opacity: 0.45;
     }
   }
+
+  /* support-bubble ping ring (used with motion-reduce:animate-none) */
+  --animate-support-ping: support-ping 3.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  @keyframes support-ping {
+    0% {
+      opacity: 0.7;
+      transform: scale(1);
+    }
+    75%,
+    100% {
+      opacity: 0;
+      transform: scale(1.55);
+    }
+  }
 }
 
 /* Base elements. Preflight strips browser defaults, so the UA styles the old
@@ -337,7 +351,18 @@
     @apply fixed right-[1.25rem] bottom-[1.25rem] z-50;
   }
   .support-toggle {
-    @apply flex h-[3.25rem] w-[3.25rem] cursor-pointer items-center justify-center rounded-full border border-accent bg-accent p-0 text-[#06121d] shadow-[0_4px_16px_rgba(0,0,0,0.45)] transition-[background,border-color] duration-150 hover:border-[#58adf5] hover:bg-[#58adf5];
+    @apply relative flex h-[3.25rem] w-[3.25rem] cursor-pointer items-center justify-center rounded-full border border-accent bg-accent p-0 text-[#06121d] shadow-[0_4px_16px_rgba(0,0,0,0.45)] transition-[background,border-color] duration-150 hover:border-[#58adf5] hover:bg-[#58adf5];
+  }
+  /* Subtle ping ring draws the eye; disabled under prefers-reduced-motion. */
+  .support-toggle::after {
+    content: '';
+    @apply absolute inset-0 animate-support-ping rounded-full border-2 border-accent motion-reduce:animate-none;
+  }
+  .support-pill {
+    @apply absolute bottom-[0.9rem] right-[4rem] cursor-pointer whitespace-nowrap rounded-full border border-line bg-raise px-[0.9rem] py-[0.4rem] font-[inherit] text-[0.8rem] text-ink shadow-[0_4px_16px_rgba(0,0,0,0.45)] hover:border-accent;
+  }
+  .support-badge {
+    @apply absolute -right-[0.15rem] -top-[0.15rem] grid h-[1.15rem] min-w-[1.15rem] place-items-center rounded-full border border-page bg-danger px-[0.25rem] text-[0.65rem] font-bold leading-none text-white;
   }
   .support-panel {
     @apply absolute right-0 bottom-[4.25rem] flex max-h-[min(32rem,calc(100dvh-8rem))] w-[min(22rem,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-[0.75rem] border border-line bg-raise shadow-[0_8px_32px_rgba(0,0,0,0.5)];
@@ -369,14 +394,30 @@
   .support-note-warn {
     @apply rounded-[0.5rem] border border-warn/45 bg-warn/12 px-[0.75rem] py-[0.5rem] text-[#f3d9a8];
   }
-  .support-pick {
-    @apply cursor-pointer rounded-[0.65rem] border border-line bg-inset p-[0.9rem] text-left font-[inherit] text-ink transition-[border-color] duration-150 hover:border-accent;
+  .support-composer {
+    @apply flex items-end gap-[0.5rem];
   }
-  .support-pick-title {
-    @apply block font-semibold;
+  /* Outranks textarea.support-input (specificity, same layer). */
+  .support-widget textarea.support-composer-input {
+    @apply flex-1 resize-none;
   }
-  .support-pick-desc {
-    @apply mt-[0.2rem] block text-[0.82rem] text-dim;
+  /* One-time email nudge, shown when no admin reply has arrived. */
+  .support-nudge {
+    @apply flex flex-col gap-[0.5rem] rounded-[0.5rem] border border-accent/45 bg-accent/12 px-[0.75rem] py-[0.6rem];
+  }
+  .support-nudge-text {
+    @apply m-0 text-[0.8rem] leading-snug text-dim;
+  }
+  .support-nudge-row {
+    @apply flex items-center gap-[0.5rem];
+  }
+  /* Outranks .support-widget .support-input's w-full (later, same specificity). */
+  .support-widget .support-nudge-input {
+    @apply flex-1;
+  }
+  /* Scoped so it outranks .support-msg's max-w regardless of rule order. */
+  .support-widget .support-msg-system {
+    @apply max-w-full self-center text-center text-[0.8rem] italic leading-snug text-faint;
   }
   /* Scoped under .support-widget so it outranks the global input[type=text]
      mono/tracking rule above (specificity, same layer). */
