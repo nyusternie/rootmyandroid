@@ -245,3 +245,4 @@ apps/*/android/gradle.properties
 
 # Vendored hermes-compiler tarball is intentional (slow registry workaround)
 !.vendor/*.tgz
+.drafts/
