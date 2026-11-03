@@ -39,7 +39,7 @@ type Tab = 'scan' | 'devices' | 'backups' | 'tools';
 import { rootedColors as colors } from 'rootmyandroid-shared';
 
 /** Mock Halo level (0–100) until billing is wired to the API. */
-const MOCK_NITRO = 62;
+const MOCK_HALO = 62;
 
 function App() {
   const [tab, setTab] = useState<Tab>('scan');
@@ -52,7 +52,7 @@ function App() {
       <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
         <View className="flex-row items-center justify-between border-b border-border px-5 pb-3 pt-5">
           <Text className="text-xl font-bold text-text">Rooted</Text>
-          <NitroBar level={MOCK_NITRO} onPress={() => setAccountOpen(true)} />
+          <HaloBar level={MOCK_HALO} onPress={() => setAccountOpen(true)} />
           <TouchableOpacity
             className="rounded-lg border border-accent px-3 py-1.5"
             onPress={() => setAccountOpen(true)}
@@ -100,7 +100,7 @@ function App() {
   );
 }
 
-function NitroBar({ level, onPress }: { level: number; onPress: () => void }) {
+function HaloBar({ level, onPress }: { level: number; onPress: () => void }) {
   const fillColor = level <= 20 ? colors.warn : colors.accent;
   return (
     <TouchableOpacity className="mx-3.5 flex-1 flex-row items-center" onPress={onPress}>

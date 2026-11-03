@@ -16,7 +16,7 @@ type ConnState =
   | {kind: 'idle'}
   | {kind: 'busy'}
   | {kind: 'error'; message: string}
-  | {kind: 'ok'; accountNumber: string; nitro: number; audits: number};
+  | {kind: 'ok'; accountNumber: string; halo: number; audits: number};
 
 function App(): React.JSX.Element {
   const [accountNumber, setAccountNumber] = useState('');
@@ -42,7 +42,7 @@ function App(): React.JSX.Element {
     setState({
       kind: 'ok',
       accountNumber: acct,
-      nitro: account.data?.halo_balance ?? account.data?.nitro_balance ?? 0,
+      halo: account.data?.halo_balance ?? account.data?.nitro_balance ?? 0,
       audits: audits.ok ? (audits.data ?? []).length : 0,
     });
   }, [accountNumber, state.kind]);
@@ -123,7 +123,7 @@ function App(): React.JSX.Element {
           <Text className="text-sm font-medium text-ink">{statusText}</Text>
           {state.kind === 'ok' ? (
             <Text className="text-[13px] leading-[18px] text-dim">
-              {state.nitro} Halos · {state.audits} synced device
+              {state.halo} Halos · {state.audits} synced device
               {state.audits === 1 ? '' : 's'}
             </Text>
           ) : null}

@@ -17,7 +17,7 @@ export interface DepositData {
   pay_currency: string
   price_amount: number
   price_currency: string
-  nitro?: number | null
+  halo?: number | null
   expires_at: string | null
 }
 
@@ -33,7 +33,7 @@ const TERMINAL_STATUSES = new Set(['finished', 'failed', 'refunded', 'expired'])
 
 // Rebuild panel data from a payment-status API response. The Halo amount is
 // recovered from the order id ("<account>:<pack>").
-const NITRO_BY_PACK: Record<string, number> = {
+const HALO_BY_PACK: Record<string, number> = {
   halo_100: 100,
   halo_500: 500,
   halo_1000: 1000,
@@ -49,7 +49,7 @@ export function depositDataFromStatus(data: Record<string, any>): DepositData | 
     pay_currency: data.pay_currency,
     price_amount: data.price_amount,
     price_currency: data.price_currency,
-    nitro: NITRO_BY_PACK[pack] ?? null,
+    halo: HALO_BY_PACK[pack] ?? null,
     expires_at: data.expires_at ?? null,
   }
 }
@@ -186,8 +186,8 @@ export function initDepositPanel(hooks: DepositHooks = {}) {
     stopStatusPolling()
     activePaymentId = data.payment_id
     const coin = data.pay_currency.toUpperCase()
-    const nitroPart = data.nitro ? ` → ${data.nitro} Halos` : ''
-    depositAmountLine.textContent = `Send exactly ${data.pay_amount} ${coin} ($${data.price_amount} ${String(data.price_currency).toUpperCase()}${nitroPart}) to:`
+    const haloPart = data.halo ? ` → ${data.halo} Halos` : ''
+    depositAmountLine.textContent = `Send exactly ${data.pay_amount} ${coin} ($${data.price_amount} ${String(data.price_currency).toUpperCase()}${haloPart}) to:`
     depositAddress.textContent = data.pay_address
     const qr = qrcode(0, 'M')
     qr.addData(paymentUri(data))

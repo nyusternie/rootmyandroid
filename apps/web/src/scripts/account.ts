@@ -3,9 +3,9 @@
 // loaded as a module; the rest of the site ships zero JavaScript.
 import {
   createAccount,
-  createNitroPayment,
+  createHaloPayment,
   getAccount,
-  getNitroServices,
+  getHaloServices,
   redeemCode,
 } from '../lib/api.js'
 import { initDepositPanel } from './deposit.js'
@@ -21,8 +21,8 @@ const notice = $('notice')
 const error = $('error')
 const balance = $('balance')
 const creditDays = $('credit-days')
-const nitroFill = $('nitro-fill')
-const nitroValue = $('nitro-value')
+const haloFill = $('halo-fill')
+const haloValue = $('halo-value')
 const lookupBtn = $('lookup-btn') as HTMLButtonElement
 const createBtn = $('create-btn') as HTMLButtonElement
 const planHint = $('plan-hint')
@@ -34,9 +34,9 @@ const payCurrencySelect = $('pay-currency') as HTMLSelectElement
 // Render the account's Halo balance on the energy bar. The fill is capped
 // at 100% of the base pack (100 Halos); the number always shows the real
 // balance.
-function setNitroBalance(n: number): void {
-  nitroValue.textContent = String(n)
-  nitroFill.style.width = `${Math.max(0, Math.min(100, n))}%`
+function setHaloBalance(n: number): void {
+  haloValue.textContent = String(n)
+  haloFill.style.width = `${Math.max(0, Math.min(100, n))}%`
 }
 
 let busy = false
@@ -91,7 +91,7 @@ const SERVICE_LABELS: Record<string, { name: string; desc: string }> = {
 async function loadServiceCatalog(): Promise<void> {
   const servicesList = $('services-list')
   try {
-    const res = await getNitroServices()
+    const res = await getHaloServices()
     const services = res.data?.services
     if (!res.ok || !Array.isArray(services) || services.length === 0) {
       servicesList.innerHTML =
@@ -124,7 +124,7 @@ const depositPanel = initDepositPanel({
   onFinished: async () => {
     // Refresh the displayed balance from the ledger.
     const bal = await getAccount(accountNumber())
-    if (bal.ok) setNitroBalance(bal.data?.halo_balance ?? 0)
+    if (bal.ok) setHaloBalance(bal.data?.halo_balance ?? 0)
   },
 })
 
@@ -138,7 +138,7 @@ createBtn.addEventListener('click', async () => {
     if (res.ok && res.data?.account_number) {
       numberInput.value = res.data.account_number
       creditDays.textContent = String(res.data.credit_days ?? 0)
-      setNitroBalance(res.data.halo_balance ?? 0)
+      setHaloBalance(res.data.halo_balance ?? 0)
       balance.hidden = false
       show(notice, 'Save this number — it is the only way to access your account.')
     } else {
@@ -159,7 +159,7 @@ $('lookup-form').addEventListener('submit', async (e) => {
     const res = await getAccount(accountNumber())
     if (res.ok) {
       creditDays.textContent = String(res.data.credit_days ?? 0)
-      setNitroBalance(res.data.halo_balance ?? 0)
+      setHaloBalance(res.data.halo_balance ?? 0)
       balance.hidden = false
     } else if (res.status === 404) {
       balance.hidden = true
@@ -183,7 +183,7 @@ planButtons.forEach((btn) =>
     clearMessages()
     const pack = btn.dataset.pack || 'halo_100'
     try {
-      const res = await createNitroPayment({
+      const res = await createHaloPayment({
         accountNumber: accountNumber(),
         pack,
         payCurrency: payCurrencySelect.value,
@@ -211,7 +211,7 @@ redeemBtn.addEventListener('click', async () => {
   try {
     const res = await redeemCode({ accountNumber: accountNumber(), code: redeemInput.value })
     if (res.ok) {
-      setNitroBalance(res.data?.halo_balance ?? 0)
+      setHaloBalance(res.data?.halo_balance ?? 0)
       balance.hidden = false
       redeemInput.value = ''
       show(notice, `Code redeemed — ${res.data?.redeemed} Halos added to your account.`)

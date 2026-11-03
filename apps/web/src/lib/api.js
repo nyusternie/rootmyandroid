@@ -56,7 +56,7 @@ export function createCryptoCheckout({ accountNumber, plan }) {
 // POST /billing/halo/checkout — buy a Halo pack on the card rail
 // (NOWPayments). Pack ids are server-defined (halo_100 / halo_500 /
 // halo_1000); prices are enforced server-side.
-export function createNitroCheckout({ accountNumber, pack }) {
+export function createHaloCheckout({ accountNumber, pack }) {
   return request('/billing/halo/checkout', {
     method: 'POST',
     body: { account_number: accountNumber, pack },
@@ -66,7 +66,7 @@ export function createNitroCheckout({ accountNumber, pack }) {
 // POST /billing/halo/payment — buy a Halo pack on the whitelabel rail:
 // the API returns a deposit address + amount in the chosen coin, and the
 // /account page renders the checkout UI itself (no hosted page, no redirect).
-export function createNitroPayment({ accountNumber, pack, payCurrency }) {
+export function createHaloPayment({ accountNumber, pack, payCurrency }) {
   return request('/billing/halo/payment', {
     method: 'POST',
     body: { account_number: accountNumber, pack, pay_currency: payCurrency },
@@ -81,7 +81,7 @@ export function getPaymentStatus(paymentId) {
 
 // POST /halo — an account's Halo balance plus its recent ledger entries.
 // (POST so the account number travels in the body, not the URL/logs.)
-export function getNitroBalance(accountNumber) {
+export function getHaloBalance(accountNumber) {
   return request('/halo', {
     method: 'POST',
     body: { account_number: accountNumber },
@@ -90,7 +90,7 @@ export function getNitroBalance(accountNumber) {
 
 // GET /halo/services — public catalog of PRO services + Halo prices, so
 // pages render pricing from the server-side table instead of hard-coding.
-export function getNitroServices() {
+export function getHaloServices() {
   return request('/halo/services')
 }
 
