@@ -279,7 +279,7 @@ async function poll(after?: number) {
       token: session.token,
       after,
     })
-    syncStatus(res.conversation?.status)
+    syncStatus(res.data.conversation?.status)
     if (!incremental) {
       messagesEl.textContent = ''
       greetingEl = null
@@ -287,7 +287,7 @@ async function poll(after?: number) {
       lastVisitorTs = 0
       hasAdminMessage = false
     }
-    for (const msg of res.messages ?? []) {
+    for (const msg of (res.data.messages ?? []) as SupportMessage[]) {
       if (msg.id > lastMessageId) {
         renderMessage(msg)
         lastMessageId = msg.id
@@ -430,8 +430,16 @@ async function send() {
   try {
     if (!session) {
       // First message creates the conversation — always anonymous realtime.
-      const res = await createSupportConversation({ mode: 'realtime', body })
-      session = { id: res.conversation.id, token: res.token }
+      const res = await createSupportConversation({
+        mode: 'realtime',
+        body,
+        email: undefined,
+        accountNumber: undefined,
+      })
+      session = {
+        id: res.data.conversation_id as string,
+        token: res.data.token as string,
+      }
       saveSession(session)
       pill.hidden = true
       try {
@@ -470,8 +478,8 @@ async function send() {
     }
   } finally {
     sending = false
-    sendBtn.disabled =
-      conversationStatus === 'closed' || composerInput.value.trim() === ''
+    // composerInput.disabled already reflects a closed conversation (syncStatus).
+    sendBtn.disabled = composerInput.disabled || composerInput.value.trim() === ''
   }
 }
 
