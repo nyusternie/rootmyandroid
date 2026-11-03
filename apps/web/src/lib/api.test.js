@@ -11,7 +11,10 @@ import {
   getNitroBalance,
   getNitroServices,
   getPaymentStatus,
+  createSupportConversation,
+  getSupportMessages,
   listAudits,
+  postSupportMessage,
   redeemCode,
   saveAudit,
   whoami,
@@ -209,6 +212,53 @@ describe('api client', () => {
       account_number: '1234 5678 9012 3456',
       code: 'ABCD-EFGH-JKMN-PQRS',
     })
+  })
+
+  it('createSupportConversation posts mode + first message, dropping undefined fields', async () => {
+    fetch.mockImplementation(() =>
+      jsonResponse(201, { ok: true, conversation_id: 'a'.repeat(32), token: 'b'.repeat(64), mode: 'message', status: 'open', message: { id: 1, sender: 'visitor', body: 'hi', ts: 1762128000 } })
+    )
+    const res = await createSupportConversation({ mode: 'message', body: 'hi', email: 'a@b.co', accountNumber: undefined })
+    expect(res.ok).toBe(true)
+    expect(res.data.token).toBe('b'.repeat(64))
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/support/conversations`)
+    expect(init.method).toBe('POST')
+    expect(JSON.parse(init.body)).toEqual({ mode: 'message', body: 'hi', email: 'a@b.co' })
+  })
+
+  it('getSupportMessages sends the bearer token and the after cursor', async () => {
+    fetch.mockImplementation(() =>
+      jsonResponse(200, { ok: true, conversation: { id: 'a'.repeat(32), mode: 'realtime', status: 'open', created_ts: 1762128000 }, messages: [] })
+    )
+    const res = await getSupportMessages({ conversationId: 'a'.repeat(32), token: 'b'.repeat(64), after: 7 })
+    expect(res.ok).toBe(true)
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/support/conversations/${'a'.repeat(32)}/messages?after=7`)
+    expect(init.method).toBe('GET')
+    expect(init.headers).toEqual({ 'x-support-token': 'b'.repeat(64) })
+  })
+
+  it('getSupportMessages omits the after param when resuming (full history)', async () => {
+    fetch.mockImplementation(() =>
+      jsonResponse(200, { ok: true, conversation: { id: 'a'.repeat(32), mode: 'realtime', status: 'open', created_ts: 1762128000 }, messages: [] })
+    )
+    await getSupportMessages({ conversationId: 'a'.repeat(32), token: 'b'.repeat(64) })
+    const [url] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/support/conversations/${'a'.repeat(32)}/messages`)
+  })
+
+  it('postSupportMessage posts the body with the bearer token', async () => {
+    fetch.mockImplementation(() =>
+      jsonResponse(201, { ok: true, message: { id: 2, sender: 'visitor', body: 'more', ts: 1762128060 } })
+    )
+    const res = await postSupportMessage({ conversationId: 'a'.repeat(32), token: 'b'.repeat(64), body: 'more' })
+    expect(res.data.message.id).toBe(2)
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/support/conversations/${'a'.repeat(32)}/messages`)
+    expect(init.method).toBe('POST')
+    expect(init.headers).toEqual({ 'content-type': 'application/json', 'x-support-token': 'b'.repeat(64) })
+    expect(JSON.parse(init.body)).toEqual({ body: 'more' })
   })
 
   it('handles non-JSON responses gracefully', async () => {

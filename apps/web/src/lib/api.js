@@ -14,10 +14,12 @@ export function apiBase() {
   return DEFAULT_BASE
 }
 
-async function request(path, { method = 'GET', body } = {}) {
+async function request(path, { method = 'GET', body, headers } = {}) {
+  const allHeaders = { ...headers }
+  if (body) allHeaders['content-type'] = 'application/json'
   const res = await fetch(`${apiBase()}${path}`, {
     method,
-    headers: body ? { 'content-type': 'application/json' } : undefined,
+    headers: Object.keys(allHeaders).length ? allHeaders : undefined,
     body: body ? JSON.stringify(body) : undefined,
   })
   let data = null
@@ -140,4 +142,38 @@ export function listAudits({ accountNumber, auditType }) {
     method: 'POST',
     body: { account_number: accountNumber, audit_type: auditType },
   })
+}
+
+// --- Support conversations (visitor side; wire contract + token model: ----
+// rootmyandroid-api src/lib/support.js). Anonymous: creating a conversation
+// returns a one-time 64-hex bearer token, presented from then on in the
+// x-support-token header (in the API's CORS allow-headers).
+
+// POST /support/conversations — open a conversation ('realtime' | 'message')
+// with its first message. `email` is required iff mode='message' (stored
+// unverified); `accountNumber` is optional and format-checked only.
+// Undefined fields are dropped by JSON.stringify.
+export function createSupportConversation({ mode, body, email, accountNumber }) {
+  return request('/support/conversations', {
+    method: 'POST',
+    body: { mode, body, email, account_number: accountNumber },
+  })
+}
+
+// GET /support/conversations/{id}/messages?after={msgId} — poll a thread.
+// Omit `after` (or 0) for the full history, e.g. when resuming.
+export function getSupportMessages({ conversationId, token, after }) {
+  const suffix = after ? `?after=${after}` : ''
+  return request(
+    `/support/conversations/${encodeURIComponent(conversationId)}/messages${suffix}`,
+    { headers: { 'x-support-token': token } }
+  )
+}
+
+// POST /support/conversations/{id}/messages — visitor follow-up message.
+export function postSupportMessage({ conversationId, token, body }) {
+  return request(
+    `/support/conversations/${encodeURIComponent(conversationId)}/messages`,
+    { method: 'POST', headers: { 'x-support-token': token }, body: { body } }
+  )
 }

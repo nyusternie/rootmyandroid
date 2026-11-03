@@ -331,6 +331,101 @@
     @apply mb-[0.6rem] mt-[1.25rem] text-[0.85rem] font-bold uppercase tracking-[0.05em] text-faint;
   }
 
+  /* ---------- support widget (app pages; src/scripts/support.ts) ----------
+     All rules scoped under .support-widget so no other page is affected. */
+  .support-widget {
+    @apply fixed right-[1.25rem] bottom-[1.25rem] z-50;
+  }
+  .support-toggle {
+    @apply flex h-[3.25rem] w-[3.25rem] cursor-pointer items-center justify-center rounded-full border border-accent bg-accent p-0 text-[#06121d] shadow-[0_4px_16px_rgba(0,0,0,0.45)] transition-[background,border-color] duration-150 hover:border-[#58adf5] hover:bg-[#58adf5];
+  }
+  .support-panel {
+    @apply absolute right-0 bottom-[4.25rem] flex max-h-[min(32rem,calc(100dvh-8rem))] w-[min(22rem,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-[0.75rem] border border-line bg-raise shadow-[0_8px_32px_rgba(0,0,0,0.5)];
+  }
+  .support-head {
+    @apply flex items-center gap-[0.5rem] border-b border-line px-[1rem] py-[0.7rem];
+  }
+  .support-title {
+    @apply font-bold;
+  }
+  .support-sub {
+    @apply flex-1 text-[0.75rem] text-faint;
+  }
+  .support-close {
+    @apply cursor-pointer rounded-[0.35rem] border-none bg-none px-[0.4rem] text-[1.2rem] leading-none text-dim hover:text-ink;
+  }
+  .support-body {
+    @apply overflow-y-auto;
+  }
+  .support-view {
+    @apply flex flex-col gap-[0.6rem] p-[1rem];
+  }
+  .support-note {
+    @apply m-0 text-[0.85rem] text-dim;
+  }
+  .support-note-faint {
+    @apply text-[0.78rem] text-faint;
+  }
+  .support-note-warn {
+    @apply rounded-[0.5rem] border border-warn/45 bg-warn/12 px-[0.75rem] py-[0.5rem] text-[#f3d9a8];
+  }
+  .support-pick {
+    @apply cursor-pointer rounded-[0.65rem] border border-line bg-inset p-[0.9rem] text-left font-[inherit] text-ink transition-[border-color] duration-150 hover:border-accent;
+  }
+  .support-pick-title {
+    @apply block font-semibold;
+  }
+  .support-pick-desc {
+    @apply mt-[0.2rem] block text-[0.82rem] text-dim;
+  }
+  /* Scoped under .support-widget so it outranks the global input[type=text]
+     mono/tracking rule above (specificity, same layer). */
+  .support-widget .support-input {
+    @apply w-full rounded-[0.5rem] border border-line bg-inset px-[0.8rem] py-[0.6rem] font-sans text-[0.9rem] tracking-normal text-ink focus:border-accent focus:outline-none placeholder:text-faint;
+  }
+  textarea.support-input {
+    @apply resize-y;
+  }
+  .support-input[disabled] {
+    @apply cursor-not-allowed opacity-50;
+  }
+  .support-send {
+    @apply self-end px-[1.1rem] py-[0.5rem] text-[0.9rem];
+  }
+  .support-link {
+    @apply cursor-pointer self-start border-none bg-none p-0 text-[0.82rem] text-accent hover:underline;
+  }
+  .support-error {
+    @apply m-0 rounded-[0.5rem] border border-danger/45 bg-danger/12 px-[0.75rem] py-[0.5rem] text-[0.82rem] text-[#f0b4b4];
+  }
+  .support-messages {
+    @apply flex max-h-[16rem] min-h-[6rem] flex-col gap-[0.5rem] overflow-y-auto rounded-[0.5rem] border border-line bg-inset p-[0.75rem];
+  }
+  .support-msg {
+    @apply max-w-[85%];
+  }
+  .support-msg-visitor {
+    @apply self-end;
+  }
+  .support-msg-admin {
+    @apply self-start;
+  }
+  .support-msg-body {
+    @apply rounded-[0.6rem] px-[0.7rem] py-[0.45rem] text-[0.88rem] break-words whitespace-pre-wrap;
+  }
+  .support-msg-visitor .support-msg-body {
+    @apply bg-accent/18 text-ink;
+  }
+  .support-msg-admin .support-msg-body {
+    @apply bg-raise text-ink border border-line;
+  }
+  .support-msg-meta {
+    @apply mt-[0.15rem] text-[0.7rem] text-faint;
+  }
+  .support-msg-visitor .support-msg-meta {
+    @apply text-right;
+  }
+
   /* ---------- footer ---------- */
   .site-footer {
     @apply mt-[4rem] border-t border-line pb-[3rem] pt-[2rem] text-[0.85rem] text-faint;
