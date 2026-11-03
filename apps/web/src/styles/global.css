@@ -261,23 +261,23 @@
     @apply text-[0.75rem] uppercase tracking-[0.06em] text-faint;
   }
 
-  /* nitro energy bar (also the link to /nitro) */
-  .nitro-bar {
+  /* halo energy bar (also the link to /halo) */
+  .halo-bar {
     @apply mt-[1rem] flex items-center gap-[0.6rem] rounded-[0.5rem] border border-line bg-inset px-[1rem] py-[0.9rem] no-underline;
   }
-  a.nitro-bar:hover {
+  a.halo-bar:hover {
     @apply border-faint;
   }
-  .nitro-bar .nitro-label {
+  .halo-bar .halo-label {
     @apply text-[0.75rem] font-bold uppercase tracking-[0.06em] text-faint;
   }
-  .nitro-bar .nitro-track {
+  .halo-bar .halo-track {
     @apply h-[6px] flex-1 overflow-hidden rounded-[3px] bg-line;
   }
-  .nitro-bar .nitro-fill {
+  .halo-bar .halo-fill {
     @apply block h-full rounded-[3px] bg-accent;
   }
-  .nitro-bar .nitro-value {
+  .halo-bar .halo-value {
     @apply text-[1.1rem] font-bold text-accent;
   }
 }
@@ -312,18 +312,18 @@
   .audit .coverage {
     @apply mt-[1rem] flex items-center gap-[0.6rem] rounded-[0.5rem] border border-line bg-inset px-[1rem] py-[0.9rem];
   }
-  /* The coverage bar reuses the nitro-bar part classes, but .nitro-bar's child
+  /* The coverage bar reuses the halo-bar part classes, but .halo-bar's child
      rules are scoped to it — duplicate them under .coverage or the bar breaks. */
-  .audit .coverage .nitro-label {
+  .audit .coverage .halo-label {
     @apply text-[0.75rem] font-bold uppercase tracking-[0.06em] text-faint;
   }
-  .audit .coverage .nitro-track {
+  .audit .coverage .halo-track {
     @apply h-[6px] flex-1 overflow-hidden rounded-[3px] bg-line;
   }
-  .audit .coverage .nitro-fill {
+  .audit .coverage .halo-fill {
     @apply block h-full rounded-[3px] bg-accent;
   }
-  .audit .coverage .nitro-value {
+  .audit .coverage .halo-value {
     @apply text-[1.1rem] font-bold text-accent;
   }
   .audit .chips {
