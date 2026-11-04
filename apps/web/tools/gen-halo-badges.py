@@ -71,7 +71,7 @@ def render(rings, out):
     dr.rounded_rectangle([64, 64, CV - 64, CV - 64], radius=180, fill=TILE)
     # layout: n rings stacked above the head; drop robot for 2/3 rings
     n = rings['n']
-    drop = {1: 24, 2: 56, 3: 88}[n]
+    drop = {0: 0, 1: 24, 2: 56, 3: 88}[n]
     robot(dr, drop)
     head_top = 342 + drop
     gap = rings['gap']
@@ -85,12 +85,14 @@ def render(rings, out):
     print('wrote', out)
 
 
+FREE   = dict(n=0, w=0, h=0, wd=0, gap=0)
 SINGLE = dict(n=1, w=260, h=84, wd=26, gap=0)
 DOUBLE = dict(n=2, w=244, h=74, wd=24, gap=72)
 TRIPLE = dict(n=3, w=228, h=66, wd=20, gap=64)
 
 if __name__ == '__main__':
     outdir = sys.argv[1] if len(sys.argv) > 1 else '/tmp'
+    render(FREE, f'{outdir}/badge-halo-free.webp')
     render(SINGLE, f'{outdir}/badge-halo-single.webp')
     render(DOUBLE, f'{outdir}/badge-halo-double.webp')
     render(TRIPLE, f'{outdir}/badge-halo-triple.webp')

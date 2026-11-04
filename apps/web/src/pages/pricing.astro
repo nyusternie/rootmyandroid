@@ -1,17 +1,36 @@
 ---
-// src/pages/pricing.astro — the three Halo levels (single/double/triple).
+// src/pages/pricing.astro — the four levels: Free (no halo) + the three
+// Guardian Angel tiers (single/double/triple).
 // Prices + structure owner-decided 2026-11-04 (HANDOFF.md §10.2): Basic
 // 1 Halo/mo, Elite 2 Halo/mo (cumulative), Pro 3 Halo/YEAR — an
-// independent pro lane (Terminal Editor, Log Analysis) that combines with
-// a monthly plan or stands alone. No Offer/PriceSpecification schema on
+// independent pro SUBSCRIPTION lane (Terminal Editor, Log Analysis) that
+// combines with a monthly plan or stands alone (all three are
+// subscriptions; Pro is simply billed yearly). No Offer/PriceSpecification schema on
 // purpose: structured data must mirror real, visible copy.
 import Base from '../layouts/Base.astro'
 
 const tiers = [
   {
+    badge: '/img/badge-halo-free.webp',
+    alt: 'Free level badge — android robot',
+    name: 'Free',
+    level: 'Scan',
+    price: '$0',
+    per: 'forever',
+    features: [
+      'Browser device scan (read-only ADB)',
+      'Bootloader & unlock detection',
+      'Root-method selection',
+      'Full guides library',
+      'No account needed',
+    ],
+    cta: { href: '/scan', label: 'Start free' },
+    featured: false,
+  },
+  {
     badge: '/img/badge-halo-single.webp',
     alt: 'Single Halo level badge — android robot with one halo',
-    name: 'Single Halo',
+    name: 'Guardian Angel',
     level: 'Basic',
     price: '1 Halo',
     per: 'month · $5',
@@ -21,39 +40,39 @@ const tiers = [
       'Read call logs',
       'Renews every 30 days',
     ],
-    cta: { href: '/halo', label: 'Top up Halo' },
+    cta: { href: '/halo', label: 'Subscribe' },
     featured: false,
   },
   {
     badge: '/img/badge-halo-double.webp',
     alt: 'Double Halo level badge — android robot with two halos',
-    name: 'Double Halo',
+    name: 'Guardian Angel Elite',
     level: 'Elite',
     price: '2 Halos',
     per: 'month · $10',
     features: [
-      'Everything in Basic',
+      'Everything in Guardian Angel',
       'View photos & media',
       'View camera & video',
       'Renews every 30 days',
     ],
-    cta: { href: '/halo', label: 'Top up Halo' },
+    cta: { href: '/halo', label: 'Subscribe' },
     featured: true,
   },
   {
     badge: '/img/badge-halo-triple.webp',
     alt: 'Triple Halo level badge — android robot with three halos',
-    name: 'Triple Halo',
+    name: 'Guardian Angel Pro',
     level: 'Pro',
     price: '3 Halos',
     per: 'year · $15',
     features: [
       'Terminal Editor',
       'Log Analysis',
-      'Independent yearly unlock',
-      'Combines with Basic or Elite — or stands alone',
+      'Independent yearly subscription',
+      'Combines with a monthly plan — or stands alone',
     ],
-    cta: { href: '/halo', label: 'Top up Halo' },
+    cta: { href: '/halo', label: 'Subscribe' },
     featured: false,
   },
 ]
@@ -61,10 +80,10 @@ const tiers = [
 
 <Base
   title="Pricing"
-  description="Three Halo levels — Basic and Elite monthly, Pro yearly. One account number, one Halo balance, no email and no password."
+  description="Free device scan, then Guardian Angel plans — Basic and Elite monthly, Pro yearly. One account number, one Halo balance, no email and no password."
 >
   <section class="container" style="padding: 3rem 0 2rem; text-align: center">
-    <h1>Three levels. <span class="hl">One balance.</span></h1>
+    <h1>Four levels. <span class="hl">One balance.</span></h1>
     <p class="lede" style="max-width: 46rem; margin: 0 auto">
       Every level runs on the same privacy-first account — no email, no
       password, just your account number. Paid levels are drawn from your
@@ -101,15 +120,26 @@ const tiers = [
     </div>
     <p class="muted" style="margin-top: 1.5rem; text-align: center">
       Halo base rate: $5 = 1 Halo — packs <code>halo_1</code> / <code>halo_4</code>
-      / <code>halo_6</code>, see <a href="/halo">Halo</a>. Basic and Elite renew every
-      30 days; Pro renews yearly and works with or without a monthly plan.
-      Device scanning stays free — no account needed.
+      / <code>halo_6</code>, see <a href="/halo">Halo</a>. Guardian Angel and Guardian
+      Angel Elite renew every 30 days; Guardian Angel Pro renews yearly and
+      works with or without a monthly plan.
     </p>
   </section>
 
   <style>
     .tiers-grid {
       align-items: stretch;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 560px) {
+      .tiers-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (min-width: 1024px) {
+      .tiers-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
     }
     .tier-card {
       text-align: center;
