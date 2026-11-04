@@ -1,7 +1,7 @@
-<!-- apps/web/public/icon.svg — site favicon (brand mark: halo'd android robot, dark tile). -->
+<!-- apps/web/public/icon.svg — site favicon (brand mark: superhero "SU" android robot — red cape + chest shield, dark tile). -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
   <rect width="24" height="24" rx="5" fill="#0d0f12"/>
-  <ellipse cx="12" cy="2.7" rx="3.6" ry="1.1" stroke="#eda537" stroke-width="0.9" fill="none"/>
+  <path d="M6.8 12.6 3.6 20.8c1.6-0.9 2.6-1.2 3.4-1.3zM17.2 12.6l3.2 8.2c-1.6-0.9-2.6-1.2-3.4-1.3z" fill="#e23a3a"/>
   <path d="M9.1 6.2 7.7 4.1M14.9 6.2l1.4-2.1" stroke="#3d9df2" stroke-width="1.1" stroke-linecap="round"/>
   <path d="M6.5 11a5.5 5.5 0 0 1 11 0z" fill="#3d9df2"/>
   <circle cx="9.7" cy="8.6" r="0.85" fill="#0d0f12"/>
@@ -9,6 +9,7 @@
   <rect x="6.5" y="12.4" width="11" height="5.4" rx="1.6" fill="#3d9df2"/>
   <rect x="4.4" y="12.4" width="1.7" height="4.6" rx="0.85" fill="#3d9df2"/>
   <rect x="17.9" y="12.4" width="1.7" height="4.6" rx="0.85" fill="#3d9df2"/>
+  <path d="M12 13.1l1.9 1.9-1.9 1.9-1.9-1.9z" fill="#f7d154"/>
   <rect x="8.6" y="17.9" width="2.4" height="3.4" rx="1.2" fill="#3d9df2"/>
   <rect x="13" y="17.9" width="2.4" height="3.4" rx="1.2" fill="#3d9df2"/>
 </svg>
