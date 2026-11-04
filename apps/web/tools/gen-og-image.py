@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)  # apps/web
-MASCOT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, 'assets', 'mascot-v1.jpg')
+MASCOT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, 'assets', 'mascot-v2.jpg')
 FONT = os.path.join(HERE, 'fonts', 'Inter.ttf')
 OUT = os.path.join(ROOT, 'public', 'og-image.png')
 
