@@ -19,11 +19,17 @@ nano-gpt model roster, and QA doctrine. This file is the PROJECT layer: what to 
 
 ## Character canon (owner-set, 2026-11-04)
 
-1. **SU superhero — the Root My Android DEFAULT robot, and the face of the Guru
-   Daemon product** (pro tools: Terminal Editor, Log Analysis — superuser tooling).
-   Green body, red cape, yellow diamond chest shield with red "SU" (= superuser; also
-   sidesteps DC's 'S' trademark). NO halo. Canon prompt: `references/su-mascot-prompt.txt`.
-   (A dedicated Guru Daemon character is TBD; SU fronts it interim.)
+1. **SU superhero — the Root My Android DEFAULT robot** (OG card, landing hero,
+   favicons). Green body, red cape, yellow diamond chest shield with red "SU"
+   (= superuser; also sidesteps DC's 'S' trademark). NO halo. Canon prompt:
+   `references/su-mascot-prompt.txt`.
+1b. **Guru Daemon — the Guru Daemon pro-tools product robot** (Terminal Editor, Log
+   Analysis). A wise OLD robot: white beard, round eyeglasses, dark charcoal monk
+   robe hex #1A1D24 with terminal-green accents, green head/hands, NO halo, NO cape.
+   Two candidates published (owner pick PENDING — agent cannot visually verify art):
+   `img/brand/guru-staff.webp` (staff topped with a glowing '>' prompt glyph) and
+   `img/brand/guru-circuit.webp` (seated, circuit-trace robe trim). Sources
+   `apps/web/tools/assets/guru-{staff,circuit}.jpg`. SU fronted the product interim.
 2. **Guardian Angel — the Guardian Angel monitoring product robot.** Green body, thin
    golden halo, NO cape. Canon prompt: `references/guardian-angel-prompt.txt`.
    Wardrobe studies published under `/img/brand/`: hooded robe, swaddle blanket,
