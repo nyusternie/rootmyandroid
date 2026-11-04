@@ -19,13 +19,19 @@ nano-gpt model roster, and QA doctrine. This file is the PROJECT layer: what to 
 
 ## Character canon (owner-set, 2026-11-04)
 
-1. **SU superhero — the Root My Android DEFAULT robot.** Green body, red cape, yellow
-   diamond chest shield with red "SU" (= superuser; also sidesteps DC's 'S' trademark).
-   NO halo. Canon prompt: `references/su-mascot-prompt.txt`.
-2. **Guardian Angel — the `com.rootmyandroid.guardian` app robot.** Green body, thin
+1. **SU superhero — the Root My Android DEFAULT robot, and the face of the Guru
+   Daemon product** (pro tools: Terminal Editor, Log Analysis — superuser tooling).
+   Green body, red cape, yellow diamond chest shield with red "SU" (= superuser; also
+   sidesteps DC's 'S' trademark). NO halo. Canon prompt: `references/su-mascot-prompt.txt`.
+   (A dedicated Guru Daemon character is TBD; SU fronts it interim.)
+2. **Guardian Angel — the Guardian Angel monitoring product robot.** Green body, thin
    golden halo, NO cape. Canon prompt: `references/guardian-angel-prompt.txt`.
-3. Halo rings (0/1/2/3) are the level badges on `/pricing` (Free/Basic/Elite/Pro,
-   the paid tiers branded Guardian Angel) — currency marks, not mascots.
+   Wardrobe studies published under `/img/brand/`: hooded robe, swaddle blanket,
+   baby-in-diaper (`guardian-{robe,blanket,baby}.webp`); the toga was owner-REJECTED
+   (deleted 2026-11-04).
+3. Halo rings (0/1/2) are the Guardian Angel level badges on `/pricing`
+   (Free/Basic/Elite) — currency marks, not mascots. Guru Daemon Pro carries the SU
+   robot instead of a halo badge.
 4. **App icons show the FULL BODY** — owner rejected a head-only icon ("looks like
    Dracula", "SU floats with no body"). Never ship head-only icon crops.
 

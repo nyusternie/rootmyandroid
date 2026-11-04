@@ -1,32 +1,13 @@
 ---
-// src/pages/pricing.astro — the four levels: Free (no halo) + the three
-// Guardian Angel tiers (single/double/triple).
-// Prices + structure owner-decided 2026-11-04 (HANDOFF.md §10.2): Basic
-// 1 Halo/mo, Elite 2 Halo/mo (cumulative), Pro 3 Halo/YEAR — an
-// independent pro SUBSCRIPTION lane (Terminal Editor, Log Analysis) that
-// combines with a monthly plan or stands alone (all three are
-// subscriptions; Pro is simply billed yearly). No Offer/PriceSpecification schema on
-// purpose: structured data must mirror real, visible copy.
+// src/pages/pricing.astro — TWO products (owner ruling 2026-11-04, HANDOFF §10.2):
+//   Guardian Angel — monthly monitoring subscriptions (Basic / Elite)
+//   Guru Daemon — professional tools; "Pro" is its 1-YEAR subscription
+// The free core (browser scan etc.) sits OUTSIDE both products.
+// No Offer/PriceSpecification schema on purpose: structured data must
+// mirror real, visible copy.
 import Base from '../layouts/Base.astro'
 
-const tiers = [
-  {
-    badge: '/img/badge-halo-free.webp',
-    alt: 'Free level badge — android robot',
-    name: 'Free',
-    level: 'Scan',
-    price: '$0',
-    per: 'forever',
-    features: [
-      'Browser device scan (read-only ADB)',
-      'Bootloader & unlock detection',
-      'Root-method selection',
-      'Full guides library',
-      'No account needed',
-    ],
-    cta: { href: '/scan', label: 'Start free' },
-    featured: false,
-  },
+const guardianTiers = [
   {
     badge: '/img/badge-halo-single.webp',
     alt: 'Single Halo level badge — android robot with one halo',
@@ -41,6 +22,7 @@ const tiers = [
       'Renews every 30 days',
     ],
     cta: { href: '/halo', label: 'Subscribe' },
+    tag: null,
     featured: false,
   },
   {
@@ -57,12 +39,16 @@ const tiers = [
       'Renews every 30 days',
     ],
     cta: { href: '/halo', label: 'Subscribe' },
+    tag: 'Recommended',
     featured: true,
   },
+]
+
+const guruTiers = [
   {
-    badge: '/img/badge-halo-triple.webp',
-    alt: 'Triple Halo level badge — android robot with three halos',
-    name: 'Guardian Angel Pro',
+    badge: '/img/brand/hero-superman.webp',
+    alt: 'SU superhero android robot — the Guru Daemon Pro mascot',
+    name: 'Guru Daemon',
     level: 'Pro',
     price: '3 Halos',
     per: 'year · $15',
@@ -70,32 +56,49 @@ const tiers = [
       'Terminal Editor',
       'Log Analysis',
       'Independent yearly subscription',
-      'Combines with a monthly plan — or stands alone',
+      'Combines with any Guardian Angel plan — or stands alone',
     ],
     cta: { href: '/halo', label: 'Subscribe' },
-    featured: false,
+    tag: 'New',
+    featured: true,
   },
 ]
 ---
 
 <Base
   title="Pricing"
-  description="Free device scan, then Guardian Angel plans — Basic and Elite monthly, Pro yearly. One account number, one Halo balance, no email and no password."
+  description="Two products, one balance — Guardian Angel monthly monitoring subscriptions and Guru Daemon Pro professional tools, billed yearly. No email and no password."
 >
   <section class="container" style="padding: 3rem 0 2rem; text-align: center">
-    <h1>Four levels. <span class="hl">One balance.</span></h1>
+    <h1>Two products. <span class="hl">One balance.</span></h1>
     <p class="lede" style="max-width: 46rem; margin: 0 auto">
-      Every level runs on the same privacy-first account — no email, no
-      password, just your account number. Paid levels are drawn from your
-      Halo balance.
+      Guardian Angel watches over your devices with monthly monitoring
+      subscriptions. Guru Daemon unlocks professional tooling with a yearly
+      Pro subscription. Both run on the same privacy-first account — no
+      email, no password, just your account number.
     </p>
   </section>
 
-  <section class="container" style="padding-bottom: 3rem">
-    <div class="grid-3 tiers-grid">
-      {tiers.map((t) => (
+  <section class="container" style="padding-bottom: 2.5rem">
+    <div class="panel free-strip">
+      <div>
+        <h2 style="margin: 0">Free <span class="muted free-price">$0 forever</span></h2>
+        <p class="muted" style="margin: 0.25rem 0 0; max-width: 40rem">
+          Browser device scan (read-only ADB), bootloader &amp; unlock
+          detection, root-method selection, and the full guides library —
+          no account needed.
+        </p>
+      </div>
+      <a class="btn" href="/scan">Start free</a>
+    </div>
+  </section>
+
+  <section class="container" style="padding-bottom: 2.5rem">
+    <h2 class="product-head">Guardian Angel <span class="muted">— monthly monitoring</span></h2>
+    <div class="tiers-grid tiers-grid-2">
+      {guardianTiers.map((t) => (
         <div class:list={['panel', 'tier-card', { featured: t.featured }]}>
-          {t.featured && <span class="tier-tag">Recommended</span>}
+          {t.tag && <span class="tier-tag">{t.tag}</span>}
           <img
             class="app-badge"
             src={t.badge}
@@ -104,7 +107,37 @@ const tiers = [
             height="256"
             loading="lazy"
           />
-          <h2>{t.name}</h2>
+          <h3>{t.name}</h3>
+          <p class="tier-level muted">{t.level}</p>
+          <p class="tier-price">
+            {t.price} <span class="muted">/ {t.per}</span>
+          </p>
+          <ul class="tier-features">
+            {t.features.map((f) => <li>{f}</li>)}
+          </ul>
+          <a class:list={['btn', { 'btn-primary': t.featured }]} href={t.cta.href}>
+            {t.cta.label}
+          </a>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="container" style="padding-bottom: 3rem">
+    <h2 class="product-head">Guru Daemon <span class="muted">— professional tools, yearly</span></h2>
+    <div class="tiers-grid tiers-grid-1">
+      {guruTiers.map((t) => (
+        <div class:list={['panel', 'tier-card', { featured: t.featured }]}>
+          {t.tag && <span class="tier-tag">{t.tag}</span>}
+          <img
+            class="app-badge"
+            src={t.badge}
+            alt={t.alt}
+            width="256"
+            height="256"
+            loading="lazy"
+          />
+          <h3>{t.name}</h3>
           <p class="tier-level muted">{t.level}</p>
           <p class="tier-price">
             {t.price} <span class="muted">/ {t.per}</span>
@@ -120,25 +153,43 @@ const tiers = [
     </div>
     <p class="muted" style="margin-top: 1.5rem; text-align: center">
       Halo base rate: $5 = 1 Halo — packs <code>halo_1</code> / <code>halo_4</code>
-      / <code>halo_6</code>, see <a href="/halo">Halo</a>. Guardian Angel and Guardian
-      Angel Elite renew every 30 days; Guardian Angel Pro renews yearly and
-      works with or without a monthly plan.
+      / <code>halo_6</code>, see <a href="/halo">Halo</a>. Guardian Angel plans
+      renew every 30 days; Guru Daemon Pro renews yearly and works with or
+      without a Guardian Angel plan.
     </p>
   </section>
 
   <style>
+    .free-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .free-price {
+      font-size: 1rem;
+      font-weight: 400;
+    }
+    .product-head {
+      text-align: center;
+      margin: 0 0 1.25rem;
+    }
     .tiers-grid {
       align-items: stretch;
+      display: grid;
+      gap: 0.9rem;
       grid-template-columns: 1fr;
     }
     @media (min-width: 560px) {
-      .tiers-grid {
+      .tiers-grid-2 {
         grid-template-columns: repeat(2, 1fr);
+        max-width: 46rem;
+        margin: 0 auto;
       }
-    }
-    @media (min-width: 1024px) {
-      .tiers-grid {
-        grid-template-columns: repeat(4, 1fr);
+      .tiers-grid-1 {
+        grid-template-columns: minmax(0, 23rem);
+        justify-content: center;
       }
     }
     .tier-card {

@@ -259,38 +259,37 @@ authoritative contract for the web copy sweep already in motion.
   converted in place. Redeem codes: none outstanding. Any code generated
   from now on is in NEW units (`make-codes.js --halo 1` = one $5 Halo).
 
-### 10.2 The 3 plan tiers — CONTENTS DEFINED (owner rulings 2026-11-04)
+### 10.2 The products + tiers — CONTENTS DEFINED (owner rulings 2026-11-04)
 
 Server-side source of truth: **`GET /v1/halo/plans`** (public catalog,
-same pattern as `/v1/halo/services`). FOUR CATEGORIES (owner ruling
-2026-11-04): a FREE tier plus THREE PAID SUBSCRIPTIONS ("Pro is ALSO a
-subscription, just 1 YEAR") in TWO LANES: Guardian Angel (Basic) →
-Guardian Angel Elite are CUMULATIVE
-monthly subscriptions; Guardian Angel Pro is an INDEPENDENT yearly
-subscription — a LIMITED professional feature set that combines with
-either monthly plan or stands alone ("a user can unlock Pro and still
-subscribe to either Basic or Elite, or they may ONLY unlock Pro, or they
-may ONLY subscribe and NEVER unlock Pro").
+same pattern as `/v1/halo/services`). **TWO SEPARATE PRODUCTS** (owner
+ruling 2026-11-04): **Guardian Angel** (monthly monitoring subscriptions,
+cumulative Basic → Elite) and **Guru Daemon** (professional tools; "Pro"
+is its 1-YEAR subscription — a LIMITED professional feature set that
+combines with either Guardian Angel plan or stands alone: "a user can
+unlock Pro and still subscribe..., or they may ONLY unlock Pro, or they
+may ONLY subscribe and NEVER unlock Pro"; all paid plans are
+subscriptions, Pro is simply billed yearly). The free core sits OUTSIDE
+both products.
 
-| plan                 | price        | period  | features (slugs)                               |
-|----------------------|--------------|---------|------------------------------------------------|
-| Free                 | $0           | —       | free core: browser scan, bootloader/unlock detection, root-method selection, guides (no account) |
-| Guardian Angel       | 1 Halo ($5)  | 30 days | `read_apps`, `read_messages`, `read_call_logs` |
-| Guardian Angel Elite | 2 Halo ($10) | 30 days | Basic + `view_media`, `view_camera_video`      |
-| Guardian Angel Pro   | 3 Halo ($15) | 365 days| `terminal_editor`, `log_analysis` (limited pro lane) |
+| product        | plan  | price        | period   | features (slugs)                              |
+|----------------|-------|--------------|----------|-----------------------------------------------|
+| — (free core)  | Free  | $0           | —        | browser scan, bootloader/unlock detection, root-method selection, guides (no account) |
+| Guardian Angel | Basic | 1 Halo ($5)  | 30 days  | `read_apps`, `read_messages`, `read_call_logs` |
+| Guardian Angel | Elite | 2 Halo ($10) | 30 days  | Basic + `view_media`, `view_camera_video`     |
+| Guru Daemon    | Pro   | 3 Halo ($15) | 365 days | `terminal_editor`, `log_analysis`             |
 
-- **Advanced was renamed Elite; the plan line is branded Guardian Angel**
-  (owner rulings 2026-11-04). [ ] The "Elite" title itself is under owner
-  review ("i don't know about this title yet", 2026-11-04).
+- **Advanced was renamed Elite; the Elite title is under owner review**
+  ("i don't know about this title yet", 2026-11-04).
 - **Pro is API-gated** (`api_gated: true`): entitled features must verify
   an active entitlement with the API before enabling. The entitlement
   endpoint lands with plan redemption (Phase 2 API PR) and must support
   BOTH 30-day and 365-day windows — the yearly Pro SKU is new.
 - [ ] OWNER TO CONFIRM: placement of `realtime_monitoring` +
-  `smart_triggers` (cumulative-Pro under the v1 table) — stay in the
-  independent Pro lane, or move to Elite?
+  `smart_triggers` (cumulative-Pro under the v1 table) — Guardian Angel
+  Elite, or Guru Daemon Pro?
 - The Android mock (`MOCK_PLANS` in `apps/android/App.tsx`) renders these
-  tiers and needs the Elite rename + Pro re-lane.
+  tiers and needs the two-product restructure + Elite rename.
 - A redemption endpoint (spend N Halo → plan window) will follow in a
   later API PR; the consume path + services catalog will be RETIRED when
   the plans land (not frozen — removed).
