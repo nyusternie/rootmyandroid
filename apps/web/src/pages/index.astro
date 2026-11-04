@@ -168,6 +168,14 @@ const appSchema = {
     </div>
   </section>
 
+  {/* Chat bubble bottom-right on the landing page (owner request 2026-11-04):
+      the existing support widget (src/scripts/support.ts) as on the app pages.
+      NOTE: / now ships JavaScript — repo rule 4 zero-JS still holds for
+      /guides/*; keep the widget off content/guide pages. */}
+  <script>
+    import '../scripts/support.ts'
+  </script>
+
   <script type="application/ld+json" set:html={JSON.stringify(appSchema)} />
 </Base>
 
