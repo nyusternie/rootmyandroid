@@ -1,0 +1,184 @@
+---
+// src/pages/rooted.astro — SEO landing page for the Rooted app (the
+// unlocking assistant). Home of the "rooted android" hero art (moved from
+// the landing page 2026-11-03). FAQPage schema mirrors the visible FAQ
+// below — never add entries that are not rendered on the page.
+import Base from '../layouts/Base.astro'
+
+const faq = [
+  {
+    q: 'Is rooting legal?',
+    a: 'Rooting a device you own is legal in many countries, but laws and warranty terms vary. Rooting can void your manufacturer or carrier warranty, so check the terms for your device and region before you begin.',
+  },
+  {
+    q: 'Will rooting erase my data?',
+    a: 'Unlocking the bootloader — a required first step on most devices — performs a factory reset and erases everything on the phone. Back up anything you want to keep before you start.',
+  },
+  {
+    q: 'Can I unroot and go back?',
+    a: 'In most cases, yes. Reflashing the manufacturer\'s stock firmware returns the device to its original, unrooted state. The exact procedure depends on the device maker.',
+  },
+  {
+    q: 'Does rooting work on every Android phone?',
+    a: 'No. It depends on your exact model, carrier variant, and whether the manufacturer allows the bootloader to be unlocked. Some carrier-locked variants cannot be unlocked at all — which is why Rooted checks your specific device before recommending anything.',
+  },
+]
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+}
+---
+
+<Base
+  title="Rooted — the unlocking assistant for your Android"
+  description="Rooted scans your Android device over ADB — read-only, in your browser — and builds a rooting / upgrade plan matched to your exact model and firmware. Free, private, no account needed to scan."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <h1>Rooted — your Android, <span class="hl">fully yours</span>.</h1>
+        <p class="lede">
+          Rooted is the unlocking assistant for your own device. It scans your
+          phone or tablet over ADB — entirely in your browser, read-only,
+          nothing uploaded — checks your bootloader, and builds a rooting and
+          upgrade plan matched to your exact model and firmware.
+        </p>
+        <div class="row" style="margin-top: 1.75rem">
+          <a class="btn btn-primary" href="/scan">Scan your device</a>
+          <a class="btn" href="/guides">Browse the guides</a>
+        </div>
+      </div>
+      <div class="hero-art">
+        <img
+          src="/img/hero.webp"
+          alt="Illustration of a blue Android robot with green roots growing from its base, representing a device rooted by Root My Android"
+          width="880"
+          height="880"
+          fetchpriority="high"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="container" style="padding-top: 2.5rem; padding-bottom: 2rem">
+    <h2>What is rooting?</h2>
+    <p>
+      Rooting gives you superuser (root) access to your own Android device —
+      the same level of control the operating system itself has. With root
+      access you can remove pre-installed apps you never asked for, take
+      complete backups, install a custom ROM, and customize the system far
+      beyond what stock settings allow.
+    </p>
+    <p>
+      On most devices, rooting starts with unlocking the bootloader — the
+      gatekeeper that decides which software the phone is allowed to run.
+      Whether and how a bootloader can be unlocked depends on the
+      manufacturer, the exact model, and often the carrier variant. That is
+      why generic tutorials so often fail: the safe path is different for
+      almost every device.
+    </p>
+  </section>
+
+  <section class="container" style="padding-bottom: 2rem">
+    <h2>How Rooted works</h2>
+    <div class="grid-3 steps-grid" style="margin-top: 1.5rem">
+      <div class="panel">
+        <h3>1. Connect</h3>
+        <p class="muted">
+          Plug your device in with a USB cable and enable USB debugging.
+          Rooted talks to it over ADB, straight from a WebUSB-capable desktop
+          browser — nothing to install.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>2. Scan</h3>
+        <p class="muted">
+          The scan is strictly read-only: it inspects your model, firmware,
+          and bootloader state and never writes to the device. Nothing leaves
+          your computer unless you choose to save the report.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>3. Plan</h3>
+        <p class="muted">
+          You get a step-by-step unlocking and upgrade plan matched to your
+          exact device — including an honest "not possible" when your variant
+          cannot be unlocked.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container" style="padding-bottom: 2rem">
+    <h2>What you can do with a rooted device</h2>
+    <ul>
+      <li>
+        <strong>Install a custom ROM</strong> — replace the whole operating
+        system with a community build like LineageOS. See our
+        <a href="/roms">ROMs section</a>.
+      </li>
+      <li>
+        <strong>Remove bloatware for good</strong> — uninstall pre-installed
+        apps instead of merely disabling them.
+      </li>
+      <li>
+        <strong>Take complete backups</strong> — including app data that
+        stock backups skip.
+      </li>
+      <li>
+        <strong>Customize deeply</strong> — system-wide theming, kernels,
+        automation, and features your manufacturer never shipped.
+      </li>
+    </ul>
+  </section>
+
+  <section class="container" style="padding-bottom: 2rem">
+    <h2>Know the risks first</h2>
+    <p>
+      Rooting is powerful and it is your right — but it is not free of
+      consequences. Unlocking the bootloader factory-resets the device.
+      Rooting can void your warranty, and some apps — banking and payment
+      apps in particular — may refuse to run on a rooted device. A mistake
+      during flashing can leave a device unbootable. Read the full
+      <a href="/terms">rooting &amp; unlocking risk disclosure</a> in our
+      Terms before you begin.
+    </p>
+  </section>
+
+  <section class="container" style="padding-bottom: 3rem">
+    <h2>Frequently asked questions</h2>
+    {faq.map((f) => (
+      <details class="faq-item">
+        <summary>{f.q}</summary>
+        <p>{f.a}</p>
+      </details>
+    ))}
+    <p style="margin-top: 2rem">
+      <a class="btn btn-primary" href="/scan">Scan your device — free</a>
+    </p>
+  </section>
+
+  <style>
+    .faq-item {
+      border: 1px solid var(--border, #2a2f36);
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      margin-top: 0.75rem;
+    }
+    .faq-item summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .faq-item p {
+      margin: 0.75rem 0 0.25rem;
+    }
+  </style>
+</Base>

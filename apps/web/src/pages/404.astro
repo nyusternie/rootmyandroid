@@ -1,0 +1,24 @@
+---
+// src/pages/404.astro — 404 page. Astro static build emits /404.html;
+// Cloudflare Pages serves it with a real 404 status for unmatched paths
+// (fixes the site-wide soft-404 where unknown URLs returned 200 + /).
+import Base from '../layouts/Base.astro'
+---
+
+<Base
+  title="Page not found"
+  description="This page does not exist — but your Android's full potential is one scan away."
+>
+  <section class="container" style="padding: 4rem 0; text-align: center">
+    <h1 style="font-size: 4rem; margin-bottom: 0.5rem">404</h1>
+    <p class="lede">
+      That page wandered off the ROM. Let's get you back to familiar ground.
+    </p>
+    <div class="row" style="justify-content: center; margin-top: 2rem">
+      <a class="btn btn-primary" href="/">Back to the homepage</a>
+      <a class="btn" href="/scan">Scan your device</a>
+      <a class="btn" href="/guides">Browse the guides</a>
+      <a class="btn" href="/halo">Halo</a>
+    </div>
+  </section>
+</Base>
