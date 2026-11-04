@@ -7,7 +7,7 @@
  *
  * Account lives behind the top-right header button (modal), not a tab.
  * The header also carries the Halo energy bar: Halo is the billing unit
- * users buy; accounts consume it to keep PRO features running. Halo,
+ * users buy and redeem for 30-day plan tiers (Basic/Advanced/Pro). Halo,
  * device scan, Devices, and Tools data is mocked for now; real probing and
  * API wiring come from native modules and the /v1 API.
  *
@@ -40,6 +40,36 @@ import { rootedColors as colors } from 'rootmyandroid-shared';
 
 /** Mock Halo level (0–100) until billing is wired to the API. */
 const MOCK_HALO = 62;
+
+/**
+ * Mock 30-day plan tiers (owner ruling 2026-11-04) until plan redemption
+ * is wired to the API. Server-side source of truth: GET /v1/halo/plans.
+ * Features are cumulative — each tier includes everything below it.
+ */
+const MOCK_PLANS = [
+  {
+    id: 'basic',
+    label: 'Basic',
+    halo: 1,
+    features: ['Read apps', 'Read messages', 'Read call logs'],
+  },
+  {
+    id: 'advanced',
+    label: 'Advanced',
+    halo: 2,
+    features: ['Everything in Basic', 'View media', 'View camera / video'],
+  },
+  {
+    id: 'pro',
+    label: 'Pro',
+    halo: 3,
+    features: [
+      'Everything in Advanced',
+      'Real-time device monitoring',
+      '"Smart" triggers (API-gated)',
+    ],
+  },
+];
 
 function App() {
   const [tab, setTab] = useState<Tab>('scan');
@@ -432,16 +462,22 @@ function AccountScreen() {
         <Row label="Storage used" value="1.2 GB of 5 GB" />
       </Panel>
       <Panel title="Halo">
-        <Row label="Balance" value="62 / 100" />
-        <Row label="Burn rate" value="1 Halo / device / day" />
-        <Row label="Est. remaining" value="31 days" />
+        <Row label="Balance" value="3 Halo" />
+        <Row label="Rate" value="$5 = 1 Halo" />
       </Panel>
-      <PrimaryButton label="Buy Halo — $5 / 100" />
+      {MOCK_PLANS.map((plan) => (
+        <Panel key={plan.id} title={`${plan.label} — ${plan.halo} Halo / 30 days`}>
+          {plan.features.map((feature) => (
+            <Row key={feature} label="•" value={feature} />
+          ))}
+        </Panel>
+      ))}
+      <PrimaryButton label="Buy Halo — $5 / 1" />
       <GhostButton label="Create new account" />
       <Text className="mt-3.5 text-xs leading-[17px] text-faint">
-        Halo is the energy your account burns to keep PRO features running.
-        It is consumed automatically by active devices. Your account number
-        is the only credential. Keep it safe — it cannot be recovered.
+        Halo is the billing unit you redeem for 30-day plans: 1 Halo unlocks
+        Basic, 2 Advanced, 3 Pro. Your account number is the only
+        credential. Keep it safe — it cannot be recovered.
       </Text>
     </View>
   );

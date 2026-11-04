@@ -258,11 +258,24 @@ authoritative contract for the web copy sweep already in motion.
   converted in place. Redeem codes: none outstanding. Any code generated
   from now on is in NEW units (`make-codes.js --halo 1` = one $5 Halo).
 
-### 10.2 Where this is going (ruling: "ALL services absorbed into 1 of 3 packs")
+### 10.2 The 3 plan tiers — CONTENTS DEFINED (owner ruling 2026-11-04)
 
-- **3 fixed 30-day plans:** Basic = 1 Halo, Advanced = 2 Halos, Pro =
-  3 Halos. Plan CONTENTS (which services sit in which tier) are being
-  defined — the forthcoming `/pricing` page is the owner’s working spec.
+Server-side source of truth: **`GET /v1/halo/plans`** (public catalog,
+same pattern as `/v1/halo/services`). Features are CUMULATIVE — each tier
+includes everything below it.
+
+| plan      | Halo / 30 days | features (slugs)                                              |
+|-----------|----------------|---------------------------------------------------------------|
+| Basic     | 1              | `read_apps`, `read_messages`, `read_call_logs`                |
+| Advanced  | 2              | Basic + `view_media`, `view_camera_video`                     |
+| Pro       | 3              | Advanced + `realtime_monitoring`, `smart_triggers`            |
+
+- **Pro is API-gated** (`api_gated: true`): real-time device monitoring
+  with "smart" triggers must verify an active entitlement with the API
+  before enabling. The entitlement endpoint lands with plan redemption
+  (Phase 2 API PR); until then the tier list above is the mock contract —
+  the Android mock (`MOCK_PLANS` in `apps/android/App.tsx`) renders these
+  exact tiers.
 - A redemption endpoint (spend N Halo → 30-day plan window) will follow in
   a later API PR; the consume path + services catalog will be RETIRED when
   the plans land (not frozen — removed).
