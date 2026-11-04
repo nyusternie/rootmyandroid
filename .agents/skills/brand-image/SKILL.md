@@ -24,12 +24,13 @@ nano-gpt model roster, and QA doctrine. This file is the PROJECT layer: what to 
    (= superuser; also sidesteps DC's 'S' trademark). NO halo. Canon prompt:
    `references/su-mascot-prompt.txt`.
 1b. **Guru Daemon — the Guru Daemon pro-tools product robot** (Terminal Editor, Log
-   Analysis). A wise OLD robot: white beard, round eyeglasses, dark charcoal monk
-   robe hex #1A1D24 with terminal-green accents, green head/hands, NO halo, NO cape.
-   Two candidates published (owner pick PENDING — agent cannot visually verify art):
-   `img/brand/guru-staff.webp` (staff topped with a glowing '>' prompt glyph) and
-   `img/brand/guru-circuit.webp` (seated, circuit-trace robe trim). Sources
-   `apps/web/tools/assets/guru-{staff,circuit}.jpg`. SU fronted the product interim.
+   Analysis). OWNER-APPROVED CHARACTER (2026-11-04): a wise OLD robot — white beard,
+   round eyeglasses, dark charcoal monk robe hex #1A1D24 with terminal-green trim,
+   green head/hands, NO halo, NO cape — holding a slim staff topped with the yellow
+   diamond SU emblem (red letters, matches the SU superhero's chest shield). Canonical
+   render `img/brand/guru-staff.webp`, source `apps/web/tools/assets/guru-staff-su.jpg`
+   (red-isolation OCR-verified 'SU'). Rejected: circuit-robe variant, '>' staff glyph.
+   SU fronted the product interim (ended 2026-11-04).
 2. **Guardian Angel — the Guardian Angel monitoring product robot.** Green body, thin
    golden halo, NO cape. Canon prompt: `references/guardian-angel-prompt.txt`.
    Wardrobe studies published under `/img/brand/`: hooded robe, swaddle blanket,
