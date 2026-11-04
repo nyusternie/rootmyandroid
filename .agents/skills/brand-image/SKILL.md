@@ -24,8 +24,8 @@ nano-gpt model roster, and QA doctrine. This file is the PROJECT layer: what to 
    NO halo. Canon prompt: `references/su-mascot-prompt.txt`.
 2. **Guardian Angel — the `com.rootmyandroid.guardian` app robot.** Green body, thin
    golden halo, NO cape. Canon prompt: `references/guardian-angel-prompt.txt`.
-3. Halo rings (1/2/3) remain the Halo-currency tier badges on `/pricing` — currency
-   marks, not mascots.
+3. Halo rings (1/2/3) remain the Halo-currency tier badges on `/pricing` (Basic/Elite/Pro)
+   — currency marks, not mascots.
 4. **App icons show the FULL BODY** — owner rejected a head-only icon ("looks like
    Dracula", "SU floats with no body"). Never ship head-only icon crops.
 

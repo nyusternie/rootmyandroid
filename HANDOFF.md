@@ -229,7 +229,8 @@ names).
 ## 10. PRICING-MODEL CHANGE (owner rulings 2026-11-04) — API SHIPPED; web copy must match
 
 **The Halo unit has been repriced and the à-la-carte consumption model is
-being retired in favor of 30-day service plans.** This section is the
+being retired in favor of service plans (30-day Basic/Elite + a 365-day
+Pro lane).** This section is the
 authoritative contract for the web copy sweep already in motion.
 
 ### 10.1 What changed (live on the API now — PR #3 + manual deploy of the gated tree)
@@ -258,13 +259,34 @@ authoritative contract for the web copy sweep already in motion.
   converted in place. Redeem codes: none outstanding. Any code generated
   from now on is in NEW units (`make-codes.js --halo 1` = one $5 Halo).
 
-### 10.2 Where this is going (ruling: "ALL services absorbed into 1 of 3 packs")
+### 10.2 The 3 plan tiers — CONTENTS DEFINED (owner rulings 2026-11-04)
 
-- **3 fixed 30-day plans:** Basic = 1 Halo, Advanced = 2 Halos, Pro =
-  3 Halos. Plan CONTENTS (which services sit in which tier) are being
-  defined — the forthcoming `/pricing` page is the owner’s working spec.
-- A redemption endpoint (spend N Halo → 30-day plan window) will follow in
-  a later API PR; the consume path + services catalog will be RETIRED when
+Server-side source of truth: **`GET /v1/halo/plans`** (public catalog,
+same pattern as `/v1/halo/services`). TWO LANES (owner ruling 2026-11-04):
+Basic→Elite are CUMULATIVE monthly subscriptions; Pro is an INDEPENDENT
+yearly unlock — a LIMITED professional feature set that combines with
+either monthly plan or stands alone ("a user can unlock Pro and still
+subscribe to either Basic or Elite, or they may ONLY unlock Pro, or they
+may ONLY subscribe and NEVER unlock Pro").
+
+| plan  | price        | period  | features (slugs)                               |
+|-------|--------------|---------|------------------------------------------------|
+| Basic | 1 Halo ($5)  | 30 days | `read_apps`, `read_messages`, `read_call_logs` |
+| Elite | 2 Halo ($10) | 30 days | Basic + `view_media`, `view_camera_video`      |
+| Pro   | 3 Halo ($15) | 365 days| `terminal_editor`, `log_analysis` (limited pro lane) |
+
+- **Advanced was renamed Elite** (owner ruling 2026-11-04).
+- **Pro is API-gated** (`api_gated: true`): entitled features must verify
+  an active entitlement with the API before enabling. The entitlement
+  endpoint lands with plan redemption (Phase 2 API PR) and must support
+  BOTH 30-day and 365-day windows — the yearly Pro SKU is new.
+- [ ] OWNER TO CONFIRM: placement of `realtime_monitoring` +
+  `smart_triggers` (cumulative-Pro under the v1 table) — stay in the
+  independent Pro lane, or move to Elite?
+- The Android mock (`MOCK_PLANS` in `apps/android/App.tsx`) renders these
+  tiers and needs the Elite rename + Pro re-lane.
+- A redemption endpoint (spend N Halo → plan window) will follow in a
+  later API PR; the consume path + services catalog will be RETIRED when
   the plans land (not frozen — removed).
 - Interim UI guidance: do NOT present services as purchasable line items;
   the services catalog reporting 0 means "included/free while plans are

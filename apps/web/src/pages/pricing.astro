@@ -1,9 +1,10 @@
 ---
 // src/pages/pricing.astro — the three Halo levels (single/double/triple).
-// NOTE: tier services + prices are MOCKED placeholders (owner-directed
-// 2026-11-03) pending the levels spec. No Offer/PriceSpecification schema
-// on purpose: structured data must mirror real, visible copy, and these
-// prices are not final.
+// Prices + structure owner-decided 2026-11-04 (HANDOFF.md §10.2): Basic
+// 1 Halo/mo, Elite 2 Halo/mo (cumulative), Pro 3 Halo/YEAR — an
+// independent pro lane (Terminal Editor, Log Analysis) that combines with
+// a monthly plan or stands alone. No Offer/PriceSpecification schema on
+// purpose: structured data must mirror real, visible copy.
 import Base from '../layouts/Base.astro'
 
 const tiers = [
@@ -12,29 +13,29 @@ const tiers = [
     alt: 'Single Halo level badge — android robot with one halo',
     name: 'Single Halo',
     level: 'Basic',
-    price: 'Free',
-    per: 'forever',
+    price: '1 Halo',
+    per: 'month · $5',
     features: [
-      'Browser device scan (read-only ADB)',
-      'Device-matched rooting plan',
-      'Full guides library',
-      '1 device',
+      'Read installed apps',
+      'Read messages',
+      'Read call logs',
+      'Renews every 30 days',
     ],
-    cta: { href: '/scan', label: 'Start free' },
+    cta: { href: '/halo', label: 'Top up Halo' },
     featured: false,
   },
   {
     badge: '/img/badge-halo-double.webp',
     alt: 'Double Halo level badge — android robot with two halos',
     name: 'Double Halo',
-    level: 'Advanced',
-    price: '100 Halo',
-    per: 'per month',
+    level: 'Elite',
+    price: '2 Halos',
+    per: 'month · $10',
     features: [
       'Everything in Basic',
-      'Saved audit reports',
-      'Multi-device scan history',
-      'Priority support',
+      'View photos & media',
+      'View camera & video',
+      'Renews every 30 days',
     ],
     cta: { href: '/halo', label: 'Top up Halo' },
     featured: true,
@@ -44,13 +45,13 @@ const tiers = [
     alt: 'Triple Halo level badge — android robot with three halos',
     name: 'Triple Halo',
     level: 'Pro',
-    price: '250 Halo',
-    per: 'per month',
+    price: '3 Halos',
+    per: 'year · $15',
     features: [
-      'Everything in Advanced',
-      'Encrypted cloud backups',
-      'Guardian Angel sync',
-      'Family fleet — up to 5 devices',
+      'Terminal Editor',
+      'Log Analysis',
+      'Independent yearly unlock',
+      'Combines with Basic or Elite — or stands alone',
     ],
     cta: { href: '/halo', label: 'Top up Halo' },
     featured: false,
@@ -60,7 +61,7 @@ const tiers = [
 
 <Base
   title="Pricing"
-  description="Three Halo levels — Basic (free), Advanced, and Pro. One account number, one Halo balance, no email and no password."
+  description="Three Halo levels — Basic and Elite monthly, Pro yearly. One account number, one Halo balance, no email and no password."
 >
   <section class="container" style="padding: 3rem 0 2rem; text-align: center">
     <h1>Three levels. <span class="hl">One balance.</span></h1>
@@ -99,9 +100,10 @@ const tiers = [
       ))}
     </div>
     <p class="muted" style="margin-top: 1.5rem; text-align: center">
-      Halo base rate: $5 = 100 Halo, with discounts on larger packs —
-      see <a href="/halo">Halo</a>. One balance powers every level and every
-      PRO service on your account.
+      Halo base rate: $5 = 1 Halo — packs <code>halo_1</code> / <code>halo_4</code>
+      / <code>halo_6</code>, see <a href="/halo">Halo</a>. Basic and Elite renew every
+      30 days; Pro renews yearly and works with or without a monthly plan.
+      Device scanning stays free — no account needed.
     </p>
   </section>
 
