@@ -1,0 +1,166 @@
+---
+// src/pages/pricing.astro — the three Halo levels (single/double/triple).
+// NOTE: tier services + prices are MOCKED placeholders (owner-directed
+// 2026-11-03) pending the levels spec. No Offer/PriceSpecification schema
+// on purpose: structured data must mirror real, visible copy, and these
+// prices are not final.
+import Base from '../layouts/Base.astro'
+
+const tiers = [
+  {
+    badge: '/img/badge-halo-single.webp',
+    alt: 'Single Halo level badge — android robot with one halo',
+    name: 'Single Halo',
+    level: 'Basic',
+    price: 'Free',
+    per: 'forever',
+    features: [
+      'Browser device scan (read-only ADB)',
+      'Device-matched rooting plan',
+      'Full guides library',
+      '1 device',
+    ],
+    cta: { href: '/scan', label: 'Start free' },
+    featured: false,
+  },
+  {
+    badge: '/img/badge-halo-double.webp',
+    alt: 'Double Halo level badge — android robot with two halos',
+    name: 'Double Halo',
+    level: 'Advanced',
+    price: '100 Halo',
+    per: 'per month',
+    features: [
+      'Everything in Basic',
+      'Saved audit reports',
+      'Multi-device scan history',
+      'Priority support',
+    ],
+    cta: { href: '/halo', label: 'Top up Halo' },
+    featured: true,
+  },
+  {
+    badge: '/img/badge-halo-triple.webp',
+    alt: 'Triple Halo level badge — android robot with three halos',
+    name: 'Triple Halo',
+    level: 'Pro',
+    price: '250 Halo',
+    per: 'per month',
+    features: [
+      'Everything in Advanced',
+      'Encrypted cloud backups',
+      'Guardian Angel sync',
+      'Family fleet — up to 5 devices',
+    ],
+    cta: { href: '/halo', label: 'Top up Halo' },
+    featured: false,
+  },
+]
+---
+
+<Base
+  title="Pricing"
+  description="Three Halo levels — Basic (free), Advanced, and Pro. One account number, one Halo balance, no email and no password."
+>
+  <section class="container" style="padding: 3rem 0 2rem; text-align: center">
+    <h1>Three levels. <span class="hl">One balance.</span></h1>
+    <p class="lede" style="max-width: 46rem; margin: 0 auto">
+      Every level runs on the same privacy-first account — no email, no
+      password, just your account number. Paid levels are drawn from your
+      Halo balance.
+    </p>
+  </section>
+
+  <section class="container" style="padding-bottom: 3rem">
+    <div class="grid-3 tiers-grid">
+      {tiers.map((t) => (
+        <div class:list={['panel', 'tier-card', { featured: t.featured }]}>
+          {t.featured && <span class="tier-tag">Recommended</span>}
+          <img
+            class="app-badge"
+            src={t.badge}
+            alt={t.alt}
+            width="256"
+            height="256"
+            loading="lazy"
+          />
+          <h2>{t.name}</h2>
+          <p class="tier-level muted">{t.level}</p>
+          <p class="tier-price">
+            {t.price} <span class="muted">/ {t.per}</span>
+          </p>
+          <ul class="tier-features">
+            {t.features.map((f) => <li>{f}</li>)}
+          </ul>
+          <a class:list={['btn', { 'btn-primary': t.featured }]} href={t.cta.href}>
+            {t.cta.label}
+          </a>
+        </div>
+      ))}
+    </div>
+    <p class="muted" style="margin-top: 1.5rem; text-align: center">
+      Halo base rate: $5 = 100 Halo, with discounts on larger packs —
+      see <a href="/halo">Halo</a>. One balance powers every level and every
+      PRO service on your account.
+    </p>
+  </section>
+
+  <style>
+    .tiers-grid {
+      align-items: stretch;
+    }
+    .tier-card {
+      text-align: center;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .tier-card.featured {
+      border-color: var(--accent, #3d9df2);
+    }
+    .tier-tag {
+      position: absolute;
+      top: -0.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent, #3d9df2);
+      color: #0d0f12;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.75rem;
+      border-radius: 999px;
+    }
+    .tier-level {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.8rem;
+      margin: 0;
+    }
+    .tier-price {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0.5rem 0 0;
+    }
+    .tier-price .muted {
+      font-size: 0.9rem;
+      font-weight: 400;
+    }
+    .tier-features {
+      list-style: none;
+      padding: 0;
+      margin: 0.75rem 0 1.25rem;
+      display: grid;
+      gap: 0.4rem;
+    }
+    .tier-features li::before {
+      content: '✓ ';
+      color: #3fb96b;
+      font-weight: 700;
+    }
+    .tier-card .btn {
+      margin-top: auto;
+    }
+  </style>
+</Base>
