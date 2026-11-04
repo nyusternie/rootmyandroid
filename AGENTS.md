@@ -8,10 +8,13 @@ Guidance for AI agents (and humans) working in this repository.
 
 ## Mission
 
-Restore and modernize rootmyandroid.com as a paid service (~$5/mo, Mullvad-style
+Restore and modernize rootmyandroid.com as a paid service (Mullvad-style
 account model: no email, account-number-only). The core product uses **ADB** to
-scan and analyze a physical Android device and produce a rooting / upgrade plan.
-Advanced features will be paywalled; free tier covers basic scanning and docs.
+scan and analyze a physical Android device and produce a rooting / upgrade plan
+— that scan core is FREE (no account). Two paid products (owner ruling
+2026-11-04, pricing in HANDOFF.md §10.2): **Guardian Angel** (monthly
+monitoring subscriptions, 1–2 Halo) and **Guru Daemon** (professional tools —
+Terminal Editor, Log Analysis — as a 3 Halo yearly "Pro" subscription).
 
 ## Repository layout (pnpm workspace)
 
@@ -30,6 +33,7 @@ Advanced features will be paywalled; free tier covers basic scanning and docs.
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client
 │                     # shared by the mobile apps (TS source, no build step)
 ├── .github/workflows/web.yml   # Web CI + Cloudflare Pages deploy gate
+├── .agents/skills/   # Project agent skills (brand-image: brand canon)
 ├── .vendor/          # Vendored tarballs (hermes-compiler; see overrides in
 │                     # pnpm-workspace.yaml)
 ├── pnpm-workspace.yaml
@@ -117,6 +121,22 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
 - The landing-page SEO roadmap (Phases 2–3: keyword-targeted rebuild, FAQ +
   FAQPage schema, illustration set) is specified in HANDOFF.md.
 
+## Brand identity (live)
+
+Three Android-green characters — palette, prompts, and the ship procedure
+live in `.agents/skills/brand-image/` (read it before ANY image task):
+
+- **SU superhero** (red cape, yellow SU diamond shield) — the Root My
+  Android default: OG card, landing hero, favicons.
+- **Guardian Angel** (golden halo, no cape) — the monitoring product;
+  wardrobe studies under `/img/brand/` await the owner's pick.
+- **Guru Daemon** (white beard, round glasses, charcoal monk robe, staff
+  bearing the SU emblem) — the professional-tools product.
+
+Hard rules: Android green `#3DDC84`; no root/plant motifs; icons must show
+the FULL body (head-only crops banned); any typography is rendered by the
+image LLM itself, never composited in post (no PIL text).
+
 ## Payments direction (planning)
 
 - Preference: crypto-first, but support fiat methods that auto-convert to
@@ -127,23 +147,29 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
 - Mullvad-style accounts: random account number, no personal data, time-based
   credit. Design all billing code around that model.
 
-## Halo economy (live)
+## Halo + plan economy (repriced 2026-11-04)
 
-Halo is the in-account credit unit that PRO features burn. Base rate:
-$5 = 100 Halos, with tiered pack discounts. Three PRO services are gated by
-Halo, priced server-side in the API (owner-approved 2026-10-24):
+Halo is the in-account credit unit. Base rate: **$5 = 1 Halo** (packs
+`halo_1` / `halo_4` / `halo_6`). Halo buys PLAN SUBSCRIPTIONS across two
+products (the authoritative table with feature slugs is HANDOFF.md §10.2):
 
-| Service         | Halo | Billed on                                                   |
-| --------------- | ---- | ----------------------------------------------------------- |
-| `cloud_backup`  | 20   | Registering one encrypted backup (5 GB per-account cap)     |
-| `guardian_sync` | 10   | Pairing a NEW Guardian device (re-syncs are free)           |
-| `audit_report`  | 5    | First save into a (device, audit_type) slot (refresh free)  |
+| product        | plan  | price        | period   |
+| -------------- | ----- | ------------ | -------- |
+| — (free core)  | Free  | $0           | —        |
+| Guardian Angel | Basic | 1 Halo ($5)  | 30 days  |
+| Guardian Angel | Elite | 2 Halo ($10) | 30 days  |
+| Guru Daemon    | Pro   | 3 Halo ($15) | 365 days |
 
-- The API's price table is the single source of truth; `GET /v1/halo/services`
-  publishes the catalog so sites/apps render prices dynamically. Never
-  hard-code prices in clients.
+- The API is the single source of truth: `GET /v1/halo/plans` publishes the
+  plan catalog so sites/apps render prices dynamically. Never hard-code
+  prices in clients.
 - Changing any price requires explicit owner approval; a pinned API test
   locks the table.
+- The old per-service burn model (`cloud_backup` / `guardian_sync` /
+  `audit_report` consumes) is being RETIRED: services are repriced to 0
+  ("included/free while plans are finalized"), and the consume path +
+  services catalog go away when plan redemption lands (HANDOFF.md §10).
+  Do NOT present services as purchasable line items in new UI.
 - Payment crediting is self-healing: the status-polling endpoint reconciles
   terminal payments server-side, so webhook delivery is not on the critical
   path.

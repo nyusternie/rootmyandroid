@@ -2,7 +2,16 @@
 
 **From:** API/Admin side (rootmyandroid-api)
 **For:** Web/front-end team (rootmyandroid marketing site + account/pay pages)
-**Status:** PROPOSED — owner-approved direction, decisions below need sign-off before either side ships
+**Status:** SHIPPED — rebrand live both sides (web §8 merged, API §9 PR #1);
+pricing restructure live on web (§10; /pricing rebuilt 2026-11-04)
+
+> **Post-session status (2026-11-04):** everything through §10.3 is shipped.
+> Brand canon (three characters, palette, prompts) lives in
+> `.agents/skills/brand-image/SKILL.md`. Still open: the "Elite" title
+> (owner review), `realtime_monitoring` / `smart_triggers` placement,
+> Android mock `MOCK_PLANS` two-product restructure, API plan redemption
+> endpoint, and the /scan build itself (AGENTS.md, "ADB / device analysis
+> direction").
 
 ---
 
@@ -297,7 +306,7 @@ both products.
   the services catalog reporting 0 means "included/free while plans are
   finalized." Balances are now small integers (1 Halo = $5).
 
-### 10.3 What web must ship
+### 10.3 What web must ship — SHIPPED 2026-11-04
 
 - Pack purchase UI: ids `halo_1`/`halo_4`/`halo_6`, "$5 = 1 Halo".
 - Balance displays: values are now single-digit — no formatting changes
