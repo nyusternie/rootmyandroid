@@ -12,40 +12,42 @@
 /halo  /pricing  301
 /halo/  /pricing  301
 
-# Profile-page case aliases (owner ruling 2026-11-05): static Pages hosting is
-# case-sensitive, so the common capitalizations of each profile slug 301 to the
-# canonical lowercase page (canonical link + sitemap stay lowercase).
-/Graphene-os  /graphene-os  301
-/Graphene-os/  /graphene-os  301
-/GrapheneOS  /graphene-os  301
-/GrapheneOS/  /graphene-os  301
-/Magisk  /magisk  301
-/Magisk/  /magisk  301
-/Twrp  /twrp  301
-/Twrp/  /twrp  301
-/TWRP  /twrp  301
-/TWRP/  /twrp  301
-/Shizuku  /shizuku  301
-/Shizuku/  /shizuku  301
-/Aosp  /aosp  301
-/Aosp/  /aosp  301
-/AOSP  /aosp  301
-/AOSP/  /aosp  301
-/Adb  /adb  301
-/Adb/  /adb  301
-/ADB  /adb  301
-/ADB/  /adb  301
-/Kernelsu  /kernelsu  301
-/Kernelsu/  /kernelsu  301
-/KernelSU  /kernelsu  301
-/KernelSU/  /kernelsu  301
-/Apatch  /apatch  301
-/Apatch/  /apatch  301
-/APatch  /apatch  301
-/APatch/  /apatch  301
-/Lineage-os  /lineage-os  301
-/Lineage-os/  /lineage-os  301
-/LineageOS  /lineage-os  301
-/LineageOS/  /lineage-os  301
-/Dhizuku  /dhizuku  301
-/Dhizuku/  /dhizuku  301
+# Profile-page case aliases (owner ruling 2026-11-05): the brand-cased path is
+# CANONICAL (real page file, sitemap, canonical link, internal links); lowercase
+# and first-letter-only variants 301 to it. Static Pages hosting is
+# case-sensitive, so each variant needs an explicit rule. Never add rules in
+# the opposite direction — bidirectional pairs loop.
+/graphene-os  /GrapheneOS  301
+/graphene-os/  /GrapheneOS  301
+/Graphene-os  /GrapheneOS  301
+/Graphene-os/  /GrapheneOS  301
+/magisk  /Magisk  301
+/magisk/  /Magisk  301
+/twrp  /TWRP  301
+/twrp/  /TWRP  301
+/Twrp  /TWRP  301
+/Twrp/  /TWRP  301
+/shizuku  /Shizuku  301
+/shizuku/  /Shizuku  301
+/aosp  /AOSP  301
+/aosp/  /AOSP  301
+/Aosp  /AOSP  301
+/Aosp/  /AOSP  301
+/adb  /ADB  301
+/adb/  /ADB  301
+/Adb  /ADB  301
+/Adb/  /ADB  301
+/kernelsu  /KernelSU  301
+/kernelsu/  /KernelSU  301
+/Kernelsu  /KernelSU  301
+/Kernelsu/  /KernelSU  301
+/apatch  /APatch  301
+/apatch/  /APatch  301
+/Apatch  /APatch  301
+/Apatch/  /APatch  301
+/lineage-os  /LineageOS  301
+/lineage-os/  /LineageOS  301
+/Lineage-os  /LineageOS  301
+/Lineage-os/  /LineageOS  301
+/dhizuku  /Dhizuku  301
+/dhizuku/  /Dhizuku  301

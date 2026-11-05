@@ -1,7 +1,9 @@
 ---
 // src/layouts/Profile.astro — shared shell for the ten mock SEO profile
-// pages (/graphene-os, /magisk, /twrp, /shizuku, /aosp, /adb, /kernelsu,
-// /apatch, /lineage-os, /dhizuku). Layers on top of Base.astro and gives
+// pages (/GrapheneOS, /Magisk, /TWRP, /Shizuku, /AOSP, /ADB, /KernelSU,
+// /APatch, /LineageOS, /Dhizuku — brand-cased canonical paths; see
+// public/_redirects for the lowercase/first-letter aliases). Layers on
+// top of Base.astro and gives
 // every profile independent SEO: per-page title/description/canonical (via
 // Base), per-page OG type/image/dims from the profile's own art (raster
 // only — SVG-based profiles keep the sitewide OG card), and an optional
@@ -52,16 +54,16 @@ const { title, description, h1, lede, image, credit, name, owner, ownerUrl, curr
 
 // Internal cross-links between the ten profile pages (SEO + navigation).
 const profiles = [
-  { href: '/graphene-os', label: 'GrapheneOS' },
-  { href: '/magisk', label: 'Magisk' },
-  { href: '/twrp', label: 'TWRP' },
-  { href: '/shizuku', label: 'Shizuku' },
-  { href: '/aosp', label: 'AOSP' },
-  { href: '/adb', label: 'ADB' },
-  { href: '/kernelsu', label: 'KernelSU' },
-  { href: '/apatch', label: 'APatch' },
-  { href: '/lineage-os', label: 'LineageOS' },
-  { href: '/dhizuku', label: 'Dhizuku' },
+  { href: '/GrapheneOS', label: 'GrapheneOS' },
+  { href: '/Magisk', label: 'Magisk' },
+  { href: '/TWRP', label: 'TWRP' },
+  { href: '/Shizuku', label: 'Shizuku' },
+  { href: '/AOSP', label: 'AOSP' },
+  { href: '/ADB', label: 'ADB' },
+  { href: '/KernelSU', label: 'KernelSU' },
+  { href: '/APatch', label: 'APatch' },
+  { href: '/LineageOS', label: 'LineageOS' },
+  { href: '/Dhizuku', label: 'Dhizuku' },
 ]
 const related = profiles.filter((p) => p.href !== current)
 
