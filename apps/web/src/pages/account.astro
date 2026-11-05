@@ -59,14 +59,6 @@ import DepositPanel from '../components/DepositPanel.astro'
     </div>
 
     <div class="panel">
-      <h2>PRO services</h2>
-      {/* Prices are rendered from the API's service catalog (no hard-coding). */}
-      <div id="services-list">
-        <p class="small faint">Loading prices…</p>
-      </div>
-    </div>
-
-    <div class="panel">
       <h2>Buy Halo</h2>
       <div class="grid-3">
         <button class="plan" data-pack="halo_1" disabled>
@@ -100,7 +92,8 @@ import DepositPanel from '../components/DepositPanel.astro'
       </div>
       <p class="small faint">
         Pick a pack and a coin — you pay right here on this page. Your Halo is
-        credited automatically once the network confirms. Card / Apple Pay
+        credited automatically once the network confirms ($5 = 1 Halo) and
+        converts to subscription time when plans land. Card / Apple Pay
         support is planned via a fiat on-ramp.
       </p>
     </div>
@@ -110,8 +103,8 @@ import DepositPanel from '../components/DepositPanel.astro'
     <div class="panel">
       <h2>Redeem a code</h2>
       <p class="small muted">
-        Have a voucher code? Enter it here to credit its Halo to the account
-        number above.
+        Have a voucher code? Enter it here to credit its value to the account
+        number above — Halo converts to subscription time when plans land.
       </p>
       <div class="row">
         <input
