@@ -8,5 +8,44 @@
 # Pricing-page moves (Halo currency retired 2026-11-05): /nitro (pre-2026-11)
 # and /halo both land on /pricing; direct targets avoid redirect chains.
 /nitro  /pricing  301
+/nitro/  /pricing  301
 /halo  /pricing  301
 /halo/  /pricing  301
+
+# Profile-page case aliases (owner ruling 2026-11-05): static Pages hosting is
+# case-sensitive, so the common capitalizations of each profile slug 301 to the
+# canonical lowercase page (canonical link + sitemap stay lowercase).
+/Graphene-os  /graphene-os  301
+/Graphene-os/  /graphene-os  301
+/GrapheneOS  /graphene-os  301
+/GrapheneOS/  /graphene-os  301
+/Magisk  /magisk  301
+/Magisk/  /magisk  301
+/Twrp  /twrp  301
+/Twrp/  /twrp  301
+/TWRP  /twrp  301
+/TWRP/  /twrp  301
+/Shizuku  /shizuku  301
+/Shizuku/  /shizuku  301
+/Aosp  /aosp  301
+/Aosp/  /aosp  301
+/AOSP  /aosp  301
+/AOSP/  /aosp  301
+/Adb  /adb  301
+/Adb/  /adb  301
+/ADB  /adb  301
+/ADB/  /adb  301
+/Kernelsu  /kernelsu  301
+/Kernelsu/  /kernelsu  301
+/KernelSU  /kernelsu  301
+/KernelSU/  /kernelsu  301
+/Apatch  /apatch  301
+/Apatch/  /apatch  301
+/APatch  /apatch  301
+/APatch/  /apatch  301
+/Lineage-os  /lineage-os  301
+/Lineage-os/  /lineage-os  301
+/LineageOS  /lineage-os  301
+/LineageOS/  /lineage-os  301
+/Dhizuku  /dhizuku  301
+/Dhizuku/  /dhizuku  301
