@@ -2,8 +2,9 @@
 // src/pages/index.astro — landing page.
 import Base from '../layouts/Base.astro'
 
-// Landing-only structured data: the product. No Offer here — pricing lives
-// on /pricing (no Offer schema there by design); schema must mirror copy.
+// Landing-only structured data: the product + the FAQ. No Offer here —
+// pricing lives on /pricing (no Offer schema there by design); schema must
+// mirror visible copy.
 const appSchema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -12,23 +13,55 @@ const appSchema = {
   operatingSystem: 'Android',
   url: 'https://rootmyandroid.com',
   description:
-    'Scan your Android device over ADB and get an unlocking / upgrade plan matched to your exact model and firmware, and manage your child\'s device with Guardian Angel. No email, no password.',
+    "Release your Android's full power: a free in-browser device scan with a rooting plan, the Rooted power-user toolkit, and Guardian Angel parental device management.",
+}
+
+// FAQ entries render visibly in the <details> list below AND feed the FAQPage
+// JSON-LD — the two must stay text-identical (structured data mirrors copy).
+const faqs = [
+  {
+    q: 'What does it mean to root an Android phone?',
+    a: 'Rooting gives you superuser (root) access to your own Android device — the same level of control the system itself has. With root access you can remove pre-installed bloatware, install custom ROMs, run a real firewall, and use powerful tools that stock Android blocks.',
+  },
+  {
+    q: 'Why should I root my Android?',
+    a: 'The two benefits our users care about most are firewall protection — deciding exactly which apps may talk to the internet — and a system-wide ad blocker that works in every app, not just the browser. Rooting also lets you debloat the phone, tune performance, and back up anything.',
+  },
+  {
+    q: 'What is Rooted?',
+    a: 'Rooted is our power-user toolkit for your own device. The free tier includes a system profiler, a task manager and automation, a logcat reader, a firewall manager, a battery monitor, a terminal editor, a file explorer and manager, an APK installer, and a key mapper. Rooted Pro adds an AI harness, a logcat analyzer, an archive manager, and VNC, RDP and more.',
+  },
+  {
+    q: 'What is Guardian Angel?',
+    a: "Guardian Angel is our parental device-management app: you install and configure it on your child's device yourself. The free tier includes short-term usage statistics of every app, a DNS-based ad blocker, and cleanup and maintenance. Paid tiers add long-term usage statistics, a screen recorder, a device locator, and an app lock.",
+  },
+]
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
 }
 ---
 
 <Base
-  title="Root My Android"
-  description="Android tools for device owners — unlock & customize your device, and manage your child's device with Guardian Angel. No email, no password."
+  title="Release Your FULL Power"
+  description="Release your Android's full power — free in-browser root scan, the Rooted power-user toolkit, and Guardian Angel parental controls with usage stats, ad blocking, screen recorder & more."
 >
   <section class="hero">
     <div class="container hero-grid">
       <div>
-        <h1>Unlock the <span class="hl">FULL</span> power of your Android phone.</h1>
+        <h1>Root My Android — release your <span class="hl">FULL</span> power.</h1>
         <p class="lede">
-          Scan your Android device right in your browser — private, read-only,
-          nothing leaves your computer — and get a clear unlocking &amp;
-          upgrade plan. And with Guardian Angel, keep your child's device safe
-          under the same privacy-first approach.
+          Rooting your Android phone unlocks the control the manufacturer
+          kept for itself. Scan your device right in your browser — private,
+          read-only, nothing leaves your computer — follow a rooting plan
+          matched to your exact model, then put that power to work with our
+          two apps: <strong>Rooted</strong> and <strong>Guardian Angel</strong>.
         </p>
         <a
           class="btn btn-primary"
@@ -44,7 +77,7 @@ const appSchema = {
       <div class="hero-art">
         <img
           src="/img/hero-halo.webp"
-          alt="Illustration of a blue Android robot with a golden halo above its head and green roots growing from its base — Root My Android"
+          alt="Illustration of the SU superhero — the green Android robot mascot of Root My Android, wearing a red cape and a yellow SU shield"
           width="880"
           height="880"
           fetchpriority="high"
@@ -67,7 +100,7 @@ const appSchema = {
           <h2>1. Connect your device</h2>
           <p class="muted">
             Plug in over USB and start a scan right from your browser — no
-            installs, no sign-up.
+            installs, completely private.
           </p>
         </div>
       </div>
@@ -107,65 +140,158 @@ const appSchema = {
     </div>
   </section>
 
-  <section class="container" style="padding-bottom: 2rem">
-    <h2>Two apps, one account number</h2>
-    <div class="grid-2 apps-grid" style="margin-top: 1.5rem">
-      <div class="panel">
+  <section class="container product-section">
+    <div class="feature-row">
+      <div class="feature-copy">
+        <h2>Why root your Android?</h2>
+        <p class="muted">
+          Root access — superuser control over your own phone — removes the
+          limits the manufacturer shipped with it. You decide what runs, what
+          connects, and what stays on your device.
+        </p>
+        <ul class="checklist">
+          <li>
+            <strong>Firewall protection</strong> — decide exactly which apps
+            may reach the internet, app by app.
+          </li>
+          <li>
+            <strong>Ad blocker</strong> — block ads system-wide, in every app
+            and every browser.
+          </li>
+        </ul>
+        <p class="muted">
+          Rooting also opens the door to custom ROMs, deep debloating, real
+          backups, and automation that stock Android refuses to run. New to
+          rooting? Read the <a href="/rooted">Rooted overview</a> and our
+          <a href="/terms">rooting &amp; unlocking risk disclosure</a> first.
+        </p>
+      </div>
+      <div class="feature-art reveal">
         <img
-          class="app-badge"
-          src="/img/badge-halo-single.webp"
-          alt="Rooted app icon — android robot with a halo"
-          width="256"
-          height="256"
+          src="/img/why-root.webp"
+          alt="Illustration of the green SU superhero Android robot projecting a glowing energy shield that blocks sparks from a brick wall — firewall protection and ad blocking with root access"
+          width="880"
+          height="880"
           loading="lazy"
         />
+      </div>
+    </div>
+  </section>
+
+  <section class="container product-section">
+    <div class="feature-row feature-row--reverse">
+      <div class="feature-copy">
+        <h2>Guardian Angel</h2>
+        <p class="muted">
+          Parental device management for your family. You install Guardian
+          Angel on your child's device and configure it yourself — it runs
+          quietly in the background and reports back to you. Start free and
+          upgrade when you need more.
+        </p>
+        <a class="btn" href="/download">Download Guardian Angel</a>
+      </div>
+      <div class="feature-art reveal">
+        <img
+          src="/img/guardian-angel-phone.webp"
+          alt="Illustration of the Guardian Angel — the green Android robot with a golden halo — standing protectively beside a smartphone showing app usage statistics"
+          width="880"
+          height="880"
+          loading="lazy"
+        />
+      </div>
+    </div>
+    <div class="tier-grid tier-grid-3">
+      <div class="panel tier-card">
+        <h3>Guardian Angel FREE</h3>
+        <ul class="checklist">
+          <li>Short-term usage statistics of every app</li>
+          <li>DNS-based ad blocker</li>
+          <li>Cleanup and maintenance</li>
+        </ul>
+      </div>
+      <div class="panel tier-card">
+        <h3>Guardian Angel LITE</h3>
+        <ul class="checklist">
+          <li>Long-term usage statistics of every app</li>
+          <li>Screen recorder</li>
+          <li>Device locator</li>
+          <li>App lock</li>
+        </ul>
+      </div>
+      <div class="panel tier-card">
+        <h3>Guardian Angel PRO</h3>
+        <ul class="checklist">
+          <li>Long-term usage statistics of every app</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="container product-section">
+    <div class="feature-row">
+      <div class="feature-copy">
         <h2>Rooted</h2>
         <p class="muted">
-          The unlocking assistant for your own device. Scan over ADB, check the
-          bootloader, and follow a plan matched to your exact model and
-          firmware.
+          The power-user toolkit for your own device. Everything the stock
+          system hides from you — profiling, automation, logs, firewall,
+          files, and a real terminal — in one place. The free tier is already
+          a full toolbox; Rooted Pro adds the professional instruments.
         </p>
-        <a class="btn" href="/scan">Scan your device</a>
+        <a class="btn" href="/download">Download Rooted</a>
         <p class="muted" style="margin-top: 0.75rem">
           New to rooting? Read the <a href="/rooted">Rooted overview</a> first.
         </p>
       </div>
-      <div class="panel">
+      <div class="feature-art reveal">
         <img
-          class="app-badge"
-          src="/img/badge-guardian.webp"
-          alt="Guardian Angel app icon — shield with a heart and a halo"
-          width="256"
-          height="256"
+          src="/img/guru-terminal.webp"
+          alt="Illustration of The Guru — the wise green Android robot of Rooted Pro, bearded and robed, holding an SU staff in front of a glowing terminal window — Rooted Pro professional tools"
+          width="880"
+          height="880"
           loading="lazy"
         />
-        <h2>Guardian Angel</h2>
-        <p class="muted">
-          Parental device-management for your minor children. Installed and
-          configured by you on your child's device, it syncs to your account
-          number — no child profile is ever created or stored.
-        </p>
-        <a class="btn" href="/download">Download the apps</a>
       </div>
     </div>
+    <div class="tier-grid tier-grid-2">
+      <div class="panel tier-card">
+        <h3>Rooted FREE</h3>
+        <ul class="checklist">
+          <li>System profiler</li>
+          <li>Task manager &amp; automation</li>
+          <li>Logcat reader</li>
+          <li>Firewall manager</li>
+          <li>Battery monitor</li>
+          <li>Terminal editor</li>
+          <li>File explorer / manager</li>
+          <li>APK installer</li>
+          <li>Key mapper</li>
+        </ul>
+      </div>
+      <div class="panel tier-card">
+        <h3>Rooted PRO</h3>
+        <ul class="checklist">
+          <li>AI harness</li>
+          <li>Logcat analyzer</li>
+          <li>Archive manager</li>
+          <li>VNC, RDP and more</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="container faq-section">
+    <h2>Frequently asked questions</h2>
+    {faqs.map((f) => (
+      <details class="panel faq-item">
+        <summary>{f.q}</summary>
+        <p class="muted">{f.a}</p>
+      </details>
+    ))}
     <p class="muted" style="margin-top: 1.5rem">
       Both apps are covered by our <a href="/terms">Terms of Service</a>,
       including the full
       <a href="/terms">rooting &amp; unlocking risk disclosure</a>.
     </p>
-  </section>
-
-  <section class="container">
-    <div class="panel">
-      <h2>Privacy by design</h2>
-      <p class="muted">
-        We don't want your email, name, or payment card on file. Payments are
-        made in crypto through our payment partner — BTC, ETH, USDT, and
-        hundreds of other coins. Either way, your account is only ever a
-        number.
-      </p>
-      <a class="btn" href="/account">Create an account</a>
-    </div>
   </section>
 
   {/* Chat bubble bottom-right on the landing page (owner request 2026-11-04):
@@ -177,12 +303,33 @@ const appSchema = {
   </script>
 
   <script type="application/ld+json" set:html={JSON.stringify(appSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
 </Base>
 
 <style>
   /* Hero headline keyword highlight (brand accent). */
   .hl {
     color: var(--color-accent);
+  }
+
+  /* Soft brand-green glow behind the hero. */
+  .hero {
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: -6rem 0 auto;
+    height: 32rem;
+    background: radial-gradient(
+      60% 70% at 70% 30%,
+      rgba(61, 220, 132, 0.14),
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+  .hero .container {
+    position: relative;
   }
 
   /* Two-column hero on the standard dark theme; the illustration keeps its
@@ -208,7 +355,7 @@ const appSchema = {
   /* Grids lay panels out side-by-side: the global stacked-panel margin
      (.panel + .panel) must not push grid cards down. */
   .steps-grid .panel + .panel,
-  .apps-grid .panel + .panel {
+  .tier-grid .panel + .panel {
     margin-top: 0;
   }
 
@@ -232,13 +379,104 @@ const appSchema = {
     margin: 0;
   }
 
-  /* App badges on the two-product panels. */
-  .app-badge {
+  /* Product sections: copy + art two-column rows, alternating sides. */
+  .product-section {
+    padding: 2.5rem 0 1rem;
+  }
+  .feature-row {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+  }
+  @media (min-width: 720px) {
+    .feature-row {
+      grid-template-columns: 1.05fr 0.95fr;
+    }
+    .feature-row--reverse .feature-copy {
+      order: 2;
+    }
+    .feature-row--reverse .feature-art {
+      order: 1;
+    }
+  }
+  .feature-art img {
     display: block;
-    width: 72px;
-    height: 72px;
-    border-radius: 1rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    height: auto;
+    border-radius: 1.25rem;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Tier cards under each product. */
+  .tier-grid {
+    display: grid;
+    gap: 1.25rem;
+    margin-top: 1.75rem;
+  }
+  @media (min-width: 720px) {
+    .tier-grid-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .tier-grid-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  .tier-card h3 {
+    margin: 0 0 0.25rem;
+    letter-spacing: 0.1em;
+    color: var(--color-accent);
+  }
+
+  /* Checkmarked benefit lists. */
+  .checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0.75rem 0 1.25rem;
+  }
+  .checklist li {
+    position: relative;
+    padding-left: 1.6rem;
+    margin-top: 0.55rem;
+  }
+  .checklist li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  /* FAQ: native <details> accordions — zero JavaScript. */
+  .faq-section {
+    padding: 2.5rem 0 1rem;
+  }
+  .faq-item summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .faq-item p {
+    margin: 0.75rem 0 0;
+  }
+
+  /* Scroll-reveal for section art: progressive enhancement only — browsers
+     without scroll-driven animations simply show the images. */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .reveal {
+        animation: reveal-in linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 60%;
+      }
+    }
+  }
+  @keyframes reveal-in {
+    from {
+      opacity: 0;
+      transform: translateY(2.5rem) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 </style>
