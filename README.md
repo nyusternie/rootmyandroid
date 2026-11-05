@@ -94,7 +94,7 @@ before any image task):
 | --------- | ------ |
 | **SU superhero** (cape + SU diamond shield) | Root My Android — OG card, landing hero, favicons |
 | **Guardian Angel** (halo) | The monitoring product |
-| **Guru Daemon** (beard, glasses, monk robe, SU-staff) | The Rooted Pro professional-tools product |
+| **The Guru** (beard, glasses, monk robe, SU-staff) | The Rooted Pro professional-tools product |
 
 ## Docs
 
@@ -103,3 +103,4 @@ before any image task):
   model
 - [AGENTS.md](AGENTS.md) — standing working rules for contributors and AI
   agents (current authority)
+- [LICENSE](LICENSE) — MIT, © Root My Android LLC

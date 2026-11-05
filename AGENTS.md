@@ -143,7 +143,7 @@ live in `.agents/skills/brand-image/` (read it before ANY image task):
   Android default: OG card, landing hero, favicons.
 - **Guardian Angel** (golden halo, no cape) — the monitoring product;
   wardrobe studies under `/img/brand/` await the owner's pick.
-- **Guru Daemon** (white beard, round glasses, charcoal monk robe, staff
+- **The Guru** (white beard, round glasses, charcoal monk robe, staff
   bearing the SU emblem) — the Rooted Pro professional-tools product.
 
 Hard rules: Android green `#3DDC84`; no root/plant motifs; icons must show
