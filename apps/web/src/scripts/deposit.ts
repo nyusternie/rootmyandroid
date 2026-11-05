@@ -34,9 +34,9 @@ const TERMINAL_STATUSES = new Set(['finished', 'failed', 'refunded', 'expired'])
 // Rebuild panel data from a payment-status API response. The Halo amount is
 // recovered from the order id ("<account>:<pack>").
 const HALO_BY_PACK: Record<string, number> = {
-  halo_100: 100,
-  halo_500: 500,
-  halo_1000: 1000,
+  halo_1: 1,
+  halo_4: 4,
+  halo_6: 6,
 }
 
 export function depositDataFromStatus(data: Record<string, any>): DepositData | null {

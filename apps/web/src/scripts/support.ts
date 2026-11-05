@@ -41,7 +41,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/ // mirrors src/lib/support.js
 const EMAIL_MAX_CHARS = 254
 const PLACEHOLDERS = [
   'Ask about rooting your phone…',
-  'Question about your account or Halo?',
+  'Question about your account or subscription?',
   'Payment issue? We can help…',
 ]
 

@@ -11,7 +11,7 @@ interface Props {
 
 const {
   title,
-  description = 'Root My Android — scan your Android device and get a rooting / upgrade plan. No email, no password. Top up with Halo.',
+  description = 'Root My Android — scan your Android device and get a rooting / upgrade plan. No email, no password. Simple top-up subscriptions.',
 } = Astro.props
 
 const pageTitle = title === 'Root My Android' ? title : `${title} — Root My Android`
@@ -140,7 +140,6 @@ const siteSchema = {
         <nav class="footer-col" aria-label="Account">
           <h2>Account</h2>
           <a href="/account">Account</a>
-          <a href="/halo">Halo</a>
           <a href="/pricing">Pricing</a>
         </nav>
         <nav class="footer-col" aria-label="Legal">

@@ -47,14 +47,14 @@ import DepositPanel from '../components/DepositPanel.astro'
     <div class="panel">
       <h2>Halo</h2>
       {/* Real balance: filled in from the API after an account lookup/create. */}
-      <a class="halo-bar" href="/halo" aria-label="Halo balance — open the Halo page">
+      <a class="halo-bar" href="/pricing" aria-label="Halo balance — open the Pricing page">
         <span class="halo-label">Halo</span>
         <span class="halo-track"><span class="halo-fill" id="halo-fill" style="width: 0%"></span></span>
         <span class="halo-value" id="halo-value">0</span>
       </a>
       <p class="small faint" id="halo-hint">
-        Halo is the energy your account burns to keep PRO features running.
-        Look up your account to see your balance. <a href="/halo">Learn more</a>.
+        Halo balances convert to subscription time when plans land.
+        Look up your account to see your balance. <a href="/pricing">Learn more</a>.
       </p>
     </div>
 
@@ -69,20 +69,20 @@ import DepositPanel from '../components/DepositPanel.astro'
     <div class="panel">
       <h2>Buy Halo</h2>
       <div class="grid-3">
-        <button class="plan" data-pack="halo_100" disabled>
+        <button class="plan" data-pack="halo_1" disabled>
           <div class="price">$5</div>
-          <div class="term">100 Halos</div>
+          <div class="term">1 Halo</div>
           <div class="save">base rate</div>
         </button>
-        <button class="plan" data-pack="halo_500" disabled>
+        <button class="plan" data-pack="halo_4" disabled>
           <div class="price">$20</div>
-          <div class="term">500 Halos</div>
-          <div class="save">20% off</div>
+          <div class="term">4 Halos</div>
+          <div class="save">linear rate</div>
         </button>
-        <button class="plan" data-pack="halo_1000" disabled>
+        <button class="plan" data-pack="halo_6" disabled>
           <div class="price">$30</div>
-          <div class="term">1,000 Halos</div>
-          <div class="save">40% off</div>
+          <div class="term">6 Halos</div>
+          <div class="save">linear rate</div>
         </button>
       </div>
       <p class="small faint" id="plan-hint">Enter or generate an account number above to buy Halo.</p>

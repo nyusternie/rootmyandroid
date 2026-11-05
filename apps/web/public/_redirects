@@ -5,5 +5,8 @@
 # to a path under /account/payment/* loops on Pages' index.html normalization.
 /account/payment/*  /pay/  200
 
-# Halo rebrand (2026-11): the Nitro page moved to /halo; keep inbound links.
-/nitro  /halo  301
+# Pricing-page moves (Halo currency retired 2026-11-05): /nitro (pre-2026-11)
+# and /halo both land on /pricing; direct targets avoid redirect chains.
+/nitro  /pricing  301
+/halo  /pricing  301
+/halo/  /pricing  301

@@ -32,8 +32,7 @@ const redeemBtn = $('redeem-btn') as HTMLButtonElement
 const payCurrencySelect = $('pay-currency') as HTMLSelectElement
 
 // Render the account's Halo balance on the energy bar. The fill is capped
-// at 100% of the base pack (100 Halos); the number always shows the real
-// balance.
+// at 100%; the number always shows the real balance.
 function setHaloBalance(n: number): void {
   haloValue.textContent = String(n)
   haloFill.style.width = `${Math.max(0, Math.min(100, n))}%`
@@ -101,12 +100,14 @@ async function loadServiceCatalog(): Promise<void> {
     servicesList.innerHTML = services
       .map((s: { service: string; price_halo: number }) => {
         const label = SERVICE_LABELS[s.service] ?? { name: s.service, desc: '' }
-        const usd = (s.price_halo * 0.05).toFixed(2)
+        const usd = (s.price_halo * 5).toFixed(2)
         return `<div class="row" style="justify-content: space-between">` +
           `<span><strong>${label.name}</strong>` +
           (label.desc ? `<br /><span class="small muted">${label.desc}</span>` : '') +
           `</span>` +
-          `<span class="price">${s.price_halo} Halos<br /><span class="small muted">≈ $${usd}</span></span>` +
+          (s.price_halo > 0
+            ? `<span class="price">${s.price_halo} Halos<br /><span class="small muted">≈ $${usd}</span></span>`
+            : `<span class="price muted">Included</span>`) +
           `</div>`
       })
       .join('')
@@ -181,7 +182,7 @@ planButtons.forEach((btn) =>
   btn.addEventListener('click', async () => {
     setBusy(true)
     clearMessages()
-    const pack = btn.dataset.pack || 'halo_100'
+    const pack = btn.dataset.pack || 'halo_1'
     try {
       const res = await createHaloPayment({
         accountNumber: accountNumber(),

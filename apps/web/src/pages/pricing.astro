@@ -1,7 +1,9 @@
 ---
-// src/pages/pricing.astro — TWO products (owner ruling 2026-11-04, HANDOFF §10.2):
-//   Guardian Angel — monthly monitoring subscriptions (Basic / Elite)
-//   Guru Daemon — professional tools; "Pro" is its 1-YEAR subscription
+// src/pages/pricing.astro — TWO products (owner rulings 2026-11-05):
+//   Guardian Angel — monthly monitoring subscriptions (Lite / Pro)
+//   Rooted — professional tools; "Pro" is its 1-YEAR subscription
+// Plans are top-up subscriptions (Mullvad-style): add time anytime, no
+// auto-renew, no stored card; Guardian Angel subscribers can switch Lite <-> Pro.
 // The free core (browser scan etc.) sits OUTSIDE both products.
 // No Offer/PriceSpecification schema on purpose: structured data must
 // mirror real, visible copy.
@@ -10,55 +12,55 @@ import Base from '../layouts/Base.astro'
 const guardianTiers = [
   {
     badge: '/img/badge-halo-single.webp',
-    alt: 'Single Halo level badge — android robot with one halo',
+    alt: 'Guardian Angel Lite badge — android robot with one halo',
     name: 'Guardian Angel',
-    level: 'Basic',
-    price: '1 Halo',
-    per: 'month · $5',
+    level: 'Lite',
+    price: '$5',
+    per: 'month',
     features: [
       'Read installed apps',
       'Read messages',
-      'Read call logs',
-      'Renews every 30 days',
+      '30 days per top-up — add time anytime',
     ],
-    cta: { href: '/halo', label: 'Subscribe' },
+    cta: { href: '/account', label: 'Subscribe' },
     tag: null,
     featured: false,
   },
   {
     badge: '/img/badge-halo-double.webp',
-    alt: 'Double Halo level badge — android robot with two halos',
-    name: 'Guardian Angel Elite',
-    level: 'Elite',
-    price: '2 Halos',
-    per: 'month · $10',
+    alt: 'Guardian Angel Pro badge — android robot with two halos',
+    name: 'Guardian Angel Pro',
+    level: 'Pro',
+    price: '$15',
+    per: 'month',
     features: [
-      'Everything in Guardian Angel',
+      'Everything in Guardian Angel Lite',
+      'Read call logs',
       'View photos & media',
       'View camera & video',
-      'Renews every 30 days',
+      'Switch between Lite and Pro anytime',
     ],
-    cta: { href: '/halo', label: 'Subscribe' },
+    cta: { href: '/account', label: 'Subscribe' },
     tag: 'Recommended',
     featured: true,
   },
 ]
 
-const guruTiers = [
+const rootedTiers = [
   {
     badge: '/img/brand/guru-staff.webp',
     alt: 'Guru Daemon — wise old android robot, staff bearing the SU emblem',
-    name: 'Guru Daemon',
+    name: 'Rooted',
     level: 'Pro',
-    price: '3 Halos',
-    per: 'year · $15',
+    price: '$15',
+    per: 'year',
     features: [
       'Terminal Editor',
       'Log Analysis',
       'Independent yearly subscription',
       'Combines with any Guardian Angel plan — or stands alone',
     ],
-    cta: { href: '/halo', label: 'Subscribe' },
+    cta: { href: '/account', label: 'Subscribe' },
     tag: 'New',
     featured: true,
   },
@@ -67,15 +69,16 @@ const guruTiers = [
 
 <Base
   title="Pricing"
-  description="Two products, one balance — Guardian Angel monthly monitoring subscriptions and Guru Daemon Pro professional tools, billed yearly. No email and no password."
+  description="Guardian Angel monitoring (Lite $5/mo, Pro $15/mo) and Rooted Pro professional tools ($15/yr). Top-up subscriptions — no email, no password, no auto-renew."
 >
   <section class="container" style="padding: 3rem 0 2rem; text-align: center">
-    <h1>Two products. <span class="hl">One balance.</span></h1>
+    <h1>Two products. <span class="hl">Simple subscriptions.</span></h1>
     <p class="lede" style="max-width: 46rem; margin: 0 auto">
       Guardian Angel watches over your devices with monthly monitoring
-      subscriptions. Guru Daemon unlocks professional tooling with a yearly
+      subscriptions. Rooted unlocks professional tooling with a yearly
       Pro subscription. Both run on the same privacy-first account — no
-      email, no password, just your account number.
+      email, no password, just your account number. Add time with a
+      top-up whenever you like — no auto-renew, no stored card.
     </p>
   </section>
 
@@ -124,9 +127,9 @@ const guruTiers = [
   </section>
 
   <section class="container" style="padding-bottom: 3rem">
-    <h2 class="product-head">Guru Daemon <span class="muted">— professional tools, yearly</span></h2>
+    <h2 class="product-head">Rooted <span class="muted">— professional tools, yearly</span></h2>
     <div class="tiers-grid tiers-grid-1">
-      {guruTiers.map((t) => (
+      {rootedTiers.map((t) => (
         <div class:list={['panel', 'tier-card', { featured: t.featured }]}>
           {t.tag && <span class="tier-tag">{t.tag}</span>}
           <img
@@ -152,10 +155,11 @@ const guruTiers = [
       ))}
     </div>
     <p class="muted" style="margin-top: 1.5rem; text-align: center">
-      Halo base rate: $5 = 1 Halo — packs <code>halo_1</code> / <code>halo_4</code>
-      / <code>halo_6</code>, see <a href="/halo">Halo</a>. Guardian Angel plans
-      renew every 30 days; Guru Daemon Pro renews yearly and works with or
-      without a Guardian Angel plan.
+      All plans are top-up subscriptions: add time whenever you like — no
+      auto-renew, no stored card. Guardian Angel subscribers can switch
+      between Lite and Pro anytime; Rooted Pro renews yearly and works with
+      or without a Guardian Angel plan. Feature packages are being
+      finalized — the lineup above is the current offer.
     </p>
   </section>
 
