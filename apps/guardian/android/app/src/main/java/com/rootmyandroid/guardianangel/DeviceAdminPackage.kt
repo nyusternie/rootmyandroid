@@ -1,4 +1,4 @@
-package com.rootmyandroid.guardian
+package com.rootmyandroid.guardianangel
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

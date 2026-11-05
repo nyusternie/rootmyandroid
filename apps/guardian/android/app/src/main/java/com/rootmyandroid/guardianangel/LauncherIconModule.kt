@@ -1,4 +1,4 @@
-package com.rootmyandroid.guardian
+package com.rootmyandroid.guardianangel
 
 import android.content.ComponentName
 import android.content.pm.PackageManager

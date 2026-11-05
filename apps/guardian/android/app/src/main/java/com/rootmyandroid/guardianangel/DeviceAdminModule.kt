@@ -1,4 +1,4 @@
-package com.rootmyandroid.guardian
+package com.rootmyandroid.guardianangel
 
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName

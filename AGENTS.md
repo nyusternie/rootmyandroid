@@ -165,7 +165,7 @@ products (the authoritative table with feature slugs is HANDOFF.md §10.2):
   prices in clients.
 - Changing any price requires explicit owner approval; a pinned API test
   locks the table.
-- The old per-service burn model (`cloud_backup` / `guardian_sync` /
+- The old per-service burn model (`cloud_backup` / `guardian_angel_sync` /
   `audit_report` consumes) is being RETIRED: services are repriced to 0
   ("included/free while plans are finalized"), and the consume path +
   services catalog go away when plan redemption lands (HANDOFF.md §10).

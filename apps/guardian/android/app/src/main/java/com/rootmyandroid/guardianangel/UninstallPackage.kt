@@ -1,13 +1,13 @@
-package com.rootmyandroid.guardian
+package com.rootmyandroid.guardianangel
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 
-class LauncherIconPackage : ReactPackage {
+class UninstallPackage : ReactPackage {
   override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> =
-    listOf(LauncherIconModule(reactContext))
+    listOf(UninstallModule(reactContext))
 
   override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> =
     emptyList()

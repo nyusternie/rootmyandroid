@@ -96,7 +96,7 @@ function App() {
       const deviceName: string | null = await (SyncStore?.getDeviceName?.() ??
         Promise.resolve(null)
       ).catch(() => null);
-      const res = await fetch(`${API_BASE}/guardian/sync`, {
+      const res = await fetch(`${API_BASE}/guardian-angel/sync`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ account_number: digits, device_name: deviceName }),

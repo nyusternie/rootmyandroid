@@ -76,8 +76,8 @@ const SERVICE_LABELS: Record<string, { name: string; desc: string }> = {
     name: 'Cloud Backup',
     desc: 'Encrypted, per-device backups you can restore from anywhere.',
   },
-  guardian_sync: {
-    name: 'Guardian Sync',
+  guardian_angel_sync: {
+    name: 'Guardian Angel Sync',
     desc: 'Pair a new Guardian Angel device to your account.',
   },
   audit_report: {
