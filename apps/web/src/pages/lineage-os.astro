@@ -1,0 +1,79 @@
+---
+// src/pages/lineage-os.astro — SEO topic page (mock; full version in a future session).
+import TopicPage from '../components/TopicPage.astro'
+---
+
+<TopicPage
+  title="LineageOS: The Community Android Distribution"
+  description="LineageOS is the leading open-source custom Android operating system (ROM), successor to CyanogenMod. What it is, why people install it, and official sources."
+  h1="LineageOS"
+  lede="The most established community-built version of Android — a clean, open-source replacement for the software your phone shipped with."
+  image={{
+    src: '/img/topics/lineage-os.webp',
+    alt: 'LineageOS 20 home screen on a phone.',
+    width: 480,
+    height: 1008,
+    displayWidth: 220,
+  }}
+  credit={{
+    title: 'LineageOS 20 home screen',
+    author: 'AlexTux2014',
+    license: 'CC0 1.0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:LineageOS_20_home_screen.png',
+  }}
+  name="LineageOS"
+  owner="the LineageOS project"
+  ownerUrl="https://lineageos.org"
+  current="/lineage-os"
+>
+  <h2>What is LineageOS?</h2>
+  <p>
+    LineageOS is a free, open-source operating system for phones and tablets,
+    built on the Android Open Source Project (<a href="/aosp">AOSP</a>). It is
+    the community successor to CyanogenMod, the original mass-market custom
+    ROM. Official builds are per-device, and each supported device has its own
+    installation guide on the LineageOS wiki.
+  </p>
+
+  <h2>Why people install it</h2>
+  <p>
+    The three classic reasons: keeping a phone on current Android releases long
+    after its maker has stopped shipping updates; a cleaner system without
+    manufacturer or carrier bloatware; and extra privacy and customization
+    controls built into the OS itself.
+  </p>
+
+  <h2>LineageOS and root</h2>
+  <p>
+    LineageOS does not ship with root access. Rooting a device running
+    LineageOS follows the same paths as on stock Android — most commonly
+    <a href="/magisk">Magisk</a> or a kernel-based method such as
+    <a href="/kernelsu">KernelSU</a>.
+  </p>
+
+  <h2>Before you flash</h2>
+  <p>
+    Installing a custom OS requires an unlocked bootloader, and the process
+    typically erases all data on the device — back up anything you want to
+    keep first. Use only official builds and the device-specific instructions
+    on lineageos.org; a build made for a different model can leave the device
+    unbootable. Knowing your exact device and bootloader state is step one —
+    our free <a href="/scan">browser-based scan</a> reports both over USB.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="/scan">Scan your device now — free</a>
+  </p>
+
+  <h2>Official links</h2>
+  <ul>
+    <li>
+      <a href="https://lineageos.org" rel="noopener">lineageos.org</a>
+      — official site, downloads, and news
+    </li>
+    <li>
+      <a href="https://wiki.lineageos.org" rel="noopener">wiki.lineageos.org</a>
+      — per-device support list and installation guides
+    </li>
+  </ul>
+</TopicPage>

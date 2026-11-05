@@ -1,6 +1,7 @@
 ---
-// src/components/TopicPage.astro — shared shell for the six mock SEO topic
-// pages (/graphene-os, /magisk, /twrp, /shizuku, /aosp, /adb).
+// src/components/TopicPage.astro — shared shell for the nine mock SEO topic
+// pages (/graphene-os, /magisk, /twrp, /shizuku, /aosp, /adb, /kernelsu,
+// /apatch, /lineage-os).
 // These are CONTENT pages: zero JavaScript (AGENTS.md rule 4). All media is
 // self-hosted under /img/topics/ with per-image author/license attribution —
 // no third-party hotlinks (privacy), no unlicensed assets (fair use).
@@ -20,13 +21,16 @@ interface Props {
     // CSS max-width in px for display; files are larger for sharpness.
     displayWidth: number
   }
-  // License attribution for the self-hosted image (Wikimedia Commons).
+  // License attribution for the self-hosted image. `made: true` marks
+  // self-generated artwork (renders a simpler credit line); otherwise the
+  // image is credited to its Wikimedia Commons author/source.
   credit: {
-    title: string
-    author: string
+    title?: string
+    author?: string
     license: string
     licenseUrl: string
-    sourceUrl: string
+    sourceUrl?: string
+    made?: boolean
   }
   // Project name + owner, for the affiliation / trademark disclaimer.
   name: string
@@ -47,6 +51,9 @@ const topics = [
   { href: '/shizuku', label: 'Shizuku' },
   { href: '/aosp', label: 'AOSP' },
   { href: '/adb', label: 'ADB' },
+  { href: '/kernelsu', label: 'KernelSU' },
+  { href: '/apatch', label: 'APatch' },
+  { href: '/lineage-os', label: 'LineageOS' },
 ]
 const related = topics.filter((t) => t.href !== current)
 ---
@@ -69,9 +76,20 @@ const related = topics.filter((t) => t.href !== current)
         style={`max-width: ${image.displayWidth}px; width: 100%; height: auto; display: block; border-radius: 0.75rem; border: 1px solid #23282f`}
       />
       <figcaption class="faint small" style="margin-top: 0.5rem">
-        {credit.title} by <a href={credit.sourceUrl} rel="noopener">{credit.author}</a>, released
-        under <a href={credit.licenseUrl} rel="noopener">{credit.license}</a>, via Wikimedia
-        Commons.
+        {
+          credit.made ? (
+            <>
+              Original artwork by Root My Android, released under{' '}
+              <a href={credit.licenseUrl} rel="noopener">{credit.license}</a>.
+            </>
+          ) : (
+            <>
+              {credit.title} by <a href={credit.sourceUrl} rel="noopener">{credit.author}</a>,
+              released under <a href={credit.licenseUrl} rel="noopener">{credit.license}</a>, via
+              Wikimedia Commons.
+            </>
+          )
+        }
       </figcaption>
     </figure>
 

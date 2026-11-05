@@ -1,0 +1,81 @@
+---
+// src/pages/kernelsu.astro — SEO topic page (mock; full version in a future session).
+import TopicPage from '../components/TopicPage.astro'
+---
+
+<TopicPage
+  title="KernelSU: Kernel-Based Root for Android"
+  description="KernelSU is the leading kernel-based root solution for Android GKI devices. What it is, how it differs from Magisk, and where the official source is."
+  h1="KernelSU"
+  lede="Root that lives inside the Android Linux kernel itself — the leading kernel-based alternative to Magisk's boot-image approach."
+  image={{
+    src: '/img/topics/kernelsu.svg',
+    alt: 'KernelSU logo.',
+    width: 192,
+    height: 192,
+    displayWidth: 140,
+  }}
+  credit={{
+    title: 'KernelSU logo',
+    author: 'Eldongiko',
+    license: 'CC BY 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:KernelSU_logo.svg',
+  }}
+  name="KernelSU"
+  owner="tiann"
+  ownerUrl="https://github.com/tiann/KernelSU"
+  current="/kernelsu"
+>
+  <h2>What is KernelSU?</h2>
+  <p>
+    KernelSU is an open-source rooting solution created by tiann. Where Magisk
+    patches the boot image from userspace, KernelSU works directly in kernel
+    space on devices that ship with a GKI (Generic Kernel Image) kernel: the
+    kernel itself is what grants superuser access to apps, managed through the
+    KernelSU manager app.
+  </p>
+
+  <h2>What it gives you</h2>
+  <p>
+    Superuser (root) access with per-app profiles — including per-app
+    capabilities and mount-namespace rules — plus a module system compatible
+    with many <a href="/magisk">Magisk</a> modules, so much of the existing
+    module ecosystem carries over.
+  </p>
+
+  <h2>How it differs from Magisk</h2>
+  <p>
+    Both are systemless in spirit: the operating-system partition stays
+    untouched. The difference is where the root logic lives — Magisk injects it
+    during boot from a patched boot image, while KernelSU's lives in the kernel
+    itself, which is why KernelSU only targets GKI-kernel devices.
+  </p>
+
+  <h2>Before you root</h2>
+  <p>
+    KernelSU requires an unlocked bootloader, and rooting trips integrity
+    checks that some apps — banking and payment apps above all — actively look
+    for. Download KernelSU <em>only</em> from the official GitHub page; files
+    from unknown sources can be malicious. Knowing your exact device and
+    bootloader state is step one — our free
+    <a href="/scan">browser-based scan</a> reports both over USB.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="/scan">Scan your device now — free</a>
+  </p>
+
+  <h2>Official links</h2>
+  <ul>
+    <li>
+      <a href="https://github.com/tiann/KernelSU" rel="noopener"
+        >github.com/tiann/KernelSU</a
+      >
+      — releases, documentation, and source code
+    </li>
+    <li>
+      <a href="https://kernelsu.org" rel="noopener">kernelsu.org</a>
+      — the official documentation site
+    </li>
+  </ul>
+</TopicPage>

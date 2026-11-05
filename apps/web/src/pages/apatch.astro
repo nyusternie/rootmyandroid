@@ -1,0 +1,67 @@
+---
+// src/pages/apatch.astro — SEO topic page (mock; full version in a future session).
+import TopicPage from '../components/TopicPage.astro'
+---
+
+<TopicPage
+  title="APatch: Patching the Android Kernel for Root"
+  description="APatch is a kernel-level root solution that patches the Android kernel directly, with kernel-space and system-level modules. What it is and where the official source is."
+  h1="APatch"
+  lede="A newer kernel-level root method that patches the kernel image directly — combining kernel-space power with Magisk-style system modules."
+  image={{
+    src: '/img/topics/apatch.webp',
+    alt: 'Illustration of a green Android robot sewing a patch onto a microchip — APatch.',
+    width: 480,
+    height: 480,
+    displayWidth: 320,
+  }}
+  credit={{
+    license: 'CC0 1.0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    made: true,
+  }}
+  name="APatch"
+  owner="bmax121"
+  ownerUrl="https://github.com/bmax121/APatch"
+  current="/apatch"
+>
+  <h2>What is APatch?</h2>
+  <p>
+    APatch is an open-source rooting solution created by bmax121. Like
+    <a href="/kernelsu">KernelSU</a>, it works at the kernel level — but
+    instead of replacing or building around the kernel, it patches the existing
+    kernel image itself. The manager app checks your kernel's compatibility
+    when you patch.
+  </p>
+
+  <h2>What it gives you</h2>
+  <p>
+    Superuser (root) access with per-app prompts, plus two kinds of modules:
+    KPModules (KPM), which run code inside the kernel, and AndroidPatch Modules
+    (APM), which change system behavior without editing
+    <code>/system</code> in the style of <a href="/magisk">Magisk</a> modules.
+  </p>
+
+  <h2>Before you root</h2>
+  <p>
+    APatch requires an unlocked bootloader, and rooting trips integrity checks
+    that some apps — banking and payment apps above all — actively look for.
+    Download APatch <em>only</em> from the official GitHub page; files from
+    unknown sources can be malicious. Knowing your exact device and bootloader
+    state is step one — our free
+    <a href="/scan">browser-based scan</a> reports both over USB.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="/scan">Scan your device now — free</a>
+  </p>
+
+  <h2>Official links</h2>
+  <ul>
+    <li>
+      <a href="https://github.com/bmax121/APatch" rel="noopener"
+        >github.com/bmax121/APatch</a
+      >
+      — the only official source: releases, documentation, and source code
+    </li>
+  </ul>
+</TopicPage>
