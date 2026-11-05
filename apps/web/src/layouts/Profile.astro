@@ -1,11 +1,16 @@
 ---
-// src/components/TopicPage.astro — shared shell for the ten mock SEO topic
+// src/layouts/Profile.astro — shared shell for the ten mock SEO profile
 // pages (/graphene-os, /magisk, /twrp, /shizuku, /aosp, /adb, /kernelsu,
-// /apatch, /lineage-os, /dhizuku).
+// /apatch, /lineage-os, /dhizuku). Layers on top of Base.astro and gives
+// every profile independent SEO: per-page title/description/canonical (via
+// Base), per-page OG type/image/dims from the profile's own art (raster
+// only — SVG-based profiles keep the sitewide OG card), and an optional
+// `schema` prop for page-specific JSON-LD (must mirror visible page copy —
+// AGENTS.md).
 // These are CONTENT pages: zero JavaScript (AGENTS.md rule 4). All media is
 // self-hosted under /img/topics/ with per-image author/license attribution —
 // no third-party hotlinks (privacy), no unlicensed assets (fair use).
-import Base from '../layouts/Base.astro'
+import Base from './Base.astro'
 
 interface Props {
   // <title> / og:title and meta description / og:description (via Base).
@@ -36,15 +41,17 @@ interface Props {
   name: string
   owner: string
   ownerUrl: string
-  // Path of the current page (excluded from the related-topics list).
+  // Path of the current page (excluded from the related-profiles list).
   current: string
+  // Optional page-specific JSON-LD (schema.org object; emitted verbatim).
+  schema?: Record<string, unknown>
 }
 
-const { title, description, h1, lede, image, credit, name, owner, ownerUrl, current } =
+const { title, description, h1, lede, image, credit, name, owner, ownerUrl, current, schema } =
   Astro.props
 
-// Internal cross-links between the six topic pages (SEO + navigation).
-const topics = [
+// Internal cross-links between the ten profile pages (SEO + navigation).
+const profiles = [
   { href: '/graphene-os', label: 'GrapheneOS' },
   { href: '/magisk', label: 'Magisk' },
   { href: '/twrp', label: 'TWRP' },
@@ -56,10 +63,22 @@ const topics = [
   { href: '/lineage-os', label: 'LineageOS' },
   { href: '/dhizuku', label: 'Dhizuku' },
 ]
-const related = topics.filter((t) => t.href !== current)
+const related = profiles.filter((p) => p.href !== current)
+
+// Social cards: profiles carry their own art, but social platforms do not
+// render SVG og:images — SVG-based profiles fall back to the sitewide card
+// (and its sitewide og:image:alt stays truthful).
+const og = image.src.endsWith('.svg')
+  ? {}
+  : {
+      ogImage: image.src,
+      ogImageAlt: image.alt,
+      ogImageWidth: image.width,
+      ogImageHeight: image.height,
+    }
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} ogType="article" {...og}>
   <article class="container" style="padding: 3rem 1.25rem">
     <h1 style="margin: 0 0 0.75rem">{h1}</h1>
     <p class="muted" style="margin: 0 0 1.75rem; font-size: 1.1rem; max-width: 38rem">
@@ -101,7 +120,7 @@ const related = topics.filter((t) => t.href !== current)
     <nav class="panel" aria-label="Related topics" style="margin-top: 2rem">
       <h2>Related topics</h2>
       <div class="row">
-        {related.map((t) => <a href={t.href}>{t.label}</a>)}
+        {related.map((p) => <a href={p.href}>{p.label}</a>)}
       </div>
     </nav>
 
@@ -112,5 +131,6 @@ const related = topics.filter((t) => t.href !== current)
       product names, logos, and brands mentioned are the property of their respective owners and
       are referenced here for identification and informational purposes only.
     </p>
+    {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} />}
   </article>
 </Base>

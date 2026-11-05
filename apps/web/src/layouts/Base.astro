@@ -7,16 +7,28 @@ import '../styles/global.css'
 interface Props {
   title: string
   description?: string
+  // Per-page social/SEO overrides (Profile.astro passes each profile's own
+  // art; every other page keeps the sitewide OG card + identity).
+  ogType?: string
+  ogImage?: string
+  ogImageAlt?: string
+  ogImageWidth?: number
+  ogImageHeight?: number
 }
 
 const {
   title,
   description = 'Root My Android — scan your Android device and get a rooting / upgrade plan. No email, no password. Simple top-up subscriptions.',
+  ogType = 'website',
+  ogImage = '/og-image.png',
+  ogImageAlt = 'Root My Android — device unlocking assistant and Guardian Angel parental controls',
+  ogImageWidth = 1200,
+  ogImageHeight = 630,
 } = Astro.props
 
 const pageTitle = title === 'Root My Android' ? title : `${title} — Root My Android`
 const canonical = new URL(Astro.url.pathname, Astro.site)
-const ogImage = new URL('/og-image.png', Astro.site)
+const ogImageAbs = new URL(ogImage, Astro.site)
 const year = new Date().getFullYear()
 
 // Sitewide structured data (JSON-LD). Page-specific schema (e.g.
@@ -46,17 +58,17 @@ const siteSchema = {
     <link rel="canonical" href={canonical} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content="Root My Android" />
-    <meta property="og:image" content={ogImage} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Root My Android — device unlocking assistant and Guardian Angel parental controls" />
+    <meta property="og:image" content={ogImageAbs} />
+    <meta property="og:image:width" content={ogImageWidth} />
+    <meta property="og:image:height" content={ogImageHeight} />
+    <meta property="og:image:alt" content={ogImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image" content={ogImageAbs} />
     <meta name="theme-color" content="#0d0f12" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -136,6 +148,10 @@ const siteSchema = {
           <a href="/shizuku">Shizuku</a>
           <a href="/aosp">AOSP</a>
           <a href="/adb">ADB</a>
+          <a href="/kernelsu">KernelSU</a>
+          <a href="/apatch">APatch</a>
+          <a href="/lineage-os">LineageOS</a>
+          <a href="/dhizuku">Dhizuku</a>
         </nav>
         <nav class="footer-col" aria-label="Account">
           <h2>Account</h2>
