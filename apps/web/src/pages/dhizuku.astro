@@ -1,0 +1,78 @@
+---
+// src/pages/dhizuku.astro — SEO topic page (mock; full version in a future session).
+import TopicPage from '../components/TopicPage.astro'
+---
+
+<TopicPage
+  title="Dhizuku: Share Device Owner Powers Without Root"
+  description="Dhizuku shares Android's Device Owner permissions with other apps — enterprise-grade device control without rooting. What it is, activation requirements, and official sources."
+  h1="Dhizuku"
+  lede="Device-owner-level control for ordinary apps — Android's most powerful admin APIs, shared without rooting your phone."
+  image={{
+    src: '/img/topics/dhizuku.webp',
+    alt: 'Illustration of a green Android robot holding up a glowing golden ID badge for two smaller robots — Dhizuku.',
+    width: 480,
+    height: 480,
+    displayWidth: 320,
+  }}
+  credit={{
+    license: 'CC0 1.0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    made: true,
+  }}
+  name="Dhizuku"
+  owner="iamr0s"
+  ownerUrl="https://github.com/iamr0s"
+  current="/dhizuku"
+>
+  <h2>What is Dhizuku?</h2>
+  <p>
+    Dhizuku is an open-source (GPL-3.0) tool created by iamr0s. Android
+    reserves its most powerful management APIs for a single designated
+    "Device Owner" app — the role enterprise fleet-management software
+    normally fills. Dhizuku activates itself as the Device Owner, then shares
+    those permissions with other apps through its API. No root is required.
+  </p>
+
+  <h2>What it gives you</h2>
+  <p>
+    Apps built on the Dhizuku API gain access to Android's own
+    enterprise-grade controls — managing apps, users, and device policies as
+    defined by the Device Owner APIs on your Android version. Dhizuku supports
+    Android 6.0 through Android 17.
+  </p>
+
+  <h2>Before you activate</h2>
+  <p>
+    The official guide strongly recommends activating on a device set up
+    <em>without any accounts</em> — if accounts are already configured, you may
+    need to remove them first. On Android 12 and later, activating via
+    <a href="/shizuku">Shizuku</a> can help avoid account-related errors
+    (marked experimental by the developers). Knowing your exact Android
+    version is step one — our free
+    <a href="/scan">browser-based scan</a> reports it over USB.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="/scan">Scan your device now — free</a>
+  </p>
+
+  <h2>Official links</h2>
+  <ul>
+    <li>
+      <a href="https://github.com/iamr0s/Dhizuku" rel="noopener"
+        >github.com/iamr0s/Dhizuku</a
+      >
+      — releases, documentation, and source code
+    </li>
+    <li>
+      <a href="https://f-droid.org/packages/com.rosan.dhizuku/" rel="noopener"
+        >F-Droid</a
+      >
+      and
+      <a href="https://play.google.com/store/apps/details?id=com.rosan.dhizuku" rel="noopener"
+        >Google Play</a
+      >
+      — the official app-store listings
+    </li>
+  </ul>
+</TopicPage>

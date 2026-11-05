@@ -1,7 +1,7 @@
 ---
-// src/components/TopicPage.astro — shared shell for the nine mock SEO topic
+// src/components/TopicPage.astro — shared shell for the ten mock SEO topic
 // pages (/graphene-os, /magisk, /twrp, /shizuku, /aosp, /adb, /kernelsu,
-// /apatch, /lineage-os).
+// /apatch, /lineage-os, /dhizuku).
 // These are CONTENT pages: zero JavaScript (AGENTS.md rule 4). All media is
 // self-hosted under /img/topics/ with per-image author/license attribution —
 // no third-party hotlinks (privacy), no unlicensed assets (fair use).
@@ -54,6 +54,7 @@ const topics = [
   { href: '/kernelsu', label: 'KernelSU' },
   { href: '/apatch', label: 'APatch' },
   { href: '/lineage-os', label: 'LineageOS' },
+  { href: '/dhizuku', label: 'Dhizuku' },
 ]
 const related = topics.filter((t) => t.href !== current)
 ---
