@@ -2,9 +2,10 @@
 
 Guidance for AI agents (and humans) working in this repository.
 
-> **New team?** Read [HANDOFF.md](HANDOFF.md) first for the full system tour
-> (architecture, deploy pipeline, roadmap), then come back here for the
-> working rules.
+> [HANDOFF.md](HANDOFF.md) is the historical decision log (the Nitro→Halo
+> rebrand and the pricing history through 2026-11-05). The working rules
+> below — including the current price table — are the present-day
+> authority.
 
 ## Mission
 
@@ -229,7 +230,7 @@ card). The authoritative price table (also live on `/pricing`):
 `/scan` is the product's free core: anyone with a physical Android device +
 USB cable + a WebUSB-capable desktop browser analyzes their device entirely
 in the browser — no installs, no account needed for the scan itself. The
-full build brief is HANDOFF.md §10; the binding rules are:
+binding rules are:
 
 - Transport: ADB over WebUSB, client-side only. Verified libraries (npm
   registry, checked 2026-10-27): `@yume-chan/adb` 2.6.4,

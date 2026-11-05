@@ -98,7 +98,8 @@ before any image task):
 
 ## Docs
 
-- [HANDOFF.md](HANDOFF.md) — full system handoff: architecture, deploy
-  pipeline, rebrand + pricing history, SEO roadmap
+- [HANDOFF.md](HANDOFF.md) — historical decision log: the Nitro→Halo
+  rebrand handoff and the pricing history through the 2026-11-05 top-up
+  model
 - [AGENTS.md](AGENTS.md) — standing working rules for contributors and AI
-  agents
+  agents (current authority)

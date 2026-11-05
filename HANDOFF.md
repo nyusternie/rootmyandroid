@@ -1,17 +1,18 @@
-# HANDOFF — "Nitro" → "Halo" rebrand (2026-11-03)
+# HANDOFF — "Nitro" → "Halo" rebrand + pricing history (2026-11-03 → 2026-11-05)
 
 **From:** API/Admin side (rootmyandroid-api)
 **For:** Web/front-end team (rootmyandroid marketing site + account/pay pages)
-**Status:** SHIPPED — rebrand live both sides (web §8 merged, API §9 PR #1);
-pricing restructure live on web (§10; /pricing rebuilt 2026-11-04)
+**Status:** COMPLETE — historical decision log. §1–§9 (the Nitro→Halo
+rebrand) shipped 2026-11-03/04. §10 (Halo plan pricing) was SUPERSEDED on
+2026-11-05 — see §11. The current authoritative pricing/economy reference
+is AGENTS.md ("Plans + pricing economy").
 
-> **Post-session status (2026-11-04):** everything through §10.3 is shipped.
-> Brand canon (three characters, palette, prompts) lives in
-> `.agents/skills/brand-image/SKILL.md`. Still open: the "Elite" title
-> (owner review), `realtime_monitoring` / `smart_triggers` placement,
-> Android mock `MOCK_PLANS` two-product restructure, API plan redemption
-> endpoint, and the /scan build itself (AGENTS.md, "ADB / device analysis
-> direction").
+> **Post-session status (2026-11-05):** the rebrand and the §10 repricing
+> both shipped; §10's plan table was replaced before ever reaching
+> production (§11). Brand canon (three characters, palette, prompts) lives
+> in `.agents/skills/brand-image/SKILL.md`. Still open: the /scan build
+> itself (AGENTS.md, "ADB / device analysis direction") and the API-side
+> plan system (owned by the API team — see AGENTS.md).
 
 ---
 
@@ -316,8 +317,39 @@ both products.
 
 ---
 
+## 11. PRICING SUPERSEDED (owner rulings 2026-11-05) — Halo retired; dollar top-up subscriptions
+
+**§10's Halo plan table never shipped to production.** On 2026-11-05 the
+owner ruled a full move away from the Halo unit: pricing is now plain
+dollar top-up subscriptions (Mullvad-style: add time anytime, no
+auto-renewal, no stored card). **AGENTS.md ("Plans + pricing economy") is
+the authoritative current reference**; this section is the historical
+marker of the change.
+
+What replaced §10:
+
+- Guardian Angel: **Lite $5 / 30 days** (`read_apps`, `read_messages`) and
+  **Pro $15 / 30 days** (everything in Lite + `read_call_logs`,
+  `view_media`, `view_camera_video`); Lite ↔ Pro switching anytime; the
+  exact feature packaging is still being finalized. Up to **5 devices** per
+  account (Mullvad parity) via `POST /v1/guardian-angel/sync`; a
+  device-swap cooldown (~72h) is PROPOSED, not ruled.
+- **Rooted Pro $15 / 365 days** (`terminal_editor`, `log_analysis`) — the
+  §10 "Guru Daemon Pro" product renamed; a separate lane, no switching.
+- **Crypto payments get 15% off** listed prices (enforced server-side in
+  rootmyandroid-api); credit card checkout is mocked in the UI until the
+  merchant account is approved.
+- Halo legacy: packs `halo_1`/`halo_4`/`halo_6` remain purchasable interim
+  and convert to subscription time on the backend; redeem codes will be
+  redenominated to plan time; `/halo` and `/nitro` 301 to `/pricing`.
+- Web-side shipped same day: `/pricing` rebuilt, terms/refunds/privacy
+  rewritten to subscription-time language, the PRO-services catalog removed
+  from `/account`.
+
+---
+
 *Owner context: rebrand direction approved 2026-11-03 with a HARD cutover
-ruling (no aliases, nothing kept indefinitely); pricing owner-locked and
-repriced 2026-11-04 (§10). Both sides green (web §8; API §9 — PR #1,
-163/163). A1–A3 confirmed. The window is gated on iOS app-update
-availability (§5 step 0), then the owner picks the slot.*
+ruling (no aliases, nothing kept indefinitely); pricing repriced 2026-11-04
+(§10) and replaced outright 2026-11-05 (§11). This document is kept as the
+decision log — current working rules and the live price table live in
+AGENTS.md.*
