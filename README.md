@@ -7,6 +7,7 @@
 
 [![Web CI](https://github.com/nyusternie/rootmyandroid/actions/workflows/web.yml/badge.svg?branch=master)](https://github.com/nyusternie/rootmyandroid/actions/workflows/web.yml)
 [![codecov](https://codecov.io/gh/nyusternie/rootmyandroid/branch/master/graph/badge.svg)](https://codecov.io/gh/nyusternie/rootmyandroid)
+[![License: MIT](https://img.shields.io/badge/License-MIT-3DDC84.svg)](LICENSE)
 
 **Analyze any Android in your browser — no installs, no account — and get a
 real rooting plan.** Root My Android is open source: the static website, the
@@ -103,4 +104,7 @@ before any image task):
   model
 - [AGENTS.md](AGENTS.md) — standing working rules for contributors and AI
   agents (current authority)
-- [LICENSE](LICENSE) — MIT, © Root My Android LLC
+
+## License
+
+[MIT](LICENSE) © 2026 Root My Android LLC.
