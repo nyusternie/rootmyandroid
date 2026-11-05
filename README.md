@@ -9,47 +9,22 @@
 [![codecov](https://codecov.io/gh/nyusternie/rootmyandroid/branch/master/graph/badge.svg)](https://codecov.io/gh/nyusternie/rootmyandroid)
 
 **Analyze any Android in your browser — no installs, no account — and get a
-real rooting plan.** Paid plans add device monitoring (**Guardian Angel**) and
-professional tooling (**Rooted Pro**). Mullvad-style accounts: no email, no
+real rooting plan.** Root My Android is open source: the static website, the
+mobile apps, and the shared client libraries all live in this public
+monorepo. Accounts on the hosted service are Mullvad-style: no email, no
 password, just an account number.
 
 **https://rootmyandroid.com**
 
-## Products
+## Apps
 
-One account, two products, and a free core that needs no account at
-all (owner-locked pricing, 2026-11-05):
-
-| Product | Plan | Price | Includes |
-| ------- | ---- | ----- | -------- |
-| **Free core** | Free | $0 forever | In-browser device scan (read-only ADB over WebUSB), bootloader & unlock detection, root-method selection, full guides library — no account needed |
-| **Guardian Angel** | Lite | $5 / 30 days | Read installed apps, read messages — up to 5 devices per account |
-| **Guardian Angel** | Pro | $15 / 30 days | Everything in Lite, plus read call logs, view photos & media, view camera & video |
-| **Rooted** | Pro | $15 / year | Terminal Editor, Log Analysis — an independent lane that combines with any Guardian Angel plan or stands alone |
-
-### Guardian Angel — monthly monitoring subscriptions
-
-Two cumulative tiers (Lite → Pro) for watching over a device. Each top-up
-adds 30 days — no auto-renewal; switch between Lite and Pro anytime.
-
-### Rooted Pro — professional tools, yearly
-
-A limited professional feature set (Terminal Editor, Log Analysis). Each
-top-up adds 365 days. A user can subscribe to a Guardian Angel plan only,
-unlock Rooted Pro only, both, or neither.
-
-## Payments — top-ups, crypto-first
-
-Subscriptions are prepaid top-ups (Mullvad-style): add time whenever you like
-— no auto-renewal, no stored card. Crypto payments are live and get **15%
-off** (owner ruling 2026-11-05); credit card checkout is mocked in the UI and
-activates once our merchant account is approved.
-
-Legacy: the retired Halo credit unit ($5 = 1 Halo; packs `halo_1` / `halo_4` /
-`halo_6`) is still purchasable in the interim and converts to subscription
-time on the backend when the plan system lands. `/halo` and `/nitro` 301 to
-`/pricing`. The API remains the single source of truth for prices; clients
-render them dynamically and never hard-code them.
+| App | Path | What it is |
+| --- | ---- | ---------- |
+| **Web** | [`apps/web`](apps/web) | The Astro 7 static site behind rootmyandroid.com — free in-browser device scan (read-only ADB over WebUSB), guides library, product profiles, and the account portal. Content pages ship zero JavaScript. |
+| **Rooted** (Android) | [`apps/android`](apps/android) | Device scan, paired Guardian Angel devices, encrypted backups, and tools (React Native 0.88, `com.rootmyandroid`). Backups are encrypted client-side with a user-held key — the API only ever sees ciphertext. |
+| **RootMyAndroid** (iOS) | [`apps/ios`](apps/ios) | The iOS monitoring edition (React Native 0.88, `com.rootmyandroid`). |
+| **Guardian Angel** (Android) | [`apps/guardian`](apps/guardian) | Parental-control companion that runs in the background on the managed device and syncs to a Rooted account (React Native 0.88, `com.rootmyandroid.guardianangel`). Uninstall protection via the device-administrator API. |
+| **Shared client** | [`packages/shared`](packages/shared) | Theme + typed `/v1` API client shared by the mobile apps (TypeScript source, no build step). |
 
 ## How it works
 
@@ -58,10 +33,9 @@ render them dynamically and never hard-code them.
    commands only, nothing leaves the browser unless you explicitly save the
    report to an account.
 2. **Create an account** — random account number, no email, no personal data.
-3. **Top up** — crypto payments live with 15% off; cards mocked pending
-   merchant approval.
-4. **Subscribe** — Guardian Angel Lite/Pro (30-day top-ups), Rooted Pro
-   (365 days), or both.
+3. **Pair a device** — install Guardian Angel on the managed device and sync
+   it to the account, or open the Rooted app for device scan, paired devices,
+   encrypted backups, and tools.
 
 ## Architecture
 
@@ -69,8 +43,7 @@ render them dynamically and never hard-code them.
   Pages. Content pages ship zero JavaScript; vanilla TS modules on the app
   pages talk to the API at `rootmyandroid.com/v1`.
 - **`rootmyandroid-api`** (sibling repo) — the Cloudflare Worker serving
-  `/v1`: accounts, account ledger, plan catalog (in progress), audits,
-  first-party analytics.
+  `/v1`: accounts, account ledger, audits, first-party analytics.
 - **`rootmyandroid-admin`** (sibling repo) — the analytics dashboard.
 - **`apps/android` / `apps/ios` / `apps/guardian`** — React Native 0.88 apps
   (Rooted utility, iOS monitoring edition, Guardian Angel).
