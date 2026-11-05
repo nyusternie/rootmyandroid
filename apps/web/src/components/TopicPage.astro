@@ -1,0 +1,97 @@
+---
+// src/components/TopicPage.astro — shared shell for the six mock SEO topic
+// pages (/graphene-os, /magisk, /twrp, /shizuku, /aosp, /adb).
+// These are CONTENT pages: zero JavaScript (AGENTS.md rule 4). All media is
+// self-hosted under /img/topics/ with per-image author/license attribution —
+// no third-party hotlinks (privacy), no unlicensed assets (fair use).
+import Base from '../layouts/Base.astro'
+
+interface Props {
+  // <title> / og:title and meta description / og:description (via Base).
+  title: string
+  description: string
+  h1: string
+  lede: string
+  image: {
+    src: string
+    alt: string
+    width: number
+    height: number
+    // CSS max-width in px for display; files are larger for sharpness.
+    displayWidth: number
+  }
+  // License attribution for the self-hosted image (Wikimedia Commons).
+  credit: {
+    title: string
+    author: string
+    license: string
+    licenseUrl: string
+    sourceUrl: string
+  }
+  // Project name + owner, for the affiliation / trademark disclaimer.
+  name: string
+  owner: string
+  ownerUrl: string
+  // Path of the current page (excluded from the related-topics list).
+  current: string
+}
+
+const { title, description, h1, lede, image, credit, name, owner, ownerUrl, current } =
+  Astro.props
+
+// Internal cross-links between the six topic pages (SEO + navigation).
+const topics = [
+  { href: '/graphene-os', label: 'GrapheneOS' },
+  { href: '/magisk', label: 'Magisk' },
+  { href: '/twrp', label: 'TWRP' },
+  { href: '/shizuku', label: 'Shizuku' },
+  { href: '/aosp', label: 'AOSP' },
+  { href: '/adb', label: 'ADB' },
+]
+const related = topics.filter((t) => t.href !== current)
+---
+
+<Base title={title} description={description}>
+  <article class="container" style="padding: 3rem 1.25rem">
+    <h1 style="margin: 0 0 0.75rem">{h1}</h1>
+    <p class="muted" style="margin: 0 0 1.75rem; font-size: 1.1rem; max-width: 38rem">
+      {lede}
+    </p>
+
+    <figure style="margin: 0 0 2rem">
+      <img
+        src={image.src}
+        alt={image.alt}
+        width={image.width}
+        height={image.height}
+        loading="lazy"
+        decoding="async"
+        style={`max-width: ${image.displayWidth}px; width: 100%; height: auto; display: block; border-radius: 0.75rem; border: 1px solid #23282f`}
+      />
+      <figcaption class="faint small" style="margin-top: 0.5rem">
+        {credit.title} by <a href={credit.sourceUrl} rel="noopener">{credit.author}</a>, released
+        under <a href={credit.licenseUrl} rel="noopener">{credit.license}</a>, via Wikimedia
+        Commons.
+      </figcaption>
+    </figure>
+
+    <div class="prose">
+      <slot />
+    </div>
+
+    <nav class="panel" aria-label="Related topics" style="margin-top: 2rem">
+      <h2>Related topics</h2>
+      <div class="row">
+        {related.map((t) => <a href={t.href}>{t.label}</a>)}
+      </div>
+    </nav>
+
+    <p class="faint small" style="margin-top: 1.5rem; max-width: 44rem">
+      This page is an independent, unofficial overview of {name}, which is developed by
+      <a href={ownerUrl} rel="noopener">{owner}</a>. Root My Android is not affiliated with,
+      endorsed by, or sponsored by {owner}. Android is a trademark of Google LLC. All other
+      product names, logos, and brands mentioned are the property of their respective owners and
+      are referenced here for identification and informational purposes only.
+    </p>
+  </article>
+</Base>

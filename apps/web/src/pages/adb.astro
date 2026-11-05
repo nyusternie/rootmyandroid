@@ -1,0 +1,76 @@
+---
+// src/pages/adb.astro — SEO topic page (mock; full version in a future session).
+import TopicPage from '../components/TopicPage.astro'
+---
+
+<TopicPage
+  title="ADB: The Android Debug Bridge, Explained"
+  description="ADB is Google's official tool for communicating with an Android device from a computer — and the engine behind Root My Android's browser-based device scan."
+  h1="ADB"
+  lede="The official bridge between your computer and your Android device — and the exact technology that powers our free in-browser device scan."
+  image={{
+    src: '/img/topics/adb.webp',
+    alt: "Terminal window showing an ADB session: 'adb devices' listing an attached device, then an 'adb shell' session on it.",
+    width: 748,
+    height: 458,
+    displayWidth: 560,
+  }}
+  credit={{
+    title: 'Android Debug Bridge in GNOME terminal',
+    author: 'PhotographyEdits',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    sourceUrl:
+      'https://commons.wikimedia.org/wiki/File:Android_Debug_Bridge_in_GNOME_terminal.png',
+  }}
+  name="ADB (Android Debug Bridge)"
+  owner="Google"
+  ownerUrl="https://developer.android.com/tools/adb"
+  current="/adb"
+>
+  <h2>What is ADB?</h2>
+  <p>
+    The Android Debug Bridge is a command-line tool from Google's official Android
+    SDK Platform-Tools. Over USB or Wi-Fi it lets a computer list and identify
+    connected devices (<code>adb devices</code>), open a shell on a device
+    (<code>adb shell</code>, shown above), install apps, transfer files, read
+    device properties (<code>getprop</code>), and capture diagnostic logs.
+  </p>
+
+  <h2>Is it safe?</h2>
+  <p>
+    Reading device information with ADB is non-destructive: the device asks you to
+    authorize the computer the first time it connects, and nothing changes on the
+    phone unless a command explicitly writes to it. ADB is the same mechanism
+    developers use every day — and the same one
+    <a href="/shizuku">Shizuku</a> uses to start its service.
+  </p>
+
+  <h2>How Root My Android uses it</h2>
+  <p>
+    Our free <a href="/scan">device scan</a> speaks ADB over WebUSB, entirely in
+    your browser: no SDK to install, nothing uploaded until you choose to save the
+    report. It runs read-only inspection commands — the same <code>getprop</code>
+    and shell reads you'd type yourself — and turns them into a rooting / upgrade
+    plan for your exact device.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="/scan">Scan your device now — free</a>
+  </p>
+
+  <h2>Official links</h2>
+  <ul>
+    <li>
+      <a href="https://developer.android.com/tools/adb" rel="noopener"
+        >developer.android.com/tools/adb</a
+      >
+      — official ADB documentation
+    </li>
+    <li>
+      <a href="https://developer.android.com/tools/releases/platform-tools" rel="noopener"
+        >SDK Platform-Tools</a
+      >
+      — official download
+    </li>
+  </ul>
+</TopicPage>

@@ -1,0 +1,68 @@
+---
+// src/pages/magisk.astro — SEO topic page (mock; full version in a future session).
+import TopicPage from '../components/TopicPage.astro'
+---
+
+<TopicPage
+  title="Magisk: Systemless Root for Android"
+  description="Magisk is the standard systemless rooting method for Android. What it is, what 'systemless' means, and where the one official source is."
+  h1="Magisk"
+  lede="The most widely used rooting method for Android — systemless, open source, and the gateway to a large ecosystem of modules."
+  image={{
+    src: '/img/topics/magisk.webp',
+    alt: 'Magisk app Home screen showing Magisk version 28.1 installed, with Install, Superuser, Logs and Modules sections.',
+    width: 480,
+    height: 640,
+    displayWidth: 260,
+  }}
+  credit={{
+    title: 'Magisk home screen',
+    author: 'AsherVe',
+    license: 'CC0 1.0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Magisk_home_screen.png',
+  }}
+  name="Magisk"
+  owner="topjohnwu"
+  ownerUrl="https://github.com/topjohnwu/Magisk"
+  current="/magisk"
+>
+  <h2>What is Magisk?</h2>
+  <p>
+    Magisk is an open-source rooting framework created by topjohnwu. It is called
+    "systemless" because it patches the device's boot image instead of modifying
+    the system partition: the operating-system files stay untouched, while root
+    access becomes available once the patched image boots.
+  </p>
+
+  <h2>What it gives you</h2>
+  <p>
+    Superuser (root) access with per-app prompts and logging; installable modules
+    that change system behavior without editing <code>/system</code>; Zygisk, which
+    runs module code inside the Android runtime; and the DenyList, which keeps
+    selected apps away from Magisk's modifications.
+  </p>
+
+  <h2>Before you root</h2>
+  <p>
+    Magisk requires an unlocked bootloader on virtually all devices, and rooting
+    trips integrity checks that some apps — banking and payment apps above all —
+    actively look for. The Magisk app itself warns: download Magisk
+    <em>only</em> from the official GitHub page; files from unknown sources can be
+    malicious. Knowing your exact device and bootloader state is step one — our
+    free <a href="/scan">browser-based scan</a> reports both over USB.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="/scan">Scan your device now — free</a>
+  </p>
+
+  <h2>Official links</h2>
+  <ul>
+    <li>
+      <a href="https://github.com/topjohnwu/Magisk" rel="noopener"
+        >github.com/topjohnwu/Magisk</a
+      >
+      — the only official source: releases, documentation, and source code
+    </li>
+  </ul>
+</TopicPage>

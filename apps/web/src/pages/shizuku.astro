@@ -1,0 +1,71 @@
+---
+// src/pages/shizuku.astro — SEO topic page (mock; full version in a future session).
+import TopicPage from '../components/TopicPage.astro'
+---
+
+<TopicPage
+  title="Shizuku: Root-Level Apps Without Rooting"
+  description="Shizuku lets ordinary apps use privileged system APIs via ADB — no full root required. How it works, how it starts, and the official sources."
+  h1="Shizuku"
+  lede="A middle path between stock and rooted: Shizuku gives compatible apps direct access to system APIs, started with nothing more than ADB."
+  image={{
+    src: '/img/topics/shizuku.svg',
+    alt: 'Shizuku app icon: a stylized water droplet on a blue background.',
+    width: 2048,
+    height: 2048,
+    displayWidth: 140,
+  }}
+  credit={{
+    title: 'Shizuku app icon',
+    author: 'RikkaApps',
+    license: 'Apache License 2.0',
+    licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Shizuku_app_icon.svg',
+  }}
+  name="Shizuku"
+  owner="RikkaApps"
+  ownerUrl="https://shizuku.rikka.app"
+  current="/shizuku"
+>
+  <h2>What is Shizuku?</h2>
+  <p>
+    Shizuku — Japanese for "droplet", hence the water-drop icon — is an open-source
+    tool developed by RikkaApps. It starts a small service process with ADB-level
+    privileges, and apps written for Shizuku then call system APIs through that
+    service: things stock Android never lets an ordinary app do, achieved without
+    rooting the device.
+  </p>
+
+  <h2>How it starts</h2>
+  <p>
+    By running a single <a href="/adb">ADB</a> shell command from a computer — or,
+    on Android 11 and later, straight from the phone itself via wireless debugging.
+    Devices that are already rooted can start the service directly. The service
+    stops when the device reboots and has to be started again.
+  </p>
+
+  <h2>Where Root My Android fits</h2>
+  <p>
+    ADB is exactly what our tooling speaks: the free
+    <a href="/scan">browser-based scan</a> talks to your device over USB with the
+    same protocol Shizuku uses to start. Run it to confirm your device is reachable
+    and see what state it's in.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="/scan">Scan your device now — free</a>
+  </p>
+
+  <h2>Official links</h2>
+  <ul>
+    <li>
+      <a href="https://shizuku.rikka.app" rel="noopener">shizuku.rikka.app</a>
+      — official site and setup guide
+    </li>
+    <li>
+      <a href="https://github.com/RikkaApps/Shizuku" rel="noopener"
+        >github.com/RikkaApps/Shizuku</a
+      >
+      — source code
+    </li>
+  </ul>
+</TopicPage>

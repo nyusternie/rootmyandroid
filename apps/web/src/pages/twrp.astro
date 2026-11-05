@@ -1,0 +1,66 @@
+---
+// src/pages/twrp.astro — SEO topic page (mock; full version in a future session).
+import TopicPage from '../components/TopicPage.astro'
+---
+
+<TopicPage
+  title="TWRP: Team Win Recovery Project"
+  description="TWRP is the best-known custom recovery for Android. What a custom recovery does, why builds are device-specific, and the official sources."
+  h1="TWRP"
+  lede="The touch-driven custom recovery that replaced a generation of stock recovery menus — flash packages, full backups, and complete partition control."
+  image={{
+    src: '/img/topics/twrp.webp',
+    alt: 'Team Win Recovery Project (TWRP) 3.6.0 main menu with Install, Wipe, Backup, Restore, Mount, Settings, Advanced and Reboot buttons.',
+    width: 880,
+    height: 1809,
+    displayWidth: 240,
+  }}
+  credit={{
+    title: 'TWRP-3.6.0 11-0',
+    author: 'Helloworld6666',
+    license: 'CC0 1.0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:TWRP-3.6.0_11-0.png',
+  }}
+  name="TWRP (Team Win Recovery Project)"
+  owner="Team Win"
+  ownerUrl="https://twrp.me"
+  current="/twrp"
+>
+  <h2>What is TWRP?</h2>
+  <p>
+    Team Win Recovery Project is an open-source custom recovery maintained by Team
+    Win. A recovery is a small bootable environment that lives apart from Android
+    itself: the stock one can apply system updates and factory-reset the phone.
+    TWRP replaces it with a touch-driven environment that can flash ZIP packages,
+    create and restore full partition backups (Nandroid), and mount, format, or
+    wipe individual partitions.
+  </p>
+
+  <h2>Builds are device-specific</h2>
+  <p>
+    TWRP is built per device model, and only a build made for your exact model is
+    safe to use — the official site's Devices section lists every supported model.
+    Installing a custom recovery also generally requires an unlocked bootloader,
+    which factory-resets the device on most phones.
+  </p>
+
+  <h2>Know before you flash</h2>
+  <p>
+    Our free <a href="/scan">browser-based scan</a> identifies your exact device
+    model and bootloader state over USB — the two facts that decide whether a TWRP
+    build exists for you and what unlocking would involve.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="/scan">Scan your device now — free</a>
+  </p>
+
+  <h2>Official links</h2>
+  <ul>
+    <li><a href="https://twrp.me" rel="noopener">twrp.me</a> — official site and device list</li>
+    <li>
+      <a href="https://github.com/TeamWin" rel="noopener">github.com/TeamWin</a>
+      — source code
+    </li>
+  </ul>
+</TopicPage>

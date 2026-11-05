@@ -1,0 +1,67 @@
+---
+// src/pages/aosp.astro — SEO topic page (mock; full version in a future session).
+import TopicPage from '../components/TopicPage.astro'
+---
+
+<TopicPage
+  title="AOSP: The Android Open Source Project"
+  description="AOSP is the open-source core of Android, led by Google — the code every Android phone and every custom ROM is built on. What it includes, and what it doesn't."
+  h1="AOSP"
+  lede="Every Android phone in the world starts here: the Android Open Source Project is the open-source core of the operating system, published by Google."
+  image={{
+    src: '/img/topics/aosp.webp',
+    alt: 'Diagram of the Android platform architecture: Apps, Android Framework, Native Libraries, Android Runtime, HAL/HIDL and Linux Kernel layers.',
+    width: 480,
+    height: 561,
+    displayWidth: 380,
+  }}
+  credit={{
+    title: 'Android open source project',
+    author: 'Google',
+    license: 'CC BY 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Android_open_source_project_(2).png',
+  }}
+  name="the Android Open Source Project"
+  owner="Google"
+  ownerUrl="https://source.android.com"
+  current="/aosp"
+>
+  <h2>What is AOSP?</h2>
+  <p>
+    The Android Open Source Project is the open-source project, led by Google, that
+    publishes the Android operating system stack — the layers shown above: apps,
+    the Android framework, native libraries, the Android runtime, the hardware
+    abstraction layer, and the Linux kernel. Device makers and ROM developers
+    download this code, adapt it to their hardware, and ship it.
+  </p>
+
+  <h2>What AOSP is not</h2>
+  <p>
+    Google's proprietary pieces — the Play Store, Google Play services, Gmail, and
+    friends — are <em>not</em> part of AOSP. What ships on a retail phone is AOSP
+    plus the manufacturer's and Google's additions. That gap is exactly what custom
+    ROMs exploit: they are built from AOSP source with their own choices on top.
+  </p>
+
+  <h2>Why it matters for rooting and ROMs</h2>
+  <p>
+    Every custom ROM begins as AOSP source code — LineageOS,
+    <a href="/graphene-os">GrapheneOS</a>, and the rest all build on it. When
+    you're weighing a ROM for your device, the AOSP version it tracks tells you a
+    lot about what you're getting. See our <a href="/roms">ROM catalog</a> for
+    what's out there, or <a href="/scan">scan your device</a> to find out what it
+    runs today.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="/scan">Scan your device now — free</a>
+  </p>
+
+  <h2>Official links</h2>
+  <ul>
+    <li>
+      <a href="https://source.android.com" rel="noopener">source.android.com</a>
+      — official documentation and source
+    </li>
+  </ul>
+</TopicPage>

@@ -1,0 +1,73 @@
+---
+// src/pages/graphene-os.astro — SEO topic page (mock; full version in a future session).
+import TopicPage from '../components/TopicPage.astro'
+---
+
+<TopicPage
+  title="GrapheneOS: The Privacy-Hardened Android OS"
+  description="GrapheneOS is a privacy- and security-hardened Android-based OS for Google Pixel phones. What it is, how it relates to rooting, and the official project links."
+  h1="GrapheneOS"
+  lede="A privacy- and security-hardened operating system built from the Android Open Source Project — and a common destination for people who want more control over their phone without rooting it."
+  image={{
+    src: '/img/topics/graphene-os.webp',
+    alt: 'GrapheneOS home screen: a dark, minimal launcher with a Gallery app icon.',
+    width: 880,
+    height: 1956,
+    displayWidth: 240,
+  }}
+  credit={{
+    title: 'GrapheneOS Screenshot',
+    author: 'Omilc',
+    license: 'CC BY-SA 2.5',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/2.5/',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:GrapheneOS_Screenshot.png',
+  }}
+  name="GrapheneOS"
+  owner="the GrapheneOS project"
+  ownerUrl="https://grapheneos.org"
+  current="/graphene-os"
+>
+  <h2>What is GrapheneOS?</h2>
+  <p>
+    GrapheneOS is a non-profit, open-source mobile operating system based on the
+    Android Open Source Project (<a href="/aosp">AOSP</a>) with substantial added
+    hardening for privacy and security. It officially supports Google Pixel phones
+    and keeps full compatibility with Android apps. Google's apps and services are
+    not included by default, but they can be installed as fully sandboxed, regular
+    apps without special system privileges.
+  </p>
+
+  <h2>GrapheneOS and rooting</h2>
+  <p>
+    GrapheneOS does not ship with root access, and its developers recommend against
+    rooting: handing apps superuser access weakens the very security model the OS
+    works to harden. Many people who consider rooting for privacy or bloatware
+    removal find GrapheneOS covers those needs out of the box. Installing it does
+    require unlocking the bootloader — and, unlike most custom-ROM installs, the
+    bootloader can be locked again afterwards with full verified boot.
+  </p>
+
+  <h2>Start with a device scan</h2>
+  <p>
+    Whether GrapheneOS supports your phone comes down to the exact model. Our free
+    <a href="/scan">browser-based scan</a> reads your device model and bootloader
+    state over USB — the two checkpoints that decide whether a GrapheneOS install
+    is even on the table.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="/scan">Scan your device now — free</a>
+  </p>
+
+  <h2>Official links</h2>
+  <ul>
+    <li><a href="https://grapheneos.org" rel="noopener">grapheneos.org</a> — project homepage</li>
+    <li>
+      <a href="https://grapheneos.org/install/" rel="noopener">grapheneos.org/install</a>
+      — official installation guide
+    </li>
+    <li>
+      <a href="https://github.com/GrapheneOS" rel="noopener">github.com/GrapheneOS</a>
+      — source code
+    </li>
+  </ul>
+</TopicPage>
