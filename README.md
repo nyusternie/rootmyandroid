@@ -10,40 +10,46 @@
 
 **Analyze any Android in your browser — no installs, no account — and get a
 real rooting plan.** Paid plans add device monitoring (**Guardian Angel**) and
-professional tooling (**Guru Daemon**). Mullvad-style accounts: no email, no
+professional tooling (**Rooted Pro**). Mullvad-style accounts: no email, no
 password, just an account number.
 
 **https://rootmyandroid.com**
 
 ## Products
 
-One account balance, two products, and a free core that needs no account at
-all (owner-locked pricing, 2026-11-04 — HANDOFF.md §10.2):
+One account, two products, and a free core that needs no account at
+all (owner-locked pricing, 2026-11-05):
 
 | Product | Plan | Price | Includes |
 | ------- | ---- | ----- | -------- |
 | **Free core** | Free | $0 forever | In-browser device scan (read-only ADB over WebUSB), bootloader & unlock detection, root-method selection, full guides library — no account needed |
-| **Guardian Angel** | Basic | 1 Halo ($5) / 30 days | Read installed apps, read messages, read call logs |
-| **Guardian Angel** | Elite | 2 Halo ($10) / 30 days | Everything in Basic, plus view photos & media, view camera & video |
-| **Guru Daemon** | Pro | 3 Halo ($15) / year | Terminal Editor, Log Analysis — an independent lane that combines with any Guardian Angel plan or stands alone |
+| **Guardian Angel** | Lite | $5 / 30 days | Read installed apps, read messages — up to 5 devices per account |
+| **Guardian Angel** | Pro | $15 / 30 days | Everything in Lite, plus read call logs, view photos & media, view camera & video |
+| **Rooted** | Pro | $15 / year | Terminal Editor, Log Analysis — an independent lane that combines with any Guardian Angel plan or stands alone |
 
 ### Guardian Angel — monthly monitoring subscriptions
 
-Two cumulative tiers (Basic → Elite) for watching over a device. Renews every
-30 days.
+Two cumulative tiers (Lite → Pro) for watching over a device. Each top-up
+adds 30 days — no auto-renewal; switch between Lite and Pro anytime.
 
-### Guru Daemon — professional tools, yearly
+### Rooted Pro — professional tools, yearly
 
-A limited professional feature set (Terminal Editor, Log Analysis), billed
-once a year. A user can subscribe to a Guardian Angel plan only, unlock Guru
-Daemon Pro only, both, or neither.
+A limited professional feature set (Terminal Editor, Log Analysis). Each
+top-up adds 365 days. A user can subscribe to a Guardian Angel plan only,
+unlock Rooted Pro only, both, or neither.
 
-## Halo — the credit unit
+## Payments — top-ups, crypto-first
 
-Halo is the in-account balance. Base rate **$5 = 1 Halo** (packs `halo_1` /
-`halo_4` / `halo_6`). The API is the single source of truth for the plan
-catalog (`GET /v1/halo/plans`); clients render prices dynamically and never
-hard-code them.
+Subscriptions are prepaid top-ups (Mullvad-style): add time whenever you like
+— no auto-renewal, no stored card. Crypto payments are live and get **15%
+off** (owner ruling 2026-11-05); credit card checkout is mocked in the UI and
+activates once our merchant account is approved.
+
+Legacy: the retired Halo credit unit ($5 = 1 Halo; packs `halo_1` / `halo_4` /
+`halo_6`) is still purchasable in the interim and converts to subscription
+time on the backend when the plan system lands. `/halo` and `/nitro` 301 to
+`/pricing`. The API remains the single source of truth for prices; clients
+render them dynamically and never hard-code them.
 
 ## How it works
 
@@ -52,9 +58,10 @@ hard-code them.
    commands only, nothing leaves the browser unless you explicitly save the
    report to an account.
 2. **Create an account** — random account number, no email, no personal data.
-3. **Top up Halo** — crypto-first payments direction (provider selection in
-   progress; never hard-coded).
-4. **Subscribe** — Guardian Angel monthly, Guru Daemon Pro yearly, or both.
+3. **Top up** — crypto payments live with 15% off; cards mocked pending
+   merchant approval.
+4. **Subscribe** — Guardian Angel Lite/Pro (30-day top-ups), Rooted Pro
+   (365 days), or both.
 
 ## Architecture
 
@@ -62,10 +69,11 @@ hard-code them.
   Pages. Content pages ship zero JavaScript; vanilla TS modules on the app
   pages talk to the API at `rootmyandroid.com/v1`.
 - **`rootmyandroid-api`** (sibling repo) — the Cloudflare Worker serving
-  `/v1`: accounts, Halo ledger, plan catalog, audits, first-party analytics.
+  `/v1`: accounts, account ledger, plan catalog (in progress), audits,
+  first-party analytics.
 - **`rootmyandroid-admin`** (sibling repo) — the analytics dashboard.
 - **`apps/android` / `apps/ios` / `apps/guardian`** — React Native 0.88 apps
-  (Rooted utility, iOS monitoring edition, Guardian).
+  (Rooted utility, iOS monitoring edition, Guardian Angel).
 - **`packages/shared`** — theme + typed `/v1` API client shared by the apps.
 
 Analytics are first-party only (`/v1/analytics/*`); there is intentionally no
@@ -80,7 +88,7 @@ third-party tracking.
 │   │                 # apps/web/public/og-image.png)
 │   ├── android/      # Rooted (Android utility): RN 0.88 app
 │   ├── ios/          # RootMyAndroid (iOS monitoring edition): RN 0.88 app
-│   └── guardian/     # React Native 0.88 app (com.rootmyandroid.guardian)
+│   └── guardian/     # React Native 0.88 app (com.rootmyandroid.guardianangel)
 ├── packages/
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client
 ├── .agents/skills/   # Project agent skills (brand-image: brand canon)
@@ -113,7 +121,7 @@ before any image task):
 | --------- | ------ |
 | **SU superhero** (cape + SU diamond shield) | Root My Android — OG card, landing hero, favicons |
 | **Guardian Angel** (halo) | The monitoring product |
-| **Guru Daemon** (beard, glasses, monk robe, SU-staff) | The professional-tools product |
+| **Guru Daemon** (beard, glasses, monk robe, SU-staff) | The Rooted Pro professional-tools product |
 
 ## Docs
 

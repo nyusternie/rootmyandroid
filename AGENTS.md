@@ -12,9 +12,10 @@ Restore and modernize rootmyandroid.com as a paid service (Mullvad-style
 account model: no email, account-number-only). The core product uses **ADB** to
 scan and analyze a physical Android device and produce a rooting / upgrade plan
 — that scan core is FREE (no account). Two paid products (owner ruling
-2026-11-04, pricing in HANDOFF.md §10.2): **Guardian Angel** (monthly
-monitoring subscriptions, 1–2 Halo) and **Guru Daemon** (professional tools —
-Terminal Editor, Log Analysis — as a 3 Halo yearly "Pro" subscription).
+2026-11-05): **Guardian Angel** (monthly monitoring top-ups — Lite $5,
+Pro $15, covering up to 5 devices per account) and **Rooted Pro**
+(professional tools — Terminal Editor, Log Analysis — $15 per 365 days).
+Top-ups are prepaid (Mullvad-style): add time anytime, no auto-renewal.
 
 ## Repository layout (pnpm workspace)
 
@@ -28,7 +29,7 @@ Terminal Editor, Log Analysis — as a 3 Halo yearly "Pro" subscription).
 │   ├── ios/          # RootMyAndroid (iOS monitoring edition): RN 0.88 app
 │   │                 # (bundle id com.rootmyandroid; android/ is a
 │   │                 #  preview-only shell, com.rootmyandroid.preview), jest
-│   └── guardian/     # React Native 0.88 app (com.rootmyandroid.guardian), jest
+│   └── guardian/     # React Native 0.88 app (com.rootmyandroid.guardianangel), jest
 ├── packages/
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client
 │                     # shared by the mobile apps (TS source, no build step)
@@ -97,7 +98,7 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
 6. **Never wipe third-party app data.** Do NOT run `pm clear`, `pm uninstall`,
    or any other data-destroying command on any package other than our own two
    (`com.rootmyandroid`, `com.rootmyandroid.preview`,
-   `com.rootmyandroid.guardian`). Even for our own
+   `com.rootmyandroid.guardianangel`). Even for our own
    packages — and ALWAYS for anything system-level such as the launcher
    (`com.google.android.apps.nexuslauncher`) — a wipe requires a separate,
    explicit, same-turn user confirmation whose prompt names the exact
@@ -112,9 +113,20 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
   sitemap; keep app-shell-only pages out of search if that is ever decided
   (`noindex`, not `robots.txt` disallow).
 - `src/layouts/Base.astro` owns sitewide meta: OG/Twitter cards
-  (`public/og-image.png`, 1200×630), `theme-color`, favicons, and
-  Organization + WebSite JSON-LD. Page-specific schema lives in the page
-  itself (e.g. SoftwareApplication + Offer on `/`).
+  (`public/og-image.png`, 1200×630 — overridable per page via `og*` props),
+  `theme-color`, favicons, and Organization + WebSite JSON-LD.
+  Page-specific schema lives in the page itself (e.g.
+  SoftwareApplication + Offer on `/`).
+- SEO profile pages: ten third-party product/service profiles
+  (`/GrapheneOS`, `/Magisk`, `/TWRP`, `/Shizuku`, `/AOSP`, `/ADB`,
+  `/KernelSU`, `/APatch`, `/LineageOS`, `/Dhizuku`) share
+  `src/layouts/Profile.astro` (layered on Base.astro): per-page
+  title/description/canonical, per-page OG art (SVG art falls back to the
+  sitewide card), optional page JSON-LD via the `schema` prop. Brand-cased
+  paths are canonical; case variants 301 via `public/_redirects` (never add
+  bidirectional rules — they loop). Art lives in `public/img/topics/`:
+  licensed Commons images with attribution, or self-generated CC0 (source
+  art committed to `apps/web/tools/assets/`).
 - Structured data MUST mirror visible page copy — pricing above all. Never
   publish schema (offers, ratings, FAQs) for content that is not on the page,
   and never invent ratings or reviews.
@@ -131,14 +143,18 @@ live in `.agents/skills/brand-image/` (read it before ANY image task):
 - **Guardian Angel** (golden halo, no cape) — the monitoring product;
   wardrobe studies under `/img/brand/` await the owner's pick.
 - **Guru Daemon** (white beard, round glasses, charcoal monk robe, staff
-  bearing the SU emblem) — the professional-tools product.
+  bearing the SU emblem) — the Rooted Pro professional-tools product.
 
 Hard rules: Android green `#3DDC84`; no root/plant motifs; icons must show
 the FULL body (head-only crops banned); any typography is rendered by the
 image LLM itself, never composited in post (no PIL text).
 
-## Payments direction (planning)
+## Payments direction (live + planning)
 
+- Crypto payments are LIVE (the Buy panel on `/account` issues real
+  invoices); crypto gets 15% off the listed prices (owner ruling 2026-11-05,
+  enforced server-side in `rootmyandroid-api`). Credit card checkout is
+  mocked in the UI and activates once the merchant account is approved.
 - Preference: crypto-first, but support fiat methods that auto-convert to
   crypto **without a bank account**. Candidate processors to evaluate:
   BTCPay Server (self-hosted, no KYC), NOWPayments, Coinbase Commerce,
@@ -147,24 +163,41 @@ image LLM itself, never composited in post (no PIL text).
 - Mullvad-style accounts: random account number, no personal data, time-based
   credit. Design all billing code around that model.
 
-## Halo + plan economy (repriced 2026-11-04)
+## Plans + pricing economy (owner-ruled 2026-11-05)
 
-Halo is the in-account credit unit. Base rate: **$5 = 1 Halo** (packs
-`halo_1` / `halo_4` / `halo_6`). Halo buys PLAN SUBSCRIPTIONS across two
-products (the authoritative table with feature slugs is HANDOFF.md §10.2):
+The Halo credit unit is being RETIRED: pricing is now plain dollar top-up
+subscriptions (Mullvad-style: add time anytime, no auto-renewal, no stored
+card). The authoritative price table (also live on `/pricing`):
 
-| product        | plan  | price        | period   |
-| -------------- | ----- | ------------ | -------- |
-| — (free core)  | Free  | $0           | —        |
-| Guardian Angel | Basic | 1 Halo ($5)  | 30 days  |
-| Guardian Angel | Elite | 2 Halo ($10) | 30 days  |
-| Guru Daemon    | Pro   | 3 Halo ($15) | 365 days |
+| product        | plan | price | period    |
+| -------------- | ---- | ----- | --------- |
+| — (free core)  | Free | $0    | —         |
+| Guardian Angel | Lite | $5    | 30 days   |
+| Guardian Angel | Pro  | $15   | 30 days   |
+| Rooted         | Pro  | $15   | 365 days  |
 
-- The API is the single source of truth: `GET /v1/halo/plans` publishes the
-  plan catalog so sites/apps render prices dynamically. Never hard-code
-  prices in clients.
+- Guardian Angel Lite ↔ Pro: subscribers may switch plans anytime (Rooted
+  Pro is a separate lane — no switching). Lite = `read_apps` +
+  `read_messages`; Pro absorbs the remaining monitoring features; the exact
+  feature packaging is still being finalized (owner: to be sorted out later).
+- Crypto payments get 15% off listed prices (owner ruling 2026-11-05);
+  enforcement is server-side in `rootmyandroid-api` — do NOT hard-code
+  discounted amounts in clients.
+- Each account links up to 5 devices (Mullvad parity, owner ruling
+  2026-11-05) via `POST /v1/guardian-angel/sync` (API team, 2026-11-05); a
+  device-swap cooldown (~72h) is PROPOSED, not ruled — do not state an exact
+  cooldown in user-facing copy until the owner rules it.
 - Changing any price requires explicit owner approval; a pinned API test
   locks the table.
+- Legacy Halo interim state: packs `halo_1` / `halo_4` / `halo_6`
+  ($5 = 1 Halo) are still purchasable via the `/account` Buy panel and
+  convert to subscription time on the backend when the plan system lands;
+  redeem codes will be redenominated to plan time (backend work, owned by
+  the API team). `/halo` and `/nitro` 301 to `/pricing`.
+- The API's plan-catalog endpoint is being built by the API team
+  (`rootmyandroid-api`); until it ships, `GET /v1/halo/services` (frozen
+  zero prices) remains the only live catalog endpoint. Never hard-code
+  prices in clients; do NOT invent the new contract client-side.
 - The old per-service burn model (`cloud_backup` / `guardian_angel_sync` /
   `audit_report` consumes) is being RETIRED: services are repriced to 0
   ("included/free while plans are finalized"), and the consume path +
@@ -213,7 +246,7 @@ full build brief is HANDOFF.md §10; the binding rules are:
   report to an account number (`saveAudit`, audit_type slug e.g. `scan` —
   the API's audit types are deliberately open-ended, pattern
   `^[a-z][a-z0-9-]{0,31}$`, so NO API change is needed; billed as
-  `audit_report` per the Halo table, price rendered dynamically).
+  `audit_report` per the legacy service table, price rendered dynamically).
 - No guessing device behavior (rule 3): every detection rule cites its
   source (observed device + date) and unknown values render as "unknown".
 - Detection/parsing logic lives in pure, fixture-tested functions under
