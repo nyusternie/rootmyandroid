@@ -1,5 +1,6 @@
 /**
- * Rootz — device scan, paired Guardian devices, encrypted backups, and tools.
+ * Root My Android (Android edition) — device scan, paired Guardian devices,
+ * encrypted backups, and tools.
  *
  * Dark, minimal UI matching rootmyandroid.com. Talks to the API at
  * rootmyandroid.com/v1. Backups are encrypted client-side with a user-held
@@ -81,7 +82,7 @@ function App() {
       <StatusBar barStyle="light-content" {...({ backgroundColor: colors.bg } as object)} />
       <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
         <View className="flex-row items-center justify-between border-b border-border px-5 pb-3 pt-5">
-          <Text className="text-xl font-bold text-text">Rootz</Text>
+          <Text className="text-xl font-bold text-text">Root My Android</Text>
           <HaloBar level={MOCK_HALO} onPress={() => setAccountOpen(true)} />
           <TouchableOpacity
             className="rounded-lg border border-accent px-3 py-1.5"

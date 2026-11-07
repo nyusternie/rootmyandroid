@@ -1,0 +1,7 @@
+# apps/rootz/Cargo.toml — Rootz daemon crate (scaffold; daemon team owns v1).
+[package]
+name = "rootz"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]

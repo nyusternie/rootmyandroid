@@ -22,9 +22,10 @@ password, just an account number.
 | App | Path | What it is |
 | --- | ---- | ---------- |
 | **Web** | [`apps/web`](apps/web) | The Astro 7 static site behind rootmyandroid.com — free in-browser device scan (read-only ADB over WebUSB), guides library, product profiles, and the account portal. Content pages ship zero JavaScript. |
-| **Rootz** (Android) | [`apps/android`](apps/android) | Device scan, paired Guardian Angel devices, encrypted backups, and tools (React Native 0.88, `com.rootmyandroid`). Backups are encrypted client-side with a user-held key — the API only ever sees ciphertext. |
-| **RootMyAndroid** (iOS) | [`apps/ios`](apps/ios) | The iOS monitoring edition (React Native 0.88, `com.rootmyandroid`). |
-| **Guardian Angel** (Android) | [`apps/guardian`](apps/guardian) | Parental-control companion that runs in the background on the managed device and syncs to a Rootz account (React Native 0.88, `com.rootmyandroid.guardianangel`). Uninstall protection via the device-administrator API. |
+| **Root My Android** (Android) | [`apps/android`](apps/android) | Device scan, paired Guardian Angel devices, encrypted backups, and tools (React Native 0.88, `com.rootmyandroid`). Backups are encrypted client-side with a user-held key — the API only ever sees ciphertext. |
+| **Root My Android** (iOS) | [`apps/ios`](apps/ios) | The iOS monitoring edition (React Native 0.88, `com.rootmyandroid`). |
+| **Rootz** | [`apps/rootz`](apps/rootz) | Rust-based daemon that runs on a rooted Android device; the Rootz Pro professional tools (Terminal Editor, Log Analysis) attach here. Scaffold — the daemon team owns v1. |
+| **Guardian Angel** (Android) | [`apps/guardian`](apps/guardian) | Parental-control companion that runs in the background on the managed device and syncs to a Root My Android account (React Native 0.88, `com.rootmyandroid.guardianangel`). Uninstall protection via the device-administrator API. |
 | **Shared client** | [`packages/shared`](packages/shared) | Theme + typed `/v1` API client shared by the mobile apps (TypeScript source, no build step). |
 
 ## How it works
@@ -35,7 +36,7 @@ password, just an account number.
    report to an account.
 2. **Create an account** — random account number, no email, no personal data.
 3. **Pair a device** — install Guardian Angel on the managed device and sync
-   it to the account, or open the Rootz app for device scan, paired devices,
+   it to the account, or open the Root My Android app for device scan, paired devices,
    encrypted backups, and tools.
 
 ## Architecture
@@ -47,7 +48,9 @@ password, just an account number.
   `/v1`: accounts, account ledger, audits, first-party analytics.
 - **`rootmyandroid-admin`** (sibling repo) — the analytics dashboard.
 - **`apps/android` / `apps/ios` / `apps/guardian`** — React Native 0.88 apps
-  (Rootz utility, iOS monitoring edition, Guardian Angel).
+  (Root My Android Android utility, iOS monitoring edition, Guardian Angel).
+- **`apps/rootz`** — the Rootz daemon (Rust, rooted Android devices; scaffold,
+  the daemon team owns v1).
 - **`packages/shared`** — theme + typed `/v1` API client shared by the apps.
 
 Analytics are first-party only (`/v1/analytics/*`); there is intentionally no
@@ -60,9 +63,10 @@ third-party tracking.
 ├── apps/
 │   ├── web/          # Astro 7 static site (this README's banner lives in
 │   │                 # apps/web/public/og-image.png)
-│   ├── android/      # Rootz (Android utility): RN 0.88 app
+│   ├── android/      # Root My Android (Android edition): RN 0.88 app
 │   ├── ios/          # RootMyAndroid (iOS monitoring edition): RN 0.88 app
-│   └── guardian/     # React Native 0.88 app (com.rootmyandroid.guardianangel)
+│   ├── guardian/     # React Native 0.88 app (com.rootmyandroid.guardianangel)
+│   └── rootz/        # Rootz daemon: Rust, rooted Android devices (scaffold)
 ├── packages/
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client
 ├── .agents/skills/   # Project agent skills (brand-image: brand canon)

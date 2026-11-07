@@ -25,12 +25,13 @@ Top-ups are prepaid (Mullvad-style): add time anytime, no auto-renewal.
 ├── apps/
 │   ├── web/          # Astro 7 static site (zero-JS content pages; vanilla TS
 │   │                 # modules on the app pages that call the API at /v1)
-│   ├── android/      # Rootz (Android utility): RN 0.88 app
+│   ├── android/      # Root My Android (Android edition): RN 0.88 app
 │   │                 # (com.rootmyandroid), jest
 │   ├── ios/          # RootMyAndroid (iOS monitoring edition): RN 0.88 app
 │   │                 # (bundle id com.rootmyandroid; android/ is a
 │   │                 #  preview-only shell, com.rootmyandroid.preview), jest
-│   └── guardian/     # React Native 0.88 app (com.rootmyandroid.guardianangel), jest
+│   ├── guardian/     # React Native 0.88 app (com.rootmyandroid.guardianangel), jest
+│   └── rootz/        # Rootz daemon: Rust, rooted Android devices (scaffold; daemon team owns v1)
 ├── packages/
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client
 │                     # shared by the mobile apps (TS source, no build step)

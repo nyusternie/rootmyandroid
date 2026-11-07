@@ -64,12 +64,12 @@ adb install -r app-release.apk
 
 `adb install` is deployment, not a build — allowed on the host. Deploy ONLY
 the iOS-edition preview (`com.rootmyandroid.preview`) to the physical
-device — do NOT install Rootz or Guardian builds on it (owner rule,
+device — do NOT install Root My Android or Guardian builds on it (owner rule,
 2026-10-30). Never run data-destroying adb commands on third-party
 packages (repo AGENTS.md rule 6).
-Our package ids: `com.rootmyandroid` (Rootz, Android), `com.rootmyandroid`
+Our package ids: `com.rootmyandroid` (Root My Android, Android), `com.rootmyandroid`
 (RootMyAndroid, iOS bundle id), `com.rootmyandroid.preview` (Android preview
-of the iOS edition — distinct id so it never clobbers Rootz on-device),
+of the iOS edition — distinct id so it never clobbers Root My Android on-device),
 `com.rootmyandroid.guardian`.
 
 ## 4. Pull before you push
@@ -89,7 +89,7 @@ deploy with failing tests.
 ## Physical device
 
 Deploy ONLY the iOS-edition preview (`com.rootmyandroid.preview`) to the
-owner's physical device. Do NOT install Rootz (`com.rootmyandroid`)
+owner's physical device. Do NOT install Root My Android (`com.rootmyandroid`)
 or Guardian builds on it — those are CI-verified only (owner rule,
 2026-10-30).
 

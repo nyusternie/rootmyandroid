@@ -9,7 +9,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 
 /**
- * Persists the Rootz-account pairing in app-private SharedPreferences.
+ * Persists the Root My Android account pairing in app-private SharedPreferences.
  * The 16-digit account number is the credential for PRO features (remote
  * access to this device's encrypted data), so it is stored in full; it never
  * leaves app-private storage except over TLS to the API.

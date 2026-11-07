@@ -382,6 +382,37 @@ listing to rename). What shipped in the rename pass:
 
 ---
 
+## 13. PRODUCT STRUCTURE CORRECTION (owner rulings 2026-11-07) — Rootz is the DAEMON, not the app
+
+§12 renamed the app product to Rootz; same-day owner correction redefines
+the structure:
+
+- **Root My Android has TWO editions**: Android (`apps/android`) and iOS
+  (`apps/ios`). Android edition identity ruled: `app.json`
+  `name: "RootMyAndroid"`, `displayName: "Root My Android"`,
+  `MainActivity.getMainComponentName(): "RootMyAndroid"` (`index.js` reads
+  the name from `app.json`, so the JS side follows automatically).
+- **Rootz is a Rust-based daemon that runs on a rooted Android device** —
+  scaffolded as `apps/rootz` (bare binary crate, no functionality; another
+  team takes v1 over). The **Rootz Pro** professional-tools plan
+  ($15/365 days, Terminal Editor / Log Analysis) attaches to the daemon;
+  **Colonel Rewt** stays its mascot.
+- Free-toolkit attribution (which features live in the app vs the daemon)
+  is PARKED by the owner — site copy from §12 (incl. the `/rootz` page,
+  which keeps its description) is left as-is until that is ruled.
+- Guardian/iOS strings + README/AGENTS/build-skill labels swept to the
+  Root My Android naming; account references use the established "Root My
+  Android account" phrasing (account.astro).
+- Package/application/bundle ids unchanged. Edits confined to this repo —
+  sibling repos were not touched for this correction (their §12-era
+  "Rootz app" comments are now stale and await their own teams).
+- Open follow-ups: shared theme export name `rootzColors`/`RootzColors`
+  (no longer matches any product surface), terms/audit copy referencing
+  the "Rootz app", `/download` Rootz section labeling, daemon
+  distribution mechanism (no artifact exists).
+
+---
+
 *Owner context: rebrand direction approved 2026-11-03 with a HARD cutover
 ruling (no aliases, nothing kept indefinitely); pricing repriced 2026-11-04
 (§10) and replaced outright 2026-11-05 (§11). This document is kept as the
