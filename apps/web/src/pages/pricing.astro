@@ -5,8 +5,11 @@
 // Plans are top-up subscriptions (Mullvad-style): add time anytime, no
 // auto-renew, no stored card; Guardian Angel subscribers can switch Lite <-> Pro.
 // The free core (browser scan etc.) sits OUTSIDE both products.
-// No Offer/PriceSpecification schema on purpose: structured data must
-// mirror real, visible copy.
+// Offer schema (below) mirrors the visible tier cards exactly — it is
+// BUILT from the same tier arrays that render the cards, so copy and
+// structured data cannot drift. Listed fiat prices ONLY: the 15% crypto
+// discount is enforced server-side and is NEVER hard-coded in clients
+// (AGENTS.md). Owner ruling 2026-11-07.
 import Base from '../layouts/Base.astro'
 
 const guardianTiers = [
@@ -66,6 +69,38 @@ const rootedTiers = [
     featured: true,
   },
 ]
+
+// Every sentence appended to the descriptions is (near-)verbatim visible
+// copy: the features come from the cards; the top-up/crypto sentences come
+// from the footer note at the bottom of this page.
+type Tier = (typeof guardianTiers)[number]
+const offerFromTier = (t: Tier, position: number) => ({
+  '@type': 'Offer',
+  position,
+  name: `${t.name} ${t.level}`,
+  price: t.price.replace('$', ''),
+  priceCurrency: 'USD',
+  url: 'https://rootmyandroid.com/pricing',
+  description: `${t.features.join('. ')}. Top-up subscription: add time anytime — no auto-renew, no stored card. Pay with crypto and save 15%.`,
+})
+const pricingSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Root My Android plans and pricing',
+  itemListElement: [
+    {
+      '@type': 'Offer',
+      position: 1,
+      name: 'Free',
+      price: '0',
+      priceCurrency: 'USD',
+      url: 'https://rootmyandroid.com/pricing',
+      description:
+        'Browser device scan (read-only ADB), bootloader & unlock detection, root-method selection, and the full guides library — no account needed.',
+    },
+    ...[...guardianTiers, ...rootedTiers].map((t, i) => offerFromTier(t, i + 2)),
+  ],
+}
 ---
 
 <Base
@@ -166,6 +201,8 @@ const rootedTiers = [
       current offer.
     </p>
   </section>
+
+  <script type="application/ld+json" set:html={JSON.stringify(pricingSchema)} />
 
   <style>
     .free-strip {

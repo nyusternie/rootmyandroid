@@ -13,12 +13,47 @@ export async function getStaticPaths() {
 
 const { guide } = Astro.props
 const { Content } = await render(guide)
+
+// Freshness + Markdown-alternate signals for search/answer engines: the
+// "Updated" line renders VISIBLY and the TechArticle JSON-LD carries the
+// same date as dateModified (structured data mirrors copy); the
+// <link rel="alternate"> in <head> points at the raw-Markdown endpoint
+// ([...id].md.ts).
+const updatedIso = guide.data.updated
+  ? guide.data.updated.toISOString().slice(0, 10)
+  : undefined
+const canonical = new URL(`/guides/${guide.id}/`, Astro.site).href
+const org = { '@type': 'Organization', name: 'Root My Android', url: Astro.site }
+const guideSchema: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: guide.data.title,
+  description: guide.data.description,
+  mainEntityOfPage: canonical,
+  author: org,
+  publisher: org,
+  ...(updatedIso ? { dateModified: updatedIso } : {}),
+}
 ---
 
 <Base title={guide.data.title} description={guide.data.description}>
+  <link
+    slot="head"
+    rel="alternate"
+    type="text/markdown"
+    href={`/guides/${guide.id}.md`}
+    title={`${guide.data.title} (Markdown)`}
+  />
   <div class="container prose" style="padding: 3rem 1.25rem">
     <p><a href="/guides">← All guides</a></p>
     <h1>{guide.data.title}</h1>
+    {updatedIso && (
+      <p class="muted">
+        Updated <time datetime={updatedIso}>{updatedIso}</time> ·
+        <a href={`/guides/${guide.id}.md`}>View as Markdown</a>
+      </p>
+    )}
     <Content />
+    <script type="application/ld+json" set:html={JSON.stringify(guideSchema)} />
   </div>
 </Base>

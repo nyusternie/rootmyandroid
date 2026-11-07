@@ -1,0 +1,53 @@
+<!-- apps/web/public/llms.txt — LLM-readable site index (llms.txt convention, llmstxt.org). Keep in sync with the sitemap and visible page copy. -->
+
+# Root My Android
+
+> Root My Android: release your Android's full power — a free, read-only, in-browser ADB device scan that produces a rooting / upgrade plan matched to your exact model, plus two apps: Rooted (power-user toolkit) and Guardian Angel (parental device management). Accounts are Mullvad-style 16-digit numbers: no email, no password, no personal data. Pricing: the scan core is free; Guardian Angel Lite is $5 / 30 days; Guardian Angel Pro is $15 / 30 days; Rooted Pro is $15 / 365 days; crypto payments save 15% (enforced server-side).
+
+The site is fully static. All dynamic/backend functionality lives in a public REST API at https://rootmyandroid.com/v1 and a Model Context Protocol (MCP) server at https://rootmyandroid.com/mcp — both require no API key and no registration.
+
+## For AI agents
+
+- [Root My Android for AI agents](https://rootmyandroid.com/agents): agent integration guide — public REST API and MCP server, no API key, no registration
+- [MCP server endpoint](https://rootmyandroid.com/mcp): Model Context Protocol (JSON-RPC 2.0 over Streamable HTTP); stateless; tools for accounts, subscription plans, card & crypto checkout, vouchers, payment status, and human support; a GET request returns the human-readable tool catalog
+- [API health](https://rootmyandroid.com/v1/health): REST API liveness check; the public API root is /v1
+
+## Core pages
+
+- [Home](https://rootmyandroid.com): free in-browser root scan, the Rooted power-user toolkit, and Guardian Angel parental controls
+- [Scan](https://rootmyandroid.com/scan): connect any Android device over USB and scan it in the browser — no installs, no account, nothing leaves the browser
+- [Pricing](https://rootmyandroid.com/pricing): Guardian Angel Lite $5/mo, Guardian Angel Pro $15/mo, Rooted Pro $15/yr; top-up subscriptions with no auto-renew and no stored card; 15% off when paying with crypto
+- [Download](https://rootmyandroid.com/download): direct APK downloads of the Rooted and Guardian Angel Android apps
+- [Rooted](https://rootmyandroid.com/rooted): the unlocking assistant / power-user toolkit overview
+- [For Parents](https://rootmyandroid.com/parents): parental controls on Android, and what Guardian Angel adds on top
+
+## Guides
+
+Raw-Markdown alternates: append `.md` to any guide URL (also linked via `<link rel="alternate" type="text/markdown">` on each guide page).
+
+- [Guides index](https://rootmyandroid.com/guides): step-by-step Android rooting, bootloader, and custom-ROM guides
+- [What rooting actually does (and doesn't)](https://rootmyandroid.com/guides/what-is-rooting.md): root access explained plainly — what you gain, what you risk, and what changed in modern Android
+- [Check your bootloader status](https://rootmyandroid.com/guides/check-bootloader-status.md): find out whether the bootloader is locked or unlockable before attempting to root
+
+## Custom ROM catalog
+
+- [Custom ROMs](https://rootmyandroid.com/roms): curated catalog — crDroid, /e/OS, GrapheneOS, LineageOS — with official sources and device support
+
+## Third-party profiles
+
+- [ADB](https://rootmyandroid.com/ADB): Google's official tool for communicating with an Android device from a computer — the engine behind the browser-based device scan
+- [Magisk](https://rootmyandroid.com/Magisk): the standard systemless rooting method for Android
+- [KernelSU](https://rootmyandroid.com/KernelSU): the leading kernel-based root solution for Android GKI devices
+- [APatch](https://rootmyandroid.com/APatch): kernel-level root that patches the Android kernel directly
+- [TWRP](https://rootmyandroid.com/TWRP): the best-known custom recovery for Android
+- [Shizuku](https://rootmyandroid.com/Shizuku): lets ordinary apps use privileged system APIs via ADB — no full root required
+- [Dhizuku](https://rootmyandroid.com/Dhizuku): shares Android's Device Owner permissions — enterprise-grade device control without rooting
+- [AOSP](https://rootmyandroid.com/AOSP): the open-source core of Android, led by Google
+- [LineageOS](https://rootmyandroid.com/LineageOS): the leading open-source custom Android operating system, successor to CyanogenMod
+- [GrapheneOS](https://rootmyandroid.com/GrapheneOS): privacy- and security-hardened Android-based OS for Google Pixel phones
+
+## Legal
+
+- [Terms of Service](https://rootmyandroid.com/terms): accounts, subscriptions, payments, acceptable use, and the rooting & unlocking risk disclosure
+- [Privacy Policy](https://rootmyandroid.com/privacy): no email, no password, no personal identifiers — exactly what is stored and why
+- [Refund Policy](https://rootmyandroid.com/refunds): cryptocurrency payments are irreversible; subscription top-ups are final with narrow exceptions

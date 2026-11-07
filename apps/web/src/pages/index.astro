@@ -3,8 +3,8 @@
 import Base from '../layouts/Base.astro'
 
 // Landing-only structured data: the product + the FAQ. No Offer here —
-// pricing lives on /pricing (no Offer schema there by design); schema must
-// mirror visible copy.
+// pricing and its Offer schema live on /pricing; schema must mirror
+// visible copy.
 const appSchema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -34,6 +34,22 @@ const faqs = [
   {
     q: 'What is Guardian Angel?',
     a: "Guardian Angel is our parental device-management app: you install and configure it on your child's device yourself. The free tier includes short-term usage statistics of every app, a DNS-based ad blocker, and cleanup and maintenance. Paid tiers add long-term usage statistics, a screen recorder, a device locator, and an app lock.",
+  },
+  {
+    q: 'Do I need to install anything to scan my phone?',
+    a: 'No. The scan runs entirely in a WebUSB-capable desktop browser: connect your Android device with a USB cable and the scan talks to it over ADB. There is nothing to install on your computer or your phone.',
+  },
+  {
+    q: 'Does the scan change anything on my phone?',
+    a: 'No. The scan is strictly read-only: it reads device properties (brand, build, bootloader and root indicators) over ADB and never writes, flashes, or modifies anything. Nothing leaves your computer unless you explicitly save the report to an account number.',
+  },
+  {
+    q: 'Do I need an account to scan?',
+    a: 'No. The device scan is free and works without an account, an email, or a password. A Mullvad-style account number is only needed if you want to save your scan report or subscribe to a plan.',
+  },
+  {
+    q: 'Does rooting void my warranty?',
+    a: "It can. Unlocking the bootloader may void the manufacturer's warranty depending on the manufacturer and your jurisdiction, and unlocking factory-resets the device — so back up first. Our Terms of Service include the full rooting & unlocking risk disclosure.",
   },
 ]
 
@@ -294,6 +310,27 @@ const faqSchema = {
     </p>
   </section>
 
+  {/* AI-agent discovery panel (GEO, 2026-11-07): a direct in-content path
+      from / to the machine-readable surface — the /agents explainer and
+      the /mcp tool catalog. Facts mirror src/pages/agents.astro (verified
+      live 2026-11-07). */}
+  <section class="container agents-section">
+    <div class="panel agents-panel">
+      <h2>Building an AI agent?</h2>
+      <p class="muted">
+        Root My Android is built to be driven by software, not just visited
+        by people. A public REST API and a Model Context Protocol (MCP)
+        server expose accounts, subscription plans, card &amp; crypto
+        checkout, vouchers, payment status, and human support — no API key,
+        no registration, no personal data anywhere.
+      </p>
+      <div class="row">
+        <a class="btn" href="/agents">Read the agent guide</a>
+        <a class="btn" href="https://rootmyandroid.com/mcp" rel="noopener">Open the /mcp tool catalog</a>
+      </div>
+    </div>
+  </section>
+
   {/* Chat bubble bottom-right on the landing page (owner request 2026-11-04):
       the existing support widget (src/scripts/support.ts) as on the app pages.
       NOTE: / now ships JavaScript — repo rule 4 zero-JS still holds for
@@ -449,6 +486,11 @@ const faqSchema = {
   /* FAQ: native <details> accordions — zero JavaScript. */
   .faq-section {
     padding: 2.5rem 0 1rem;
+  }
+
+  /* AI-agent discovery panel below the FAQ. */
+  .agents-section {
+    padding: 1rem 0 3rem;
   }
   .faq-item summary {
     cursor: pointer;

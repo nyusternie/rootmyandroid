@@ -1,6 +1,7 @@
 ---
 title: Check your bootloader status
 description: Find out whether your device's bootloader is locked or unlockable before you attempt to root.
+updated: 2026-10-16
 order: 1
 ---
 

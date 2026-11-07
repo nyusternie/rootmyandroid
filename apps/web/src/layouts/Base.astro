@@ -39,6 +39,10 @@ const orgSchema = {
   name: 'Root My Android',
   url: Astro.site,
   logo: new URL('/apple-touch-icon.png', Astro.site).href,
+  // Official social profiles — entity resolution for search/answer engines.
+  // Add only profiles VERIFIED to exist: X verified via first post
+  // 2026-11-05 (rootmyandroid-x-posting skill).
+  sameAs: ['https://x.com/RootMyAndroid_'],
 }
 const siteSchema = {
   '@context': 'https://schema.org',
@@ -74,6 +78,9 @@ const siteSchema = {
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script type="application/ld+json" set:html={JSON.stringify(orgSchema)} />
     <script type="application/ld+json" set:html={JSON.stringify(siteSchema)} />
+    {/* Per-page head additions (e.g. the rel="alternate" Markdown link on
+        guide pages). Pages that pass nothing here are unaffected. */}
+    <slot name="head" />
   </head>
   <body>
     <header class="site-header">

@@ -7,6 +7,11 @@ const guides = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
+    // Last content-change date (ISO yyyy-mm-dd). Rendered visibly on the
+    // guide page and emitted as dateModified in its TechArticle JSON-LD
+    // (structured data mirrors copy) — a freshness signal for search and
+    // answer engines. EDITORS: bump this whenever the content changes.
+    updated: z.coerce.date().optional(),
     // Optional ordering / status flags for later use.
     order: z.number().optional(),
     draft: z.boolean().optional().default(false),

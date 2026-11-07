@@ -1,4 +1,61 @@
 # apps/web/public/robots.txt
+#
+# AI agents & LLM crawlers are EXPLICITLY WELCOME here (owner policy
+# 2026-11-07): the site is static/read-only and machine consumption is a
+# product goal. Each user-agent token below was verified against the
+# vendor's own documentation on 2026-11-07; the wildcard group at the
+# bottom already allows every other crawler (including tokens not listed
+# here). To block a token, flip its Allow to Disallow.
+#
+# AI-agent integration docs: https://rootmyandroid.com/agents
+# LLM-readable site index:   https://rootmyandroid.com/llms.txt
+
+# OpenAI — developers.openai.com/api/docs/bots
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic — support.claude.com/en/articles/8896518
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+# Perplexity — docs.perplexity.ai/guides/bots
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# Apple — support.apple.com/en-us/119829
+User-agent: Applebot-Extended
+Allow: /
+
+# Meta — developers.facebook.com/docs/sharing/bot
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Meta-ExternalFetcher
+Allow: /
+
+# Amazon — developer.amazon.com/amazonbot
+User-agent: Amazonbot
+Allow: /
+
+# Common Crawl — commoncrawl.org/ccbot
+User-agent: CCBot
+Allow: /
+
 User-agent: *
 Allow: /
 
