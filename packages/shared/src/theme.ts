@@ -20,12 +20,12 @@ export const colors = {
 export type ThemeColors = typeof colors;
 
 /**
- * Rooted + Guardian palette (apps/android, apps/guardian) — the mobile
+ * Rootz + Guardian palette (apps/android, apps/guardian) — the mobile
  * apps' original dark theme with the blue accent. Values preserved 1:1
  * from the pre-shared inline palettes; do NOT "reconcile" with the site
  * palette above (they intentionally differ).
  */
-export const rootedColors = {
+export const rootzColors = {
   bg: '#0b0e11',
   panel: '#14181d',
   border: '#232a32',
@@ -40,4 +40,4 @@ export const rootedColors = {
   danger: '#e5534b',
 } as const;
 
-export type RootedColors = typeof rootedColors;
+export type RootzColors = typeof rootzColors;

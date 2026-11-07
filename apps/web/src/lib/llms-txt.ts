@@ -28,7 +28,7 @@ export function buildLlmsTxt(guides: LlmsGuide[], roms: LlmsRom[]): string {
 
 # Root My Android
 
-> Root My Android: release your Android's full power — a free, read-only, in-browser ADB device scan that produces a rooting / upgrade plan matched to your exact model, plus two apps: Rooted (power-user toolkit) and Guardian Angel (parental device management). Accounts are Mullvad-style 16-digit numbers: no email, no password, no personal data. Pricing: the scan core is free; Guardian Angel Lite is $5 / 30 days; Guardian Angel Pro is $15 / 30 days; Rooted Pro is $15 / 365 days; crypto payments save 15% (enforced server-side).
+> Root My Android: release your Android's full power — a free, read-only, in-browser ADB device scan that produces a rooting / upgrade plan matched to your exact model, plus two apps: Rootz (power-user toolkit) and Guardian Angel (parental device management). Accounts are Mullvad-style 16-digit numbers: no email, no password, no personal data. Pricing: the scan core is free; Guardian Angel Lite is $5 / 30 days; Guardian Angel Pro is $15 / 30 days; Rootz Pro is $15 / 365 days; crypto payments save 15% (enforced server-side).
 
 The site is fully static. All dynamic/backend functionality lives in a public REST API at https://rootmyandroid.com/v1 and a Model Context Protocol (MCP) server at https://rootmyandroid.com/mcp — both require no API key and no registration.
 
@@ -40,11 +40,11 @@ The site is fully static. All dynamic/backend functionality lives in a public RE
 
 ## Core pages
 
-- [Home](https://rootmyandroid.com): free in-browser root scan, the Rooted power-user toolkit, and Guardian Angel parental controls
+- [Home](https://rootmyandroid.com): free in-browser root scan, the Rootz power-user toolkit, and Guardian Angel parental controls
 - [Scan](https://rootmyandroid.com/scan): connect any Android device over USB and scan it in the browser — no installs, no account, nothing leaves the browser
-- [Pricing](https://rootmyandroid.com/pricing): Guardian Angel Lite $5/mo, Guardian Angel Pro $15/mo, Rooted Pro $15/yr; top-up subscriptions with no auto-renew and no stored card; 15% off when paying with crypto
-- [Download](https://rootmyandroid.com/download): direct APK downloads of the Rooted and Guardian Angel Android apps
-- [Rooted](https://rootmyandroid.com/rooted): the unlocking assistant / power-user toolkit overview
+- [Pricing](https://rootmyandroid.com/pricing): Guardian Angel Lite $5/mo, Guardian Angel Pro $15/mo, Rootz Pro $15/yr; top-up subscriptions with no auto-renew and no stored card; 15% off when paying with crypto
+- [Download](https://rootmyandroid.com/download): direct APK downloads of the Rootz and Guardian Angel Android apps
+- [Rootz](https://rootmyandroid.com/rootz): the unlocking assistant / power-user toolkit overview
 - [For Parents](https://rootmyandroid.com/parents): parental controls on Android, and what Guardian Angel adds on top
 
 ## Guides

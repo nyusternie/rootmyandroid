@@ -1,5 +1,5 @@
 ---
-// src/pages/rooted.astro — SEO landing page for the Rooted app (the
+// src/pages/rootz.astro — SEO landing page for the Rootz app (the
 // unlocking assistant). Home of the "rooted android" hero art (moved from
 // the landing page 2026-11-03). FAQPage schema mirrors the visible FAQ
 // below — never add entries that are not rendered on the page.
@@ -20,7 +20,7 @@ const faq = [
   },
   {
     q: 'Does rooting work on every Android phone?',
-    a: 'No. It depends on your exact model, carrier variant, and whether the manufacturer allows the bootloader to be unlocked. Some carrier-locked variants cannot be unlocked at all — which is why Rooted checks your specific device before recommending anything.',
+    a: 'No. It depends on your exact model, carrier variant, and whether the manufacturer allows the bootloader to be unlocked. Some carrier-locked variants cannot be unlocked at all — which is why Rootz checks your specific device before recommending anything.',
   },
 ]
 
@@ -36,17 +36,17 @@ const faqSchema = {
 ---
 
 <Base
-  title="Rooted — the unlocking assistant for your Android"
-  description="Rooted scans your Android device over ADB — read-only, in your browser — and builds a rooting / upgrade plan matched to your exact model and firmware. Free, private, no account needed to scan."
+  title="Rootz — the unlocking assistant for your Android"
+  description="Rootz scans your Android device over ADB — read-only, in your browser — and builds a rooting / upgrade plan matched to your exact model and firmware. Free, private, no account needed to scan."
 >
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
 
   <section class="hero">
     <div class="container hero-grid">
       <div>
-        <h1>Rooted — your Android, <span class="hl">fully yours</span>.</h1>
+        <h1>Rootz — your Android, <span class="hl">fully yours</span>.</h1>
         <p class="lede">
-          Rooted is the unlocking assistant for your own device. It scans your
+          Rootz is the unlocking assistant for your own device. It scans your
           phone or tablet over ADB — entirely in your browser, read-only,
           nothing uploaded — checks your bootloader, and builds a rooting and
           upgrade plan matched to your exact model and firmware.
@@ -88,13 +88,13 @@ const faqSchema = {
   </section>
 
   <section class="container" style="padding-bottom: 2rem">
-    <h2>How Rooted works</h2>
+    <h2>How Rootz works</h2>
     <div class="grid-3 steps-grid" style="margin-top: 1.5rem">
       <div class="panel">
         <h3>1. Connect</h3>
         <p class="muted">
           Plug your device in with a USB cable and enable USB debugging.
-          Rooted talks to it over ADB, straight from a WebUSB-capable desktop
+          Rootz talks to it over ADB, straight from a WebUSB-capable desktop
           browser — nothing to install.
         </p>
       </div>

@@ -1,5 +1,5 @@
 // apps/guardian/tailwind.config.js
-// NativeWind theme — hex values MUST stay in sync with rootedColors in
+// NativeWind theme — hex values MUST stay in sync with rootzColors in
 // packages/shared/src/theme.ts (Tailwind config is CJS and cannot import
 // the TS source; update both when the palette changes).
 /** @type {import('tailwindcss').Config} */

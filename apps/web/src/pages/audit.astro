@@ -4,7 +4,7 @@
 // coverage first, more to come). The live scan runs in a vanilla module
 // script (same pattern as /account); everything below it is static content.
 // The backup audit below is a real capture from a Pixel 5 (Android 14) on
-// 2026-10-19, shown as a static sample until the Rooted app syncs live
+// 2026-10-19, shown as a static sample until the Rootz app syncs live
 // per-device data to the API.
 import Base from '../layouts/Base.astro'
 ---
@@ -50,7 +50,7 @@ import Base from '../layouts/Base.astro'
         <h3>Save this scan to your account</h3>
         <p class="small faint">
           Optional. Stored as audit class <span class="mono">device</span>
-          against your account number — the same place the Rooted app's
+          against your account number — the same place the Rootz app's
           <span class="mono">backup</span> audits land.
         </p>
         <form id="save-form" class="stack">
@@ -79,10 +79,10 @@ import Base from '../layouts/Base.astro'
     <div class="panel">
       <h2>Audit classes</h2>
       <div class="kv"><span class="k mono">device</span><span class="v">Live above — what this device is, right now</span></div>
-      <div class="kv"><span class="k mono">backup</span><span class="v">Android backup coverage — sample below, live via the Rooted app</span></div>
+      <div class="kv"><span class="k mono">backup</span><span class="v">Android backup coverage — sample below, live via the Rootz app</span></div>
       <p class="small faint" style="margin-top: 0.9rem">
         More classes (storage, root integrity, ROM &amp; OTA posture) land as
-        the Rooted app's scanners ship — same page, same account.
+        the Rootz app's scanners ship — same page, same account.
       </p>
     </div>
 
@@ -236,9 +236,9 @@ import Base from '../layouts/Base.astro'
     </div>
 
     <div class="panel">
-      <h2>How Rooted delivers this <span class="small faint">(preview)</span></h2>
+      <h2>How Rootz delivers this <span class="small faint">(preview)</span></h2>
       <p class="small muted">
-        The Rooted app reads every installed app's backup participation
+        The Rootz app reads every installed app's backup participation
         straight from the OS — no root required for the coverage map. With
         elevated access (root or our ADB tooling) it also reads last-backup
         timestamps and schedule: the full picture you see here.
@@ -250,7 +250,7 @@ import Base from '../layouts/Base.astro'
       </p>
       <p class="small faint">
         Sample data captured Oct 19 from a Pixel 5 running Android 14. Live
-        per-device data arrives with the Rooted app's device sync.
+        per-device data arrives with the Rootz app's device sync.
       </p>
     </div>
   </div>

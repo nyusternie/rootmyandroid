@@ -17,13 +17,13 @@ nano-gpt model roster, and QA doctrine. This file is the PROJECT layer: what to 
 - Background near-black navy `#0E0F13`; headline white `#EAF1FA`; the word "FULL" and the
   URL line in sky blue `#3D9DF2` / dim `#8AB8E8` (site accent stays blue; only robots are green).
 
-## Character canon (owner-set 2026-11-04; "Guru Daemon" renamed **The Guru** 2026-11-05)
+## Character canon (owner-set 2026-11-04; "Guru Daemon" renamed **The Guru** 2026-11-05, renamed **Colonel Rewt** 2026-11-07 — a play on "kernel root")
 
 1. **SU superhero — the Root My Android DEFAULT robot** (OG card, landing hero,
    favicons). Green body, red cape, yellow diamond chest shield with red "SU"
    (= superuser; also sidesteps DC's 'S' trademark). NO halo. Canon prompt:
    `references/su-mascot-prompt.txt`.
-1b. **The Guru — the Rooted Pro tools robot** (Terminal Editor, Log
+1b. **Colonel Rewt — the Rootz Pro tools robot** (Terminal Editor, Log
    Analysis). OWNER-APPROVED CHARACTER (2026-11-04): a wise OLD robot — white beard,
    round eyeglasses, dark charcoal monk robe hex #1A1D24 with terminal-green trim,
    green head/hands, NO halo, NO cape — holding a slim staff topped with the yellow
@@ -37,8 +37,8 @@ nano-gpt model roster, and QA doctrine. This file is the PROJECT layer: what to 
    baby-in-diaper (`guardian-{robe,blanket,baby}.webp`); the toga was owner-REJECTED
    (deleted 2026-11-04).
 3. Halo rings (1/2) are the Guardian Angel level badges on `/pricing`
-   (Lite/Pro) — currency marks, not mascots. Rooted Pro carries The Guru
-   robot instead of a halo badge.
+   (Lite/Pro) — currency marks, not mascots. Rootz Pro carries the Colonel
+   Rewt robot instead of a halo badge.
 4. **App icons show the FULL BODY** — owner rejected a head-only icon ("looks like
    Dracula", "SU floats with no body"). Never ship head-only icon crops.
 
@@ -64,5 +64,5 @@ nano-gpt model roster, and QA doctrine. This file is the PROJECT layer: what to 
 
 Branch → commit → push → PR → CI green → merge → verify live (sha256 hash-compare each
 asset, expect 200 + MATCH) → report ALL links (canonical + variants) and per-image costs.
-Open question parked: `/rooted` page art (`hero.webp`, roots+padlock) — topical exception,
+Open question parked: `/rootz` page art (`hero.webp`, roots+padlock) — topical exception,
 owner has not called it.

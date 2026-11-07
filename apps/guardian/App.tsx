@@ -2,18 +2,18 @@
  * Guardian Angel — parental-control companion that runs in the background.
  * (Display name is "Guardian Angel"; package/IDs stay "guardian".)
  *
- * Guardian Angel is installed on the managed device and synced to a Rooted
+ * Guardian Angel is installed on the managed device and synced to a Rootz
  * account. Its UI is intentionally minimal: the app title, a sync input, and
- * — once synced — the Rooted account details plus an uninstall button.
- * Everything else is controlled from the Rooted app.
+ * — once synced — the Rootz account details plus an uninstall button.
+ * Everything else is controlled from the Rootz app.
  *
  * Device protection uses the device-administrator API: while active, the
  * package manager refuses to uninstall the app. True launcher hiding via
  * DevicePolicyManager.setApplicationHidden would require device/profile
  * owner and would suspend the app, so hiding stays on the alias toggle.
  *
- * Dark, minimal UI matching rootmyandroid.com and the Rooted app.
- * Styled with NativeWind (tailwind.config.js ↔ rootedColors in
+ * Dark, minimal UI matching rootmyandroid.com and the Rootz app.
+ * Styled with NativeWind (tailwind.config.js ↔ rootzColors in
  * packages/shared/src/theme.ts).
  *
  * @format
@@ -34,10 +34,10 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-// Shared Rooted/Guardian palette (packages/shared/src/theme.ts) — single
+// Shared Rootz/Guardian palette (packages/shared/src/theme.ts) — single
 // source of truth for the mobile-app colors (dynamic props only; static
 // styling lives in NativeWind classes).
-import { rootedColors as colors } from 'rootmyandroid-shared';
+import { rootzColors as colors } from 'rootmyandroid-shared';
 
 const { Uninstall, LauncherIcon, SyncStore, DeviceAdmin } = NativeModules;
 
@@ -46,7 +46,7 @@ const API_BASE = 'https://rootmyandroid.com/v1';
 type SyncedAccount = {
   /** Full 16-digit number is kept only to derive the last-4 display. */
   last4: string;
-  /** Optional name/description set from the Rooted app. */
+  /** Optional name/description set from the Rootz app. */
   name: string | null;
 };
 
@@ -164,8 +164,8 @@ function App() {
           {synced === null ? (
             <View>
               <Text className="mb-4 text-sm leading-5 text-muted">
-                Sync this device to a Rooted account. Enter the 16-digit account
-                number shown in the Rooted app.
+                Sync this device to a Rootz account. Enter the 16-digit account
+                number shown in the Rootz app.
               </Text>
               <TextInput
                 className="mb-4 rounded-[10px] border border-border bg-panel px-4 py-3.5 text-lg tracking-[2px] text-text"
@@ -184,7 +184,7 @@ function App() {
                 disabled={!canSync}
               >
                 <Text className="text-base font-semibold text-white">
-                  {syncing ? 'Syncing…' : 'Sync with Rooted'}
+                  {syncing ? 'Syncing…' : 'Sync with Rootz'}
                 </Text>
               </TouchableOpacity>
               {syncError !== null && (
@@ -194,7 +194,7 @@ function App() {
           ) : (
             <View>
               <View className="mb-4 rounded-xl border border-border bg-panel p-4">
-                <Text className="mb-2.5 text-[15px] font-semibold text-text">Synced to Rooted</Text>
+                <Text className="mb-2.5 text-[15px] font-semibold text-text">Synced to Rootz</Text>
                 <View className="flex-row justify-between py-1.5">
                   <Text className="text-sm text-muted">Account</Text>
                   <Text className="text-sm font-medium text-text">•••• {synced.last4}</Text>
@@ -205,7 +205,7 @@ function App() {
                 </View>
               </View>
               <Text className="mt-3.5 text-xs leading-[17px] text-faint">
-                This device is managed from the Rooted app. All settings are
+                This device is managed from the Rootz app. All settings are
                 controlled there.
               </Text>
               {actionError !== null && (
@@ -245,7 +245,7 @@ function App() {
             </View>
             <Text className="mt-2.5 text-xs leading-[17px] text-faint">
               When hidden, Guardian Angel keeps running and can be opened from
-              the Rooted app or via ADB.
+              the Rootz app or via ADB.
             </Text>
           </View>
         </ScrollView>

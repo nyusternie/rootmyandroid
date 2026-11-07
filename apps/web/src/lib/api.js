@@ -110,7 +110,7 @@ export function whoami() {
 }
 
 // POST /device/audit — store an audit snapshot (audit_type classifies the
-// audit: "device" for the web live scan, "backup" for the Rooted app's
+// audit: "device" for the web live scan, "backup" for the Rootz app's
 // backup coverage, ...). Undefined fields are dropped by JSON.stringify.
 export function saveAudit({ accountNumber, deviceId, auditType, deviceName, collectedAt, snapshot }) {
   return request('/device/audit', {

@@ -142,7 +142,7 @@ function App(): React.JSX.Element {
                 No devices paired yet
               </Text>
               <Text className="mt-0.5 text-[13px] text-dim">
-                Install the Rooted app on an Android device and pair it with
+                Install the Rootz app on an Android device and pair it with
                 this account to start monitoring.
               </Text>
             </View>

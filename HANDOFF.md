@@ -348,6 +348,40 @@ What replaced §10:
 
 ---
 
+## 12. PRODUCT RENAME (owner ruling 2026-11-07) — Rooted → Rootz; The Guru → Colonel Rewt
+
+**The Android utility app and its Pro subscription are renamed Rooted →
+Rootz** ("Rooted Pro" → "Rootz Pro"). Owner proceeded with eyes open on
+trademark/collision risk; distribution stays sideload-only (no Google Play
+listing to rename). What shipped in the rename pass:
+
+- Product page moved `/rooted` → `/rootz` with a one-way 301 (direct
+  traffic only, no backlinks to preserve); `llms.txt`, footer nav, landing
+  copy/FAQ/JSON-LD, `/pricing` tiers, `/download`, `/terms`, `/audit` copy
+  swept. The displayed package id on `/download` was corrected to the
+  verified `applicationId` (`com.rootmyandroid`, build.gradle) — the page
+  had shown a nonexistent `com.rootmyandroid.rooted`.
+- App identity renamed in lockstep: `app.json` name/displayName,
+  `strings.xml` app_name, `MainActivity.getMainComponentName()`. Package
+  ids (`com.rootmyandroid`, `com.rootmyandroid.guardianangel`) are
+  UNCHANGED.
+- Shared theme export `rootedColors`/`RootedColors` →
+  `rootzColors`/`RootzColors` (values untouched); both apps import it
+  aliased as `colors`, so widget code is unchanged.
+- Lowercase "rooted" (the device state) is untouched everywhere,
+  including the in-app "Rooted" root-status row — with the product named
+  Rootz there is no longer a name collision.
+- **Mascot renamed: The Guru → Colonel Rewt** (a play on "kernel root"),
+  the Rootz Pro professional-tools robot. Visual canon unchanged (white
+  beard, round glasses, charcoal monk robe, SU staff); existing asset
+  filenames (`guru-staff.webp` etc.) kept to avoid markup churn.
+- The existing `rooted-release.apk` release asset keeps its name (the
+  `/download` link targets it); future release artifact naming is an open
+  follow-up.
+- History above keeps the old names. AGENTS.md is the current authority.
+
+---
+
 *Owner context: rebrand direction approved 2026-11-03 with a HARD cutover
 ruling (no aliases, nothing kept indefinitely); pricing repriced 2026-11-04
 (§10) and replaced outright 2026-11-05 (§11). This document is kept as the

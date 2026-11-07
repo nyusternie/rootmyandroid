@@ -64,12 +64,12 @@ adb install -r app-release.apk
 
 `adb install` is deployment, not a build — allowed on the host. Deploy ONLY
 the iOS-edition preview (`com.rootmyandroid.preview`) to the physical
-device — do NOT install Rooted or Guardian builds on it (owner rule,
+device — do NOT install Rootz or Guardian builds on it (owner rule,
 2026-10-30). Never run data-destroying adb commands on third-party
 packages (repo AGENTS.md rule 6).
-Our package ids: `com.rootmyandroid` (Rooted, Android), `com.rootmyandroid`
+Our package ids: `com.rootmyandroid` (Rootz, Android), `com.rootmyandroid`
 (RootMyAndroid, iOS bundle id), `com.rootmyandroid.preview` (Android preview
-of the iOS edition — distinct id so it never clobbers Rooted on-device),
+of the iOS edition — distinct id so it never clobbers Rootz on-device),
 `com.rootmyandroid.guardian`.
 
 ## 4. Pull before you push
@@ -89,7 +89,7 @@ deploy with failing tests.
 ## Physical device
 
 Deploy ONLY the iOS-edition preview (`com.rootmyandroid.preview`) to the
-owner's physical device. Do NOT install Rooted (`com.rootmyandroid.rooted`)
+owner's physical device. Do NOT install Rootz (`com.rootmyandroid`)
 or Guardian builds on it — those are CI-verified only (owner rule,
 2026-10-30).
 
@@ -99,7 +99,7 @@ All three RN apps are styled with NativeWind v4 (`nativewind` +
 `tailwindcss@^3`): className utilities instead of StyleSheet. Per-app
 `tailwind.config.js` hex values MUST stay in sync with
 `packages/shared/src/theme.ts` (`colors` = site palette for apps/ios,
-`rootedColors` = Rooted/Guardian palette). `App.tsx` imports `./global.css`;
+`rootzColors` = Rootz/Guardian palette). `App.tsx` imports `./global.css`;
 babel sets `jsxImportSource: 'nativewind'` + the `nativewind/babel` preset;
 metro wraps the config with `withNativeWind`. Jest maps `.css` to
 `jest-css-stub.js` and transforms `react-native-css-interop` (it ships raw

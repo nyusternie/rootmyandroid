@@ -14,7 +14,7 @@ account model: no email, account-number-only). The core product uses **ADB** to
 scan and analyze a physical Android device and produce a rooting / upgrade plan
 — that scan core is FREE (no account). Two paid products (owner ruling
 2026-11-05): **Guardian Angel** (monthly monitoring top-ups — Lite $5,
-Pro $15, covering up to 5 devices per account) and **Rooted Pro**
+Pro $15, covering up to 5 devices per account) and **Rootz Pro**
 (professional tools — Terminal Editor, Log Analysis — $15 per 365 days).
 Top-ups are prepaid (Mullvad-style): add time anytime, no auto-renewal.
 
@@ -25,7 +25,7 @@ Top-ups are prepaid (Mullvad-style): add time anytime, no auto-renewal.
 ├── apps/
 │   ├── web/          # Astro 7 static site (zero-JS content pages; vanilla TS
 │   │                 # modules on the app pages that call the API at /v1)
-│   ├── android/      # Rooted (Android utility): RN 0.88 app
+│   ├── android/      # Rootz (Android utility): RN 0.88 app
 │   │                 # (com.rootmyandroid), jest
 │   ├── ios/          # RootMyAndroid (iOS monitoring edition): RN 0.88 app
 │   │                 # (bundle id com.rootmyandroid; android/ is a
@@ -143,8 +143,9 @@ live in `.agents/skills/brand-image/` (read it before ANY image task):
   Android default: OG card, landing hero, favicons.
 - **Guardian Angel** (golden halo, no cape) — the monitoring product;
   wardrobe studies under `/img/brand/` await the owner's pick.
-- **The Guru** (white beard, round glasses, charcoal monk robe, staff
-  bearing the SU emblem) — the Rooted Pro professional-tools product.
+- **Colonel Rewt** (white beard, round glasses, charcoal monk robe, staff
+  bearing the SU emblem) — the Rootz Pro professional-tools product
+  (a play on "kernel root"; renamed from "The Guru" 2026-11-07).
 
 Hard rules: Android green `#3DDC84`; no root/plant motifs; icons must show
 the FULL body (head-only crops banned); any typography is rendered by the
@@ -175,9 +176,9 @@ card). The authoritative price table (also live on `/pricing`):
 | — (free core)  | Free | $0    | —         |
 | Guardian Angel | Lite | $5    | 30 days   |
 | Guardian Angel | Pro  | $15   | 30 days   |
-| Rooted         | Pro  | $15   | 365 days  |
+| Rootz          | Pro  | $15   | 365 days  |
 
-- Guardian Angel Lite ↔ Pro: subscribers may switch plans anytime (Rooted
+- Guardian Angel Lite ↔ Pro: subscribers may switch plans anytime (Rootz
   Pro is a separate lane — no switching). Lite = `read_apps` +
   `read_messages`; Pro absorbs the remaining monitoring features; the exact
   feature packaging is still being finalized (owner: to be sorted out later).

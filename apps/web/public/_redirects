@@ -12,6 +12,11 @@
 /halo  /pricing  301
 /halo/  /pricing  301
 
+# Rooted app renamed Rootz (owner ruling 2026-11-07): the product page moved
+# /rooted -> /rootz. One-way only (direct traffic, no backlinks to preserve).
+/rooted  /rootz  301
+/rooted/  /rootz  301
+
 # Profile-page case aliases (owner ruling 2026-11-05): the brand-cased path is
 # CANONICAL (real page file, sitemap, canonical link, internal links); lowercase
 # and first-letter-only variants 301 to it. Static Pages hosting is

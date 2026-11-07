@@ -1,5 +1,5 @@
 /**
- * Rooted — device scan, paired Guardian devices, encrypted backups, and tools.
+ * Rootz — device scan, paired Guardian devices, encrypted backups, and tools.
  *
  * Dark, minimal UI matching rootmyandroid.com. Talks to the API at
  * rootmyandroid.com/v1. Backups are encrypted client-side with a user-held
@@ -11,7 +11,7 @@
  * device scan, Devices, and Tools data is mocked for now; real probing and
  * API wiring come from native modules and the /v1 API.
  *
- * Styled with NativeWind (tailwind.config.js ↔ rootedColors in
+ * Styled with NativeWind (tailwind.config.js ↔ rootzColors in
  * packages/shared/src/theme.ts).
  *
  * @format
@@ -33,10 +33,10 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 type Tab = 'scan' | 'devices' | 'backups' | 'tools';
 
-// Shared Rooted/Guardian palette (packages/shared/src/theme.ts) — single
+// Shared Rootz/Guardian palette (packages/shared/src/theme.ts) — single
 // source of truth for app + web colors (dynamic props only; static styling
 // lives in NativeWind classes).
-import { rootedColors as colors } from 'rootmyandroid-shared';
+import { rootzColors as colors } from 'rootmyandroid-shared';
 
 /** Mock Halo level (0–100) until billing is wired to the API. */
 const MOCK_HALO = 62;
@@ -81,7 +81,7 @@ function App() {
       <StatusBar barStyle="light-content" {...({ backgroundColor: colors.bg } as object)} />
       <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
         <View className="flex-row items-center justify-between border-b border-border px-5 pb-3 pt-5">
-          <Text className="text-xl font-bold text-text">Rooted</Text>
+          <Text className="text-xl font-bold text-text">Rootz</Text>
           <HaloBar level={MOCK_HALO} onPress={() => setAccountOpen(true)} />
           <TouchableOpacity
             className="rounded-lg border border-accent px-3 py-1.5"

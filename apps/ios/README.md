@@ -2,7 +2,7 @@
 
 Parental/family **monitoring** app for the Android devices in your family.
 It is a client of the Root My Android API (`rootmyandroid.com/v1`): it reads
-the audits and device state that the Rooted utility app (`apps/android`)
+the audits and device state that the Rootz utility app (`apps/android`)
 syncs from each monitored Android device. It cannot audit or monitor the
 iPhone it runs on — monitoring targets are Android devices only.
 
@@ -23,7 +23,7 @@ iPhone it runs on — monitoring targets are Android devices only.
 `com.rootmyandroid.preview`) so the edition's UI can be reviewed on a
 physical Android device before the macOS/Xcode runner exists. The distinct
 applicationId matters: an Android app with id `com.rootmyandroid` would
-replace Rooted on-device at install time.
+replace Rootz on-device at install time.
 
 Preview release builds are signed with the public debug key (see
 `android/app/build.gradle`) — never publish them. Build + install flow is in
