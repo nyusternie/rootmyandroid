@@ -1,0 +1,466 @@
+---
+// src/pages/parents.astro — SEO guide: parental controls on Android.
+// Keyword target: "how to set up parental controls on android" (and the
+// Family Link / Play Store PIN / Samsung Kids long tail). CONTENT page:
+// zero JavaScript (AGENTS.md rule 4); the sitewide OG card stays (its alt
+// already covers Guardian Angel parental controls).
+// Device-behavior sources (no-guessing rule 3):
+//   - support.google.com/googleplay/answer/1075738 — Play content
+//     restrictions flow + PIN, forgotten-PIN reset (clear Play Store app
+//     data), and the ongoing merge of Play PINs into the Android
+//     device-level parental controls PIN (verified 2026-11-07).
+//   - support.google.com/families/answer/7103338 — supervised account
+//     creation for a child under 13 (or the applicable age in your country).
+//   - support.google.com/families/answer/7103340 — screen-time limits on
+//     Android 7+, system apps exempt from app limits.
+//   - thehightechsociety.com/how-to-set-up-parental-controls-on-android
+//     (owner-provided reference, 2026-11-07) — Android 16 Pixel / Android 17
+//     rollout of the on-device Settings controls, Samsung Kids specifics,
+//     Family Link consent flow. Unverifiable third-party pricing from the
+//     reference is deliberately NOT reproduced here.
+// Guardian Angel facts come from /pricing and the landing-page FAQ (this
+// repo) — keep them in sync if those change.
+import Base from '../layouts/Base.astro'
+
+// FAQ entries render visibly in the <details> list below AND feed the FAQPage
+// JSON-LD — the two must stay text-identical (structured data mirrors copy,
+// same pattern as src/pages/index.astro).
+const faqs = [
+  {
+    q: 'Does Android have a built-in Kids mode?',
+    a: "Not one that works on every brand. Samsung Galaxy phones include Samsung Kids, a separate curated mode with approved apps and playtime limits, and Google Kids Space offers a curated, age-appropriate experience on supported devices. Everywhere else, combine the on-device parental controls with Google Family Link.",
+  },
+  {
+    q: 'Can my child turn off parental controls?',
+    a: 'Not without the PIN or your Google Account password. A child who knows neither cannot remove the controls — but determined kids sometimes find workarounds, so review the settings regularly and change any PIN you think has been compromised.',
+  },
+  {
+    q: 'Does Google Family Link work for teenagers over 13?',
+    a: 'Yes, in a different way. For a child under 13 (or the applicable age in your country), Family Link creates a new supervised account; for a teen, you add supervision to the account they already use. In most countries the child can take over management of their account once they turn 13.',
+  },
+  {
+    q: 'How can I control my child\u2019s phone from my own phone?',
+    a: "Install Google Family Link on your phone and link your child's device — every setting you change then applies remotely across all of their devices. Our Guardian Angel app adds monitoring on top (usage statistics, messages and call logs on paid tiers) for up to 5 devices per account.",
+  },
+  {
+    q: 'What is the best free parental control app for Android?',
+    a: 'Google Family Link is the most complete free option: screen time limits, app limits, content filters, and location at no cost, with no ads and no subscription. The on-device Settings controls and the Google Play content-restrictions PIN add further layers that require no extra app at all.',
+  },
+]
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+}
+---
+
+<Base
+  title="How to Set Up Parental Controls on Android"
+  description="Set up parental controls on Android step by step: Google Family Link, the on-device Settings controls, and the Google Play content-restrictions PIN — plus what Guardian Angel adds on top."
+  ogType="article"
+>
+  <article class="container" style="padding: 3rem 1.25rem">
+    <h1 style="margin: 0 0 0.75rem">How to set up parental controls on Android</h1>
+    <p class="muted" style="margin: 0 0 1.5rem; font-size: 1.1rem; max-width: 44rem">
+      Android gives parents three free, built-in layers of control:
+      <a href="https://families.google.com/familylink/" rel="noopener">Google Family Link</a>
+      for remote management from your own phone, parental controls built
+      into the device's Settings app, and the Google Play
+      content-restrictions PIN. This guide walks through all three — plus
+      the extra controls on Samsung phones, and what our own
+      <a href="#guardian-angel">Guardian Angel</a> app adds on top.
+    </p>
+
+    <nav class="panel toc" aria-label="On this page" style="margin-bottom: 2.5rem">
+      <h2>On this page</h2>
+      <ol>
+        <li><a href="#method-1">Method 1: Google Family Link (the full solution)</a></li>
+        <li><a href="#method-2">Method 2: On-device controls in Android Settings</a></li>
+        <li><a href="#method-3">Method 3: Google Play content-restrictions PIN</a></li>
+        <li><a href="#manage">Manage, change, or recover your controls later</a></li>
+        <li><a href="#samsung">Samsung and other Android brands</a></li>
+        <li><a href="#guardian-angel">When built-in controls aren't enough: Guardian Angel</a></li>
+        <li><a href="#compare">Built-in vs Family Link vs Guardian Angel</a></li>
+        <li><a href="#faq">Frequently asked questions</a></li>
+      </ol>
+    </nav>
+
+    <div class="prose">
+      <h2>What parental controls on Android decide</h2>
+      <p>
+        Parental controls on Android decide what your child can install,
+        use, and see on their phone — and for how long. You can set daily
+        screen-time limits, schedule downtime for bedtime, block specific
+        apps, filter web content, and restrict store downloads by age
+        rating. The controls work at two layers: on-device controls that
+        live in the phone's own Settings and are protected by a PIN, and
+        Google Family Link, which runs on your phone and manages a
+        supervised Google Account across every device your child uses.
+      </p>
+
+      <h2>What you need before you start</h2>
+      <ul>
+        <li>
+          Your own Google Account — it becomes the family manager account
+          that supervises your child's devices.
+        </li>
+        <li>
+          The free Family Link app installed on your phone (Android or
+          iPhone) — no ads, no subscription.
+        </li>
+        <li>Your child's phone charged and connected to Wi-Fi.</li>
+        <li>
+          The parent must be 18 or older and live in the same country as
+          the child.
+        </li>
+      </ul>
+
+      <h2 id="method-1">Method 1: Set up Google Family Link (the full solution)</h2>
+      <p>
+        Google Family Link is the closest thing Android has to a complete
+        parental-control solution. It creates a supervised Google Account
+        for your child and lets you manage screen time, apps, content, and
+        location from your own phone.
+      </p>
+      <h3>1. Create a supervised Google Account for your child</h3>
+      <p>
+        Open the Family Link app and follow the prompts to add a child. If
+        your child is under 13 (or the applicable age in your country),
+        Family Link creates a supervised Google Account for them, which you
+        manage from your own phone. Setup asks for parental consent,
+        usually a credit-card authorization or a government-ID upload — the
+        card step is only an identity check: Google does not charge the
+        card, and the temporary hold clears within about 48 hours.
+      </p>
+      <h3>2. Link your child's device</h3>
+      <p>
+        Sign in with the new supervised account on the child's phone, then
+        follow the pairing prompts. Once linked, every setting you change
+        applies across all of their devices. If your child is over 13, add
+        supervision to the account they already use instead.
+      </p>
+      <h3>3. What Family Link lets you control</h3>
+      <ul>
+        <li>
+          <strong>Screen time:</strong> a daily limit, School Time
+          schedules, and Downtime that locks the device during set hours.
+          Per-app time limits can cap a game while leaving homework apps
+          unlimited (system apps are exempt from app limits).
+        </li>
+        <li>
+          <strong>Apps:</strong> block apps completely and require your
+          approval for new installs.
+        </li>
+        <li>
+          <strong>Content:</strong> filters for Chrome, Google Play,
+          YouTube, Search, and communication.
+        </li>
+        <li>
+          <strong>Location:</strong> your child's current or last-known
+          position on a map, with arrival and departure alerts for places
+          you choose and a ring-the-device option. Location accuracy can be
+          set to High, Battery saving, or Device only.
+        </li>
+      </ul>
+
+      <h2 id="method-2">Method 2: Use the on-device controls in Android Settings</h2>
+      <p>
+        If you'd rather keep everything on the child's phone, Android has
+        parental controls built into Settings. They arrived with Android 16
+        on Pixel phones and cover Android 17 devices — on other devices and
+        versions, menu names and availability can differ, so check your
+        phone's Settings.
+      </p>
+      <p>
+        To open them, go to the device's Settings app and tap
+        <strong>Parental controls</strong>. The first time, you'll set a
+        4-digit parental-controls PIN — choose one your child doesn't know.
+        New Play Store content-restriction PINs default to this same
+        device-level PIN, so one code protects both layers.
+      </p>
+      <h3>Set screen-time limits and schedule downtime</h3>
+      <p>
+        The screen-time tools work like a daily budget. Set a daily usage
+        limit and the device locks once your child reaches it — your child
+        can ask for extra time from the lock screen, which you grant with
+        the PIN. Downtime is a separate scheduled window, so you can lock
+        the phone during dinner, homework, or bedtime. A consistent
+        downtime schedule helps kids sleep and gives everyone a predictable
+        break from screens.
+      </p>
+      <h3>Approve, block, or set time limits on individual apps</h3>
+      <p>
+        The same section manages apps one at a time: set a time limit for a
+        single app, or block it completely — a blocked app disappears from
+        the app drawer. Approval for new installs lives in Family Link, so
+        pair this with Method 1 if that's what you need.
+      </p>
+      <h3>Filter inappropriate web content (Chrome and SafeSearch)</h3>
+      <p>
+        Web filtering is handled through Chrome and Google Search. Turn on
+        <strong>Block explicit sites</strong> to filter adult content, and
+        enable <strong>Filter explicit search results</strong> via
+        SafeSearch. These filters apply only inside Chrome and Google
+        Search — content opened in other apps or browsers won't be
+        filtered.
+      </p>
+
+      <h2 id="method-3">Method 3: Restrict the Google Play Store with a content-restrictions PIN</h2>
+      <p>
+        The Play Store's content restrictions stop your child from
+        downloading apps, games, movies, TV, and books that don't match
+        their age. Google Play content ratings are set by local rating
+        authorities, so the levels vary by country.
+      </p>
+      <h3>Set up the PIN</h3>
+      <p>
+        On your child's device, open the Google Play app, tap the profile
+        icon at the top right, then <strong>Settings</strong> →
+        <strong>Family</strong> → <strong>Content restrictions</strong> →
+        <strong>Go to Parental controls</strong>, and create a PIN your
+        child doesn't know. The PIN must be entered any time the
+        restrictions are changed. Avoid guessable PINs — skip birthdays,
+        repeating digits, and the same passcode your child already knows
+        from the phone's lock screen.
+      </p>
+      <h3>Filter apps, games, movies, TV, and books by age rating</h3>
+      <p>
+        Once the PIN is set, pick an age-rating level for apps and games,
+        movies, TV, and books — everything above that level is blocked from
+        download. Content restrictions apply only to the device they're set
+        on, so repeat the setup on each phone.
+      </p>
+
+      <h2 id="manage">How to manage, change, or recover your controls later</h2>
+      <p>
+        Parental controls should change as your child grows. In Family
+        Link, open the app on your phone and choose your child's account —
+        every change requires your Google Account password. For the
+        on-device controls, open Settings → Parental controls and enter the
+        current PIN to update limits; you can change the PIN from the same
+        screen. Play Store restrictions are edited the same way.
+      </p>
+      <h3>If you forget the Play Store PIN</h3>
+      <p>
+        Google documents a self-service reset: on the device, open
+        Settings → <strong>Apps &amp; notifications</strong> →
+        <strong>Google Play Store</strong> → <strong>Storage</strong> →
+        <strong>Clear data</strong> (or Clear storage). This resets your
+        content restrictions and the PIN — note your existing settings
+        first so you can set them up again — then add the restrictions
+        fresh in the Play Store app
+        (<a href="https://support.google.com/googleplay/answer/1075738" rel="noopener">Google Play Help</a>).
+      </p>
+      <h3>If your child figures out a PIN</h3>
+      <p>
+        Change it quickly: from your phone for Family Link (protected by
+        your Google Account password), or on the device for the Settings
+        controls and Play restrictions. Then review the settings regularly
+        — a known PIN is no protection at all.
+      </p>
+
+      <h2 id="samsung">Samsung and other Android brands: extra parental-control settings</h2>
+      <p>
+        Samsung Galaxy devices add their own kids mode. <strong>Samsung
+        Kids</strong> sets up a separate, curated home screen with approved
+        apps, content, and playtime limits, and supports profiles for up to
+        6 children. Turn it on from the Quick panel and set a PIN or reuse
+        the device lock — the PIN is required to exit or change its
+        settings, and after 5 incorrect attempts the device asks for your
+        Samsung Account password to reset it.
+      </p>
+      <p>
+        On most other brands, the same controls appear in Settings under
+        Parental controls; menu names differ, so check your device.
+      </p>
+
+      <h2 id="guardian-angel">When built-in controls aren't enough: Guardian Angel</h2>
+      <p>
+        For most families, the built-in controls and Family Link are
+        enough. When you want ongoing visibility into how a device is
+        actually used, our <strong>Guardian Angel</strong> app adds the
+        monitoring layer: you install and configure it on your child's
+        device yourself, and it reports back to your private account — no
+        email, no password, just an account number.
+      </p>
+      <ul>
+        <li>
+          <strong>Free tier:</strong> short-term usage statistics of every
+          app, a DNS-based ad blocker, and cleanup &amp; maintenance.
+        </li>
+        <li>
+          <strong>Guardian Angel Lite — $5 / 30 days:</strong> read
+          installed apps and read messages, covering up to 5 devices per
+          account.
+        </li>
+        <li>
+          <strong>Guardian Angel Pro — $15 / 30 days:</strong> everything
+          in Lite, plus read call logs and view photos &amp; media. Switch
+          between Lite and Pro anytime.
+        </li>
+      </ul>
+      <p>
+        Plans are top-up subscriptions: add time whenever you like — no
+        auto-renew, no stored card — and paying with crypto saves 15%. See
+        the full lineup on our <a href="/pricing">pricing page</a>, or
+        <a href="/download">download Guardian Angel</a> to start with the
+        free tier. If you need stronger web filtering or social monitoring
+        instead, dedicated third-party apps such as Qustodio add another
+        layer — most offer a free tier for a single device, with paid plans
+        for multi-device families.
+      </p>
+    </div>
+
+    <figure class="ga-figure" style="margin: 2rem 0 2.5rem">
+      <img
+        src="/img/guardian-angel-phone.webp"
+        alt="Illustration of the Guardian Angel — the green Android robot with a golden halo — standing protectively beside a smartphone showing app usage statistics"
+        width="880"
+        height="880"
+        loading="lazy"
+        decoding="async"
+      />
+      <figcaption class="faint small" style="margin-top: 0.5rem">
+        Original artwork by Root My Android.
+      </figcaption>
+    </figure>
+
+    <section id="compare" style="margin-bottom: 2.5rem">
+      <h2>Built-in vs Family Link vs Guardian Angel (comparison)</h2>
+      <div class="table-wrap">
+        <table>
+          <caption class="faint small" style="text-align: left; margin-bottom: 0.5rem">
+            Built-in Android controls vs Google Family Link vs Guardian
+            Angel, compared by cost, screen time, app control, content
+            filtering, and location.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">What it covers</th>
+              <th scope="col">Built-in controls</th>
+              <th scope="col">Google Family Link</th>
+              <th scope="col">Guardian Angel</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Cost</th>
+              <td>Free, built into Android</td>
+              <td>Free, any number of devices</td>
+              <td>Free tier; Lite $5 / 30 days, Pro $15 / 30 days</td>
+            </tr>
+            <tr>
+              <th scope="row">Screen time</th>
+              <td>Daily limit, Downtime</td>
+              <td>Daily limit, School Time, Downtime</td>
+              <td>Per-app usage statistics</td>
+            </tr>
+            <tr>
+              <th scope="row">App control</th>
+              <td>Per-app limits, block apps</td>
+              <td>Per-app limits, block, install approvals</td>
+              <td>App lock (paid tiers)</td>
+            </tr>
+            <tr>
+              <th scope="row">Content filtering</th>
+              <td>Chrome and Search (SafeSearch)</td>
+              <td>Chrome, Play, YouTube, Search, communication</td>
+              <td>DNS-based ad blocker</td>
+            </tr>
+            <tr>
+              <th scope="row">Location</th>
+              <td>Not included</td>
+              <td>Live map and arrival alerts</td>
+              <td>Device locator (paid tiers)</td>
+            </tr>
+            <tr>
+              <th scope="row">Managed from your phone</th>
+              <td>No — on the device only</td>
+              <td>Yes — across all linked devices</td>
+              <td>Yes — up to 5 devices per account</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="faq" class="faq-section">
+      <h2>Frequently asked questions</h2>
+      {faqs.map((f) => (
+        <details class="panel faq-item">
+          <summary>{f.q}</summary>
+          <p class="muted">{f.a}</p>
+        </details>
+      ))}
+    </section>
+
+    <p class="faint small" style="margin-top: 1.5rem; max-width: 44rem">
+      Android, Google Play, Google Family Link, Chrome, and YouTube are
+      trademarks of Google LLC. Samsung Kids is a trademark of Samsung
+      Electronics. All other product names mentioned (including Qustodio)
+      are the property of their respective owners and are referenced here
+      for identification and informational purposes only. Last updated:
+      November 2026.
+    </p>
+
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </article>
+
+  <style>
+    .toc h2 {
+      margin: 0 0 0.75rem;
+    }
+    .toc ol {
+      margin: 0;
+      padding-left: 1.25rem;
+      display: grid;
+      gap: 0.35rem;
+    }
+    .ga-figure img {
+      max-width: 26rem;
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 0.75rem;
+      border: 1px solid #23282f;
+    }
+    .table-wrap {
+      overflow-x: auto;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 40rem;
+      font-size: 0.92rem;
+    }
+    th,
+    td {
+      border: 1px solid #23282f;
+      padding: 0.6rem 0.75rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    thead th {
+      background: #171b21;
+    }
+    tbody th {
+      font-weight: 600;
+    }
+    /* FAQ: native <details> accordions — zero JavaScript. */
+    .faq-section {
+      margin-top: 1rem;
+    }
+    .faq-item summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .faq-item p {
+      margin-bottom: 0;
+    }
+  </style>
+</Base>
