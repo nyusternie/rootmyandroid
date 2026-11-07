@@ -1,0 +1,257 @@
+---
+// src/pages/agents.astro — SEO landing page: Root My Android for AI agents.
+// Keyword target: the "AI agent API" / "MCP server" cluster — agent-side
+// discovery + LLM/GEO visibility. Companion to /mcp (owned by the
+// rootmyandroid-api Worker): /mcp is the endpoint + machine-generated tool
+// reference; THIS page is the explainer. CONTENT page: zero JavaScript
+// (AGENTS.md rule 4). All endpoint facts verified live 2026-11-07 against
+// GET/POST https://rootmyandroid.com/mcp (initialize + tools/list) and the
+// /mcp HTML catalog; plan facts from src/pages/pricing.astro. This page
+// deliberately describes capabilities, not a frozen tool table, so the two
+// never drift apart.
+import Base from '../layouts/Base.astro'
+
+// Connect snippets, rendered verbatim in the <pre> blocks below (kept in
+// the frontmatter so literal JSON braces never collide with the template).
+const mcpConfig = `{
+  "mcpServers": {
+    "rootmyandroid": {
+      "type": "http",
+      "url": "https://rootmyandroid.com/mcp"
+    }
+  }
+}`
+const rpcInit = `curl -sS https://rootmyandroid.com/mcp \\
+  -H 'content-type: application/json' \\
+  -H 'accept: application/json, text/event-stream' \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{
+        "protocolVersion":"2025-06-18","capabilities":{},
+        "clientInfo":{"name":"my-agent","version":"1.0.0"}}}'`
+
+// FAQ entries render visibly in the <details> list below AND feed the FAQPage
+// JSON-LD — the two must stay text-identical (structured data mirrors copy,
+// same pattern as src/pages/index.astro).
+const faqs = [
+  {
+    q: 'Does Root My Android have an MCP server?',
+    a: 'Yes. The server speaks the Model Context Protocol — JSON-RPC 2.0 over the Streamable HTTP transport — at https://rootmyandroid.com/mcp. It is stateless, requires no API key, and its tools cover accounts, subscription plans, card and crypto checkout, vouchers, payment status, and human support.',
+  },
+  {
+    q: 'Can an AI agent create an account without a human?',
+    a: 'Yes. The create_account tool (or POST /v1/accounts on the REST API) creates a Mullvad-style 16-digit account with no email, no password, and no personal data. The account number itself is the credential, so an agent can onboard a user end-to-end and hand them just the number.',
+  },
+  {
+    q: 'Can an agent take payments on behalf of a user?',
+    a: 'Yes, on two rails. create_card_checkout returns a hosted invoice URL to hand to the user at the full fiat price; create_crypto_checkout returns a deposit address, amount, and currency with a 15% discount on listed prices. get_payment_status then reconciles the payment authoritatively, even if the webhook never arrives.',
+  },
+  {
+    q: 'Do I need an API key or registration to call the API?',
+    a: 'No. Both the MCP server and the REST API at rootmyandroid.com/v1 are public: no API key, no signup, no OAuth. Where an operation acts on an account, the account number is the credential.',
+  },
+  {
+    q: 'Where is the full MCP tool reference?',
+    a: 'At https://rootmyandroid.com/mcp. A GET request returns a human-readable page whose tools table is generated from the same catalog as the MCP tools/list method, so it always matches what the server actually exposes.',
+  },
+]
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+}
+---
+
+<Base
+  title="For AI Agents: MCP Server & Agent API"
+  description="Root My Android for AI agents: a public MCP server (JSON-RPC 2.0 over HTTP) and REST API for no-PII accounts, Guardian Angel subscriptions, card & crypto checkout, vouchers, and support."
+  ogType="article"
+>
+  <article class="container" style="padding: 3rem 1.25rem">
+    <h1 style="margin: 0 0 0.75rem">Root My Android for AI agents</h1>
+    <p class="muted" style="margin: 0 0 1.5rem; font-size: 1.1rem; max-width: 44rem">
+      Root My Android is built to be driven by software, not just visited
+      by people. A public REST API and a
+      <a href="https://modelcontextprotocol.io" rel="noopener">Model Context Protocol (MCP)</a>
+      server expose every customer-facing service — Mullvad-style accounts,
+      Guardian Angel subscriptions, card &amp; crypto checkout, vouchers,
+      payment status, and human support — to any agent. No API key, no
+      registration, no personal data required anywhere.
+    </p>
+
+    <nav class="panel toc" aria-label="On this page" style="margin-bottom: 2.5rem">
+      <h2>On this page</h2>
+      <ol>
+        <li><a href="#why">Why Root My Android is agent-friendly</a></li>
+        <li><a href="#connect">Connect your agent (MCP server)</a></li>
+        <li><a href="#capabilities">What agents can do</a></li>
+        <li><a href="#rest-api">The REST API behind it</a></li>
+        <li><a href="#faq">Frequently asked questions</a></li>
+      </ol>
+    </nav>
+
+    <div class="prose">
+      <h2 id="why">Why Root My Android is agent-friendly</h2>
+      <ul>
+        <li>
+          <strong>Accounts without identity.</strong> Accounts are
+          Mullvad-style 16-digit numbers — there is no email, password,
+          phone, or KYC step anywhere in the flow. Those identity gates are
+          exactly where agents usually get stuck; here they do not exist.
+          An agent can create an account for its user and act on it
+          indefinitely with just the number.
+        </li>
+        <li>
+          <strong>Public by design.</strong> No API keys, no OAuth apps, no
+          approval waitlists for the API itself — the exposed services are
+          public, and an account number is the only credential where one is
+          needed.
+        </li>
+        <li>
+          <strong>MCP-native.</strong> One well-known URL speaks the Model
+          Context Protocol; any MCP-capable client (Claude, Cursor, or a
+          custom agent) connects by adding the server to its config.
+        </li>
+        <li>
+          <strong>Money rails agents can actually use.</strong> The card
+          rail returns a hosted invoice URL to hand to the user, and the
+          crypto rail settles without a bank account — 15% off listed
+          prices, enforced server-side.
+        </li>
+        <li>
+          <strong>Self-healing payments.</strong> Payment status is
+          reconciled authoritatively on the server, so a missed webhook
+          never strands a user's credit.
+        </li>
+      </ul>
+
+      <h2 id="connect">Connect your agent (MCP server)</h2>
+      <p>
+        The endpoint is <code>POST https://rootmyandroid.com/mcp</code>
+        (a plain GET returns the human-readable catalog). Add the server to
+        any MCP-capable client:
+      </p>
+      <pre><code>{mcpConfig}</code></pre>
+      <p>
+        Or drive it by hand — every message is one POST with a JSON-RPC 2.0
+        body, and responses are single <code>application/json</code>
+        documents: no SSE streams, no session headers, no batching.
+      </p>
+      <pre><code>{rpcInit}</code></pre>
+      <p>
+        Protocol facts: the server is <code>rootmyandroid-mcp</code>
+        v0.1.0; protocol versions 2025-06-18, 2025-03-26, and 2024-11-05
+        are negotiated on <code>initialize</code>; the transport is
+        stateless — no <code>Mcp-Session-Id</code> is issued; capabilities
+        are tools only (no resources, no prompts). The
+        <a href="https://rootmyandroid.com/mcp" rel="noopener">/mcp page</a>
+        itself is the always-current reference — its tools table is
+        generated from the same catalog as <code>tools/list</code>.
+      </p>
+
+      <h2 id="capabilities">What agents can do</h2>
+      <p>
+        14 tools at the time of writing (November 2026). This is a
+        capability map — the exact, machine-generated reference lives at
+        <a href="https://rootmyandroid.com/mcp" rel="noopener">/mcp</a>.
+      </p>
+      <ul>
+        <li>
+          <strong>Accounts &amp; entitlements:</strong>
+          <code>create_account</code>, <code>get_account</code>,
+          <code>get_entitlements</code>, and <code>verify_feature</code> —
+          the gate every tier feature checks: is feature X unlocked for
+          this account right now?
+        </li>
+        <li>
+          <strong>Plans &amp; checkout:</strong>
+          <code>list_subscription_plans</code> (flat prepaid Guardian Angel
+          tiers with full-fiat and 15%-discounted crypto prices),
+          <code>create_card_checkout</code> (hosted invoice URL),
+          <code>create_crypto_checkout</code> (whitelabel deposit address,
+          amount, and currency), and <code>get_payment_status</code>.
+        </li>
+        <li>
+          <strong>Vouchers:</strong> <code>redeem_voucher</code> — a
+          single-use code that credits its days of Guardian Angel PRO to an
+          account.
+        </li>
+        <li>
+          <strong>Human support:</strong>
+          <code>open_support_conversation</code>
+          (<code>realtime</code> = anonymous live chat;
+          <code>message</code> = asynchronous, requires an email),
+          <code>send_support_message</code>, and
+          <code>poll_support_messages</code>. Conversations opened via MCP
+          share one 5/day quota, because all MCP calls originate from the
+          same Worker.
+        </li>
+        <li>
+          <strong>Diagnostics &amp; discovery:</strong>
+          <code>get_network_identity</code> (your egress IP, user agent,
+          ASN, TLS version, and geolocation echoed from Cloudflare edge
+          metadata — nothing is stored) and <code>get_api_index</code>
+          (every public REST endpoint).
+        </li>
+      </ul>
+
+      <h2 id="rest-api">The REST API behind it</h2>
+      <p>
+        Every MCP tool is a thin proxy of the public REST API at
+        <code>rootmyandroid.com/v1</code>, which owns all validation and
+        business logic. Device-facing endpoints (encrypted backups,
+        Guardian Angel pairing, audit snapshots) remain REST-only for now —
+        they need an on-device context an agent cannot fabricate.
+      </p>
+      <p>
+        What agents sell or manage: Guardian Angel monitoring for up to 5
+        devices per account — Lite at $5 / 30 days, Pro at $15 / 30 days;
+        subscribers can switch between Lite and Pro anytime, and crypto
+        payments save 15%. Full details on our
+        <a href="/pricing">pricing page</a>.
+      </p>
+    </div>
+
+    <section id="faq" class="faq-section" style="margin-top: 2.5rem">
+      <h2>Frequently asked questions</h2>
+      {faqs.map((f) => (
+        <details class="panel faq-item">
+          <summary>{f.q}</summary>
+          <p class="muted">{f.a}</p>
+        </details>
+      ))}
+    </section>
+
+    <p class="faint small" style="margin-top: 1.5rem; max-width: 44rem">
+      Android is a trademark of Google LLC. All other product names
+      mentioned (including Claude and Cursor) are the property of their
+      respective owners and are referenced here for identification and
+      informational purposes only. Last updated: November 2026.
+    </p>
+
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </article>
+
+  <style>
+    .toc h2 {
+      margin: 0 0 0.75rem;
+    }
+    .toc ol {
+      margin: 0;
+      padding-left: 1.25rem;
+      display: grid;
+      gap: 0.35rem;
+    }
+    /* FAQ: native <details> accordions — zero JavaScript. */
+    .faq-item summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .faq-item p {
+      margin-bottom: 0;
+    }
+  </style>
+</Base>

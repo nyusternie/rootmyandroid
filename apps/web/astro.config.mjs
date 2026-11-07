@@ -11,7 +11,10 @@ export default defineConfig({
   site: 'https://rootmyandroid.com',
   output: 'static',
   // Auto-generated sitemap-index.xml (+ per-page sitemaps) at build time.
-  integrations: [sitemap()],
+  // customPages: /mcp is served by the API Worker (rootmyandroid-api repo),
+  // not built from this repo — the auto-sitemap never sees it, so it is
+  // listed explicitly.
+  integrations: [sitemap({ customPages: ['https://rootmyandroid.com/mcp'] })],
   vite: {
     plugins: [tailwindcss()],
   },
