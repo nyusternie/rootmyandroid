@@ -1,6 +1,7 @@
 ---
 name: GrapheneOS
 description: Hardened, security- and privacy-focused ROM for Google Pixel devices. Substantially raises the bar on exploit mitigations and sandboxing.
+updated: 2026-10-17
 vendor: GrapheneOS Foundation
 homepage: https://grapheneos.org/
 source: https://grapheneos.org/install/

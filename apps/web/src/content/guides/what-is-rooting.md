@@ -1,6 +1,7 @@
 ---
 title: What rooting actually does (and doesn't)
 description: Root access explained plainly — what you gain, what you risk, and what has changed in modern Android.
+published: 2026-10-16
 updated: 2026-10-16
 order: 2
 ---

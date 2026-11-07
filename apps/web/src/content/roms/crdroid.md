@@ -1,6 +1,7 @@
 ---
 name: crDroid
 description: Feature-rich, customizable LineageOS-based ROM. Adds extensive UI and performance tuning options for supported devices.
+updated: 2026-10-17
 vendor: crDroid Team
 homepage: https://crdroid.net/
 source: https://crdroid.net/downloads

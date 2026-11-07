@@ -1,4 +1,30 @@
-<!-- apps/web/public/llms.txt — LLM-readable site index (llms.txt convention, llmstxt.org). Keep in sync with the sitemap and visible page copy. -->
+// src/lib/llms-txt.ts — builds the /llms.txt site index (llms.txt
+// convention, llmstxt.org). Pure and unit-tested
+// (src/lib/ai-surfaces.test.js); the endpoint src/pages/llms.txt.ts feeds it
+// the non-draft, order-sorted guides and ROMs from the content collections.
+// Static sections mirror the sitemap and visible page copy — when a page is
+// added/removed, update the matching section here (the unit test fails on
+// links that do not resolve to a real route).
+export interface LlmsGuide {
+  id: string
+  title: string
+  description: string
+}
+
+export interface LlmsRom {
+  id: string
+  name: string
+  description: string
+}
+
+export function buildLlmsTxt(guides: LlmsGuide[], roms: LlmsRom[]): string {
+  const guideLines = guides
+    .map((g) => `- [${g.title}](https://rootmyandroid.com/guides/${g.id}.md): ${g.description}`)
+    .join('\n')
+  const romLines = roms
+    .map((r) => `- [${r.name}](https://rootmyandroid.com/roms/${r.id}.md): ${r.description}`)
+    .join('\n')
+  return `<!-- /llms.txt — LLM-readable site index (llms.txt convention, llmstxt.org). GENERATED at build time by src/pages/llms.txt.ts (src/lib/llms-txt.ts + the content collections) — edit the sources, not this output. Keep the static sections in sync with the sitemap and visible page copy. -->
 
 # Root My Android
 
@@ -23,15 +49,15 @@ The site is fully static. All dynamic/backend functionality lives in a public RE
 
 ## Guides
 
-Raw-Markdown alternates: append `.md` to any guide URL (also linked via `<link rel="alternate" type="text/markdown">` on each guide page).
+Raw-Markdown alternates: append \`.md\` to any guide URL (also linked via \`<link rel="alternate" type="text/markdown">\` on each guide page).
 
 - [Guides index](https://rootmyandroid.com/guides): step-by-step Android rooting, bootloader, and custom-ROM guides
-- [What rooting actually does (and doesn't)](https://rootmyandroid.com/guides/what-is-rooting.md): root access explained plainly — what you gain, what you risk, and what changed in modern Android
-- [Check your bootloader status](https://rootmyandroid.com/guides/check-bootloader-status.md): find out whether the bootloader is locked or unlockable before attempting to root
+${guideLines}
 
 ## Custom ROM catalog
 
 - [Custom ROMs](https://rootmyandroid.com/roms): curated catalog — crDroid, /e/OS, GrapheneOS, LineageOS — with official sources and device support
+${romLines}
 
 ## Third-party profiles
 
@@ -51,3 +77,5 @@ Raw-Markdown alternates: append `.md` to any guide URL (also linked via `<link r
 - [Terms of Service](https://rootmyandroid.com/terms): accounts, subscriptions, payments, acceptable use, and the rooting & unlocking risk disclosure
 - [Privacy Policy](https://rootmyandroid.com/privacy): no email, no password, no personal identifiers — exactly what is stored and why
 - [Refund Policy](https://rootmyandroid.com/refunds): cryptocurrency payments are irreversible; subscription top-ups are final with narrow exceptions
+`
+}

@@ -7,6 +7,10 @@ const guides = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
+    // First-publication date (ISO yyyy-mm-dd, sourced from the guide's
+    // first git commit). Rendered visibly on the guide page and emitted as
+    // datePublished in its TechArticle JSON-LD.
+    published: z.coerce.date().optional(),
     // Last content-change date (ISO yyyy-mm-dd). Rendered visibly on the
     // guide page and emitted as dateModified in its TechArticle JSON-LD
     // (structured data mirrors copy) — a freshness signal for search and
@@ -23,6 +27,10 @@ const roms = defineCollection({
   schema: z.object({
     name: z.string(),
     description: z.string(),
+    // Last content-change date (ISO yyyy-mm-dd). Rendered on the ROM card
+    // and in its /roms/<id>.md Markdown alternate. EDITORS: bump this
+    // whenever the content changes.
+    updated: z.coerce.date().optional(),
     // Maintainer / project behind the ROM.
     vendor: z.string(),
     // Canonical project page.

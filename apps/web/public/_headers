@@ -1,6 +1,10 @@
 # apps/web/public/_headers — Cloudflare Pages headers (copied to dist/).
-# Serve the raw-Markdown guide alternates (src/pages/guides/[...id].md.ts)
-# with the Markdown media type for LLM/agent consumers — do not rely on
-# the hosting layer's extension map to get .md right.
+# Serve the raw-Markdown alternates (src/pages/guides/[...id].md.ts and
+# src/pages/roms/[...id].md.ts) with the Markdown media type for LLM/agent
+# consumers — do not rely on the hosting layer's extension map to get .md
+# right.
 /guides/*.md
+  content-type: text/markdown; charset=utf-8
+
+/roms/*.md
   content-type: text/markdown; charset=utf-8

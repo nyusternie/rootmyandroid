@@ -1,6 +1,7 @@
 ---
 name: LineageOS
 description: The most widely-supported custom ROM. A clean, near-stock Android experience with privacy and longevity focus, across a large device list.
+updated: 2026-10-17
 vendor: LineageOS Project
 homepage: https://lineageos.org/
 source: https://wiki.lineageos.org/devices/

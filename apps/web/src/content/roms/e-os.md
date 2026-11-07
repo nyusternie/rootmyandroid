@@ -1,6 +1,7 @@
 ---
 name: /e/OS
 description: De-Googled Android with its own cloud services. Privacy-focused and beginner-friendly, with broad device support.
+updated: 2026-10-17
 vendor: e Foundation
 homepage: https://e.foundation/e-os/
 source: https://doc.e.foundation/devices
