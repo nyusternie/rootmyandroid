@@ -1,4 +1,4 @@
-package com.rootmyandroid.guardianangel
+package com.rootmyandroid.guardian_angel
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

@@ -372,7 +372,7 @@ listing to rename). What shipped in the rename pass:
   had shown a nonexistent `com.rootmyandroid.rooted`.
 - App identity renamed in lockstep: `app.json` name/displayName,
   `strings.xml` app_name, `MainActivity.getMainComponentName()`. Package
-  ids (`com.rootmyandroid`, `com.rootmyandroid.guardianangel`) are
+  ids (`com.rootmyandroid`, `com.rootmyandroid.guardian_angel`) are
   UNCHANGED.
 - Shared theme export `rootedColors`/`RootedColors` →
   `rootzColors`/`RootzColors` (values untouched); both apps import it

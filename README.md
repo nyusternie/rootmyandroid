@@ -25,7 +25,7 @@ password, just an account number.
 | **Root My Android** (Android) | [`apps/android`](apps/android) | Device scan, paired Guardian Angel devices, encrypted backups, and tools (React Native 0.88, `com.rootmyandroid`). Backups are encrypted client-side with a user-held key — the API only ever sees ciphertext. |
 | **Root My Android** (iOS) | [`apps/ios`](apps/ios) | The iOS monitoring edition (React Native 0.88, `com.rootmyandroid`). |
 | **Rootz** | [`apps/rootz`](apps/rootz) | Rust-based daemon that runs on a rooted Android device; the Rootz Pro professional tools (Terminal Editor, Log Analysis) attach here. Scaffold — the daemon team owns v1. |
-| **Guardian Angel** (Android) | [`apps/guardian`](apps/guardian) | Parental-control companion that runs in the background on the managed device and syncs to a Root My Android account (React Native 0.88, `com.rootmyandroid.guardianangel`). Uninstall protection via the device-administrator API. |
+| **Guardian Angel** (Android) | [`apps/guardian`](apps/guardian) | Parental-control companion that runs in the background on the managed device and syncs to a Root My Android account (React Native 0.88, `com.rootmyandroid.guardian_angel`). Uninstall protection via the device-administrator API. |
 | **Shared client** | [`packages/shared`](packages/shared) | Theme + typed `/v1` API client shared by the mobile apps (TypeScript source, no build step). |
 
 ## How it works
@@ -65,7 +65,7 @@ third-party tracking.
 │   │                 # apps/web/public/og-image.png)
 │   ├── android/      # Root My Android (Android edition): RN 0.88 app
 │   ├── ios/          # RootMyAndroid (iOS monitoring edition): RN 0.88 app
-│   ├── guardian/     # React Native 0.88 app (com.rootmyandroid.guardianangel)
+│   ├── guardian/     # React Native 0.88 app (com.rootmyandroid.guardian_angel)
 │   └── rootz/        # Rootz daemon: Rust, rooted Android devices (scaffold)
 ├── packages/
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client

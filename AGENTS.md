@@ -30,7 +30,7 @@ Top-ups are prepaid (Mullvad-style): add time anytime, no auto-renewal.
 │   ├── ios/          # RootMyAndroid (iOS monitoring edition): RN 0.88 app
 │   │                 # (bundle id com.rootmyandroid; android/ is a
 │   │                 #  preview-only shell, com.rootmyandroid.preview), jest
-│   ├── guardian/     # React Native 0.88 app (com.rootmyandroid.guardianangel), jest
+│   ├── guardian/     # React Native 0.88 app (com.rootmyandroid.guardian_angel), jest
 │   └── rootz/        # Rootz daemon: Rust, rooted Android devices (scaffold; daemon team owns v1)
 ├── packages/
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client
@@ -106,7 +106,7 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
 6. **Never wipe third-party app data.** Do NOT run `pm clear`, `pm uninstall`,
    or any other data-destroying command on any package other than our own two
    (`com.rootmyandroid`, `com.rootmyandroid.preview`,
-   `com.rootmyandroid.guardianangel`). Even for our own
+   `com.rootmyandroid.guardian_angel`). Even for our own
    packages — and ALWAYS for anything system-level such as the launcher
    (`com.google.android.apps.nexuslauncher`) — a wipe requires a separate,
    explicit, same-turn user confirmation whose prompt names the exact

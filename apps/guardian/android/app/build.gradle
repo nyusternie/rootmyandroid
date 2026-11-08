@@ -78,9 +78,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.rootmyandroid.guardianangel"
+    namespace "com.rootmyandroid.guardian_angel"
     defaultConfig {
-        applicationId "com.rootmyandroid.guardianangel"
+        applicationId "com.rootmyandroid.guardian_angel"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
