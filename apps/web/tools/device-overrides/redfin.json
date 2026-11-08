@@ -1,0 +1,4 @@
+{
+  "factoryimages": "https://developers.google.com/android/images#redfin",
+  "notes": "Unlocking the bootloader erases ALL user data (anti-theft) — complete a fresh backup first. Verified on UP1A.231105.001.B2 (2026-11-07): 'fastboot flashing unlock' returns host-side OKAY immediately while the on-device volume-key prompt gates the actual wipe. Google's published anti-rollback warnings cover Pixel 6/8 (May 2025) and Pixel 10 (May 2026) — Pixel 5 is not listed, but flash only factory images matching or newer than the installed build."
+}
