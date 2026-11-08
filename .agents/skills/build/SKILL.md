@@ -70,7 +70,7 @@ packages (repo AGENTS.md rule 6).
 Our package ids: `com.rootmyandroid` (Root My Android, Android), `com.rootmyandroid`
 (RootMyAndroid, iOS bundle id), `com.rootmyandroid.preview` (Android preview
 of the iOS edition — distinct id so it never clobbers Root My Android on-device),
-`com.rootmyandroid.guardian`.
+`com.rootmyandroid.guardian_angel`.
 
 ## 4. Pull before you push
 
