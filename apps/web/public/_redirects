@@ -17,6 +17,13 @@
 /rooted  /rootz  301
 /rooted/  /rootz  301
 
+# Device-catalog INDEX renamed plural (owner ruling 2026-11-08): the
+# all-devices list lives at /devices. Individual device pages STAY at
+# /device/<slug> — do NOT add a /device/* splat rule, it would redirect
+# every device page.
+/device  /devices  301
+/device/  /devices/  301
+
 # Profile-page case aliases (owner ruling 2026-11-05): the brand-cased path is
 # CANONICAL (real page file, sitemap, canonical link, internal links); lowercase
 # and first-letter-only variants 301 to it. Static Pages hosting is

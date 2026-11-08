@@ -86,7 +86,7 @@ const breadcrumbSchema = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Devices', item: new URL('/device/', Astro.site).href },
+    { '@type': 'ListItem', position: 1, name: 'Devices', item: new URL('/devices/', Astro.site).href },
     { '@type': 'ListItem', position: 2, name: d.title, item: canonical },
   ],
 }
@@ -111,7 +111,7 @@ const related = [
   <link slot="head" rel="alternate" type="text/markdown" href={markdownUrl} />
 
   <article class="container" style="padding: 3rem 1.25rem">
-    <p><a href="/device">← All devices</a></p>
+    <p><a href="/devices">← All devices</a></p>
 
     <h1 style="margin: 0 0 0.75rem">{title}</h1>
     <p class="muted" style="margin: 0 0 0.5rem; font-size: 1.1rem; max-width: 44rem">
@@ -119,6 +119,20 @@ const related = [
       <strong>{statusLabel}</strong>
       {d.maintainer.length > 0 && <> · maintained by {d.maintainer.join(', ')}</>}
     </p>
+
+    {/* Visible page art: the same resolved card used for og:image — a
+        per-device render when one exists, else the catalog card. The page
+        previously carried the art ONLY in the (invisible) og:image meta,
+        which read as "no graphics at all" on the page (owner 2026-11-08). */}
+    <img
+      src={ogImage}
+      alt={ogImageAlt}
+      width="1200"
+      height="630"
+      loading="eager"
+      decoding="async"
+      style="width: 100%; height: auto; border-radius: 12px; display: block; margin: 0 0 1.25rem"
+    />
     <p class="faint small" style="margin: 0 0 1.75rem">
       Listed <time datetime={updatedIso}>{updatedIso}</time>
       {' · '}

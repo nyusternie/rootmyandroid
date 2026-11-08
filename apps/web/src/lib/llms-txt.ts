@@ -61,7 +61,7 @@ ${romLines}
 
 ## Device catalog
 
-- [Device catalog](https://rootmyandroid.com/device/): ${deviceCount} per-device pages — codenames, custom-recovery support status, maintainers, download mirrors, and factory-image links for Google Pixels. Raw-Markdown alternates: append \`.md\` to any device URL.
+- [Device catalog](https://rootmyandroid.com/devices/): ${deviceCount} per-device pages — codenames, custom-recovery support status, maintainers, download mirrors, and factory-image links for Google Pixels. Raw-Markdown alternates: append \`.md\` to any device URL.
 
 ## Third-party profiles
 

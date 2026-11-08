@@ -100,7 +100,7 @@ describe('generated /llms.txt', () => {
   it('indexes the device catalog with the live collection count', () => {
     expect(devices.length).toBeGreaterThan(0)
     expect(txt).toContain(
-      `- [Device catalog](https://rootmyandroid.com/device/): ${devices.length} per-device pages`,
+      `- [Device catalog](https://rootmyandroid.com/devices/): ${devices.length} per-device pages`,
     )
   })
 
