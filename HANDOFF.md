@@ -428,6 +428,29 @@ the structure:
   `colonel-su-staff.webp`, `guru-terminal.webp` →
   `colonel-su-terminal.webp`).
 
+**ADDENDUM (owner rulings 2026-11-08) — Rootz brand moves to the no-wipe
+APK; daemon renamed `rootzd`.** Rationale: bootloader unlock WIPES the
+device (unavoidable on production hardware — redfin run proved it), and
+the larger market wants privileged capabilities WITHOUT a wipe. So:
+- **Rootz (APK, planned)** — a Shizuku-class privileged-service manager
+  (porter-style: own package/permissions identity, license-clean vs
+  upstream's Apache-§6 clause; fork base candidate: d4rken-org/porter;
+  import list: SU Bridge, ADB ZIP-modules runner, grant-migration UX).
+  Native contract namespace to be OURS (e.g.
+  `com.rootmyandroid.rootz.intent.action.REQUEST_BINDER`,
+  `com.rootmyandroid.rootz.permission.API_*`); legacy-ecosystem interop
+  (`rikka.shizuku.*` / `moe.shizuku.*` strings) lives ONLY in an optional,
+  clearly-labeled compat companion — never in the flagship.
+- **rootzd (daemon, live)** — `apps/rootz` → `apps/rootzd`;
+  `scripts/build-rootzd-remote.sh`; env `ROOTZD_*`; v0.1 verified on
+  redfin: shell+root tiers and service.d reboot persistence (session log
+  RS-40..RS-42 in `apps/rootzd/docs/`).
+- **Rootz PRO spans BOTH products** (the $15/365 professional-tools plan
+  is not daemon-exclusive).
+- Web: `/rooted` stays a one-way 301 to `/rootz` (never was a page;
+  Cloudflare `_redirects` pair only); new `/rootzd` page added for the
+  daemon. `/rootz` page copy pass pending the APK product definition.
+
 ---
 
 *Owner context: rebrand direction approved 2026-11-03 with a HARD cutover

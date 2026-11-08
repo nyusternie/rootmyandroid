@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/build-rootz-remote.sh — build apps/rootz on the build runner.
+# scripts/build-rootzd-remote.sh — build apps/rootzd on the build runner.
 #
 # Builds NEVER run on the local host (owner rule). This script rsyncs the
 # crate to the runner, builds there, and pulls the artifacts back.
@@ -22,14 +22,14 @@ here="$(cd "$(dirname "$0")/.." && pwd)"
 target="${1:-aarch64-linux-android}"
 
 rsync -a --delete --exclude target --exclude dist \
-  "$here/apps/rootz/" "$RMA_BUILD_USER@$RMA_BUILD_HOST:$RMA_BUILD_PATH/rootz/"
+  "$here/apps/rootzd/" "$RMA_BUILD_USER@$RMA_BUILD_HOST:$RMA_BUILD_PATH/rootzd/"
 
 ssh "$RMA_BUILD_USER@$RMA_BUILD_HOST" \
-  "cd '$RMA_BUILD_PATH/rootz' && cargo build --release --target '$target'"
+  "cd '$RMA_BUILD_PATH/rootzd' && cargo build --release --target '$target'"
 
-mkdir -p "$here/apps/rootz/dist"
+mkdir -p "$here/apps/rootzd/dist"
 rsync -a \
-  "$RMA_BUILD_USER@$RMA_BUILD_HOST:$RMA_BUILD_PATH/rootz/target/$target/release/rootz" \
-  "$here/apps/rootz/dist/rootz-$target"
+  "$RMA_BUILD_USER@$RMA_BUILD_HOST:$RMA_BUILD_PATH/rootzd/target/$target/release/rootzd" \
+  "$here/apps/rootzd/dist/rootzd-$target"
 
-echo "built: apps/rootz/dist/rootz-$target"
+echo "built: apps/rootzd/dist/rootzd-$target"
