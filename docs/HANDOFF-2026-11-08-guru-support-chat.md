@@ -47,7 +47,7 @@ names, Guru Balance rules)
 ## 3. UX flow to build
 
 1. Visitor opens the support chat (`realtime` mode) and writes a message.
-2. **Sage answers immediately and automatically** (assumption A1, §8).
+2. **Sage answers immediately and automatically** (owner ruling, §8).
    Sage turns render as assistant bubbles with the Sage name/avatar per brand
    canon and a small `Sage · free` label. First Sage turn includes the
    one-line transparency note: *"Sage is an AI Guru — it explains and
@@ -103,9 +103,14 @@ schema is EXTENDED, not broken:
   - `402 { error: 'insufficient_guru_balance', requiredUsd, balanceUsd }`
   - `404 { error: 'account_not_found' }` (Elder path: the ledger existence
     check happens server-side at billing time — see Q3)
-  - `429 { error: 'sage_turn_cap', resetAt }` — Sage free-turn cap reached
-    (policy value pending Q2; render the reset time and offer Elder/human)
+  - `429 { error: 'sage_turn_cap', scope: 'conversation' | 'visitor' | 'global', resetAt }`
+    — a Sage abuse-protection cap was hit (policy in §6.1; render the
+    reset time and offer The Elder / a human)
+  - `409 { error: 'guru_turn_pending' }` — a Guru turn is already running
+    in this conversation (one at a time; wait for the pending bubble)
   - `409 { error: 'conversation_closed' }`
+  - `413 { error: 'message_too_large', maxTokens: 12000 }` — input cap
+    (§6.1); ask the visitor to trim/split the log
 - No new endpoints are planned for the receipt: it rides on the Guru
   message's `guru.chargeUsd`.
 
@@ -144,6 +149,26 @@ ceil($0.0072 × 1.15) ≈ **$0.0083**; large-logcat ≈ **$0.0425**. Quote the
 max-charge line from the backend's per-request quote, never from
 client-side math.
 
+### 6.1 Sage abuse-protection policy (owner-delegated 2026-11-08; backend config values — adjustable without frontend changes)
+
+Free + anonymous + AI = an abuse magnet, and conversations are trivially
+mintable (fresh localStorage token), so per-conversation caps alone are
+insufficient. Three layers, riding the rate-limit machinery already in
+`src/lib/support.js` (per-conversation token model + daily-rotating salted
+visitor hash, IP+UA+UTC date+ANALYTICS_SALT):
+
+| Layer | Cap | Rationale (measured costs, §6) |
+|---|---|---|
+| Per conversation | **20 Sage turns**, one pending Guru turn at a time | Real cases resolve in 3–6 turns; 20 is generous. Then offer Elder/human. |
+| Per message | **12,000 input tokens** (`413` above) | Matches the largest profiled payload (11k logcat). Kills token-flooding; bounds worst-case Sage turn at ~$0.002. |
+| Per visitor | **60 Sage turns / UTC day** (`429 scope:'visitor'`) | 3 full conversations' worth — no legitimate user hits it. Full burn ≈ $0.016 typical / $0.12 worst-case per visitor-day. |
+| Global circuit breaker | **$1.00 Sage spend / UTC day** (`429 scope:'global'`) | The real money guard: ~3,700 typical free answers/day covered; a scripted flood stops at $1. Graceful site-wide pause message + Elder/human paths stay up. Raise once the provider account is topped up for launch traffic. |
+| Global concurrency | **5 simultaneous Sage jobs**, queue beyond | Sage's 107 s worst-case latency makes parallelism the real DoS vector, not volume. |
+
+The Elder needs no free-abuse policy (paid turns are self-limiting: quote
+first, no overdraft), but shares the 12k input cap so the max charge stays
+bounded and quotable (~$0.0425 × 1.15 ≈ $0.049).
+
 ## 7. Delivery sequence (frontend)
 
 - SC-1: `author`-aware bubbles + Sage/The Elder identity (brand canon) +
@@ -157,21 +182,16 @@ client-side math.
 - SC-5: logcat payload-preview + consent step.
 - SC-6: acceptance pass against agent-UX handoff §14 where applicable.
 
-## 8. Assumptions and open questions (owner to confirm)
+## 8. Owner rulings (confirmed 2026-11-08 — no open items)
 
-- **A1 (assumed):** Sage auto-answers every visitor message in realtime
-  mode — "immediate assistant" read literally. If Sage should instead wait
-  for an explicit "ask Sage" tap, only the trigger changes, not the
-  contract.
-- **Q2 (policy value needed):** the Sage free-turn cap
-  (`429 sage_turn_cap`) — turns per conversation/day/visitor. Cost basis
-  for the decision: ~$0.0003 per typical exchange.
-- **Q3 (billing identity):** Elder debits against the visitor-supplied
-  16-digit account number treated as the secret bearer credential
-  (Mullvad model: knowing the number IS the authority). The existing
-  support field is format-validated only and does NOT check existence —
-  the Elder path will check the ledger server-side and return
-  `404 account_not_found` rather than debit a typo. Confirm this posture.
-- **Q4:** does a Guru turn ever auto-close or re-open a conversation, or is
-  `open|closed` strictly staff-driven as today? Assumed: strictly
-  staff-driven.
+1. **Sage auto-answers every visitor message in realtime mode.**
+   "Immediate assistant" is literal; no opt-in tap.
+2. **Sage abuse protections per §6.1** (design delegated to backend/agent
+   best judgement; values are backend config and tunable post-launch).
+3. **The Elder debits against the visitor-supplied 16-digit account number
+   treated as the secret bearer credential** (Mullvad model: knowing the
+   number IS the authority). The Elder path checks the ledger server-side
+   and returns `404 account_not_found` on a typo — never debits a
+   non-existent account.
+4. **Conversation status (`open|closed`) is strictly staff-driven.** Guru
+   turns never open, close, or re-open a conversation.
