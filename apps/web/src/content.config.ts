@@ -52,4 +52,35 @@ const roms = defineCollection({
   }),
 })
 
-export const collections = { guides, roms }
+const devices = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/devices' }),
+  schema: z.object({
+    // Display name of the device, e.g. "Google Pixel XL".
+    title: z.string(),
+    // Brand / manufacturer, e.g. "Google". Imported verbatim — casing
+    // variants ('Motorola' vs 'motorola') are merged for DISPLAY on the
+    // /device index, never in the source file.
+    oem: z.string(),
+    // Device codename, e.g. "marlin". May be a multi-codename string for
+    // unified builds ('cheeseburger/dumpling') — rendered verbatim.
+    codename: z.string(),
+    // Official TWRP support status. The generated catalog (see
+    // tools/import-twrp-devices.mjs) contains exactly 'Current' only;
+    // anything else must render honestly (never overstate support).
+    supportstatus: z.string(),
+    // Listed TWRP maintainer(s); omitted when none is listed.
+    maintainer: z.array(z.string()).optional().default([]),
+    // Official device tree repository; omitted when none is listed.
+    devicetree: z.string().url().optional(),
+    // Single folder on the official download mirrors (dl.twrp.me/<folder>);
+    // omitted when no single canonical folder exists for the device (e.g.
+    // multi-SKU variants) — never invent one.
+    downloadfolder: z.string().optional(),
+    // Date the device was (re-)imported into this catalog (ISO yyyy-mm-dd).
+    // Rendered visibly as "Listed" and emitted as dateModified in the
+    // page's TechArticle JSON-LD (structured data mirrors copy).
+    updated: z.coerce.date(),
+  }),
+})
+
+export const collections = { guides, roms, devices }

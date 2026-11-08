@@ -1,0 +1,19 @@
+---
+// src/pages/device/[...id].astro — render a single device from the devices
+// collection (content lives in src/layouts/Device.astro; the collection
+// files are frontmatter-only).
+import { getCollection } from 'astro:content'
+import Device from '../../layouts/Device.astro'
+
+export async function getStaticPaths() {
+  const devices = await getCollection('devices')
+  return devices.map((device) => ({
+    params: { id: device.id },
+    props: { device },
+  }))
+}
+
+const { device } = Astro.props
+---
+
+<Device device={device} />

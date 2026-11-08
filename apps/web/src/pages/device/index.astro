@@ -1,0 +1,68 @@
+---
+// src/pages/device/index.astro — device catalog index, grouped by brand
+// (zero JavaScript — AGENTS.md rule 4). Every count is computed from the
+// collection at build time; nothing is hard-coded.
+import { getCollection } from 'astro:content'
+import Base from '../../layouts/Base.astro'
+
+const devices = await getCollection('devices')
+
+// Brand casing variants exist in the imported data ('Motorola' vs
+// 'motorola', 'OnePlus' vs 'Oneplus'); merge for DISPLAY by lowercase key,
+// using the most frequent casing as the label (ties broken alphabetically).
+// The collection files themselves stay verbatim.
+const groups = new Map<string, { casings: Map<string, number>; devices: typeof devices }>()
+for (const device of devices) {
+  const key = device.data.oem.toLowerCase()
+  let group = groups.get(key)
+  if (!group) {
+    group = { casings: new Map(), devices: [] }
+    groups.set(key, group)
+  }
+  group.casings.set(device.data.oem, (group.casings.get(device.data.oem) ?? 0) + 1)
+  group.devices.push(device)
+}
+const brands = [...groups.values()]
+  .map((group) => ({
+    label: [...group.casings.entries()].sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
+    )[0][0],
+    devices: [...group.devices].sort((a, b) =>
+      a.data.title.toLowerCase().localeCompare(b.data.title.toLowerCase())
+    ),
+  }))
+  .sort((a, b) => a.label.toLowerCase().localeCompare(b.label.toLowerCase()))
+---
+
+<Base
+  title="Devices"
+  description={`All ${devices.length} devices with current official TWRP support — codenames, maintainers, downloads, and a free pre-flash device check.`}
+>
+  <div class="container" style="padding: 3rem 1.25rem">
+    <h1 style="margin: 0 0 0.5rem">Devices</h1>
+    <p class="muted" style="max-width: 44rem">
+      {devices.length} devices across {brands.length} brands with official TWRP
+      support status <strong>Current</strong>. Every page lists the device codename,
+      maintainer, official download folder, and what to check on your device before
+      flashing. Devices with other support statuses will follow.
+    </p>
+
+    {
+      brands.map((brand) => (
+        <section style="margin-top: 2rem">
+          <h2 style="margin: 0 0 0.75rem">
+            {brand.label} <span class="faint small">({brand.devices.length})</span>
+          </h2>
+          <ul class="prose" style="margin: 0; columns: 2">
+            {brand.devices.map((device) => (
+              <li style="break-inside: avoid">
+                <a href={`/device/${device.id}`}>{device.data.title}</a>{' '}
+                <code class="faint small">{device.data.codename}</code>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+</Base>

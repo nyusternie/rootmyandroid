@@ -1,0 +1,176 @@
+---
+// src/layouts/Device.astro — shared shell for the /device/<codename>
+// catalog pages (generated from src/content/devices/*.md by
+// src/pages/device/[...id].astro). Layers on Base.astro and renders ALL
+// page prose — the generated collection files carry frontmatter only, so
+// every wording change is a single-point edit here. All prose is original
+// (owner ruling 2026-11-08: facts imported, prose 100% ours, no source
+// attribution on the page).
+// These are CONTENT pages: zero JavaScript (AGENTS.md rule 4). Structured
+// data mirrors visible copy: the TechArticle dateModified matches the
+// visible "Listed" line, the BreadcrumbList matches the "← All devices"
+// link.
+import type { CollectionEntry } from 'astro:content'
+import Base from './Base.astro'
+
+interface Props {
+  device: CollectionEntry<'devices'>
+}
+
+const { device } = Astro.props
+const d = device.data
+
+const updatedIso = d.updated.toISOString().slice(0, 10)
+const title = `TWRP for ${d.title}`
+const description =
+  `TWRP for the ${d.title} (codename ${d.codename}): official support status, ` +
+  `maintainer, downloads, and a free pre-flash device check.`
+const canonical = new URL(`/device/${device.id}/`, Astro.site).href
+
+// TechArticle JSON-LD — mirrors the visible headline, description, and
+// "Listed" date (structured data mirrors copy — AGENTS.md).
+const org = { '@type': 'Organization', name: 'Root My Android', url: Astro.site }
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: title,
+  description,
+  mainEntityOfPage: canonical,
+  author: org,
+  publisher: org,
+  dateModified: updatedIso,
+}
+// Mirrors the visible "← All devices" breadcrumb link rendered below.
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Devices', item: new URL('/device/', Astro.site).href },
+    { '@type': 'ListItem', position: 2, name: d.title, item: canonical },
+  ],
+}
+
+// Related reading (SEO + navigation) — the recovery/root topics most
+// relevant to someone holding this device.
+const related = [
+  { href: '/TWRP', label: 'TWRP' },
+  { href: '/Magisk', label: 'Magisk' },
+  { href: '/KernelSU', label: 'KernelSU' },
+  { href: '/APatch', label: 'APatch' },
+  { href: '/LineageOS', label: 'LineageOS' },
+]
+---
+
+<Base title={title} description={description} ogType="article">
+  <article class="container" style="padding: 3rem 1.25rem">
+    <p><a href="/device">← All devices</a></p>
+
+    <h1 style="margin: 0 0 0.75rem">{title}</h1>
+    <p class="muted" style="margin: 0 0 0.5rem; font-size: 1.1rem; max-width: 44rem">
+      {d.oem} · codename <code>{d.codename}</code> · official support status:{' '}
+      <strong>{d.supportstatus}</strong>
+      {d.maintainer.length > 0 && <> · maintained by {d.maintainer.join(', ')}</>}
+    </p>
+    <p class="faint small" style="margin: 0 0 1.75rem">
+      Listed <time datetime={updatedIso}>{updatedIso}</time>
+    </p>
+
+    <section class="panel" style="margin: 0 0 2rem">
+      <h2 style="margin-top: 0">Device facts</h2>
+      <dl
+        style="display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1rem; margin: 0"
+      >
+        <dt class="muted">Device</dt>
+        <dd style="margin: 0">{d.title}</dd>
+        <dt class="muted">Brand</dt>
+        <dd style="margin: 0">{d.oem}</dd>
+        <dt class="muted">Codename</dt>
+        <dd style="margin: 0"><code>{d.codename}</code></dd>
+        <dt class="muted">Support status</dt>
+        <dd style="margin: 0">{d.supportstatus}</dd>
+        {
+          d.maintainer.length > 0 && (
+            <>
+              <dt class="muted">Maintainer</dt>
+              <dd style="margin: 0">{d.maintainer.join(', ')}</dd>
+            </>
+          )
+        }
+        {
+          d.devicetree && (
+            <>
+              <dt class="muted">Device tree</dt>
+              <dd style="margin: 0">
+                <a href={d.devicetree} rel="noopener">{d.devicetree}</a>
+              </dd>
+            </>
+          )
+        }
+      </dl>
+    </section>
+
+    {
+      d.downloadfolder && (
+        <section style="margin: 0 0 2rem">
+          <h2>Download TWRP</h2>
+          <p class="muted">
+            Official builds are published per device on the TWRP mirrors. Builds are
+            device-specific — only a build made for the {d.title} is safe to use.
+          </p>
+          <div class="row">
+            <a
+              class="btn btn-primary"
+              href={`https://dl.twrp.me/${d.downloadfolder}/`}
+              rel="noopener"
+            >
+              Americas mirror
+            </a>
+            <a class="btn" href={`https://eu.dl.twrp.me/${d.downloadfolder}/`} rel="noopener">
+              Europe mirror
+            </a>
+          </div>
+        </section>
+      )
+    }
+
+    <section style="margin: 0 0 2rem">
+      <h2>Before you flash</h2>
+      <p class="muted" style="max-width: 44rem">
+        TWRP is an open-source custom recovery: it can flash ZIP packages, take and
+        restore full partition backups (Nandroid), and manage partitions. Installing
+        a custom recovery generally requires an unlocked bootloader, and unlocking
+        factory-resets most phones.
+      </p>
+      <p class="muted" style="max-width: 44rem">
+        Two free reads on this site:{' '}
+        <a href="/guides/check-bootloader-status">Check your bootloader status</a> and{' '}
+        <a href="/guides/what-is-rooting">What rooting actually does (and doesn't)</a>.
+      </p>
+      <p class="muted" style="max-width: 44rem">
+        Our free <a href="/scan">browser-based scan</a> identifies your exact device
+        model and bootloader state over USB — the facts that decide what unlocking
+        involves and which build you need.
+      </p>
+      <p>
+        <a class="btn btn-primary" href="/scan">Scan your device now — free</a>
+      </p>
+    </section>
+
+    <nav class="panel" aria-label="Related topics" style="margin: 0 0 1.5rem">
+      <h2 style="margin-top: 0">Related topics</h2>
+      <div class="row">
+        {related.map((p) => <a href={p.href}>{p.label}</a>)}
+      </div>
+    </nav>
+
+    <p class="faint small" style="max-width: 44rem">
+      Root My Android is an independent site and is not affiliated with, endorsed by,
+      or sponsored by Team Win (TWRP). Android is a trademark of Google LLC.
+      Flashing any third-party software is at your own risk; make sure every build
+      matches your exact device before you install it.
+    </p>
+
+    <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  </article>
+</Base>
