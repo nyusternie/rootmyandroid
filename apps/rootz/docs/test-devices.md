@@ -8,6 +8,9 @@ Device serials intentionally omitted (public repo).
 
 - Unrooted (`su` absent), SELinux `Enforcing`.
 - Deploy target for the iOS-edition preview ONLY (owner rule 2026-10-30).
+- Rootz v26.11.7 terminal v0.1 PROVEN at shell tier (uid 2000,
+  `u:r:shell:s0`) via `adb forward` (2026-11-07): tier detection, bind,
+  piped-sh bridge all working; daemon left stopped in `/data/local/tmp`.
 
 ## Pixel 7 — GrapheneOS
 
