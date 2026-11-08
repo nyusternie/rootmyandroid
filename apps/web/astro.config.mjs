@@ -79,4 +79,15 @@ export default defineConfig({
     // /account -> /account/index.html etc. (clean URLs, Pages-friendly)
     format: 'directory',
   },
+  // i18n routing (Astro built-in — no dependency). English is the default
+  // locale and stays UNPREFIXED, so every existing URL keeps working
+  // (SEO-critical); translated pages live under /zh, /ru, /ko. Which routes
+  // exist per locale is owned by src/i18n/i18n.ts (LOCALIZED_ROUTES) — no
+  // i18n fallback is configured, so an untranslated page never emits a
+  // locale URL (no soft-redirects; hreflang mirrors reality).
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'zh', 'ru', 'ko'],
+    routing: { prefixDefaultLocale: false },
+  },
 })

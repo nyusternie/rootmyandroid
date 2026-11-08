@@ -3,6 +3,17 @@
 // Analytics: no-JS browsers are counted by the first-party pixel at the
 // bottom of <body> (no scripts on content pages — see AGENTS.md rule 4).
 import '../styles/global.css'
+import {
+  LOCALES,
+  LOCALIZED_ROUTES,
+  LOCALE_NAMES,
+  OG_LOCALES,
+  alternateLinks,
+  defaultPath,
+  dictFor,
+  localeOf,
+  lp,
+} from '../i18n/i18n'
 
 interface Props {
   title: string
@@ -18,7 +29,7 @@ interface Props {
 
 const {
   title,
-  description = 'Root My Android — scan your Android device and get a rooting / upgrade plan. No email, no password. Simple top-up subscriptions.',
+  description,
   ogType = 'website',
   ogImage = '/og-image.png',
   ogImageAlt = 'Root My Android — device unlocking assistant and Guardian Angel parental controls',
@@ -30,6 +41,14 @@ const pageTitle = title === 'Root My Android' ? title : `${title} — Root My An
 const canonical = new URL(Astro.url.pathname, Astro.site)
 const ogImageAbs = new URL(ogImage, Astro.site)
 const year = new Date().getFullYear()
+
+// i18n: current locale + shared chrome dictionary + hreflang set (empty
+// for pages that are not localized — see src/i18n/i18n.ts).
+const locale = localeOf(Astro.currentLocale)
+const d = dictFor(Astro.currentLocale)
+const bare = defaultPath(Astro.url.pathname)
+const alternates = alternateLinks(Astro.site, Astro.url.pathname)
+const metaDescription = description ?? d.common.metaDescription
 
 // Sitewide structured data (JSON-LD). Page-specific schema (e.g.
 // SoftwareApplication on the landing page) lives in the page itself.
@@ -53,25 +72,33 @@ const siteSchema = {
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={locale}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content={metaDescription} />
     <link rel="canonical" href={canonical} />
+    {/* hreflang alternates — emitted only when this page exists in every
+        locale (LOCALIZED_ROUTES); includes x-default → the English URL. */}
+    {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
     <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={metaDescription} />
     <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content="Root My Android" />
+    <meta property="og:locale" content={OG_LOCALES[locale]} />
+    {LOCALIZED_ROUTES.includes(bare) &&
+      LOCALES.filter((l) => l !== locale).map((l) => (
+        <meta property="og:locale:alternate" content={OG_LOCALES[l]} />
+      ))}
     <meta property="og:image" content={ogImageAbs} />
     <meta property="og:image:width" content={String(ogImageWidth)} />
     <meta property="og:image:height" content={String(ogImageHeight)} />
     <meta property="og:image:alt" content={ogImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:description" content={metaDescription} />
     <meta name="twitter:image" content={ogImageAbs} />
     <meta name="theme-color" content="#0d0f12" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
@@ -106,10 +133,30 @@ const siteSchema = {
           Root My Android
         </a>
         <nav class="nav">
-          <a href="/guides">Guides</a>
-          <a href="/roms">ROMs</a>
-          <a href="/gurus">Gurus</a>
-          <a class="btn btn-primary btn-sm" href="/scan">Scan NOW!</a>
+          <a href={lp(locale, '/guides')}>{d.common.navGuides}</a>
+          <a href={lp(locale, '/roms')}>{d.common.navRoms}</a>
+          <a href={lp(locale, '/gurus')}>{d.common.navGurus}</a>
+          <a class="btn btn-primary btn-sm" href={lp(locale, '/scan')}>{d.common.navScan}</a>
+          {/* Language switcher (zero-JS plain links; current locale via
+              aria-current — the .nav CSS styles it). Targets the same page
+              when localized, else the locale home. Hidden on narrow
+              screens — the footer switcher below is the mobile path. */}
+          <span
+            class="ml-[0.25rem] hidden items-center gap-[0.6rem] border-l border-line pl-[0.9rem] min-[640px]:flex"
+            role="group"
+            aria-label={d.common.langLabel}
+          >
+            {LOCALES.map((l) => (
+              <a
+                href={LOCALIZED_ROUTES.includes(bare) ? lp(l, bare) : lp(l, '/')}
+                hreflang={l}
+                lang={l}
+                aria-current={l === locale ? 'page' : undefined}
+              >
+                {LOCALE_NAMES[l]}
+              </a>
+            ))}
+          </span>
         </nav>
       </div>
     </header>
@@ -138,31 +185,43 @@ const siteSchema = {
             </svg>
             Root My Android
           </a>
-          <p>Scan your Android device and get a rooting / upgrade plan. No email, no password.</p>
+          <p>{d.common.footerTagline}</p>
         </div>
-        <nav class="footer-col" aria-label="Product">
-          <h2>Product</h2>
-          <a href="/scan">Scan</a>
-          <a href="/guides">Guides</a>
-          <a href="/why">Why Root?</a>
-          <a href="/roms">ROMs</a>
-          <a href="/devices">Devices</a>
-          <a href="/rootz">Rootz</a>
-          <a href="/guardian-angel">Guardian Angel</a>
-          <a href="/gurus">Gurus</a>
-          <a href="/parents">For Parents</a>
-          <a href="/agents">For Agents</a>
-          <a href="/mcp">MCP</a>
+        <nav class="footer-col" aria-label={d.common.footerProduct}>
+          <h2>{d.common.footerProduct}</h2>
+          <a href={lp(locale, '/scan')}>{d.common.footerScan}</a>
+          <a href={lp(locale, '/guides')}>{d.common.footerGuides}</a>
+          <a href={lp(locale, '/why')}>{d.common.footerWhy}</a>
+          <a href={lp(locale, '/roms')}>{d.common.footerRoms}</a>
+          <a href={lp(locale, '/devices')}>{d.common.footerDevices}</a>
+          <a href={lp(locale, '/rootz')}>{d.common.footerRootz}</a>
+          <a href={lp(locale, '/guardian-angel')}>{d.common.footerGa}</a>
+          <a href={lp(locale, '/gurus')}>{d.common.footerGurus}</a>
+          <a href={lp(locale, '/parents')}>{d.common.footerParents}</a>
+          <a href={lp(locale, '/agents')}>{d.common.footerAgents}</a>
+          <a href={lp(locale, '/mcp')}>{d.common.footerMcp}</a>
         </nav>
-        <nav class="footer-col" aria-label="Legal">
-          <h2>Legal</h2>
-          <a href="/terms">Terms</a>
-          <a href="/privacy">Privacy</a>
-          <a href="/refunds">Refunds</a>
+        <nav class="footer-col" aria-label={d.common.footerLegal}>
+          <h2>{d.common.footerLegal}</h2>
+          <a href={lp(locale, '/terms')}>{d.common.footerTerms}</a>
+          <a href={lp(locale, '/privacy')}>{d.common.footerPrivacy}</a>
+          <a href={lp(locale, '/refunds')}>{d.common.footerRefunds}</a>
         </nav>
       </div>
       <div class="container footer-bottom">
         <span>© {year} Root My Android</span>
+        <span class="flex items-center gap-[0.6rem]" role="group" aria-label={d.common.langLabel}>
+          {LOCALES.map((l) => (
+            <a
+              href={LOCALIZED_ROUTES.includes(bare) ? lp(l, bare) : lp(l, '/')}
+              hreflang={l}
+              lang={l}
+              aria-current={l === locale ? 'page' : undefined}
+            >
+              {LOCALE_NAMES[l]}
+            </a>
+          ))}
+        </span>
         <a href="https://rootmyandroid.com/v1/health" rel="noopener">API</a>
       </div>
     </footer>

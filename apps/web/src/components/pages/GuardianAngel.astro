@@ -1,0 +1,184 @@
+---
+// src/components/pages/GuardianAngel.astro — Guardian Angel product-page
+// markup, shared by every locale (route wrappers in
+// src/pages/guardian-angel.astro and src/pages/<locale>/). Copy comes from
+// src/i18n/<locale>/guardian.ts. CREATED 2026-11-07 per the AI-positioning
+// handoff and owner rulings: (1) ALL product data is client-side encrypted;
+// (2) Guardian Angel AI is PLANNED — labeled, and never presented as part of
+// the currently purchasable feature set. Tier facts mirror
+// src/i18n/<locale>/pricing.ts (the owner-ruled authority); free-tier
+// wording mirrors src/pages/parents.astro and the landing-page FAQ — keep
+// all three in sync. FAQ entries render visibly below AND feed the FAQPage
+// JSON-LD — the two stay text-identical per locale.
+import Base from '../../layouts/Base.astro'
+import { dictFor, localeOf, lp } from '../../i18n/i18n'
+
+const locale = localeOf(Astro.currentLocale)
+const d = dictFor(Astro.currentLocale)
+
+const { tiers, faqs } = d.guardian
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+}
+
+const appSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Guardian Angel',
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Android',
+  url: `https://rootmyandroid.com${lp(locale, '/guardian-angel')}`,
+  description: d.guardian.schemaDescription,
+}
+---
+
+<Base title={d.guardian.metaTitle} description={d.guardian.metaDescription}>
+  <section class="hero relative before:pointer-events-none before:absolute before:inset-x-0 before:-top-24 before:h-[32rem] before:bg-[radial-gradient(60%_70%_at_70%_30%,rgba(61,220,132,0.14),transparent_70%)] before:content-['']">
+    <div class="container hero-grid relative grid items-center gap-8 min-[720px]:grid-cols-[1.05fr_0.95fr]">
+      <div>
+        <h1>{d.guardian.heroH1Before}<span class="hl text-accent">{d.guardian.heroH1Highlight}</span>{d.guardian.heroH1After}</h1>
+        <p class="lede">
+          {d.guardian.heroLede}
+        </p>
+        <div class="row mt-7">
+          <a class="btn btn-primary" href={lp(locale, '/download')}>{d.guardian.heroDownload}</a>
+          <a class="btn" href={lp(locale, '/pricing')}>{d.guardian.heroPlans}</a>
+        </div>
+      </div>
+      <div class="hero-art">
+        <img class="block h-auto w-full rounded-[1.25rem] shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          src="/img/guardian-angel-phone.webp"
+          alt={d.guardian.heroImgAlt}
+          width="880"
+          height="880"
+          fetchpriority="high"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="container pt-10 pb-8">
+    <h2>{d.guardian.plansH2}</h2>
+    <p>
+      {d.guardian.plansP}
+    </p>
+    <div class="tier-grid tier-grid-3 mt-7 grid gap-5 min-[720px]:grid-cols-3">
+      {tiers.map((t) => (
+        <div class="panel tier-card">
+          <h3 class="mt-0 mb-1 tracking-[0.1em] text-accent">{t.name}</h3>
+          <p class="tier-price mt-2 text-[1.75rem] font-bold">
+            {t.price} <span class="muted text-[0.9rem] font-normal">/ {t.per}</span>
+          </p>
+          <ul class="mt-3 mb-0 grid list-none gap-[0.4rem] p-0">
+            {t.features.map((f) => (
+              <li class="relative pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-ok before:content-['✓']">{f}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+    <p class="muted mt-5">
+      {d.guardian.plansNoteBefore}<a href={lp(locale, '/pricing')}>{d.guardian.plansNoteLink}</a>{d.guardian.plansNoteEnd}
+    </p>
+  </section>
+
+  <section class="container pb-8">
+    <h2>{d.guardian.encH2}</h2>
+    <p>
+      <strong>{d.guardian.encPStrong}</strong>{d.guardian.encPRest}
+    </p>
+    <ul>
+      <li>{d.guardian.encLi1}</li>
+      <li>{d.guardian.encLi2}</li>
+      <li>{d.guardian.encLi3}</li>
+      <li>{d.guardian.encLi4}</li>
+    </ul>
+    <p class="muted">
+      {d.guardian.encNoteBefore}<a href={lp(locale, '/privacy')}>{d.guardian.encNoteLink}</a>{d.guardian.encNoteEnd}
+    </p>
+  </section>
+
+  <section class="container pb-8">
+    <h2>{d.guardian.aiH2} <span class="ml-2 inline-block rounded-full border border-line px-2 py-[0.1rem] align-middle text-[0.72rem] font-bold tracking-[0.08em] muted">{d.guardian.aiBadge}</span></h2>
+    <p>
+      {d.guardian.aiP}
+    </p>
+    <ul>
+      <li><strong>{d.guardian.aiLi1Strong}</strong>{d.guardian.aiLi1Rest}</li>
+      <li><strong>{d.guardian.aiLi2Strong}</strong>{d.guardian.aiLi2Rest}</li>
+      <li><strong>{d.guardian.aiLi3Strong}</strong>{d.guardian.aiLi3Rest}</li>
+      <li><strong>{d.guardian.aiLi4Strong}</strong>{d.guardian.aiLi4Rest}</li>
+      <li><strong>{d.guardian.aiLi5Strong}</strong>{d.guardian.aiLi5Rest}</li>
+      <li><strong>{d.guardian.aiLi6Strong}</strong>{d.guardian.aiLi6Rest}</li>
+    </ul>
+
+    <h3>{d.guardian.aiWhereH3}</h3>
+    <p>
+      {d.guardian.aiWhereP}
+    </p>
+    <ul>
+      <li><strong>{d.guardian.aiWhereLi1Strong}</strong>{d.guardian.aiWhereLi1Rest}</li>
+      <li><strong>{d.guardian.aiWhereLi2Strong}</strong>{d.guardian.aiWhereLi2Rest}</li>
+      <li><strong>{d.guardian.aiWhereLi3Strong}</strong>{d.guardian.aiWhereLi3Rest}</li>
+      <li><strong>{d.guardian.aiWhereLi4Strong}</strong>{d.guardian.aiWhereLi4Rest}</li>
+    </ul>
+    <p>
+      {d.guardian.aiMediaP}
+    </p>
+
+    <h3>{d.guardian.aiChooseH3}</h3>
+    <p>
+      {d.guardian.aiChooseP}
+    </p>
+
+    <h3>{d.guardian.aiNeverH3}</h3>
+    <ul>
+      <li>{d.guardian.aiNeverLi1}</li>
+      <li>{d.guardian.aiNeverLi2}</li>
+      <li>{d.guardian.aiNeverLi3}</li>
+      <li>{d.guardian.aiNeverLi4}</li>
+    </ul>
+  </section>
+
+  <section class="container pb-8">
+    <h2>{d.guardian.billH2}</h2>
+    <p>
+      {d.guardian.billP1}
+    </p>
+    <p class="panel">
+      <strong>{d.guardian.billPanelStrong}</strong>{d.guardian.billPanelRest}
+    </p>
+  </section>
+
+  <section class="container pb-8">
+    <h2>{d.guardian.builtinH2}</h2>
+    <p>
+      {d.guardian.builtinPBefore}<a href={lp(locale, '/parents')}>{d.guardian.builtinLink}</a>{d.guardian.builtinPEnd}
+    </p>
+  </section>
+
+  <section class="container faq-section pb-12">
+    <h2>{d.guardian.faqH2}</h2>
+    {faqs.map((f) => (
+      <details class="panel faq-item mt-3">
+        <summary class="cursor-pointer font-semibold">{f.q}</summary>
+        <p class="muted mt-3">{f.a}</p>
+      </details>
+    ))}
+    <p class="mt-8">
+      <a class="btn btn-primary" href={lp(locale, '/download')}>{d.guardian.faqDownload}</a>
+      <a class="btn ml-3" href={lp(locale, '/pricing')}>{d.guardian.faqPlans}</a>
+    </p>
+  </section>
+
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(appSchema)} />
+
+</Base>

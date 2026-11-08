@@ -1,0 +1,290 @@
+---
+// src/components/pages/Home.astro — landing-page markup, shared by every
+// locale (route wrappers in src/pages/index.astro and src/pages/<locale>/).
+// Copy comes from src/i18n/<locale>/home.ts via Astro.currentLocale.
+import Base from '../../layouts/Base.astro'
+import { dictFor, localeOf, lp } from '../../i18n/i18n'
+
+const locale = localeOf(Astro.currentLocale)
+const d = dictFor(Astro.currentLocale)
+
+// Landing-only structured data: the product + the FAQ. No Offer here —
+// pricing and its Offer schema live on /pricing; schema must mirror
+// visible copy (per locale).
+const appSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Root My Android',
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Android',
+  url: 'https://rootmyandroid.com',
+  description: d.home.schemaAppDescription,
+}
+
+// FAQ entries render visibly in the <details> list below AND feed the FAQPage
+// JSON-LD — the two must stay text-identical (structured data mirrors copy).
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: d.home.faqItems.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+}
+---
+
+<Base title={d.home.metaTitle} description={d.home.metaDescription}>
+  <section class="hero relative before:pointer-events-none before:absolute before:inset-x-0 before:-top-24 before:h-[32rem] before:bg-[radial-gradient(60%_70%_at_70%_30%,rgba(61,220,132,0.14),transparent_70%)] before:content-['']">
+    <div class="container hero-grid relative grid items-center gap-8 min-[720px]:grid-cols-[1.05fr_0.95fr]">
+      <div>
+        <h1>{d.home.heroH1Before}<span class="hl text-accent">{d.home.heroH1Highlight}</span>{d.home.heroH1After}</h1>
+        <p class="lede">
+          {d.home.heroLede}<a href={lp(locale, '/rootz')}><strong>Rootz</strong></a>{d.home.heroLedeAnd}<a href={lp(locale, '/guardian-angel')}><strong>Guardian Angel</strong></a>{d.home.heroLedeEnd}
+        </p>
+        <a
+          class="btn btn-primary mt-7 block px-8 py-6 text-center text-[1.75rem] tracking-[0.08em]"
+          href={lp(locale, '/scan')}
+          >{d.home.heroScanCta}</a
+        >
+        <div class="row mt-7">
+          <a class="btn btn-primary" href={lp(locale, '/download')}>{d.home.heroMeetGa}</a>
+          <a class="btn" href={lp(locale, '/guides')}>{d.home.heroBrowseGuides}</a>
+        </div>
+      </div>
+      <div class="hero-art">
+        <img class="block h-auto w-full rounded-[1.25rem] shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          src="/img/hero-su.webp"
+          alt={d.home.heroImgAlt}
+          width="880"
+          height="880"
+          fetchpriority="high"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="container pt-10 pb-8">
+    <div class="grid-3 steps-grid">
+      <div class="panel step-card overflow-hidden p-0">
+        <img class="block h-auto w-full"
+          src="/img/step-connect.webp"
+          alt={d.home.step1Alt}
+          width="480"
+          height="480"
+          loading="lazy"
+        />
+        <div class="step-body px-6 pt-5 pb-6">
+          <h2 class="mt-0 mb-3">1. {d.home.step1Title}</h2>
+          <p class="muted m-0">
+            {d.home.step1Text}
+          </p>
+        </div>
+      </div>
+      <div class="panel step-card overflow-hidden p-0">
+        <img class="block h-auto w-full"
+          src="/img/step-scan.webp"
+          alt={d.home.step2Alt}
+          width="480"
+          height="480"
+          loading="lazy"
+        />
+        <div class="step-body px-6 pt-5 pb-6">
+          <h2 class="mt-0 mb-3">2. {d.home.step2Title}</h2>
+          <p class="muted m-0">
+            {d.home.step2Text}
+          </p>
+        </div>
+      </div>
+      <div class="panel step-card overflow-hidden p-0">
+        <img class="block h-auto w-full"
+          src="/img/step-plan.webp"
+          alt={d.home.step3Alt}
+          width="480"
+          height="480"
+          loading="lazy"
+        />
+        <div class="step-body px-6 pt-5 pb-6">
+          <h2 class="mt-0 mb-3">3. {d.home.step3Title}</h2>
+          <p class="muted m-0">
+            {d.home.step3Text}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container product-section pt-10 pb-4">
+    <div class="feature-row grid items-center gap-8 min-[720px]:grid-cols-[1.05fr_0.95fr]">
+      <div class="feature-copy">
+        <h2>{d.home.whyH2}</h2>
+        <p class="muted">
+          {d.home.whyP1}
+        </p>
+        <ul class="checklist mt-3 mb-5 list-none p-0">
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">
+            <strong>{d.home.whyLi1Strong}</strong>{d.home.whyLi1Rest}
+          </li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">
+            <strong>{d.home.whyLi2Strong}</strong>{d.home.whyLi2Rest}
+          </li>
+        </ul>
+        <p class="muted">
+          {d.home.whyP2Before}<a href={lp(locale, '/rooting')}>{d.home.whyLinkRooting}</a>{d.home.whyP2And}<a href={lp(locale, '/terms')}>{d.home.whyLinkRisk}</a>{d.home.whyP2End}
+        </p>
+      </div>
+      <div class="feature-art reveal motion-safe:supports-[animation-timeline:view()]:animate-reveal-in motion-safe:supports-[animation-timeline:view()]:[animation-timeline:view()] motion-safe:supports-[animation-timeline:view()]:[animation-range:entry_0%_entry_60%]">
+        <img class="block h-auto w-full rounded-[1.25rem] shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          src="/img/why-root.webp"
+          alt={d.home.whyImgAlt}
+          width="880"
+          height="880"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="container product-section pt-10 pb-4">
+    <div class="feature-row feature-row--reverse grid items-center gap-8 min-[720px]:grid-cols-[1.05fr_0.95fr]">
+      <div class="feature-copy min-[720px]:order-2">
+        <h2>{d.home.gaH2}</h2>
+        <p class="muted">
+          {d.home.gaP1}
+        </p>
+        <div class="row">
+          <a class="btn btn-primary" href={lp(locale, '/guardian-angel')}>{d.home.gaExplore}</a>
+          <a class="btn" href={lp(locale, '/download')}>{d.home.gaDownload}</a>
+        </div>
+      </div>
+      <div class="feature-art reveal min-[720px]:order-1">
+        <img class="block h-auto w-full rounded-[1.25rem] shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          src="/img/guardian-angel-phone.webp"
+          alt={d.home.gaImgAlt}
+          width="880"
+          height="880"
+          loading="lazy"
+        />
+      </div>
+    </div>
+    <div class="tier-grid tier-grid-3 mt-7 grid gap-5 min-[720px]:grid-cols-3">
+      <div class="panel tier-card">
+        <h3 class="mt-0 mb-1 tracking-[0.1em] text-accent">Guardian Angel FREE</h3>
+        <ul class="checklist mt-3 mb-5 list-none p-0">
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.gaFreeLi1}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.gaFreeLi2}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.gaFreeLi3}</li>
+        </ul>
+      </div>
+      <div class="panel tier-card">
+        <h3 class="mt-0 mb-1 tracking-[0.1em] text-accent">Guardian Angel LITE</h3>
+        <ul class="checklist mt-3 mb-5 list-none p-0">
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.gaLiteLi1}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.gaLiteLi2}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.gaLiteLi3}</li>
+        </ul>
+      </div>
+      <div class="panel tier-card">
+        <h3 class="mt-0 mb-1 tracking-[0.1em] text-accent">Guardian Angel PRO</h3>
+        <ul class="checklist mt-3 mb-5 list-none p-0">
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.gaProLi1}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.gaProLi2}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.gaProLi3}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.gaProLi4}</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="container product-section pt-10 pb-4">
+    <div class="feature-row grid items-center gap-8 min-[720px]:grid-cols-[1.05fr_0.95fr]">
+      <div class="feature-copy">
+        <h2>{d.home.rootzH2}</h2>
+        <p class="muted">
+          {d.home.rootzP1}
+        </p>
+        <div class="row">
+          <a class="btn btn-primary" href={lp(locale, '/rootz')}>{d.home.rootzExplore}</a>
+          <a class="btn" href={lp(locale, '/download')}>{d.home.rootzDownload}</a>
+        </div>
+        <p class="muted mt-3">
+          {d.home.rootzNewBefore}<a href={lp(locale, '/rooting')}>{d.home.rootzLinkGuide}</a>{d.home.rootzNewEnd}
+        </p>
+      </div>
+      <div class="feature-art reveal motion-safe:supports-[animation-timeline:view()]:animate-reveal-in motion-safe:supports-[animation-timeline:view()]:[animation-timeline:view()] motion-safe:supports-[animation-timeline:view()]:[animation-range:entry_0%_entry_60%]">
+        <img class="block h-auto w-full rounded-[1.25rem] shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          src="/img/colonel-su-terminal.webp"
+          alt={d.home.rootzImgAlt}
+          width="880"
+          height="880"
+          loading="lazy"
+        />
+      </div>
+    </div>
+    <div class="tier-grid tier-grid-2 mt-7 grid gap-5 min-[720px]:grid-cols-2">
+      <div class="panel tier-card">
+        <h3 class="mt-0 mb-1 tracking-[0.1em] text-accent">Rootz FREE</h3>
+        <ul class="checklist mt-3 mb-5 list-none p-0">
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.rootzFreeLi1}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.rootzFreeLi2}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.rootzFreeLi3}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.rootzFreeLi4}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.rootzFreeLi5}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.rootzFreeLi6}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.rootzFreeLi7}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.rootzFreeLi8}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.rootzFreeLi9}</li>
+        </ul>
+      </div>
+      <div class="panel tier-card">
+        <h3 class="mt-0 mb-1 tracking-[0.1em] text-accent">Rootz PRO</h3>
+        <ul class="checklist mt-3 mb-5 list-none p-0">
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.rootzProLi1}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.rootzProLi2}</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">{d.home.rootzProLi3}</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="container faq-section pt-10 pb-4">
+    <h2>{d.home.faqH2}</h2>
+    {d.home.faqItems.map((f) => (
+      <details class="panel faq-item">
+        <summary class="cursor-pointer font-semibold">{f.q}</summary>
+        <p class="muted mt-3">{f.a}</p>
+      </details>
+    ))}
+    <p class="muted mt-6">
+      {d.home.faqCloseBefore}<a href={lp(locale, '/terms')}>{d.home.faqLinkTerms}</a>{d.home.faqCloseAnd}<a href={lp(locale, '/terms')}>{d.home.faqLinkRisk}</a>{d.home.faqCloseEnd}
+    </p>
+  </section>
+
+  {/* AI-agent discovery panel (GEO, 2026-11-07): a direct in-content path
+      from / to the machine-readable surface — the /agents explainer and
+      the /mcp tool catalog. Facts mirror src/pages/agents.astro (verified
+      live 2026-11-07). */}
+  <section class="container agents-section pt-4 pb-12">
+    <div class="panel agents-panel">
+      <h2>{d.home.agentsH2}</h2>
+      <p class="muted">
+        {d.home.agentsP1}
+      </p>
+      <div class="row">
+        <a class="btn" href={lp(locale, '/agents')}>{d.home.agentsGuide}</a>
+        <a class="btn" href="https://rootmyandroid.com/mcp" rel="noopener">{d.home.agentsMcp}</a>
+      </div>
+    </div>
+  </section>
+
+  {/* Chat bubble bottom-right on the landing page (owner request 2026-11-04):
+      the existing support widget (src/scripts/support.ts) as on the app pages.
+      NOTE: / now ships JavaScript — repo rule 4 zero-JS still holds for
+      /guides/*; keep the widget off content/guide pages. */}
+  <script>
+    import '../../scripts/support.ts'
+  </script>
+
+  <script type="application/ld+json" set:html={JSON.stringify(appSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+</Base>

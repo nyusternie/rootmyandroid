@@ -1,0 +1,137 @@
+---
+// src/components/pages/Pricing.astro — pricing-page markup, shared by every
+// locale (route wrappers in src/pages/pricing.astro and src/pages/<locale>/).
+// TWO products (owner rulings 2026-11-05): Guardian Angel — monthly
+// monitoring subscriptions (Lite / Pro); Rootz — professional tools, "Pro"
+// is its 1-YEAR subscription. Plans are top-up subscriptions (Mullvad-style).
+// Offer schema (below) mirrors the visible tier cards exactly — it is BUILT
+// from the same tier arrays (src/i18n/<locale>/pricing.ts) that render the
+// cards, so copy and structured data cannot drift. Listed fiat prices ONLY:
+// the 15% crypto discount is enforced server-side and is NEVER hard-coded
+// in clients (AGENTS.md). Owner ruling 2026-11-07.
+import Base from '../../layouts/Base.astro'
+import { dictFor, localeOf, lp } from '../../i18n/i18n'
+
+const locale = localeOf(Astro.currentLocale)
+const d = dictFor(Astro.currentLocale)
+
+const { guardianTiers, rootzTiers } = d.pricing
+
+// Every sentence appended to the descriptions is (near-)verbatim visible
+// copy: the features come from the cards; the top-up/crypto sentences come
+// from the footer note at the bottom of this page.
+type Tier = (typeof guardianTiers)[number]
+const offerFromTier = (t: Tier, position: number) => ({
+  '@type': 'Offer',
+  position,
+  name: `${t.name} ${t.level}`,
+  price: t.price.replace('$', ''),
+  priceCurrency: 'USD',
+  url: `https://rootmyandroid.com${lp(locale, '/pricing')}`,
+  description: `${t.features.join('. ')}. ${d.pricing.offerSuffix}`,
+})
+const pricingSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Root My Android plans and pricing',
+  itemListElement: [
+    {
+      '@type': 'Offer',
+      position: 1,
+      name: 'Free',
+      price: '0',
+      priceCurrency: 'USD',
+      url: `https://rootmyandroid.com${lp(locale, '/pricing')}`,
+      description: d.pricing.freeText,
+    },
+    ...[...guardianTiers, ...rootzTiers].map((t, i) => offerFromTier(t, i + 2)),
+  ],
+}
+---
+
+<Base title={d.pricing.metaTitle} description={d.pricing.metaDescription}>
+  <section class="container px-0 pt-12 pb-8 text-center">
+    <h1>{d.pricing.h1Before}<span class="hl text-accent">{d.pricing.h1Highlight}</span></h1>
+    <p class="lede mx-auto my-0 max-w-[46rem]">
+      {d.pricing.lede}
+    </p>
+  </section>
+
+  <section class="container pb-10">
+    <div class="panel free-strip flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h2 class="m-0">{d.pricing.freeH2Name} <span class="muted free-price text-[1rem] font-normal">$0{d.pricing.freeH2PriceSuffix}</span></h2>
+        <p class="muted mt-1 max-w-[40rem]">
+          {d.pricing.freeText}
+        </p>
+      </div>
+      <a class="btn" href={lp(locale, '/scan')}>{d.pricing.freeCta}</a>
+    </div>
+  </section>
+
+  <section class="container pb-10">
+    <h2 class="product-head mb-5 text-center">Guardian Angel <span class="muted">{d.pricing.gaHeadSuffix}</span></h2>
+    <div class="tiers-grid tiers-grid-2 grid grid-cols-1 items-stretch gap-[0.9rem] min-[560px]:mx-auto min-[560px]:max-w-[46rem] min-[560px]:grid-cols-2">
+      {guardianTiers.map((t) => (
+        <div class:list={['panel', 'tier-card', 'relative flex flex-col gap-1 text-center', { featured: t.featured, 'border-accent': t.featured }]}>
+          {t.tag && <span class="tier-tag absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-[0.2rem] text-[0.75rem] font-bold tracking-[0.05em] text-[#0d0f12]">{t.tag}</span>}
+          <img
+            class="app-badge"
+            src={t.badge}
+            alt={t.alt}
+            width="256"
+            height="256"
+            loading="lazy"
+          />
+          <h3>{t.name}</h3>
+          <p class="tier-level muted m-0 text-[0.8rem] uppercase tracking-[0.12em]">{t.level}</p>
+          <p class="tier-price mt-2 text-[1.75rem] font-bold">
+            {t.price} <span class="muted text-[0.9rem] font-normal">/ {t.per}</span>
+          </p>
+          <ul class="tier-features mt-3 mb-5 grid list-none gap-[0.4rem] p-0">
+            {t.features.map((f) => <li class="before:font-bold before:text-[#3fb96b] before:content-['✓_']">{f}</li>)}
+          </ul>
+          <a class:list={['btn', 'mt-auto', { 'btn-primary': t.featured }]} href={lp(locale, '/account')}>
+            {t.ctaLabel}
+          </a>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="container pb-12">
+    <h2 class="product-head mb-5 text-center">Rootz <span class="muted">{d.pricing.rootzHeadSuffix}</span></h2>
+    <div class="tiers-grid tiers-grid-1 grid grid-cols-1 items-stretch gap-[0.9rem] min-[560px]:grid-cols-[minmax(0,23rem)] min-[560px]:justify-center">
+      {rootzTiers.map((t) => (
+        <div class:list={['panel', 'tier-card', 'relative flex flex-col gap-1 text-center', { featured: t.featured, 'border-accent': t.featured }]}>
+          {t.tag && <span class="tier-tag absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-[0.2rem] text-[0.75rem] font-bold tracking-[0.05em] text-[#0d0f12]">{t.tag}</span>}
+          <img
+            class="app-badge"
+            src={t.badge}
+            alt={t.alt}
+            width="256"
+            height="256"
+            loading="lazy"
+          />
+          <h3>{t.name}</h3>
+          <p class="tier-level muted m-0 text-[0.8rem] uppercase tracking-[0.12em]">{t.level}</p>
+          <p class="tier-price mt-2 text-[1.75rem] font-bold">
+            {t.price} <span class="muted text-[0.9rem] font-normal">/ {t.per}</span>
+          </p>
+          <ul class="tier-features mt-3 mb-5 grid list-none gap-[0.4rem] p-0">
+            {t.features.map((f) => <li class="before:font-bold before:text-[#3fb96b] before:content-['✓_']">{f}</li>)}
+          </ul>
+          <a class:list={['btn', 'mt-auto', { 'btn-primary': t.featured }]} href={lp(locale, '/account')}>
+            {t.ctaLabel}
+          </a>
+        </div>
+      ))}
+    </div>
+    <p class="muted mt-6 text-center">
+      {d.pricing.footnote}
+    </p>
+  </section>
+
+  <script type="application/ld+json" set:html={JSON.stringify(pricingSchema)} />
+
+</Base>

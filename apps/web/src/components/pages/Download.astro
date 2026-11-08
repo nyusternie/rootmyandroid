@@ -1,0 +1,46 @@
+---
+// src/components/pages/Download.astro — download-page markup, shared by
+// every locale (route wrappers in src/pages/download.astro and
+// src/pages/<locale>/). Static content page, zero JS. Copy comes from
+// src/i18n/<locale>/download.ts.
+import Base from '../../layouts/Base.astro'
+import { dictFor } from '../../i18n/i18n'
+
+const d = dictFor(Astro.currentLocale)
+---
+
+<Base title={d.download.metaTitle} description={d.download.metaDescription}>
+  <div class="container prose px-5 py-12">
+    <h1>{d.download.h1}</h1>
+    <p class="faint"><em>{d.download.tagline}</em></p>
+
+    <h2>{d.download.rootzH2}</h2>
+    <p>
+      <code>com.rootmyandroid</code>{d.download.rootzDescAfter}
+    </p>
+    <p>
+      <a href="https://github.com/nyusternie/rootmyandroid/releases/latest/download/rooted-release.apk">{d.download.rootzLink}</a>
+    </p>
+
+    <h2>{d.download.guardianH2}</h2>
+    <p>
+      <code>com.rootmyandroid.guardianangel</code>{d.download.guardianDescAfter}
+    </p>
+    <p>
+      <a href="https://github.com/nyusternie/rootmyandroid/releases/latest/download/guardian-angel-release.apk">{d.download.guardianLink}</a>
+    </p>
+
+    <h2>{d.download.installH2}</h2>
+    <ol>
+      <li>{d.download.installStep1}</li>
+      <li>{d.download.installStep2Before}<strong>{d.download.installStep2Strong}</strong>{d.download.installStep2After}</li>
+      <li>{d.download.installStep3Before}<strong>{d.download.installStep3Strong}</strong>{d.download.installStep3After}</li>
+    </ol>
+    <p>
+      {d.download.requiresBefore}<a href="https://github.com/nyusternie/rootmyandroid/releases/latest">{d.download.requiresLink}</a>{d.download.requiresAfter}
+    </p>
+    <p class="faint">
+      {d.download.previewNote}
+    </p>
+  </div>
+</Base>

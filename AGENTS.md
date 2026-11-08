@@ -164,6 +164,16 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
 - The landing-page SEO roadmap (Phases 2–3: keyword-targeted rebuild, FAQ +
   FAQPage schema, illustration set) is specified in HANDOFF.md.
 
+## Web i18n (live)
+
+- Astro native i18n (`astro:i18n` in `astro.config.mjs`): `defaultLocale: 'en'` (unprefixed URLs — existing SEO equity untouched), `locales: ['en', 'zh', 'ru', 'ko']`, `prefixDefaultLocale: false`. Translated pages live under `/zh`, `/ru`, `/ko`. **No `fallback` is configured** — an untranslated page must never emit a locale URL.
+- `apps/web/src/i18n/i18n.ts` is the single source of truth: `LOCALES`, `LOCALE_NAMES`, `OG_LOCALES`, `LOCALIZED_ROUTES` (explicit allowlist of default-locale paths whose translations are fully shipped), and the `DICTS` registry. Helpers: `localeOf()`, `dictFor()`, `defaultPath()`, `lp(locale, path)` (locale-aware href builder — falls back to the default-locale URL for unlocalized routes), `alternateLinks()` (drives Base.astro hreflang + `og:locale:*` meta).
+- Per-page pattern (repeat exactly when localizing a page): (1) English dictionary `src/i18n/en/<section>.ts` is the typed contract; (2) markup extracted to `src/components/pages/<Page>.astro`, copy via `d.<section>.*`, internal hrefs via `lp(locale, '/path')`, JSON-LD built from the SAME dictionary arrays that render the visible markup (no copy/schema drift); (3) four thin route wrappers (`src/pages/<page>.astro` + `src/pages/{zh,ru,ko}/<page>.astro`); (4) translated dictionaries `src/i18n/{zh,ru,ko}/<section>.ts` typed `typeof en` (CI type-check enforces key parity); (5) register imports + `DICTS` entry + `LOCALIZED_ROUTES` in `i18n.ts`; (6) `pnpm build` and diff the English output against the pre-i18n page — only hreflang links, `og:locale` meta, and the language switcher may change.
+- Glossary: product/plan names (Root My Android, Guardian Angel, Rootz, Guardian Angel FREE/LITE/PRO, Colonel Su), third-party names, status labels (LIVE/LABS/PLANNED), commands/paths, and ALL prices are never translated; descriptive copy is.
+- Chrome: header + footer get a `?` language switcher (pure `<a>` list, zero JS) linking only to existing translations, and Base.astro emits `hreflang` (incl. `x-default`) + per-locale `og:locale` for every `LOCALIZED_ROUTES` page. Content-page zero-JS rule (hard rule 4) is preserved — the switcher is markup only.
+- Analytics: the beacon carries Astro's `data-astro-rerun` attributes as before; locale is derivable from the page URL path (`/zh/…`). Do NOT add locale fields to the wire contract without the API team.
+- Currently localized: `/`, `/pricing`, `/guardian-angel`, `/rootz`, `/download`. Next candidates: `/why`, `/rooting`, `/parents`, `/gurus`, `/agents`; guides are a content collection and need a separate MD-per-locale strategy. (Added 2026-11-10.)
+
 ## Brand identity (live)
 
 Three Android-green characters — palette, prompts, and the ship procedure
