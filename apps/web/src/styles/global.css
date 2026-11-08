@@ -477,6 +477,88 @@
     @apply text-right;
   }
 
+  /* Guru turns (Sage / The Elder) — docs/HANDOFF-2026-11-08-guru-support-chat.md */
+  .support-msg-team {
+    @apply self-start;
+  }
+  .support-msg-team .support-msg-body {
+    @apply border border-line bg-raise text-ink;
+  }
+  .support-msg-sage,
+  .support-msg-elder {
+    @apply self-start;
+  }
+  .support-msg-sage .support-msg-body {
+    @apply border border-ok/45 bg-ok/12 text-ink;
+  }
+  .support-msg-elder .support-msg-body {
+    @apply border border-accent/45 bg-accent/12 text-ink;
+  }
+  .support-msg-head {
+    @apply mb-[0.2rem] flex items-center gap-[0.4rem];
+  }
+  .support-avatar {
+    @apply relative grid h-[1.5rem] w-[1.5rem] shrink-0 place-items-center overflow-hidden rounded-full border border-line bg-raise text-[0.7rem] font-bold text-ok;
+  }
+  .support-avatar-elder {
+    @apply text-accent;
+  }
+  .support-avatar img {
+    @apply absolute inset-0 h-full w-full object-cover;
+  }
+  .support-msg-label {
+    @apply text-[0.72rem] font-bold text-dim;
+  }
+  .support-msg-tag {
+    @apply rounded-full border border-line px-[0.35rem] py-[0.05rem] text-[0.62rem] font-bold uppercase tracking-[0.05em] text-faint;
+  }
+  .support-receipt {
+    @apply m-0 mt-[0.2rem] text-[0.72rem] text-faint;
+  }
+  .support-msg-failed-note {
+    @apply m-0 mt-[0.25rem] text-[0.78rem] text-dim;
+  }
+  .support-retry-row {
+    @apply mt-[0.3rem] flex items-center gap-[0.8rem];
+  }
+  .support-thinking {
+    @apply rounded-[0.6rem] border border-line bg-inset px-[0.7rem] py-[0.45rem] text-[0.85rem] italic text-dim;
+  }
+
+  /* Action row: Ask The Elder + Talk to a human */
+  .support-actions {
+    @apply flex items-center gap-[0.5rem];
+  }
+  .support-action-btn {
+    @apply flex-1 cursor-pointer rounded-[0.5rem] border border-line bg-inset px-[0.6rem] py-[0.4rem] text-[0.78rem] text-dim transition-[border-color,color] duration-150 hover:border-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Elder quote/entry card + long-payload consent card (reuse nudge visuals) */
+  .support-guru-card {
+    @apply flex flex-col gap-[0.5rem] rounded-[0.5rem] border border-accent/45 bg-accent/12 px-[0.75rem] py-[0.6rem];
+  }
+  .support-guru-state {
+    @apply flex flex-col gap-[0.5rem];
+  }
+  .support-guru-title {
+    @apply m-0 text-[0.85rem] font-bold text-ink;
+  }
+  .support-guru-text {
+    @apply m-0 text-[0.8rem] leading-snug text-dim;
+  }
+  .support-guru-row {
+    @apply flex items-center gap-[0.5rem];
+  }
+  .support-consent {
+    @apply flex flex-col gap-[0.5rem] rounded-[0.5rem] border border-warn/45 bg-warn/12 px-[0.75rem] py-[0.6rem];
+  }
+  .support-consent-preview {
+    @apply max-h-[8rem] overflow-y-auto whitespace-pre-wrap break-words rounded-[0.4rem] border border-line bg-inset p-[0.5rem] text-[0.75rem] text-dim;
+  }
+  .support-escalated {
+    @apply m-0 rounded-[0.5rem] border border-ok/45 bg-ok/12 px-[0.75rem] py-[0.5rem] text-[0.8rem] text-ink;
+  }
+
   /* ---------- footer ---------- */
   .site-footer {
     @apply mt-[4rem] border-t border-line pb-[3rem] pt-[2.5rem] text-[0.85rem] text-faint;

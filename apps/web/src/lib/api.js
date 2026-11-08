@@ -133,3 +133,37 @@ export function postSupportMessage({ conversationId, token, body }) {
     { method: 'POST', headers: { 'x-support-token': token }, body: { body } }
   )
 }
+
+// POST /support/conversations/{id}/guru — request a Guru turn against the
+// existing thread (Sage retry after a failed turn, or a paid Elder turn).
+// No message body is sent — the backend re-runs against thread context.
+// `accountNumber` is REQUIRED for guru='elder' (400 missing_account_number
+// otherwise) and dropped by JSON.stringify when undefined (Sage path).
+// Contract: docs/HANDOFF-2026-11-08-guru-support-chat.md §4 + §4.1-D/G.
+export function postSupportGuru({ conversationId, token, guru, accountNumber }) {
+  return request(
+    `/support/conversations/${encodeURIComponent(conversationId)}/guru`,
+    { method: 'POST', headers: { 'x-support-token': token }, body: { guru, account_number: accountNumber } }
+  )
+}
+
+// POST /support/conversations/{id}/guru/quote — pre-request maximum-charge
+// quote for an Elder turn (quoteUsd/balanceUsd are USD STRINGS, render
+// verbatim). Never runs a turn, never charges.
+// Contract: docs/HANDOFF-2026-11-08-guru-support-chat.md §4.1-A.
+export function postSupportGuruQuote({ conversationId, token, accountNumber }) {
+  return request(
+    `/support/conversations/${encodeURIComponent(conversationId)}/guru/quote`,
+    { method: 'POST', headers: { 'x-support-token': token }, body: { guru: 'elder', account_number: accountNumber } }
+  )
+}
+
+// POST /support/conversations/{id}/escalate — hand the conversation to the
+// human team; Sage auto-answers are muted once escalated. Empty body.
+// Contract: docs/HANDOFF-2026-11-08-guru-support-chat.md §4.1-C.
+export function postSupportEscalate({ conversationId, token }) {
+  return request(
+    `/support/conversations/${encodeURIComponent(conversationId)}/escalate`,
+    { method: 'POST', headers: { 'x-support-token': token } }
+  )
+}

@@ -34,8 +34,16 @@ nano-gpt model roster, and QA doctrine. This file is the PROJECT layer: what to 
 2. **Guardian Angel — the Guardian Angel monitoring product robot.** Green body, thin
    golden halo, NO cape. Canon prompt: `references/guardian-angel-prompt.txt`.
 3. **Sage / The Elder — AI assistant personas** (default Guru / escalation Guru).
-   Owner-named 2026-11-08, backed by `TEE/glm-5.3-flash` / `TEE/kimi-k3`. Text canon
-   only — NO visual canon approved yet; do not generate portraits without an owner ruling.
+   Owner-named 2026-11-08, backed by `TEE/glm-5.3-flash` / `TEE/kimi-k3`. Visual canon
+   APPROVED 2026-11-08 (owner ruling, support-chat work): 1:1 bust portraits, green
+   bodies, no cape, no halo, no text. **Sage** = YOUNG MAN: clean youthful face, no
+   beard/glasses, casual dark navy hoodie `#1A1D24` — canonical render
+   `img/brand/sage.webp` (512x512 webp q88), source `apps/web/tools/assets/sage-avatar-v1.{jpg,txt}`.
+   **The Elder** = OLD WOMAN: silver-white bun, half-moon reading glasses, sky-blue
+   `#3D9DF2` knitted shawl — canonical render `img/brand/the-elder.webp` (512x512 webp
+   q88), source `apps/web/tools/assets/the-elder-avatar-v1.{jpg,txt}`. Both OCR-verified
+   text-free; both MUST stay visually distinct from Colonel Su (white beard, round
+   glasses, charcoal monk robe) and from each other.
    Wardrobe studies published under `/img/brand/`: hooded robe, swaddle blanket,
    baby-in-diaper (`guardian-{robe,blanket,baby}.webp`); the toga was owner-REJECTED
    (deleted 2026-11-04).
@@ -55,6 +63,7 @@ nano-gpt model roster, and QA doctrine. This file is the PROJECT layer: what to 
 | `public/apple-touch-icon.png` | 180x180 | PNG | full-body-on-tile prompt → auto-crop tile bbox (non-white diff) → resize |
 | `public/icon.svg` | 24 viewBox | SVG | hand-maintained vector (green SU robot: cape + chest diamond, letters omitted at 24px) |
 | `public/img/brand/guardian-angel.webp` | 512x512 | webp q88 | square Guardian prompt → resize |
+| `public/img/brand/{sage,the-elder}.webp` | 512x512 | webp q88 | square persona prompt → resize |
 | `public/img/badge-guardian-{lite,pro}.webp` | 256x256 | webp q92 | PIL ring overlays (`apps/web/tools/gen-guardian-badges.py`) |
 
 - Source arts (jpg) for every published raster live in `apps/web/tools/assets/` — commit

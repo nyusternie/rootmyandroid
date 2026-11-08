@@ -9,6 +9,9 @@ import {
   createSupportConversation,
   getSupportMessages,
   listAudits,
+  postSupportEscalate,
+  postSupportGuru,
+  postSupportGuruQuote,
   postSupportMessage,
   redeemCode,
   saveAudit,
@@ -199,6 +202,49 @@ describe('api client', () => {
     expect(init.method).toBe('POST')
     expect(init.headers).toEqual({ 'content-type': 'application/json', 'x-support-token': 'b'.repeat(64) })
     expect(JSON.parse(init.body)).toEqual({ body: 'more' })
+  })
+
+  it('postSupportGuru posts the guru slug with the bearer token, dropping an undefined account number', async () => {
+    fetch.mockImplementation(() => jsonResponse(202, { ok: true }))
+    const res = await postSupportGuru({ conversationId: 'a'.repeat(32), token: 'b'.repeat(64), guru: 'sage', accountNumber: undefined })
+    expect(res.ok).toBe(true)
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/support/conversations/${'a'.repeat(32)}/guru`)
+    expect(init.method).toBe('POST')
+    expect(init.headers).toEqual({ 'content-type': 'application/json', 'x-support-token': 'b'.repeat(64) })
+    expect(JSON.parse(init.body)).toEqual({ guru: 'sage' })
+  })
+
+  it('postSupportGuru sends the account number for elder turns', async () => {
+    fetch.mockImplementation(() => jsonResponse(202, { ok: true }))
+    await postSupportGuru({ conversationId: 'a'.repeat(32), token: 'b'.repeat(64), guru: 'elder', accountNumber: '1234567890123456' })
+    const [, init] = fetch.mock.calls[0]
+    expect(JSON.parse(init.body)).toEqual({ guru: 'elder', account_number: '1234567890123456' })
+  })
+
+  it('postSupportGuruQuote posts guru=elder + account number to the quote endpoint', async () => {
+    fetch.mockImplementation(() =>
+      jsonResponse(200, { ok: true, quoteUsd: '0.058650', balanceUsd: '1.000000', sufficient: true, maxInputTokens: 12000, maxOutputTokens: 1000 })
+    )
+    const res = await postSupportGuruQuote({ conversationId: 'a'.repeat(32), token: 'b'.repeat(64), accountNumber: '1234567890123456' })
+    expect(res.ok).toBe(true)
+    expect(res.data.quoteUsd).toBe('0.058650')
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/support/conversations/${'a'.repeat(32)}/guru/quote`)
+    expect(init.method).toBe('POST')
+    expect(init.headers).toEqual({ 'content-type': 'application/json', 'x-support-token': 'b'.repeat(64) })
+    expect(JSON.parse(init.body)).toEqual({ guru: 'elder', account_number: '1234567890123456' })
+  })
+
+  it('postSupportEscalate posts an empty body with the bearer token', async () => {
+    fetch.mockImplementation(() => jsonResponse(200, { ok: true, escalated: true }))
+    const res = await postSupportEscalate({ conversationId: 'a'.repeat(32), token: 'b'.repeat(64) })
+    expect(res.ok).toBe(true)
+    const [url, init] = fetch.mock.calls[0]
+    expect(url).toBe(`${BASE}/support/conversations/${'a'.repeat(32)}/escalate`)
+    expect(init.method).toBe('POST')
+    expect(init.headers).toEqual({ 'x-support-token': 'b'.repeat(64) })
+    expect(init.body).toBeUndefined()
   })
 
   it('handles non-JSON responses gracefully', async () => {
