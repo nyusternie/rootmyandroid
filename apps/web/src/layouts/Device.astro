@@ -120,19 +120,6 @@ const related = [
       {d.maintainer.length > 0 && <> · maintained by {d.maintainer.join(', ')}</>}
     </p>
 
-    {/* Visible page art: the same resolved card used for og:image — a
-        per-device render when one exists, else the catalog card. The page
-        previously carried the art ONLY in the (invisible) og:image meta,
-        which read as "no graphics at all" on the page (owner 2026-11-08). */}
-    <img
-      src={ogImage}
-      alt={ogImageAlt}
-      width="1200"
-      height="630"
-      loading="eager"
-      decoding="async"
-      style="width: 100%; height: auto; border-radius: 12px; display: block; margin: 0 0 1.25rem"
-    />
     <p class="faint small" style="margin: 0 0 1.75rem">
       Listed <time datetime={updatedIso}>{updatedIso}</time>
       {' · '}
@@ -151,7 +138,11 @@ const related = [
       )
     }
 
-    <section class="panel" style="margin: 0 0 2rem">
+    {/* Facts + art side-by-side on wide screens, stacked on narrow
+        (owner 2026-11-08: a full-width hero reads as TOO LARGE — cap the
+        art at ~20rem beside the facts panel instead). */}
+    <div style="display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: flex-start; margin: 0 0 2rem">
+    <section class="panel" style="margin: 0; flex: 1 1 20rem">
       <h2 style="margin-top: 0">Device facts</h2>
       <dl
         style="display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1rem; margin: 0"
@@ -194,6 +185,21 @@ const related = [
         }
       </dl>
     </section>
+
+    {/* Visible page art: the same resolved card used for og:image — a
+        per-device render when one exists, else the catalog card. The page
+        previously carried the art ONLY in the (invisible) og:image meta,
+        which read as "no graphics at all" on the page (owner 2026-11-08). */}
+    <img
+      src={ogImage}
+      alt={ogImageAlt}
+      width="1200"
+      height="630"
+      loading="eager"
+      decoding="async"
+      style="flex: 0 1 20rem; width: 20rem; max-width: 100%; height: auto; border-radius: 12px; display: block; margin: 0"
+    />
+    </div>
 
     {
       d.downloadfolder && (
