@@ -127,6 +127,15 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    (Rule added 2026-11-08 after the owner mandated Tailwind for ALL styling
    and the whole web app was converted: inline styles and scoped `<style>`
    blocks were removed from every page and layout.)
+8. **Dependencies are pinned — always.** Every dependency specifier in every
+   workspace `package.json` must be EXACT (`4.3.3`, not `^4.3.3` / `~4.3.3` /
+   `*` / `latest`); `workspace:*` / `file:` protocols are allowed (inherently
+   exact). `.npmrc` carries `save-exact=true` so `pnpm add` writes exact
+   versions; `tools/check-pinned-versions.mjs` runs in `pnpm check` (CI gate)
+   and fails on any ranged specifier. Pin to the version actually resolved
+   in `pnpm-lock.yaml`, then run `pnpm install` to sync the lockfile.
+   (Rule added 2026-11-08: owner mandate — no package may be installable
+   un-pinned.)
 
 ## Web SEO (live)
 

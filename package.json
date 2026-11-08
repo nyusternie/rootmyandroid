@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "pnpm --filter rootmyandroid-web dev",
     "build": "pnpm --filter rootmyandroid-web build",
-    "check": "node tools/check-web-styling.mjs && pnpm --filter rootmyandroid-web check",
+    "check": "node tools/check-pinned-versions.mjs && node tools/check-web-styling.mjs && pnpm --filter rootmyandroid-web check",
     "lint": "pnpm --filter rootmyandroid-web check",
     "test": "pnpm -r test"
   },
