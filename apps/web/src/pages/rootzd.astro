@@ -1,0 +1,141 @@
+---
+// src/pages/rootzd.astro — product page for rootzd, the Rootz daemon.
+// rootzd is a Rust binary for ALREADY-rooted devices; the no-wipe tier is
+// the Rootz app (see /rootz). Rootz PRO spans both (owner ruling
+// 2026-11-08). FAQPage schema mirrors the visible FAQ below — never add
+// entries that are not rendered on the page.
+import Base from '../layouts/Base.astro'
+
+const faq = [
+  {
+    q: 'Does rootzd require a rooted device?',
+    a: 'Yes. rootzd is installed after a device is rooted and runs with superuser privileges. If you do not want to root (and wipe) your device, the Rootz app is the tier built for you instead.',
+  },
+  {
+    q: 'Does installing rootzd wipe or modify my data?',
+    a: 'No. rootzd is a single small binary plus a boot script, installed after rooting is complete. It touches no user apps, accounts, or files.',
+  },
+  {
+    q: 'What does rootzd do today?',
+    a: 'The current build provides a remote terminal bridge into the device with full root privileges and starts itself automatically at every boot. The Rootz PRO professional tools — Terminal Editor and Log Analysis — attach to this daemon.',
+  },
+  {
+    q: 'How is rootzd installed and removed?',
+    a: 'Our tooling installs it as part of the guided rooting flow, using your device\u2019s root manager (verified with Magisk) to start it at boot. It can be removed by deleting its module files — no traces remain after a reboot.',
+  },
+]
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+}
+---
+
+<Base
+  title="rootzd — the Rootz daemon for rooted Android devices"
+  description="rootzd is the small Rust daemon that runs on your rooted Android device. It is the attach point for the Rootz PRO professional tools — Terminal Editor and Log Analysis — and starts itself at every boot."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
+  <section class="hero">
+    <div class="container">
+      <h1>rootzd — the daemon that <span class="hl">stays rooted</span>.</h1>
+      <p class="lede">
+        rootzd is a small Rust daemon that runs on your rooted Android
+        device. It starts itself at every boot, holds root privileges on
+        standby, and serves as the attach point for the Rootz PRO
+        professional tools — Terminal Editor and Log Analysis.
+      </p>
+      <div class="row" style="margin-top: 1.75rem">
+        <a class="btn btn-primary" href="/rootz">Meet the Rootz app</a>
+        <a class="btn" href="/pricing">See Rootz PRO pricing</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container" style="padding-top: 2.5rem; padding-bottom: 2rem">
+    <h2>Two products, one plan</h2>
+    <p>
+      Rootz comes in two forms for two kinds of users. The
+      <strong>Rootz app</strong> brings privileged capabilities to devices
+      that stay exactly as they are — no unlock, no wipe. <strong>rootzd</strong>
+      is for devices that are already rooted: a native daemon, not an app,
+      running with the full power root provides. One <strong>Rootz PRO</strong>
+      subscription covers the professional tools on both.
+    </p>
+  </section>
+
+  <section class="container" style="padding-bottom: 2rem">
+    <h2>Why a daemon?</h2>
+    <div class="grid-3 steps-grid" style="margin-top: 1.5rem">
+      <div class="panel">
+        <h3>Always on</h3>
+        <p class="muted">
+          rootzd launches at boot through your root manager and stays
+          resident. The tools connect instantly — no app to open first,
+          no re-approval dialogs.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Truly native</h3>
+        <p class="muted">
+          A single Rust binary with no app sandbox around it: direct shell
+          access as uid 0, exactly what professional terminal and log
+          tooling needs.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Nothing extra</h3>
+        <p class="muted">
+          rootzd touches no user apps, accounts, or files. It is one binary
+          plus one boot script — and it removes cleanly.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container" style="padding-bottom: 2rem">
+    <h2>Status: in active development</h2>
+    <p>
+      rootzd v0.1 is verified on real hardware (Pixel 5, Magisk): it runs
+      with root privileges, serves its terminal bridge, and restarts itself
+      across reboots. The pairing and security pass — authentication,
+      encryption, and a kill switch — lands before any customer release.
+      The no-wipe <a href="/rootz">Rootz app</a> tier is in planning.
+    </p>
+  </section>
+
+  <section class="container" style="padding-bottom: 3rem">
+    <h2>Frequently asked questions</h2>
+    {faq.map((f) => (
+      <details class="faq-item">
+        <summary>{f.q}</summary>
+        <p>{f.a}</p>
+      </details>
+    ))}
+    <p style="margin-top: 2rem">
+      <a class="btn btn-primary" href="/scan">Scan your device — free</a>
+    </p>
+  </section>
+
+  <style>
+    .faq-item {
+      border: 1px solid var(--border, #2a2f36);
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      margin-top: 0.75rem;
+    }
+    .faq-item summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .faq-item p {
+      margin: 0.75rem 0 0.25rem;
+    }
+  </style>
+</Base>
