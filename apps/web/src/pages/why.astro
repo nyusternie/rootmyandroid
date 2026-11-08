@@ -1,0 +1,196 @@
+---
+// src/pages/why.astro — SEO page: the benefits of rooting. Keyword target:
+// "why root android" / "benefits of rooting android" (and the "is rooting
+// worth it" long tail). CONTENT page: zero JavaScript (AGENTS.md rule 4);
+// the sitewide OG card stays. Hero art reuses /img/why-root.webp (the SU
+// firewall-shield illustration, also on the landing "Why root?" section).
+// Benefit claims are restricted to what this repo already publishes:
+//   - src/content/guides/what-is-rooting.md — full backups, bloatware
+//     removal, hosts-level ad/tracker blocking, custom ROMs (newer Android
+//     on abandoned phones), firewall/permission control, Play Integrity
+//     cat-and-mouse for banking apps.
+//   - src/pages/index.astro "Why root?" — per-app firewall, system-wide ad
+//     blocker; Guardian Angel FREE tier has a DNS-based ad blocker (the
+//     no-root partial alternative cited in the FAQ).
+//   - src/pages/LineageOS.astro — LineageOS keeps devices on a current
+//     Android version after the maker stops shipping updates.
+//   - src/pages/rooting.astro — deep customization (theming, kernels,
+//     automation), unlock factory-resets the device, warranty risk.
+// FAQ entries render visibly in the <details> list below AND feed the
+// FAQPage JSON-LD — the two must stay text-identical (structured data
+// mirrors copy, same pattern as src/pages/rooting.astro).
+import Base from '../layouts/Base.astro'
+
+const faq = [
+  {
+    q: 'What is the main benefit of rooting Android?',
+    a: 'Full control over your own device. Root access removes the limits the manufacturer shipped: you can uninstall bloatware instead of disabling it, block ads and trackers system-wide, take complete backups including app data, install a custom ROM, and customize the system far beyond stock settings.',
+  },
+  {
+    q: 'Does rooting make a phone faster?',
+    a: 'Root access by itself does not change speed — it unlocks the tools that can. Removing pre-installed apps frees storage and background capacity, and custom kernels can tune performance and battery behavior. Results depend on the device, which is why our scanner builds a plan for your exact model first.',
+  },
+  {
+    q: 'Is rooting still worth it in 2026?',
+    a: 'Yes, when you want what stock Android still refuses to give you: complete backups of apps and their data, system-wide ad and tracker blocking, per-app firewall control, and a newer Android version on phones the manufacturer abandoned. The trade-off is that banking and payment apps check for root via Play Integrity — most can be worked around, but it is an ongoing cat-and-mouse game.',
+  },
+  {
+    q: 'Can I get any of these benefits without root?',
+    a: 'Some, partially. A DNS-based ad blocker — like the one in our free Guardian Angel tier — works without root and covers ads in apps and browsers. Complete app-data backups, bloatware uninstalls, per-app firewall rules, and custom ROMs all genuinely require unlocking and rooting the device.',
+  },
+]
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+}
+---
+
+<Base
+  title="Why Root Your Android? The Real Benefits, Honestly Explained"
+  description="The benefits of rooting your Android phone or tablet: remove bloatware for good, block ads system-wide, control which apps reach the internet, take complete backups, install a custom ROM, and keep your device on a current Android for years longer."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
+  <section class="hero relative before:pointer-events-none before:absolute before:inset-x-0 before:-top-24 before:h-[32rem] before:bg-[radial-gradient(60%_70%_at_70%_30%,rgba(61,220,132,0.14),transparent_70%)] before:content-['']">
+    <div class="container hero-grid relative grid items-center gap-8 min-[720px]:grid-cols-[1.05fr_0.95fr]">
+      <div>
+        <h1>Why root your Android? <span class="hl text-accent">The benefits.</span></h1>
+        <p class="lede">
+          Your phone ships with limits you never agreed to: apps you cannot
+          uninstall, ads in everything, backups that skip what matters, and
+          updates that end while the hardware is still fine. Root access
+          removes those limits — here is exactly what you gain.
+        </p>
+        <div class="row mt-7">
+          <a class="btn btn-primary" href="/scan">Scan your device — free</a>
+          <a class="btn" href="/rooting">How rooting works</a>
+        </div>
+      </div>
+      <div class="hero-art">
+        <img class="block h-auto w-full rounded-[1.25rem] shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          src="/img/why-root.webp"
+          alt="Illustration of the green SU superhero Android robot projecting a glowing energy shield that blocks sparks from a brick wall — firewall protection and ad blocking with root access"
+          width="880"
+          height="880"
+          fetchpriority="high"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="container pt-10 pb-8">
+    <h2>Six benefits of rooting your Android</h2>
+    <div class="grid-3 mt-6">
+      <div class="panel">
+        <h3>Remove bloatware for good</h3>
+        <p class="muted">
+          Stock Android lets you "disable" pre-installed apps — they stay on
+          the device, occupying storage. With root you uninstall them
+          properly and get that space back.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Block ads everywhere</h3>
+        <p class="muted">
+          Root enables ad and tracker blocking at the hosts-file level:
+          one blocklist covers every app and every browser on the device,
+          not just a single browser tab.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Decide what goes online</h3>
+        <p class="muted">
+          A root firewall puts you in charge of which apps may reach the
+          internet, app by app — permission control far beyond anything in
+          the stock settings.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Take complete backups</h3>
+        <p class="muted">
+          Stock backups skip app data. Root backups include it — your
+          settings, saves, and logins come back exactly as they were.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Install a custom ROM</h3>
+        <p class="muted">
+          Replace the whole operating system with a community build like
+          <a href="/LineageOS">LineageOS</a> — a cleaner system, or a
+          de-Googled one entirely. Browse our <a href="/roms">ROM
+          catalog</a>.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Customize deeply</h3>
+        <p class="muted">
+          System-wide theming, custom kernels, and automation that stock
+          Android refuses to run — features your manufacturer never shipped,
+          powered by tools like <a href="/Magisk">Magisk</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container pb-8">
+    <h2>Keep a good phone alive for years longer</h2>
+    <p>
+      Manufacturers stop shipping updates while the hardware is still
+      perfectly usable. A custom ROM like
+      <a href="/LineageOS">LineageOS</a> keeps a device on a current Android
+      version after its maker has stopped — so rooting is not just about
+      more features, it is about not throwing away a working phone. Our
+      <a href="/roms">ROMs section</a> lists vetted, device-specific builds
+      with their official sources.
+    </p>
+  </section>
+
+  <section class="container pb-8">
+    <h2>What you can do once you are rooted</h2>
+    <p>
+      Rooting is the foundation; the tools are the payoff.
+      <a href="/Magisk"><strong>Magisk</strong></a> and
+      <a href="/KernelSU"><strong>KernelSU</strong></a> manage root access
+      itself, and our own <a href="/rootz"><strong>Rootz</strong></a> app
+      puts that power to work — profiling, automation, logs, firewall,
+      files, and a real terminal on your own device. For the family,
+      <a href="/guardian-angel"><strong>Guardian Angel</strong></a> adds
+      parental device management with everything encrypted on the device
+      before it leaves.
+    </p>
+  </section>
+
+  <section class="container pb-8">
+    <h2>The honest trade-offs</h2>
+    <p>
+      Benefits this big come with real consequences, and we would rather you
+      hear them from us: unlocking the bootloader factory-resets the device,
+      rooting can void your warranty, and banking and payment apps may
+      refuse to run. Read the full
+      <a href="/terms">rooting &amp; unlocking risk disclosure</a> and our
+      <a href="/rooting">rooting guide</a> before you begin — then let the
+      free <a href="/scan">scanner</a> confirm what your exact device
+      supports.
+    </p>
+  </section>
+
+  <section class="container pb-12">
+    <h2>Frequently asked questions</h2>
+    {faq.map((f) => (
+      <details class="faq-item mt-3 rounded-xl border border-[#2a2f36] px-5 py-4">
+        <summary class="cursor-pointer font-semibold">{f.q}</summary>
+        <p class="mt-3 mb-1">{f.a}</p>
+      </details>
+    ))}
+    <p class="mt-8">
+      <a class="btn btn-primary" href="/scan">Scan your device — free</a>
+    </p>
+  </section>
+
+</Base>
