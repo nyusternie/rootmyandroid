@@ -27,6 +27,10 @@ const common: typeof en = {
   footerTerms: '服务条款',
   footerPrivacy: '隐私政策',
   footerRefunds: '退款政策',
+  // Keep Android Open 活动横幅（事实核验来源见 en/common.ts）。
+  bannerText:
+    'Google 将要求所有安装在认证 Android 设备上的应用必须来自经 Google 验证的开发者——全球推广自 2027 年开始。你的手机即将不再完全属于你。',
+  bannerDismiss: '关闭横幅',
 }
 
 export default common

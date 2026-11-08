@@ -29,6 +29,10 @@ const common: typeof en = {
   footerTerms: 'Условия использования',
   footerPrivacy: 'Конфиденциальность',
   footerRefunds: 'Возвраты',
+  // Баннер кампании Keep Android Open (источники фактов — в en/common.ts).
+  bannerText:
+    'Google потребует, чтобы каждое приложение на сертифицированном Android-устройстве было выпущено проверенным Google разработчиком — глобальное внедрение начнётся в 2027 году. Ваш телефон скоро перестанет быть вашим.',
+  bannerDismiss: 'Скрыть баннер',
 }
 
 export default common

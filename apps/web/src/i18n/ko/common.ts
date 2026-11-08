@@ -28,6 +28,10 @@ const common: typeof en = {
   footerTerms: '이용약관',
   footerPrivacy: '개인정보 처리방침',
   footerRefunds: '환불 정책',
+  // Keep Android Open 캠페인 배너(사실 확인 출처는 en/common.ts 참조).
+  bannerText:
+    'Google은 인증된 Android 기기의 모든 앱이 Google 인증 개발자가 제공해야 하도록 요구할 예정입니다. 전 세계 적용은 2027년에 시작됩니다. 휴대폰이 곧 온전히 여러분의 것이 아니게 됩니다.',
+  bannerDismiss: '배너 닫기',
 }
 
 export default common

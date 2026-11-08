@@ -36,6 +36,16 @@ const common = {
   footerTerms: 'Terms',
   footerPrivacy: 'Privacy',
   footerRefunds: 'Refunds',
+  // Keep Android Open campaign banner (zero-JS dismissible strip at the very
+  // top of every page — Base.astro). Campaign name + URL are never
+  // translated (glossary); the descriptive sentence IS. Claim verified
+  // against Google's announcement (android-developers.googleblog.com
+  // 2025-08: apps on certified Android devices must be registered by a
+  // verified developer — global rollout "2027 and beyond"); the closing
+  // hook echoes keepandroidopen.org's own meta description.
+  bannerText:
+    'Google will require every app on certified Android devices to come from a Google-verified developer — global rollout starts 2027. Your phone is about to stop being yours.',
+  bannerDismiss: 'Dismiss banner',
 }
 
 export default common

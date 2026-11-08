@@ -110,6 +110,39 @@ const siteSchema = {
     <slot name="head" />
   </head>
   <body>
+    {/* Keep Android Open campaign banner — F-Droid-style strip at the very
+        top, above the sticky site header. Dismissal is ZERO-JS (hard rule 4:
+        no scripts on content pages): a clipped checkbox + <label> close
+        button + Tailwind variants — has-checked:hidden hides the strip when
+        the checkbox is toggled, and peer-focus-visible shows the keyboard
+        focus ring on the label (input and label must be SIBLINGS — Tailwind
+        peer-* compiles to the ~ sibling combinator). No persistence across
+        page loads: localStorage would require JS. Copy + sources documented
+        in src/i18n/en/common.ts (bannerText). */}
+    <div class="border-b border-warn/45 bg-warn/12 text-[0.92rem] text-[#f3d9a8] has-checked:hidden">
+      <div class="container flex max-w-[60rem] items-center justify-between gap-[0.75rem] py-[0.6rem]">
+        <p class="m-0">
+          {d.common.bannerText}{' '}
+          <a
+            href="https://keepandroidopen.org/"
+            rel="noopener"
+            class="font-semibold text-inherit underline underline-offset-2 hover:no-underline"
+          >
+            keepandroidopen.org
+          </a>
+        </p>
+        <input type="checkbox" id="kao-banner-toggle" class="peer/kao sr-only" />
+        <label
+          for="kao-banner-toggle"
+          aria-label={d.common.bannerDismiss}
+          class="shrink-0 cursor-pointer rounded-[0.35rem] p-[0.3rem] leading-none hover:bg-warn/20 peer-focus-visible/kao:outline-2 peer-focus-visible/kao:outline-accent"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+            <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </label>
+      </div>
+    </div>
     <header class="site-header">
       <div class="container">
         <a class="brand" href="/">
