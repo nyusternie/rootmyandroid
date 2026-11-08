@@ -1,65 +1,107 @@
 ---
-// src/pages/rootz.astro — SEO landing page for the Rootz app (the
-// unlocking assistant). Home of the "rooted android" hero art (moved from
-// the landing page 2026-11-03). FAQPage schema mirrors the visible FAQ
-// below — never add entries that are not rendered on the page.
+// src/pages/rootz.astro — PRODUCT page for Rootz (the power-user toolkit;
+// Colonel Rewt's product). REPLACED 2026-11-07 (owner ruling): the old
+// rooting-explainer content moved to src/pages/rooting.astro; /rootz is now
+// the product page with the AI-assistance roadmap. AI-status labels follow
+// the AI-positioning handoff (2026-11-07): owner ruling — the AI harness is
+// in active development, so every AI capability carries a status label
+// (LIVE / LABS / PLANNED) and no planned capability is presented as part of
+// the currently purchasable feature set. Tier facts mirror
+// src/pages/pricing.astro (the owner-ruled authority) and the landing-page
+// FAQ — keep them in sync. Encryption wording mirrors Terms §7 ("encrypted
+// on your device before upload; the key is held by you and never by us")
+// per the owner ruling 2026-11-07 that ALL product data is client-side
+// encrypted. FAQ entries render visibly below AND feed the FAQPage JSON-LD —
+// the two stay text-identical (structured data mirrors copy, same pattern
+// as src/pages/index.astro).
 import Base from '../layouts/Base.astro'
 
-const faq = [
+const freeTools = [
+  'System profiler',
+  'Task manager & automation',
+  'Logcat reader',
+  'Firewall manager',
+  'Battery monitor',
+  'Terminal editor',
+  'File explorer / manager',
+  'APK installer',
+  'Key mapper',
+]
+
+const faqs = [
   {
-    q: 'Is rooting legal?',
-    a: 'Rooting a device you own is legal in many countries, but laws and warranty terms vary. Rooting can void your manufacturer or carrier warranty, so check the terms for your device and region before you begin.',
+    q: 'What is Rootz?',
+    a: 'Rootz is our power-user toolkit for your own Android device. The free tier includes a system profiler, a task manager and automation, a logcat reader, a firewall manager, a battery monitor, a terminal editor, a file explorer and manager, an APK installer, and a key mapper. Rootz Pro adds the professional instruments — Log Analysis, an archive manager, VNC, RDP and more — plus the AI harness now in development.',
   },
   {
-    q: 'Will rooting erase my data?',
-    a: 'Unlocking the bootloader — a required first step on most devices — performs a factory reset and erases everything on the phone. Back up anything you want to keep before you start.',
+    q: 'What does Rootz Pro include?',
+    a: 'Rootz Pro is a $15 / 365-day top-up subscription: Terminal Editor and Log Analysis today, with the archive manager, VNC, RDP and the AI harness rolling out as they are ready. It is an independent yearly subscription that combines with any Guardian Angel plan — or stands alone — and paying with crypto saves 15%.',
   },
   {
-    q: 'Can I unroot and go back?',
-    a: 'In most cases, yes. Reflashing the manufacturer\'s stock firmware returns the device to its original, unrooted state. The exact procedure depends on the device maker.',
+    q: 'Does Rootz use AI?',
+    a: 'The Rootz core is deterministic: scans, detection rules, and plans are code, not model output. AI assistance — explanations of your scan report and log diagnostics — is in development and will always be opt-in: you preview the exact data that would be sent, choose the provider, and approve before anything leaves your device. AI proposes explanations; it never authorizes or executes changes.',
   },
   {
-    q: 'Does rooting work on every Android phone?',
-    a: 'No. It depends on your exact model, carrier variant, and whether the manufacturer allows the bootloader to be unlocked. Some carrier-locked variants cannot be unlocked at all — which is why Rootz checks your specific device before recommending anything.',
+    q: 'Can an AI agent root my phone for me?',
+    a: 'No. ADB shell access alone does not root a stock production device, and our browser scanner deliberately has no fastboot or flashing path. AI guidance is read-only; unlocking the bootloader and flashing remain explicit, physical, manufacturer-guided actions that you perform and approve yourself.',
+  },
+  {
+    q: 'Is my data private?',
+    a: 'Yes. Anything Rootz syncs is encrypted on your device before upload with a key held by you and never by us — we cannot decrypt your data. The browser scan goes further: it runs entirely on your computer and uploads nothing unless you explicitly save the report to your account number.',
+  },
+  {
+    q: 'How will AI usage be billed?',
+    a: 'Local tools are free. Cloud AI will use an included allowance or prepaid AI usage, with the provider, model class, estimated maximum charge, and a hard session cap shown before the first charge — no automatic overages and no automatic top-ups, ever.',
   },
 ]
 
 const faqSchema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: faq.map((f) => ({
+  mainEntity: faqs.map((f) => ({
     '@type': 'Question',
     name: f.q,
     acceptedAnswer: { '@type': 'Answer', text: f.a },
   })),
 }
+
+const appSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Rootz',
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Android',
+  url: 'https://rootmyandroid.com/rootz',
+  description:
+    'The power-user toolkit for Android: profiler, automation, firewall, logs, files, and a real terminal — free, with Pro professional tools and AI assistance in development. Client-side encrypted.',
+}
 ---
 
 <Base
-  title="Rootz — the unlocking assistant for your Android"
-  description="Rootz scans your Android device over ADB — read-only, in your browser — and builds a rooting / upgrade plan matched to your exact model and firmware. Free, private, no account needed to scan."
+  title="Rootz — the power-user toolkit for Android"
+  description="Rootz is the power-user toolkit for your Android device: profiler, automation, firewall, logs, files, and a real terminal — free, with Pro professional tools at $15/year. Client-side encrypted, with AI assistance in development."
 >
-  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
-
   <section class="hero relative before:pointer-events-none before:absolute before:inset-x-0 before:-top-24 before:h-[32rem] before:bg-[radial-gradient(60%_70%_at_70%_30%,rgba(61,220,132,0.14),transparent_70%)] before:content-['']">
     <div class="container hero-grid relative grid items-center gap-8 min-[720px]:grid-cols-[1.05fr_0.95fr]">
       <div>
-        <h1>Rootz — your Android, <span class="hl text-accent">fully yours</span>.</h1>
+        <h1>Rootz — your Android, <span class="hl text-accent">under your command</span>.</h1>
         <p class="lede">
-          Rootz is the unlocking assistant for your own device. It scans your
-          phone or tablet over ADB — entirely in your browser, read-only,
-          nothing uploaded — checks your bootloader, and builds a rooting and
-          upgrade plan matched to your exact model and firmware.
+          Rootz is the power-user toolkit for your own device: everything the
+          stock system hides from you — profiling, automation, logs,
+          firewall, files, and a real terminal — in one place. Everything it
+          syncs is encrypted on your device before it leaves, and AI
+          assistance is being built to explain your device&apos;s evidence,
+          never to act behind your back.
         </p>
         <div class="row mt-7">
-          <a class="btn btn-primary" href="/scan">Scan your device</a>
-          <a class="btn" href="/guides">Browse the guides</a>
+          <a class="btn btn-primary" href="/download">Download Rootz</a>
+          <a class="btn" href="/pricing">See plans &amp; pricing</a>
         </div>
       </div>
       <div class="hero-art">
         <img class="block h-auto w-full rounded-[1.25rem] shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
-          src="/img/hero.webp"
-          alt="Illustration of a blue Android robot with green roots growing from its base, representing a device rooted by Root My Android"
+          src="/img/guru-terminal.webp"
+          alt="Illustration of Colonel Rewt — the wise green Android robot of Rootz Pro, bearded and robed, holding an SU staff in front of a glowing terminal window — Rootz Pro professional tools"
           width="880"
           height="880"
           fetchpriority="high"
@@ -69,101 +111,281 @@ const faqSchema = {
   </section>
 
   <section class="container pt-10 pb-8">
-    <h2>What is rooting?</h2>
+    <div class="panel">
+      <h2 class="mt-0">How to read the labels on this page</h2>
+      <p class="muted mb-0">
+        Every AI capability on this page carries a release-status label.
+        <strong class="text-ok">LIVE</strong> means available and supported
+        now. <strong class="text-accent">LABS</strong> means opt-in
+        experimental functionality for test devices.
+        <strong>PLANNED</strong> means in development — not available, and
+        not part of any current purchase promise. Nothing labeled LABS or
+        PLANNED is something you can buy today.
+      </p>
+    </div>
+  </section>
+
+  <section class="container pb-8">
+    <h2>The free toolbox <span class="ml-2 inline-block rounded-full border border-line px-2 py-[0.1rem] align-middle text-[0.72rem] font-bold tracking-[0.08em] text-ok">LIVE</span></h2>
     <p>
-      Rooting gives you superuser (root) access to your own Android device —
-      the same level of control the operating system itself has. With root
-      access you can remove pre-installed apps you never asked for, take
-      complete backups, install a custom ROM, and customize the system far
-      beyond what stock settings allow.
+      The free tier is already a full toolbox — nine instruments that work
+      on your own device, no account required:
     </p>
+    <ul class="mt-3 grid list-none gap-[0.4rem] p-0 min-[560px]:grid-cols-2 min-[860px]:grid-cols-3">
+      {freeTools.map((t) => (
+        <li class="relative pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-ok before:content-['✓']">{t}</li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="container pb-8">
+    <h2>Rootz Pro — $15 / 365 days <span class="ml-2 inline-block rounded-full border border-line px-2 py-[0.1rem] align-middle text-[0.72rem] font-bold tracking-[0.08em] text-ok">LIVE</span></h2>
     <p>
-      On most devices, rooting starts with unlocking the bootloader — the
-      gatekeeper that decides which software the phone is allowed to run.
-      Whether and how a bootloader can be unlocked depends on the
-      manufacturer, the exact model, and often the carrier variant. That is
-      why generic tutorials so often fail: the safe path is different for
-      almost every device.
+      Pro unlocks the professional instruments: the <strong>Terminal
+      Editor</strong> and <strong>Log Analysis</strong> today, with the
+      archive manager, VNC, RDP and more rolling out as they are ready. It
+      is an independent yearly subscription that combines with any Guardian
+      Angel plan — or stands alone. Like every plan here it is a top-up:
+      add time whenever you like — no auto-renew, no stored card — and
+      paying with crypto saves 15%. Feature packages are being finalized —
+      the lineup on our <a href="/pricing">pricing page</a> is the current
+      offer.
     </p>
   </section>
 
   <section class="container pb-8">
-    <h2>How Rootz works</h2>
+    <h2>Rootz AI — assistance grounded in evidence <span class="ml-2 inline-block rounded-full border border-line px-2 py-[0.1rem] align-middle text-[0.72rem] font-bold tracking-[0.08em] muted">PLANNED</span></h2>
+    <p>
+      The Rootz AI harness is being built and tested right now. Its design
+      is fixed around one promise:
+    </p>
+    <p class="panel text-[1.1rem]">
+      <strong>AI explains the evidence. Deterministic tools validate the
+      plan. You approve every consequential action.</strong>
+    </p>
     <div class="grid-3 steps-grid mt-6">
       <div class="panel">
-        <h3>1. Connect</h3>
+        <h3>Live device guidance</h3>
         <p class="muted">
-          Plug your device in with a USB cable and enable USB debugging.
-          Rootz talks to it over ADB, straight from a WebUSB-capable desktop
-          browser — nothing to install.
+          Connect over USB and let the assistant explain real device
+          evidence, identify missing information, and guide the next safe
+          inspection — read-only, exactly like today&apos;s scan.
         </p>
       </div>
       <div class="panel">
-        <h3>2. Scan</h3>
+        <h3>Diagnostics grounded in logs</h3>
         <p class="muted">
-          The scan is strictly read-only: it inspects your model, firmware,
-          and bootloader state and never writes to the device. Nothing leaves
-          your computer unless you choose to save the report.
+          Rootz AI links every finding to supporting log excerpts,
+          separates observations from inference, and recommends read-only
+          next steps — never a command to run blind.
         </p>
       </div>
       <div class="panel">
-        <h3>3. Plan</h3>
+        <h3>Your agent, your permissions</h3>
         <p class="muted">
-          You get a step-by-step unlocking and upgrade plan matched to your
-          exact device — including an honest "not possible" when your variant
-          cannot be unlocked.
+          Connect through MCP or use the Root My Android runtime. Sensitive
+          data sharing and consequential operations require your explicit
+          authorization, every time.
         </p>
       </div>
     </div>
   </section>
 
   <section class="container pb-8">
-    <h2>What you can do with a rooted device</h2>
+    <h2>Two agents, strictly limited</h2>
+    <div class="grid gap-5 min-[720px]:grid-cols-2 mt-6">
+      <div class="panel">
+        <h3>Rooting Guide Agent</h3>
+        <ul class="muted">
+          <li>Reads approved device evidence.</li>
+          <li>Explains the deterministic rooting plan.</li>
+          <li>Identifies missing prerequisites.</li>
+          <li>
+            <strong>Cannot</strong> choose a boot image or partition from
+            model output alone.
+          </li>
+          <li><strong>Cannot</strong> execute arbitrary shell commands.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Rootz Diagnostic Agent</h3>
+        <ul class="muted">
+          <li>Reads an authorized log bundle.</li>
+          <li>Produces evidence-linked findings.</li>
+          <li>Suggests additional read-only probes.</li>
+          <li>Shows uncertainty and alternative explanations.</li>
+          <li>Stops at the session&apos;s cost and tool-call limits.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="muted mt-5">
+      Neither agent ever fills evidence gaps with model guesses: unknown
+      values stay unknown, and an unsupported device produces an honest
+      "not supported" — never a hallucinated plan.
+    </p>
+  </section>
+
+  <section class="container pb-8">
+    <h2>Capability status</h2>
+    <div class="table-wrap overflow-x-auto">
+      <table class="w-full min-w-[40rem] border-collapse text-[0.92rem]">
+        <caption class="faint small mb-2 text-left">
+          Rootz AI capabilities, their release status, where data goes, and
+          who is in charge.
+        </caption>
+        <thead>
+          <tr>
+            <th class="border border-line bg-raise px-3 py-[0.6rem] align-top text-left" scope="col">Capability</th>
+            <th class="border border-line bg-raise px-3 py-[0.6rem] align-top text-left" scope="col">Status</th>
+            <th class="border border-line bg-raise px-3 py-[0.6rem] align-top text-left" scope="col">Data destination</th>
+            <th class="border border-line bg-raise px-3 py-[0.6rem] align-top text-left" scope="col">Your authority</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Local ADB device scan</th>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left text-ok font-semibold">LIVE</td>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left">Browser only, by default</td>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left">Physical device and ADB authorization</td>
+          </tr>
+          <tr>
+            <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">AI scan explanation</th>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold">PLANNED (beta at launch)</td>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left">Named inference provider</td>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left">Separate payload consent</td>
+          </tr>
+          <tr>
+            <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Live read-only agent session</th>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold">PLANNED (beta at launch)</td>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left">Local device bridge plus approved evidence</td>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left">You can stop at any time</td>
+          </tr>
+          <tr>
+            <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Hardware-backed agent identity</th>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left text-accent font-semibold">LABS (when shipped)</td>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left">Attestation metadata only</td>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left">Device eligibility required</td>
+          </tr>
+          <tr>
+            <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">State-changing rooting operations</th>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left text-accent font-semibold">LABS / future</td>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left">Local operation broker</td>
+            <td class="border border-line px-3 py-[0.6rem] align-top text-left">Exact operation approval</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="container pb-8">
+    <h2>The security model, in plain language</h2>
     <ul>
+      <li><strong>The model proposes; it does not authorize.</strong></li>
+      <li>Device output and log text are treated as untrusted data, not instructions.</li>
+      <li>A deterministic policy service validates every tool call.</li>
+      <li>A local device broker owns USB and device execution.</li>
       <li>
-        <strong>Install a custom ROM</strong> — replace the whole operating
-        system with a community build like LineageOS. See our
-        <a href="/roms">ROMs section</a>.
+        Destructive actions require a separate authorization object and a
+        local confirmation — single-use, short-lived, and exact: artifact,
+        target, partition, slot, and data-loss consequences spelled out.
       </li>
       <li>
-        <strong>Remove bloatware for good</strong> — uninstall pre-installed
-        apps instead of merely disabling them.
+        There is no LLM-generated shell command with a generic Run button,
+        and no automatic retry of a write after a timeout or disconnect.
       </li>
+      <li>Agent sessions can be stopped and revoked at any time.</li>
       <li>
-        <strong>Take complete backups</strong> — including app data that
-        stock backups skip.
-      </li>
-      <li>
-        <strong>Customize deeply</strong> — system-wide theming, kernels,
-        automation, and features your manufacturer never shipped.
+        Bootloader unlocking and data-erasing steps remain explicit,
+        physical, manufacturer-guided actions — never silent agent
+        operations. A request to "just handle everything" does not bypass
+        these steps.
       </li>
     </ul>
   </section>
 
   <section class="container pb-8">
-    <h2>Know the risks first</h2>
+    <h2>Client-side encryption, by design</h2>
     <p>
-      Rooting is powerful and it is your right — but it is not free of
-      consequences. Unlocking the bootloader factory-resets the device.
-      Rooting can void your warranty, and some apps — banking and payment
-      apps in particular — may refuse to run on a rooted device. A mistake
-      during flashing can leave a device unbootable. Read the full
-      <a href="/terms">rooting &amp; unlocking risk disclosure</a> in our
-      Terms before you begin.
+      <strong>Everything that leaves your device is encrypted on the device
+      first.</strong> Logs, reports, and any Rootz data synced to your
+      account are encrypted before upload, with a key held by you and never
+      by us — we cannot decrypt your data, and we cannot recover a lost
+      key. There is no email, no password, and no personal profile attached
+      to any of it: your account is a random 16-digit number.
+    </p>
+    <p>
+      The free <a href="/scan">browser scan</a> goes further still: it
+      runs 100% on your computer and uploads nothing at all unless you
+      explicitly save the report.
+    </p>
+    <p>
+      The single exception to sealed data is an AI payload you approve
+      yourself: before any cloud AI feature sends anything, you preview the
+      exact fields and attachments, see the redactions, identify the
+      provider and model, and give affirmative consent — per payload,
+      every time. Without that approval, nothing readable leaves your
+      device.
     </p>
   </section>
 
-  <section class="container pb-12">
+  <section class="container pb-8">
+    <h2>Hardware-backed security, labeled honestly</h2>
+    <p>
+      You will never see a generic "TEE secured" badge here. Each
+      implementation gets the label that accurately describes it:
+    </p>
+    <ul>
+      <li>Browser session → <strong>Standard remote AI session</strong></li>
+      <li>Android app sandbox → <strong>On-device agent runtime</strong></li>
+      <li>Hardware-backed Keystore key → <strong>Device-bound cryptographic identity</strong></li>
+      <li>Verified key attestation → <strong>Hardware-backed device/key attestation verified</strong></li>
+      <li>StrongBox, where available → <strong>StrongBox-backed key</strong></li>
+    </ul>
+    <p class="muted">
+      Hardware-backed identity helps protect keys and verify selected
+      device properties. Cloud inference still occurs with the named
+      provider and is not executed inside the Android TEE. And because
+      rooted and unlocked devices can fail verified-boot or attestation
+      requirements, Rootz will offer a supported lower-assurance mode —
+      clearly labeled, never silently relabeled as attested.
+    </p>
+  </section>
+
+  <section class="container pb-8">
+    <h2>AI usage and billing</h2>
+    <p>
+      Four separate things will never be blurred together: your Rootz Pro
+      subscription time, an included AI usage allowance, additional prepaid
+      inference usage, and BYOK usage you pay directly to your own
+      provider. Before the first charge you see the feature and task, the
+      provider and model class, the estimated maximum charge, a session
+      spending cap, and your remaining included allowance. During use you
+      see the current charge and remaining budget; the session stops
+      cleanly at the hard cap.
+    </p>
+    <p class="panel">
+      <strong>Local tools are free. Cloud AI uses your included allowance
+      or prepaid AI usage. No automatic overages.</strong> No overdraft, no
+      automatic top-up, and your usage history never contains message or
+      prompt contents.
+    </p>
+  </section>
+
+  <section class="container faq-section pb-12">
     <h2>Frequently asked questions</h2>
-    {faq.map((f) => (
-      <details class="faq-item mt-3 rounded-xl border border-[#2a2f36] px-5 py-4">
+    {faqs.map((f) => (
+      <details class="panel faq-item mt-3">
         <summary class="cursor-pointer font-semibold">{f.q}</summary>
-        <p class="mt-3 mb-1">{f.a}</p>
+        <p class="muted mt-3">{f.a}</p>
       </details>
     ))}
     <p class="mt-8">
-      <a class="btn btn-primary" href="/scan">Scan your device — free</a>
+      <a class="btn btn-primary" href="/download">Download Rootz</a>
+      <a class="btn ml-3" href="/scan">Scan your device — free</a>
     </p>
   </section>
+
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(appSchema)} />
 
 </Base>
