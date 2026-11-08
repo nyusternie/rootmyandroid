@@ -131,6 +131,14 @@ for (const file of deviceFiles) {
     skipped.push(`${rel}: missing title/oem/codename`)
     continue
   }
+  // The upstream 'twrp' entry is an EMULATOR test target (title 'Android
+  // Emulator'), not a physical device a visitor can root — and it renders
+  // as a brand literally named 'TWRP' on the catalog index, which the
+  // 2026-11-08 general-catalog ruling forbids. Exclude it.
+  if (String(data.codename).toLowerCase() === 'twrp') {
+    skipped.push(`${rel}: emulator test target, not a physical device`)
+    continue
+  }
   const device = {
     title: decodeEntities(data.title),
     oem: decodeEntities(data.oem),

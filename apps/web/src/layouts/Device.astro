@@ -8,22 +8,30 @@
 // attribution on the page).
 //
 // RENDERING BRANCHES (2026-11-08 expansion):
-//   - supportstatus 'Current' (TWRP-imported): title "TWRP for …",
-//     download buttons (single folder) or a labeled per-SKU variants table.
+//   - supportstatus 'Current' (TWRP-imported): custom-recovery download
+//     buttons (single folder) or a labeled per-SKU variants table.
 //   - anything else (Google-imported Pixels: 'No official TWRP build
-//     listed'): honest no-TWRP sections — root options (Magisk facts per
-//     our /Magisk profile and the official Magisk docs) and, when
-//     `factoryimages` is set, a factory-images section.
+//     listed', displayed as 'none listed' via deviceStatusLabel): honest
+//     no-recovery sections — root options (Magisk facts per our /Magisk
+//     profile and the official Magisk docs) and, when `factoryimages` is
+//     set, a factory-images section.
 //   - `notes` renders as a caution callout near the top (e.g. Google's
 //     anti-rollback warnings).
-//   - OG art: Google-branded pages get the Pixel catalog card, all other
-//     pages the general device catalog card (public/img/devices/).
+//   - OG art: a per-device card (public/img/devices/<slug>.png) when one
+//     exists, else the Pixel catalog card for Google-branded pages, else
+//     the general device catalog card.
+// Owner ruling 2026-11-08: /device is a GENERAL devices catalog, NOT a
+// TWRP page — NO TWRP references anywhere in this template (download URLs
+// themselves stay: they are the factual locations of the official builds).
 // These are CONTENT pages: zero JavaScript (AGENTS.md rule 4). Structured
 // data mirrors visible copy: the TechArticle dateModified matches the
 // visible "Listed" line, the BreadcrumbList matches the "← All devices"
 // link.
 import type { CollectionEntry } from 'astro:content'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import Base from './Base.astro'
+import { deviceStatusLabel } from '../lib/devices.js'
 
 interface Props {
   device: CollectionEntry<'devices'>
@@ -34,23 +42,30 @@ const d = device.data
 
 const updatedIso = d.updated.toISOString().slice(0, 10)
 const isTwrpCurrent = d.supportstatus.toLowerCase() === 'current'
-const title = isTwrpCurrent
-  ? `TWRP for ${d.title}`
-  : `${d.title}: rooting & device facts`
+// Recovery-agnostic display label for the support status (see devices.js).
+const statusLabel = deviceStatusLabel(d.supportstatus)
+const title = d.title
 const description = isTwrpCurrent
-  ? `TWRP for the ${d.title} (codename ${d.codename}): official support status, ` +
-    `maintainer, downloads, and a free pre-flash device check.`
-  : `${d.title} (codename ${d.codename}): no official TWRP build is listed — root options, ` +
-    `factory images, device facts, and a free device check.`
+  ? `${d.title} (codename ${d.codename}): device facts, custom-recovery support status, ` +
+    `downloads, and a free pre-flash device check.`
+  : `${d.title} (codename ${d.codename}): device facts, root options, factory images, ` +
+    `and a free device check.`
 const canonical = new URL(`/device/${device.id}/`, Astro.site).href
 const markdownUrl = `/device/${device.id}.md`
 
-// Catalog OG art (see public/img/devices/): Pixel card for Google-branded
-// pages, general device card for everything else.
-const ogImage =
-  d.oem.toLowerCase() === 'google' ? '/img/devices/og-device-google.png' : '/img/devices/og-device.png'
+// Catalog OG art (see public/img/devices/): a per-device card when one has
+// been generated for this device, else the Pixel card for Google-branded
+// pages, else the general device card.
+const perDeviceArt = `/img/devices/${device.id}.png`
+// process.cwd() is apps/web during astro build (import.meta.url does NOT
+// resolve to the source file there — verified 2026-11-08).
+const ogImage = existsSync(join(process.cwd(), 'public', 'img', 'devices', `${device.id}.png`))
+  ? perDeviceArt
+  : d.oem.toLowerCase() === 'google'
+    ? '/img/devices/og-device-google.png'
+    : '/img/devices/og-device.png'
 const ogImageAlt = isTwrpCurrent
-  ? `TWRP for the ${d.title} — device facts and downloads`
+  ? `${d.title} — device facts and downloads`
   : `${d.title} — root options and device facts`
 
 // TechArticle JSON-LD — mirrors the visible headline, description, and
@@ -79,7 +94,6 @@ const breadcrumbSchema = {
 // Related reading (SEO + navigation) — the recovery/root topics most
 // relevant to someone holding this device.
 const related = [
-  { href: '/TWRP', label: 'TWRP' },
   { href: '/Magisk', label: 'Magisk' },
   { href: '/KernelSU', label: 'KernelSU' },
   { href: '/APatch', label: 'APatch' },
@@ -101,8 +115,8 @@ const related = [
 
     <h1 style="margin: 0 0 0.75rem">{title}</h1>
     <p class="muted" style="margin: 0 0 0.5rem; font-size: 1.1rem; max-width: 44rem">
-      {d.oem} · codename <code>{d.codename}</code> · official support status:{' '}
-      <strong>{d.supportstatus}</strong>
+      {d.oem} · codename <code>{d.codename}</code> · recovery support:{' '}
+      <strong>{statusLabel}</strong>
       {d.maintainer.length > 0 && <> · maintained by {d.maintainer.join(', ')}</>}
     </p>
     <p class="faint small" style="margin: 0 0 1.75rem">
@@ -134,12 +148,12 @@ const related = [
         <dd style="margin: 0">{d.oem}</dd>
         <dt class="muted">Codename</dt>
         <dd style="margin: 0"><code>{d.codename}</code></dd>
-        <dt class="muted">Support status</dt>
-        <dd style="margin: 0">{d.supportstatus}</dd>
+        <dt class="muted">Recovery support</dt>
+        <dd style="margin: 0">{statusLabel}</dd>
         {
           d.maintainer.length > 0 && (
             <>
-              <dt class="muted">Maintainer</dt>
+              <dt class="muted">Recovery maintainer</dt>
               <dd style="margin: 0">{d.maintainer.join(', ')}</dd>
             </>
           )
@@ -149,7 +163,7 @@ const related = [
             <>
               <dt class="muted">Device tree</dt>
               <dd style="margin: 0">
-                <a href={d.devicetree} rel="noopener">{d.devicetree}</a>
+                <a href={d.devicetree} rel="noopener">source repository</a>
               </dd>
             </>
           )
@@ -170,10 +184,10 @@ const related = [
     {
       d.downloadfolder && (
         <section style="margin: 0 0 2rem">
-          <h2>Download TWRP</h2>
+          <h2>Custom recovery downloads</h2>
           <p class="muted">
-            Official builds are published per device on the TWRP mirrors. Builds are
-            device-specific — only a build made for the {d.title} is safe to use.
+            Official builds are published per device. Builds are device-specific —
+            only a build made for the {d.title} is safe to use.
           </p>
           <div class="row">
             <a
@@ -194,12 +208,11 @@ const related = [
     {
       !d.downloadfolder && d.variants && d.variants.length > 0 && (
         <section style="margin: 0 0 2rem">
-          <h2>Download TWRP</h2>
+          <h2>Custom recovery downloads</h2>
           <p class="muted" style="max-width: 44rem">
             This device has separate official builds per variant — pick the one that
-            matches your exact model or SKU. Builds are published on the TWRP
-            mirrors; only a build made for the {d.title} variant you own is safe to
-            use.
+            matches your exact model or SKU. Only a build made for the {d.title}
+            variant you own is safe to use.
           </p>
           <table
             style="width: 100%; max-width: 44rem; border-collapse: collapse; font-size: 0.95rem"
@@ -221,12 +234,12 @@ const related = [
                   </td>
                   <td style="padding: 0.5rem 0.75rem 0.5rem 0">
                     <a href={`https://dl.twrp.me/${variant.folder}/`} rel="noopener">
-                      dl.twrp.me
+                      Download
                     </a>
                   </td>
                   <td style="padding: 0.5rem 0">
                     <a href={`https://eu.dl.twrp.me/${variant.folder}/`} rel="noopener">
-                      eu.dl.twrp.me
+                      Download
                     </a>
                   </td>
                 </tr>
@@ -242,8 +255,8 @@ const related = [
         <section style="margin: 0 0 2rem">
           <h2>Rooting the {d.title}</h2>
           <p class="muted" style="max-width: 44rem">
-            No official TWRP build is listed for the {d.title}. That does not rule
-            out root: the standard route on modern phones is Magisk — systemless
+            No custom recovery build is listed for the {d.title}. That does not
+            rule out root: the standard route on modern phones is Magisk — systemless
             root that patches the boot image instead of modifying the system
             partition. Magisk requires an unlocked bootloader, and rooting trips the
             integrity checks that banking and payment apps actively look for, so
@@ -287,10 +300,10 @@ const related = [
       {
         isTwrpCurrent ? (
           <p class="muted" style="max-width: 44rem">
-            TWRP is an open-source custom recovery: it can flash ZIP packages, take
-            and restore full partition backups (Nandroid), and manage partitions.
-            Installing a custom recovery generally requires an unlocked bootloader,
-            and unlocking factory-resets most phones.
+            A custom recovery replaces the stock recovery environment: it can flash
+            ZIP packages, take and restore full partition backups (Nandroid), and
+            manage partitions. Installing a custom recovery generally requires an
+            unlocked bootloader, and unlocking factory-resets most phones.
           </p>
         ) : (
           <p class="muted" style="max-width: 44rem">
@@ -324,9 +337,11 @@ const related = [
 
     <p class="faint small" style="max-width: 44rem">
       Root My Android is an independent site and is not affiliated with, endorsed by,
-      or sponsored by Team Win (TWRP). Android is a trademark of Google LLC.
-      Flashing any third-party software is at your own risk; make sure every build
-      matches your exact device before you install it.
+      or sponsored by any device maker or software project. Recovery support
+      statuses and downloads refer to the best-known open-source custom recovery
+      for Android. Android is a trademark of Google LLC. Flashing any third-party
+      software is at your own risk; make sure every build matches your exact
+      device before you install it.
     </p>
 
     <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />

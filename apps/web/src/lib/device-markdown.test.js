@@ -32,11 +32,11 @@ describe('buildDeviceMarkdown', () => {
         'Source: https://rootmyandroid.com/device/marlin/',
         'Brand: Google',
         'Codename: marlin',
-        'Official TWRP support status: Current',
+        'Recovery support status: Current',
         'Maintainer: Dees_Troy',
         'Device tree: https://github.com/TeamWin/android_device_google_marlin',
-        'TWRP download (Americas): https://dl.twrp.me/marlin/',
-        'TWRP download (Europe): https://eu.dl.twrp.me/marlin/',
+        'Recovery download (Americas): https://dl.twrp.me/marlin/',
+        'Recovery download (Europe): https://eu.dl.twrp.me/marlin/',
         'Listed: 2026-11-08',
         '',
       ].join('\n'),
@@ -61,7 +61,7 @@ describe('buildDeviceMarkdown', () => {
       },
     }
     const md = buildDeviceMarkdown(hammerhead)
-    expect(md).toContain('TWRP variants:')
+    expect(md).toContain('Recovery variants:')
     expect(md).toContain(
       '- Normal (recommended) (hammerhead): https://dl.twrp.me/hammerhead/ | https://eu.dl.twrp.me/hammerhead/',
     )
@@ -70,7 +70,7 @@ describe('buildDeviceMarkdown', () => {
     )
     expect(md).not.toContain('Maintainer:')
     expect(md).not.toContain('Device tree:')
-    expect(md).not.toContain('TWRP download (Americas):')
+    expect(md).not.toContain('Recovery download (Americas):')
   })
 
   it('renders a Google Pixel entry with factory images and notes', () => {
@@ -89,10 +89,10 @@ describe('buildDeviceMarkdown', () => {
       },
     }
     const md = buildDeviceMarkdown(tokay)
-    expect(md).toContain('Official TWRP support status: No official TWRP build listed')
+    expect(md).toContain('Recovery support status: none listed')
     expect(md).toContain('Factory images: https://developers.google.com/android/images')
     expect(md).toContain('Notes: Some cautionary note.')
-    expect(md).not.toContain('TWRP download')
-    expect(md).not.toContain('TWRP variants:')
+    expect(md).not.toContain('Recovery download')
+    expect(md).not.toContain('Recovery variants:')
   })
 })

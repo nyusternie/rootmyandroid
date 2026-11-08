@@ -122,6 +122,16 @@ export function decodeEntities(value) {
     .replace(/&#39;/g, "'")
 }
 
+// Display translation for support statuses (owner ruling 2026-11-08:
+// /device is a GENERAL devices catalog, not a TWRP page — the template and
+// the .md alternates render recovery-agnostic copy). The catalog data names
+// the best-known custom recovery in one of its status values; translate that
+// one for display, pass everything else through verbatim.
+export function deviceStatusLabel(value) {
+  const raw = String(value ?? '')
+  return raw === 'No official TWRP build listed' ? 'none listed' : raw
+}
+
 // The import keeps only devices whose official support status is exactly
 // 'Current' (case-insensitive). Near-miss statuses seen in the source data
 // ('Current-ish', 'Unified', 'Currently Supported via IsoRec') do NOT

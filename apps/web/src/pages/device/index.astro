@@ -44,21 +44,21 @@ const noTwrpCount = devices.length - currentCount
 
 <Base
   title="Devices"
-  description={`${currentCount} devices with current official TWRP support, plus ${noTwrpCount} Google Pixel phones and tablets — codenames, maintainers, downloads, factory images, and a free device check.`}
+  description={`${currentCount} devices with custom-recovery support status Current, plus ${noTwrpCount} Google Pixel phones and tablets — codenames, downloads, factory images, and a free device check.`}
   ogImage="/img/devices/og-device.png"
-  ogImageAlt="Root My Android device catalog — TWRP support status, codenames and downloads"
+  ogImageAlt="Root My Android device catalog — support status, codenames and downloads"
 >
   <div class="container" style="padding: 3rem 1.25rem">
     <h1 style="margin: 0 0 0.5rem">Devices</h1>
     <p class="muted" style="max-width: 44rem">
       {devices.length} devices across {brands.length} brands: {currentCount} with
-      official TWRP support status <strong>Current</strong>, plus the latest Google
-      Pixel phones and tablets ({noTwrpCount}) with no official TWRP build listed —
-      those pages cover root options and Google's factory images instead. Every page
-      lists the device codename, official download links, and what to check on your
-      device before changing anything. Devices with other support statuses will
-      follow. Raw-Markdown alternates for agents: append <code>.md</code> to any
-      device URL.
+      custom-recovery support status <strong>Current</strong>, plus the latest
+      Google Pixel phones and tablets ({noTwrpCount}) with no custom recovery
+      listed — those pages cover root options and Google's factory images instead.
+      Every page lists the device codename, official download links, and what to
+      check on your device before changing anything. Devices with other support
+      statuses will follow. Raw-Markdown alternates for agents: append
+      <code>.md</code> to any device URL.
     </p>
 
     {

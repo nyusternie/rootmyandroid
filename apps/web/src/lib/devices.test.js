@@ -11,6 +11,7 @@ import {
   allocateSlugs,
   cleanMaintainers,
   decodeEntities,
+  deviceStatusLabel,
   isCurrentStatus,
   isDownloadFolder,
   parseDownloadVariants,
@@ -134,6 +135,18 @@ describe('decodeEntities', () => {
 
   it('leaves plain strings untouched', () => {
     expect(decodeEntities('Google Pixel XL')).toBe('Google Pixel XL')
+  })
+})
+
+describe('deviceStatusLabel', () => {
+  it('translates the no-build-listed status to a recovery-agnostic label', () => {
+    expect(deviceStatusLabel('No official TWRP build listed')).toBe('none listed')
+  })
+
+  it('passes every other status through verbatim', () => {
+    expect(deviceStatusLabel('Current')).toBe('Current')
+    expect(deviceStatusLabel('Beta')).toBe('Beta')
+    expect(deviceStatusLabel('')).toBe('')
   })
 })
 

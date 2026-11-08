@@ -1,0 +1,59 @@
+akita|Google Pixel 8a
+bangkk|Motorola Moto G84 5G
+barbet|Google Pixel 5a
+blazer|Google Pixel 10 Pro
+bluejay|Google Pixel 6a
+blueline|Google Pixel 3
+bonito|Google Pixel 3a XL
+bramble|Google Pixel 4a (5G)
+caiman|Google Pixel 9 Pro
+cheetah|Google Pixel 7 Pro
+comet|Google Pixel 9 Pro Fold
+coral|Google Pixel 4 XL
+cubs|Google Pixel 11
+dragon|Google Pixel C
+felix|Google Pixel Fold
+flame|Google Pixel 4
+frankel|Google Pixel 10
+gm6-s-sprout|Android One Fourth Generation
+gm9pro-sprout|Android One Fifth Generation
+grizzly|Google Pixel 11 Pro
+h870|LG G6 International
+husky|Google Pixel 8 Pro
+ime|HTC U12+
+kodiak|Google Pixel 11 Pro XL
+komodo|Google Pixel 9 Pro XL
+lynx|Google Pixel 7a
+marlin|Google Pixel XL
+molly|ADT-1 Android TV
+moonstone-sunstone|Xiaomi Poco X5 5G & Redmi Note 12 5G
+mustang|Google Pixel 10 Pro XL
+ocn|HTC U11
+oriole|Google Pixel 6
+pa1q|Samsung Galaxy S25
+pa2q|Samsung Galaxy S25 Plus
+pa3q|Samsung Galaxy S25 Ultra
+panther|Google Pixel 7
+psq|Samsung Galaxy S25 Edge
+racer|Motorola Moto Edge
+rango|Google Pixel 10 Pro Fold
+raven|Google Pixel 6 Pro
+redfin|Google Pixel 5
+rhodep|Motorola Moto G82 5G
+sailfish|Google Pixel
+sargo|Google Pixel 3a
+seed|Android One Second Generation Qualcomm
+seedmtk|Android One Second Generation MTK
+shamrock|Android One Third Generation
+shiba|Google Pixel 8
+sprout|Android One
+stallion|Google Pixel 10a
+star|Xiaomi Mi 11 Ultra
+sunfish|Google Pixel 4a
+taimen|Google Pixel 2 XL
+tangorpro|Google Pixel Tablet
+tapas|Xiaomi Redmi Note 12 4G
+tegu|Google Pixel 9a
+tokay|Google Pixel 9
+us996|LG V20 US Unlocked
+yogi|Google Pixel 11 Pro Fold

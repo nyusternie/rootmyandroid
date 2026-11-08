@@ -3,7 +3,11 @@
 // src/pages/device/[...id].md.ts; content-type enforced by public/_headers).
 // Pure (unit-tested in src/lib/device-markdown.test.js): the endpoint feeds
 // it the collection entry. Facts only, mirroring the page — every line maps
-// to a rendered section of src/layouts/Device.astro.
+// to a rendered section of src/layouts/Device.astro. Copy is
+// recovery-agnostic (owner ruling 2026-11-08 — see deviceStatusLabel);
+// download URLs stay verbatim (factual locations of the official builds).
+import { deviceStatusLabel } from './devices.js'
+
 export function buildDeviceMarkdown(device) {
   const d = device.data
   const lines = [
@@ -14,7 +18,7 @@ export function buildDeviceMarkdown(device) {
     `Source: https://rootmyandroid.com/device/${device.id}/`,
     `Brand: ${d.oem}`,
     `Codename: ${d.codename}`,
-    `Official TWRP support status: ${d.supportstatus}`,
+    `Recovery support status: ${deviceStatusLabel(d.supportstatus)}`,
   ]
   if (d.maintainer.length > 0) {
     lines.push(`Maintainer: ${d.maintainer.join(', ')}`)
@@ -23,11 +27,11 @@ export function buildDeviceMarkdown(device) {
     lines.push(`Device tree: ${d.devicetree}`)
   }
   if (d.downloadfolder) {
-    lines.push(`TWRP download (Americas): https://dl.twrp.me/${d.downloadfolder}/`)
-    lines.push(`TWRP download (Europe): https://eu.dl.twrp.me/${d.downloadfolder}/`)
+    lines.push(`Recovery download (Americas): https://dl.twrp.me/${d.downloadfolder}/`)
+    lines.push(`Recovery download (Europe): https://eu.dl.twrp.me/${d.downloadfolder}/`)
   }
   if (d.variants && d.variants.length > 0) {
-    lines.push('TWRP variants:')
+    lines.push('Recovery variants:')
     for (const variant of d.variants) {
       lines.push(
         `- ${variant.label} (${variant.folder}): https://dl.twrp.me/${variant.folder}/ | https://eu.dl.twrp.me/${variant.folder}/`,
