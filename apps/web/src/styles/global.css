@@ -24,6 +24,21 @@
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
     Arial, sans-serif;
 
+  /* landing-page section-art scroll reveal (used on .reveal with
+     motion-safe:supports-[animation-timeline:view()] variants; the timeline
+     and range are set via arbitrary-property utilities on the element) */
+  --animate-reveal-in: reveal-in linear both;
+  @keyframes reveal-in {
+    from {
+      opacity: 0;
+      transform: translateY(2.5rem) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   /* report-panel entrance (used with motion-reduce:animate-none) */
   --animate-scan-in: scan-in 0.35s ease both;
   @keyframes scan-in {
@@ -169,6 +184,14 @@
   }
   .panel + .panel {
     @apply mt-[1.25rem];
+  }
+
+  /* Grids lay panels out side-by-side: the global stacked-panel margin
+     (.panel + .panel) must not push grid cards down. Structural rule —
+     lives here (Tailwind component layer), not in per-page styles. */
+  .steps-grid .panel + .panel,
+  .tier-grid .panel + .panel {
+    @apply mt-0;
   }
   .panel h2 {
     @apply m-0 mb-[1rem] text-[1.15rem];

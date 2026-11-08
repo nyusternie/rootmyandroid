@@ -48,9 +48,9 @@ const noTwrpCount = devices.length - currentCount
   ogImage="/img/devices/og-device.png"
   ogImageAlt="Root My Android device catalog — support status, codenames and downloads"
 >
-  <div class="container" style="padding: 3rem 1.25rem">
-    <h1 style="margin: 0 0 0.5rem">Devices</h1>
-    <p class="muted" style="max-width: 44rem">
+  <div class="container px-5 py-12">
+    <h1 class="mt-0 mb-2">Devices</h1>
+    <p class="muted max-w-[44rem]">
       {devices.length} devices across {brands.length} brands: {currentCount} with
       custom-recovery support status <strong>Current</strong>, plus the latest
       Google Pixel phones and tablets ({noTwrpCount}) with no custom recovery
@@ -63,13 +63,13 @@ const noTwrpCount = devices.length - currentCount
 
     {
       brands.map((brand) => (
-        <section style="margin-top: 2rem">
-          <h2 style="margin: 0 0 0.75rem">
+        <section class="mt-8">
+          <h2 class="mt-0 mb-3">
             {brand.label} <span class="faint small">({brand.devices.length})</span>
           </h2>
-          <ul class="prose" style="margin: 0; columns: 2">
+          <ul class="prose m-0 columns-2">
             {brand.devices.map((device) => (
-              <li style="break-inside: avoid">
+              <li class="break-inside-avoid">
                 <a href={`/device/${device.id}`}>{device.data.title}</a>{' '}
                 <code class="faint small">{device.data.codename}</code>
               </li>

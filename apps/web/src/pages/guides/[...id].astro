@@ -64,7 +64,7 @@ const breadcrumbSchema = {
     href={`/guides/${guide.id}.md`}
     title={`${guide.data.title} (Markdown)`}
   />
-  <div class="container prose" style="padding: 3rem 1.25rem">
+  <div class="container prose px-5 py-12">
     <p><a href="/guides">← All guides</a></p>
     <h1>{guide.data.title}</h1>
     {(publishedIso || updatedIso) && (

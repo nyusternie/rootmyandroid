@@ -64,9 +64,9 @@ const faqSchema = {
   description="Set up parental controls on Android step by step: Google Family Link, the on-device Settings controls, and the Google Play content-restrictions PIN — plus what Guardian Angel adds on top."
   ogType="article"
 >
-  <article class="container" style="padding: 3rem 1.25rem">
-    <h1 style="margin: 0 0 0.75rem">How to set up parental controls on Android</h1>
-    <p class="muted" style="margin: 0 0 1.5rem; font-size: 1.1rem; max-width: 44rem">
+  <article class="container px-5 py-12">
+    <h1 class="mt-0 mb-3">How to set up parental controls on Android</h1>
+    <p class="muted mb-6 text-[1.1rem] max-w-[44rem]">
       Android gives parents three free, built-in layers of control:
       <a href="https://families.google.com/familylink/" rel="noopener">Google Family Link</a>
       for remote management from your own phone, parental controls built
@@ -76,9 +76,9 @@ const faqSchema = {
       <a href="#guardian-angel">Guardian Angel</a> app adds on top.
     </p>
 
-    <nav class="panel toc" aria-label="On this page" style="margin-bottom: 2.5rem">
-      <h2>On this page</h2>
-      <ol>
+    <nav class="panel toc mb-10" aria-label="On this page">
+      <h2 class="mt-0 mb-3">On this page</h2>
+      <ol class="m-0 grid gap-[0.35rem] pl-5">
         <li><a href="#method-1">Method 1: Google Family Link (the full solution)</a></li>
         <li><a href="#method-2">Method 2: On-device controls in Android Settings</a></li>
         <li><a href="#method-3">Method 3: Google Play content-restrictions PIN</a></li>
@@ -316,8 +316,8 @@ const faqSchema = {
       </p>
     </div>
 
-    <figure class="ga-figure" style="margin: 2rem 0 2.5rem">
-      <img
+    <figure class="ga-figure mt-8 mb-10">
+      <img class="block h-auto w-full max-w-[26rem] rounded-xl border border-line"
         src="/img/guardian-angel-phone.webp"
         alt="Illustration of the Guardian Angel — the green Android robot with a golden halo — standing protectively beside a smartphone showing app usage statistics"
         width="880"
@@ -325,81 +325,81 @@ const faqSchema = {
         loading="lazy"
         decoding="async"
       />
-      <figcaption class="faint small" style="margin-top: 0.5rem">
+      <figcaption class="faint small mt-2">
         Original artwork by Root My Android.
       </figcaption>
     </figure>
 
-    <section id="compare" style="margin-bottom: 2.5rem">
+    <section id="compare" class="mb-10">
       <h2>Built-in vs Family Link vs Guardian Angel (comparison)</h2>
-      <div class="table-wrap">
-        <table>
-          <caption class="faint small" style="text-align: left; margin-bottom: 0.5rem">
+      <div class="table-wrap overflow-x-auto">
+        <table class="w-full min-w-[40rem] border-collapse text-[0.92rem]">
+          <caption class="faint small mb-2 text-left">
             Built-in Android controls vs Google Family Link vs Guardian
             Angel, compared by cost, screen time, app control, content
             filtering, and location.
           </caption>
           <thead>
             <tr>
-              <th scope="col">What it covers</th>
-              <th scope="col">Built-in controls</th>
-              <th scope="col">Google Family Link</th>
-              <th scope="col">Guardian Angel</th>
+              <th class="border border-line bg-[#171b21] px-3 py-[0.6rem] align-top text-left" scope="col">What it covers</th>
+              <th class="border border-line bg-[#171b21] px-3 py-[0.6rem] align-top text-left" scope="col">Built-in controls</th>
+              <th class="border border-line bg-[#171b21] px-3 py-[0.6rem] align-top text-left" scope="col">Google Family Link</th>
+              <th class="border border-line bg-[#171b21] px-3 py-[0.6rem] align-top text-left" scope="col">Guardian Angel</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <th scope="row">Cost</th>
-              <td>Free, built into Android</td>
-              <td>Free, any number of devices</td>
-              <td>Free tier; Lite $5 / 30 days, Pro $15 / 30 days</td>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Cost</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Free, built into Android</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Free, any number of devices</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Free tier; Lite $5 / 30 days, Pro $15 / 30 days</td>
             </tr>
             <tr>
-              <th scope="row">Screen time</th>
-              <td>Daily limit, Downtime</td>
-              <td>Daily limit, School Time, Downtime</td>
-              <td>Per-app usage statistics</td>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Screen time</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Daily limit, Downtime</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Daily limit, School Time, Downtime</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Per-app usage statistics</td>
             </tr>
             <tr>
-              <th scope="row">App control</th>
-              <td>Per-app limits, block apps</td>
-              <td>Per-app limits, block, install approvals</td>
-              <td>App lock (paid tiers)</td>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">App control</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Per-app limits, block apps</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Per-app limits, block, install approvals</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">App lock (paid tiers)</td>
             </tr>
             <tr>
-              <th scope="row">Content filtering</th>
-              <td>Chrome and Search (SafeSearch)</td>
-              <td>Chrome, Play, YouTube, Search, communication</td>
-              <td>DNS-based ad blocker</td>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Content filtering</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Chrome and Search (SafeSearch)</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Chrome, Play, YouTube, Search, communication</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">DNS-based ad blocker</td>
             </tr>
             <tr>
-              <th scope="row">Location</th>
-              <td>Not included</td>
-              <td>Live map and arrival alerts</td>
-              <td>Device locator (paid tiers)</td>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Location</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Not included</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Live map and arrival alerts</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Device locator (paid tiers)</td>
             </tr>
             <tr>
-              <th scope="row">Managed from your phone</th>
-              <td>No — on the device only</td>
-              <td>Yes — across all linked devices</td>
-              <td>Yes — up to 5 devices per account</td>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Managed from your phone</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">No — on the device only</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Yes — across all linked devices</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Yes — up to 5 devices per account</td>
             </tr>
           </tbody>
         </table>
       </div>
     </section>
 
-    <section id="faq" class="faq-section">
+    <section id="faq" class="faq-section mt-4">
       <h2>Frequently asked questions</h2>
       {faqs.map((f) => (
         <details class="panel faq-item">
-          <summary>{f.q}</summary>
+          <summary class="cursor-pointer font-semibold">{f.q}</summary>
           <p class="muted">{f.a}</p>
         </details>
       ))}
     </section>
 
-    <p class="faint small" style="margin-top: 1.5rem; max-width: 44rem">
+    <p class="faint small mt-6 max-w-[44rem]">
       Android, Google Play, Google Family Link, Chrome, and YouTube are
       trademarks of Google LLC. Samsung Kids is a trademark of Samsung
       Electronics. All other product names mentioned (including Qustodio)
@@ -411,56 +411,4 @@ const faqSchema = {
     <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   </article>
 
-  <style>
-    .toc h2 {
-      margin: 0 0 0.75rem;
-    }
-    .toc ol {
-      margin: 0;
-      padding-left: 1.25rem;
-      display: grid;
-      gap: 0.35rem;
-    }
-    .ga-figure img {
-      max-width: 26rem;
-      width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 0.75rem;
-      border: 1px solid #23282f;
-    }
-    .table-wrap {
-      overflow-x: auto;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      min-width: 40rem;
-      font-size: 0.92rem;
-    }
-    th,
-    td {
-      border: 1px solid #23282f;
-      padding: 0.6rem 0.75rem;
-      text-align: left;
-      vertical-align: top;
-    }
-    thead th {
-      background: #171b21;
-    }
-    tbody th {
-      font-weight: 600;
-    }
-    /* FAQ: native <details> accordions — zero JavaScript. */
-    .faq-section {
-      margin-top: 1rem;
-    }
-    .faq-item summary {
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .faq-item p {
-      margin-bottom: 0;
-    }
-  </style>
 </Base>

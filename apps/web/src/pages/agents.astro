@@ -70,9 +70,9 @@ const faqSchema = {
   description="Root My Android for AI agents: a public MCP server (JSON-RPC 2.0 over HTTP) and REST API for no-PII accounts, Guardian Angel subscriptions, card & crypto checkout, vouchers, and support."
   ogType="article"
 >
-  <article class="container" style="padding: 3rem 1.25rem">
-    <h1 style="margin: 0 0 0.75rem">Root My Android for AI agents</h1>
-    <p class="muted" style="margin: 0 0 1.5rem; font-size: 1.1rem; max-width: 44rem">
+  <article class="container px-5 py-12">
+    <h1 class="mt-0 mb-3">Root My Android for AI agents</h1>
+    <p class="muted mb-6 text-[1.1rem] max-w-[44rem]">
       Root My Android is built to be driven by software, not just visited
       by people. A public REST API and a
       <a href="https://modelcontextprotocol.io" rel="noopener">Model Context Protocol (MCP)</a>
@@ -82,9 +82,9 @@ const faqSchema = {
       registration, no personal data required anywhere.
     </p>
 
-    <nav class="panel toc" aria-label="On this page" style="margin-bottom: 2.5rem">
-      <h2>On this page</h2>
-      <ol>
+    <nav class="panel toc mb-10" aria-label="On this page">
+      <h2 class="mt-0 mb-3">On this page</h2>
+      <ol class="m-0 grid gap-[0.35rem] pl-5">
         <li><a href="#why">Why Root My Android is agent-friendly</a></li>
         <li><a href="#connect">Connect your agent (MCP server)</a></li>
         <li><a href="#capabilities">What agents can do</a></li>
@@ -215,17 +215,17 @@ const faqSchema = {
       </p>
     </div>
 
-    <section id="faq" class="faq-section" style="margin-top: 2.5rem">
+    <section id="faq" class="faq-section mt-10">
       <h2>Frequently asked questions</h2>
       {faqs.map((f) => (
         <details class="panel faq-item">
-          <summary>{f.q}</summary>
+          <summary class="cursor-pointer font-semibold">{f.q}</summary>
           <p class="muted">{f.a}</p>
         </details>
       ))}
     </section>
 
-    <p class="faint small" style="margin-top: 1.5rem; max-width: 44rem">
+    <p class="faint small mt-6 max-w-[44rem]">
       Android is a trademark of Google LLC. All other product names
       mentioned (including Claude and Cursor) are the property of their
       respective owners and are referenced here for identification and
@@ -235,23 +235,4 @@ const faqSchema = {
     <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   </article>
 
-  <style>
-    .toc h2 {
-      margin: 0 0 0.75rem;
-    }
-    .toc ol {
-      margin: 0;
-      padding-left: 1.25rem;
-      display: grid;
-      gap: 0.35rem;
-    }
-    /* FAQ: native <details> accordions — zero JavaScript. */
-    .faq-item summary {
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .faq-item p {
-      margin-bottom: 0;
-    }
-  </style>
 </Base>

@@ -107,6 +107,26 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    consequence (e.g. "this erases your entire home-screen layout"). (Rule added
    2026-10-19 after a launcher `pm clear` destroyed the user's home-screen
    layout; restored from Google backup via `bmgr restore`.)
+7. **Web styling is 100% Tailwind.** `apps/web` styles exclusively through
+   Tailwind v4 (Vite plugin in `astro.config.mjs`, entry
+   `src/styles/global.css`): markup uses **utilities**; shared design-system
+   classes (`.panel`, `.btn`, `.row`, `.hero`, …) are composed with `@apply`
+   inside global.css's `@layer base/components`; the `@theme` block is the
+   single source of truth for tokens (colors are `--color-*` — `text-ok`,
+   `border-line`, `bg-raise`… — fonts, and `--animate-*` keyframes). **Never**
+   use inline `style=""` attributes, **never** add `<style>` blocks (scoped or
+   global) to `.astro` files, and never introduce another styling system
+   (CSS modules, styled-components, plain `.css` files besides global.css).
+   Breakpoints are responsive variants (`min-[720px]:grid-cols-2`, …);
+   pseudo-elements/states are variants (`before:content-['✓_']`, `hover:`).
+   ONE sanctioned exception: **dynamic runtime-computed values** (an SVG
+   gauge's `stroke-dasharray` set from TS, a frontmatter-derived max-width)
+   may be carried via a CSS custom property set in `style={…}` and consumed
+   by an arbitrary-value utility (`max-w-(--profile-img-w)`); client scripts
+   may also write `.style.*` at runtime. Everything static is utilities-only.
+   (Rule added 2026-11-08 after the owner mandated Tailwind for ALL styling
+   and the whole web app was converted: inline styles and scoped `<style>`
+   blocks were removed from every page and layout.)
 
 ## Web SEO (live)
 

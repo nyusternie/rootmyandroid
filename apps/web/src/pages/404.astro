@@ -9,20 +9,20 @@ import Base from '../layouts/Base.astro'
   title="Page not found"
   description="This page does not exist — but your Android's full potential is one scan away."
 >
-  <section class="container" style="padding: 4rem 0; text-align: center">
+  <section class="container px-0 py-16 text-center">
     <img
       src="/img/brand/su-lost-404.webp"
       alt="The SU robot mascot looking puzzled, scratching its head while holding a disconnected USB cable — this page could not be found"
       width="512"
       height="512"
       fetchpriority="high"
-      style="width: 280px; height: auto; margin: 0 auto 1.5rem"
+      class="mx-auto mb-6 h-auto w-[280px]"
     />
-    <h1 style="font-size: 4rem; margin-bottom: 0.5rem">404</h1>
+    <h1 class="mb-2 text-[4rem]">404</h1>
     <p class="lede">
       That page wandered off the ROM. Let's get you back to familiar ground.
     </p>
-    <div class="row" style="justify-content: center; margin-top: 2rem">
+    <div class="row mt-8 justify-center">
       <a class="btn btn-primary" href="/">Back to the homepage</a>
       <a class="btn" href="/scan">Scan your device</a>
       <a class="btn" href="/guides">Browse the guides</a>

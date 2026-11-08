@@ -13,8 +13,8 @@ import Base from '../layouts/Base.astro'
   title="Device Audit"
   description="Audit any device in real time — OS, hardware, network identity — and see exactly what an Android device backs up, and which apps aren't covered at all."
 >
-  <div class="container audit" style="padding: 3rem 1.25rem">
-    <h1 style="margin: 0 0 0.5rem">Device Audit</h1>
+  <div class="container audit px-5 py-12">
+    <h1 class="mt-0 mb-2">Device Audit</h1>
     <p class="muted">
       One audit system, many audit classes. Run a live scan of the device
       you're on right now, or see a sample <strong>backup</strong> audit from a
@@ -80,13 +80,13 @@ import Base from '../layouts/Base.astro'
       <h2>Audit classes</h2>
       <div class="kv"><span class="k mono">device</span><span class="v">Live above — what this device is, right now</span></div>
       <div class="kv"><span class="k mono">backup</span><span class="v">Android backup coverage — sample below, live via the Rootz app</span></div>
-      <p class="small faint" style="margin-top: 0.9rem">
+      <p class="small faint mt-[0.9rem]">
         More classes (storage, root integrity, ROM &amp; OTA posture) land as
         the Rootz app's scanners ship — same page, same account.
       </p>
     </div>
 
-    <h2 style="margin-top: 2.5rem">Sample · Backup audit <span class="small faint">(audit class: backup)</span></h2>
+    <h2 class="mt-10">Sample · Backup audit <span class="small faint">(audit class: backup)</span></h2>
     <p class="muted">
       What this device is <em>actually</em> uploading — and what it isn't.
       Most people assume "backup is on" means everything is safe. It doesn't.
@@ -115,14 +115,14 @@ import Base from '../layouts/Base.astro'
       <h2>Coverage</h2>
       <div class="stat-grid">
         <div class="stat"><div class="num">90</div><div class="lbl">Registered</div></div>
-        <div class="stat"><div class="num" style="color: var(--ok)">62</div><div class="lbl">Backed up</div></div>
-        <div class="stat"><div class="num" style="color: var(--warn)">48</div><div class="lbl">Pending</div></div>
+        <div class="stat"><div class="num text-ok">62</div><div class="lbl">Backed up</div></div>
+        <div class="stat"><div class="num text-warn">48</div><div class="lbl">Pending</div></div>
         <div class="stat"><div class="num">192</div><div class="lbl">Queued</div></div>
       </div>
       <div class="coverage" aria-label="Backup coverage: 62 of 90 registered apps have completed a backup">
         <span class="halo-label">Coverage</span>
-        <span class="halo-track"><span class="halo-fill" style="width: 69%; background: var(--ok)"></span></span>
-        <span class="halo-value" style="color: var(--ok)">69%</span>
+        <span class="halo-track"><span class="halo-fill w-[69%] bg-ok"></span></span>
+        <span class="halo-value text-ok">69%</span>
       </div>
       <p class="small faint">
         62 of 90 registered apps have completed a backup. 48 are pending their
@@ -132,7 +132,7 @@ import Base from '../layouts/Base.astro'
     </div>
 
     <div class="panel panel-danger">
-      <h2 style="color: var(--danger)">Not covered — at all</h2>
+      <h2 class="text-danger">Not covered — at all</h2>
       <p class="small muted">
         These installed apps are not registered for backup in any way. This
         phone is the <strong>only</strong> place their data exists — if it's
@@ -152,7 +152,7 @@ import Base from '../layouts/Base.astro'
         <span class="chip chip-danger">EvoNext</span>
         <span class="chip chip-danger">Sidecoin</span>
       </div>
-      <p class="small faint" style="margin-top: 0.9rem">
+      <p class="small faint mt-[0.9rem]">
         Electron Cash isn't backed up yet either, but it <em>is</em> queued for
         its first backup. Most wallets exclude themselves from cloud backup by
         design — whether that trade-off is right for you is a decision we
@@ -210,7 +210,7 @@ import Base from '../layouts/Base.astro'
         <span class="chip">Files</span>
         <span class="chip">Device Health Services</span>
       </div>
-      <p class="small faint" style="margin-top: 0.9rem">
+      <p class="small faint mt-[0.9rem]">
         Plus the remaining Google / Pixel system components — 62 backed-up
         packages in total.
       </p>

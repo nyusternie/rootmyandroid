@@ -9,16 +9,16 @@ const guides = (await getCollection('guides', ({ data }) => !data.draft)).sort(
 ---
 
 <Base title="Guides" description="Step-by-step Android rooting, bootloader, and custom-ROM guides.">
-  <div class="container" style="padding: 3rem 1.25rem">
-    <h1 style="margin: 0 0 0.5rem">Guides</h1>
+  <div class="container px-5 py-12">
+    <h1 class="mt-0 mb-2">Guides</h1>
     <p class="muted">Step-by-step, device-specific. No fluff.</p>
 
-    <div class="stack" style="margin-top: 2rem">
+    <div class="stack mt-8">
       {
         guides.map((g) => (
-          <a class="panel" href={`/guides/${g.id}`} style="display:block; color:inherit">
-            <h2 style="margin: 0 0 0.35rem">{g.data.title}</h2>
-            <p class="muted" style="margin: 0">
+          <a class="panel block text-inherit" href={`/guides/`}>
+            <h2 class="mt-0 mb-[0.35rem]">{g.data.title}</h2>
+            <p class="muted m-0">
               {g.data.description}
             </p>
           </a>

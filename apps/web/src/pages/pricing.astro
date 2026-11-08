@@ -107,9 +107,9 @@ const pricingSchema = {
   title="Pricing"
   description="Guardian Angel monitoring (Lite $5/mo, Pro $15/mo) and Rootz Pro professional tools ($15/yr). Top-up subscriptions — no email, no password, no auto-renew."
 >
-  <section class="container" style="padding: 3rem 0 2rem; text-align: center">
-    <h1>Two products. <span class="hl">Simple subscriptions.</span></h1>
-    <p class="lede" style="max-width: 46rem; margin: 0 auto">
+  <section class="container px-0 pt-12 pb-8 text-center">
+    <h1>Two products. <span class="hl text-accent">Simple subscriptions.</span></h1>
+    <p class="lede mx-auto my-0 max-w-[46rem]">
       Guardian Angel watches over your devices with monthly monitoring
       subscriptions. Rootz unlocks professional tooling with a yearly
       Pro subscription. Both run on the same privacy-first account — no
@@ -118,11 +118,11 @@ const pricingSchema = {
     </p>
   </section>
 
-  <section class="container" style="padding-bottom: 2.5rem">
-    <div class="panel free-strip">
+  <section class="container pb-10">
+    <div class="panel free-strip flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h2 style="margin: 0">Free <span class="muted free-price">$0 forever</span></h2>
-        <p class="muted" style="margin: 0.25rem 0 0; max-width: 40rem">
+        <h2 class="m-0">Free <span class="muted free-price text-[1rem] font-normal">$0 forever</span></h2>
+        <p class="muted mt-1 max-w-[40rem]">
           Browser device scan (read-only ADB), bootloader &amp; unlock
           detection, root-method selection, and the full guides library —
           no account needed.
@@ -132,12 +132,12 @@ const pricingSchema = {
     </div>
   </section>
 
-  <section class="container" style="padding-bottom: 2.5rem">
-    <h2 class="product-head">Guardian Angel <span class="muted">— monthly monitoring</span></h2>
-    <div class="tiers-grid tiers-grid-2">
+  <section class="container pb-10">
+    <h2 class="product-head mb-5 text-center">Guardian Angel <span class="muted">— monthly monitoring</span></h2>
+    <div class="tiers-grid tiers-grid-2 grid grid-cols-1 items-stretch gap-[0.9rem] min-[560px]:mx-auto min-[560px]:max-w-[46rem] min-[560px]:grid-cols-2">
       {guardianTiers.map((t) => (
-        <div class:list={['panel', 'tier-card', { featured: t.featured }]}>
-          {t.tag && <span class="tier-tag">{t.tag}</span>}
+        <div class:list={['panel', 'tier-card', 'relative flex flex-col gap-1 text-center', { featured: t.featured, 'border-accent': t.featured }]}>
+          {t.tag && <span class="tier-tag absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-[0.2rem] text-[0.75rem] font-bold tracking-[0.05em] text-[#0d0f12]">{t.tag}</span>}
           <img
             class="app-badge"
             src={t.badge}
@@ -147,14 +147,14 @@ const pricingSchema = {
             loading="lazy"
           />
           <h3>{t.name}</h3>
-          <p class="tier-level muted">{t.level}</p>
-          <p class="tier-price">
-            {t.price} <span class="muted">/ {t.per}</span>
+          <p class="tier-level muted m-0 text-[0.8rem] uppercase tracking-[0.12em]">{t.level}</p>
+          <p class="tier-price mt-2 text-[1.75rem] font-bold">
+            {t.price} <span class="muted text-[0.9rem] font-normal">/ {t.per}</span>
           </p>
-          <ul class="tier-features">
-            {t.features.map((f) => <li>{f}</li>)}
+          <ul class="tier-features mt-3 mb-5 grid list-none gap-[0.4rem] p-0">
+            {t.features.map((f) => <li class="before:font-bold before:text-[#3fb96b] before:content-['✓_']">{f}</li>)}
           </ul>
-          <a class:list={['btn', { 'btn-primary': t.featured }]} href={t.cta.href}>
+          <a class:list={['btn', 'mt-auto', { 'btn-primary': t.featured }]} href={t.cta.href}>
             {t.cta.label}
           </a>
         </div>
@@ -162,12 +162,12 @@ const pricingSchema = {
     </div>
   </section>
 
-  <section class="container" style="padding-bottom: 3rem">
-    <h2 class="product-head">Rootz <span class="muted">— professional tools, yearly</span></h2>
-    <div class="tiers-grid tiers-grid-1">
+  <section class="container pb-12">
+    <h2 class="product-head mb-5 text-center">Rootz <span class="muted">— professional tools, yearly</span></h2>
+    <div class="tiers-grid tiers-grid-1 grid grid-cols-1 items-stretch gap-[0.9rem] min-[560px]:grid-cols-[minmax(0,23rem)] min-[560px]:justify-center">
       {rootzTiers.map((t) => (
-        <div class:list={['panel', 'tier-card', { featured: t.featured }]}>
-          {t.tag && <span class="tier-tag">{t.tag}</span>}
+        <div class:list={['panel', 'tier-card', 'relative flex flex-col gap-1 text-center', { featured: t.featured, 'border-accent': t.featured }]}>
+          {t.tag && <span class="tier-tag absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-[0.2rem] text-[0.75rem] font-bold tracking-[0.05em] text-[#0d0f12]">{t.tag}</span>}
           <img
             class="app-badge"
             src={t.badge}
@@ -177,20 +177,20 @@ const pricingSchema = {
             loading="lazy"
           />
           <h3>{t.name}</h3>
-          <p class="tier-level muted">{t.level}</p>
-          <p class="tier-price">
-            {t.price} <span class="muted">/ {t.per}</span>
+          <p class="tier-level muted m-0 text-[0.8rem] uppercase tracking-[0.12em]">{t.level}</p>
+          <p class="tier-price mt-2 text-[1.75rem] font-bold">
+            {t.price} <span class="muted text-[0.9rem] font-normal">/ {t.per}</span>
           </p>
-          <ul class="tier-features">
-            {t.features.map((f) => <li>{f}</li>)}
+          <ul class="tier-features mt-3 mb-5 grid list-none gap-[0.4rem] p-0">
+            {t.features.map((f) => <li class="before:font-bold before:text-[#3fb96b] before:content-['✓_']">{f}</li>)}
           </ul>
-          <a class:list={['btn', { 'btn-primary': t.featured }]} href={t.cta.href}>
+          <a class:list={['btn', 'mt-auto', { 'btn-primary': t.featured }]} href={t.cta.href}>
             {t.cta.label}
           </a>
         </div>
       ))}
     </div>
-    <p class="muted" style="margin-top: 1.5rem; text-align: center">
+    <p class="muted mt-6 text-center">
       All plans are top-up subscriptions: add time whenever you like — no
       auto-renew, no stored card. Guardian Angel subscribers can switch
       between Lite and Pro anytime; Rootz Pro renews yearly and works with
@@ -204,91 +204,4 @@ const pricingSchema = {
 
   <script type="application/ld+json" set:html={JSON.stringify(pricingSchema)} />
 
-  <style>
-    .free-strip {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    .free-price {
-      font-size: 1rem;
-      font-weight: 400;
-    }
-    .product-head {
-      text-align: center;
-      margin: 0 0 1.25rem;
-    }
-    .tiers-grid {
-      align-items: stretch;
-      display: grid;
-      gap: 0.9rem;
-      grid-template-columns: 1fr;
-    }
-    @media (min-width: 560px) {
-      .tiers-grid-2 {
-        grid-template-columns: repeat(2, 1fr);
-        max-width: 46rem;
-        margin: 0 auto;
-      }
-      .tiers-grid-1 {
-        grid-template-columns: minmax(0, 23rem);
-        justify-content: center;
-      }
-    }
-    .tier-card {
-      text-align: center;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-    .tier-card.featured {
-      border-color: var(--accent, #3d9df2);
-    }
-    .tier-tag {
-      position: absolute;
-      top: -0.75rem;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--accent, #3d9df2);
-      color: #0d0f12;
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      padding: 0.2rem 0.75rem;
-      border-radius: 999px;
-    }
-    .tier-level {
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font-size: 0.8rem;
-      margin: 0;
-    }
-    .tier-price {
-      font-size: 1.75rem;
-      font-weight: 700;
-      margin: 0.5rem 0 0;
-    }
-    .tier-price .muted {
-      font-size: 0.9rem;
-      font-weight: 400;
-    }
-    .tier-features {
-      list-style: none;
-      padding: 0;
-      margin: 0.75rem 0 1.25rem;
-      display: grid;
-      gap: 0.4rem;
-    }
-    .tier-features li::before {
-      content: '✓ ';
-      color: #3fb96b;
-      font-weight: 700;
-    }
-    .tier-card .btn {
-      margin-top: auto;
-    }
-  </style>
 </Base>

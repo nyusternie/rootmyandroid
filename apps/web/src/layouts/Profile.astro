@@ -81,13 +81,13 @@ const og = image.src.endsWith('.svg')
 ---
 
 <Base title={title} description={description} ogType="article" {...og}>
-  <article class="container" style="padding: 3rem 1.25rem">
-    <h1 style="margin: 0 0 0.75rem">{h1}</h1>
-    <p class="muted" style="margin: 0 0 1.75rem; font-size: 1.1rem; max-width: 38rem">
+  <article class="container px-5 py-12">
+    <h1 class="mt-0 mb-3">{h1}</h1>
+    <p class="muted mb-7 text-[1.1rem] max-w-[38rem]">
       {lede}
     </p>
 
-    <figure style="margin: 0 0 2rem">
+    <figure class="m-0 mb-8">
       <img
         src={image.src}
         alt={image.alt}
@@ -95,9 +95,9 @@ const og = image.src.endsWith('.svg')
         height={image.height}
         loading="lazy"
         decoding="async"
-        style={`max-width: ${image.displayWidth}px; width: 100%; height: auto; display: block; border-radius: 0.75rem; border: 1px solid #23282f`}
+        style={`--profile-img-w: ${image.displayWidth}px`} class="block h-auto w-full max-w-(--profile-img-w) rounded-xl border border-line"
       />
-      <figcaption class="faint small" style="margin-top: 0.5rem">
+      <figcaption class="faint small mt-2">
         {
           credit.made ? (
             <>
@@ -119,14 +119,14 @@ const og = image.src.endsWith('.svg')
       <slot />
     </div>
 
-    <nav class="panel" aria-label="Related topics" style="margin-top: 2rem">
+    <nav class="panel mt-8" aria-label="Related topics">
       <h2>Related topics</h2>
       <div class="row">
         {related.map((p) => <a href={p.href}>{p.label}</a>)}
       </div>
     </nav>
 
-    <p class="faint small" style="margin-top: 1.5rem; max-width: 44rem">
+    <p class="faint small mt-6 max-w-[44rem]">
       This page is an independent, unofficial overview of {name}, which is developed by
       <a href={ownerUrl} rel="noopener">{owner}</a>. Root My Android is not affiliated with,
       endorsed by, or sponsored by {owner}. Android is a trademark of Google LLC. All other

@@ -17,23 +17,23 @@ const roms = (await getCollection('roms', ({ data }) => !data.draft)).sort(
   title="Custom ROMs"
   description="A curated catalog of custom Android ROMs — LineageOS, GrapheneOS, and more — with official sources and device support."
 >
-  <div class="container" style="padding: 3rem 1.25rem">
-    <h1 style="margin: 0 0 0.5rem">Custom ROMs</h1>
+  <div class="container px-5 py-12">
+    <h1 class="mt-0 mb-2">Custom ROMs</h1>
     <p class="muted">
       Vetted, device-specific. We link to each project's official source; we
       only host a mirrored download once its redistribution terms are verified.
     </p>
 
-    <div class="stack" style="margin-top: 2rem">
+    <div class="stack mt-8">
       {
         roms.map((r) => (
           <div class="panel">
-            <div class="row" style="justify-content: space-between; align-items: baseline">
-              <h2 style="margin: 0 0 0.35rem">{r.data.name}</h2>
+            <div class="row items-baseline justify-between">
+              <h2 class="mt-0 mb-[0.35rem]">{r.data.name}</h2>
               {r.data.android && <span class="small faint">Android {r.data.android}</span>}
             </div>
-            <p class="muted" style="margin: 0 0 0.5rem">{r.data.description}</p>
-            <p class="small faint" style="margin: 0 0 0.75rem">
+            <p class="muted mt-0 mb-2">{r.data.description}</p>
+            <p class="small faint mt-0 mb-3">
               {r.data.vendor}
               {r.data.devices.length > 0 && <> · {r.data.devices.join(', ')}</>}
               {r.data.updated && (
@@ -60,7 +60,7 @@ const roms = (await getCollection('roms', ({ data }) => !data.draft)).sort(
       }
     </div>
 
-    <p class="small faint" style="margin-top: 2rem">
+    <p class="small faint mt-8">
       Always verify a build supports your exact device model before flashing.
       Flashing the wrong image can brick your device.
     </p>

@@ -10,8 +10,8 @@ import DepositPanel from '../components/DepositPanel.astro'
   title="Account"
   description="Your Root My Android account: create an account number and add time. No email, no password."
 >
-  <div class="container" style="padding: 3rem 1.25rem">
-    <h1 style="margin: 0 0 0.5rem">Your account</h1>
+  <div class="container px-5 py-12">
+    <h1 class="mt-0 mb-2">Your account</h1>
     <p class="muted">
       No email. No password. Your 16-digit account number <em>is</em> your
       account — keep it safe.
@@ -39,7 +39,7 @@ import DepositPanel from '../components/DepositPanel.astro'
       <div id="balance" class="balance" hidden>
         <span>
           <span class="label">Balance</span><br />
-          <span class="days"><span id="credit-days">0</span> <span class="muted" style="font-size:1rem">days</span></span>
+          <span class="days"><span id="credit-days">0</span> <span class="muted text-[1rem]">days</span></span>
         </span>
       </div>
     </div>
@@ -49,7 +49,7 @@ import DepositPanel from '../components/DepositPanel.astro'
       {/* Real balance: filled in from the API after an account lookup/create. */}
       <a class="halo-bar" href="/pricing" aria-label="Halo balance — open the Pricing page">
         <span class="halo-label">Halo</span>
-        <span class="halo-track"><span class="halo-fill" id="halo-fill" style="width: 0%"></span></span>
+        <span class="halo-track"><span class="halo-fill w-0" id="halo-fill"></span></span>
         <span class="halo-value" id="halo-value">0</span>
       </a>
       <p class="small faint" id="halo-hint">
@@ -78,7 +78,7 @@ import DepositPanel from '../components/DepositPanel.astro'
         </button>
       </div>
       <p class="small faint" id="plan-hint">Enter or generate an account number above to buy Halo.</p>
-      <div class="row" style="margin-top: 0.75rem">
+      <div class="row mt-3">
         <label class="small muted" for="pay-currency">Pay with</label>
         <select id="pay-currency">
           <option value="ltc" selected>LTC — Litecoin</option>
@@ -90,7 +90,7 @@ import DepositPanel from '../components/DepositPanel.astro'
           <option value="sol">SOL — Solana</option>
         </select>
       </div>
-      <div class="row" style="margin-top: 0.75rem; align-items: center">
+      <div class="row mt-3 items-center">
         <span class="small muted">Or pay by card</span>
         <button class="btn" type="button" disabled>Credit card — coming soon</button>
       </div>
@@ -118,7 +118,7 @@ import DepositPanel from '../components/DepositPanel.astro'
           autocomplete="off"
           spellcheck="false"
           placeholder="XXXX-XXXX-XXXX-XXXX"
-          style="flex: 1"
+          class="flex-1"
         />
         <button type="button" class="btn btn-primary" id="redeem-btn" disabled>Redeem</button>
       </div>

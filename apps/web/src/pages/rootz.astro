@@ -41,23 +41,23 @@ const faqSchema = {
 >
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
 
-  <section class="hero">
-    <div class="container hero-grid">
+  <section class="hero relative before:pointer-events-none before:absolute before:inset-x-0 before:-top-24 before:h-[32rem] before:bg-[radial-gradient(60%_70%_at_70%_30%,rgba(61,220,132,0.14),transparent_70%)] before:content-['']">
+    <div class="container hero-grid relative grid items-center gap-8 min-[720px]:grid-cols-[1.05fr_0.95fr]">
       <div>
-        <h1>Rootz — your Android, <span class="hl">fully yours</span>.</h1>
+        <h1>Rootz — your Android, <span class="hl text-accent">fully yours</span>.</h1>
         <p class="lede">
           Rootz is the unlocking assistant for your own device. It scans your
           phone or tablet over ADB — entirely in your browser, read-only,
           nothing uploaded — checks your bootloader, and builds a rooting and
           upgrade plan matched to your exact model and firmware.
         </p>
-        <div class="row" style="margin-top: 1.75rem">
+        <div class="row mt-7">
           <a class="btn btn-primary" href="/scan">Scan your device</a>
           <a class="btn" href="/guides">Browse the guides</a>
         </div>
       </div>
       <div class="hero-art">
-        <img
+        <img class="block h-auto w-full rounded-[1.25rem] shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
           src="/img/hero.webp"
           alt="Illustration of a blue Android robot with green roots growing from its base, representing a device rooted by Root My Android"
           width="880"
@@ -68,7 +68,7 @@ const faqSchema = {
     </div>
   </section>
 
-  <section class="container" style="padding-top: 2.5rem; padding-bottom: 2rem">
+  <section class="container pt-10 pb-8">
     <h2>What is rooting?</h2>
     <p>
       Rooting gives you superuser (root) access to your own Android device —
@@ -87,9 +87,9 @@ const faqSchema = {
     </p>
   </section>
 
-  <section class="container" style="padding-bottom: 2rem">
+  <section class="container pb-8">
     <h2>How Rootz works</h2>
-    <div class="grid-3 steps-grid" style="margin-top: 1.5rem">
+    <div class="grid-3 steps-grid mt-6">
       <div class="panel">
         <h3>1. Connect</h3>
         <p class="muted">
@@ -117,7 +117,7 @@ const faqSchema = {
     </div>
   </section>
 
-  <section class="container" style="padding-bottom: 2rem">
+  <section class="container pb-8">
     <h2>What you can do with a rooted device</h2>
     <ul>
       <li>
@@ -140,7 +140,7 @@ const faqSchema = {
     </ul>
   </section>
 
-  <section class="container" style="padding-bottom: 2rem">
+  <section class="container pb-8">
     <h2>Know the risks first</h2>
     <p>
       Rooting is powerful and it is your right — but it is not free of
@@ -153,32 +153,17 @@ const faqSchema = {
     </p>
   </section>
 
-  <section class="container" style="padding-bottom: 3rem">
+  <section class="container pb-12">
     <h2>Frequently asked questions</h2>
     {faq.map((f) => (
-      <details class="faq-item">
-        <summary>{f.q}</summary>
-        <p>{f.a}</p>
+      <details class="faq-item mt-3 rounded-xl border border-[#2a2f36] px-5 py-4">
+        <summary class="cursor-pointer font-semibold">{f.q}</summary>
+        <p class="mt-3 mb-1">{f.a}</p>
       </details>
     ))}
-    <p style="margin-top: 2rem">
+    <p class="mt-8">
       <a class="btn btn-primary" href="/scan">Scan your device — free</a>
     </p>
   </section>
 
-  <style>
-    .faq-item {
-      border: 1px solid var(--border, #2a2f36);
-      border-radius: 0.75rem;
-      padding: 1rem 1.25rem;
-      margin-top: 0.75rem;
-    }
-    .faq-item summary {
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .faq-item p {
-      margin: 0.75rem 0 0.25rem;
-    }
-  </style>
 </Base>
