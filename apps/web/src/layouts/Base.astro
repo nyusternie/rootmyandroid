@@ -25,6 +25,10 @@ interface Props {
   ogImageAlt?: string
   ogImageWidth?: number
   ogImageHeight?: number
+  // Render the Keep Android Open banner at the very top, incl. its inline
+  // dismissal-persistence script (owner ruling 2026-11-08: JS-shipping
+  // pages only — /, /account, /audit, /pay, /scan).
+  banner?: boolean
 }
 
 const {
@@ -35,6 +39,7 @@ const {
   ogImageAlt = 'Root My Android — device unlocking assistant and Guardian Angel parental controls',
   ogImageWidth = 1200,
   ogImageHeight = 630,
+  banner = false,
 } = Astro.props
 
 const pageTitle = title === 'Root My Android' ? title : `${title} — Root My Android`
@@ -108,41 +113,81 @@ const siteSchema = {
     {/* Per-page head additions (e.g. the rel="alternate" Markdown link on
         guide pages). Pages that pass nothing here are unaffected. */}
     <slot name="head" />
+    {/* Keep Android Open banner dismissal persistence — emitted ONLY on
+        banner pages (the `banner` prop). is:inline + synchronous in <head>
+        = runs before first paint: if the banner was dismissed earlier it
+        never flashes back (owner ruling 2026-11-08: once dismissed it must
+        not reappear on later page loads — static HTML + CSS alone cannot
+        persist state, hence this one inline script; no-JS users keep the
+        checkbox per-view dismiss). The delegated click handler persists
+        the dismissal and hides immediately. Stored value is the campaign
+        slug — a future campaign bumps the slug so previously-dismissed
+        visitors see the new banner. */}
+    {
+      banner && (
+        <script is:inline>
+          ;(function () {
+            var KEY = 'rma.banner.dismissed'
+            var CAMPAIGN = 'keep-android-open'
+            try {
+              if (localStorage.getItem(KEY) === CAMPAIGN)
+                document.documentElement.classList.add('kao-dismissed')
+            } catch (e) {}
+            document.addEventListener('click', function (e) {
+              if (e.target && e.target.closest && e.target.closest('[data-kao-dismiss]')) {
+                try {
+                  localStorage.setItem(KEY, CAMPAIGN)
+                } catch (err) {}
+                document.documentElement.classList.add('kao-dismissed')
+              }
+            })
+          })()
+        </script>
+      )
+    }
   </head>
   <body>
     {/* Keep Android Open campaign banner — F-Droid-style strip at the very
-        top, above the sticky site header. Dismissal is ZERO-JS (hard rule 4:
-        no scripts on content pages): a clipped checkbox + <label> close
-        button + Tailwind variants — has-checked:hidden hides the strip when
-        the checkbox is toggled, and peer-focus-visible shows the keyboard
-        focus ring on the label (input and label must be SIBLINGS — Tailwind
-        peer-* compiles to the ~ sibling combinator). No persistence across
-        page loads: localStorage would require JS. Copy + sources documented
-        in src/i18n/en/common.ts (bannerText). */}
-    <div class="border-b border-warn/45 bg-warn/12 text-[0.92rem] text-[#f3d9a8] has-checked:hidden">
-      <div class="container flex max-w-[60rem] items-center justify-between gap-[0.75rem] py-[0.6rem]">
-        <p class="m-0">
-          {d.common.bannerText}{' '}
-          <a
-            href="https://keepandroidopen.org/"
-            rel="noopener"
-            class="font-semibold text-inherit underline underline-offset-2 hover:no-underline"
-          >
-            keepandroidopen.org
-          </a>
-        </p>
-        <input type="checkbox" id="kao-banner-toggle" class="peer/kao sr-only" />
-        <label
-          for="kao-banner-toggle"
-          aria-label={d.common.bannerDismiss}
-          class="shrink-0 cursor-pointer rounded-[0.35rem] p-[0.3rem] leading-none hover:bg-warn/20 peer-focus-visible/kao:outline-2 peer-focus-visible/kao:outline-accent"
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
-            <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-          </svg>
-        </label>
-      </div>
-    </div>
+        top, above the sticky site header. Rendered ONLY on pages passing the
+        `banner` prop (owner ruling 2026-11-08: JS-shipping pages — /,
+        /account, /audit, /pay, /scan; never on zero-JS content pages).
+        Dismissal: the <label> toggles a clipped checkbox and Tailwind
+        has-checked:hidden hides the strip instantly without JS; the inline
+        head script (end of <head>) additionally persists the dismissal to
+        localStorage and re-hides via html.kao-dismissed before first paint,
+        so a dismissed banner does not reappear on later page loads (owner
+        ruling 2026-11-08). Input and label must be SIBLINGS — Tailwind
+        peer-* compiles to the ~ sibling combinator. Copy + sources
+        documented in src/i18n/en/common.ts (bannerText). */}
+    {
+      banner && (
+        <div class="kao-banner border-b border-warn/45 bg-warn/12 text-[0.92rem] text-[#f3d9a8] has-checked:hidden">
+          <div class="container flex max-w-[60rem] items-center justify-between gap-[0.75rem] py-[0.6rem]">
+            <p class="m-0">
+              {d.common.bannerText}{' '}
+              <a
+                href="https://keepandroidopen.org/"
+                rel="noopener"
+                class="font-semibold text-inherit underline underline-offset-2 hover:no-underline"
+              >
+                keepandroidopen.org
+              </a>
+            </p>
+            <input type="checkbox" id="kao-banner-toggle" class="peer/kao sr-only" />
+            <label
+              for="kao-banner-toggle"
+              data-kao-dismiss=""
+              aria-label={d.common.bannerDismiss}
+              class="shrink-0 cursor-pointer rounded-[0.35rem] p-[0.3rem] leading-none hover:bg-warn/20 peer-focus-visible/kao:outline-2 peer-focus-visible/kao:outline-accent"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </label>
+          </div>
+        </div>
+      )
+    }
     <header class="site-header">
       <div class="container">
         <a class="brand" href="/">

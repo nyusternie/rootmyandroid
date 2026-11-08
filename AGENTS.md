@@ -93,7 +93,13 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    that talk to the API Worker at `rootmyandroid.com/v1`. Content pages
    (`/`, `/guides/*`) must ship
    **zero JavaScript**. All dynamic/backend functionality lives in the
-   separate `rootmyandroid-api` Cloudflare Worker.
+   separate `rootmyandroid-api` Cloudflare Worker. The landing page `/` is a
+   sanctioned exception: it ships the support widget (owner request
+   2026-11-04) and the Keep Android Open banner's dismissal-persistence
+   inline script (owner ruling 2026-11-08 — once dismissed, the banner must
+   not reappear on later page loads, which static HTML + CSS alone cannot
+   do; the banner therefore renders ONLY on the JS-shipping pages — /,
+   /account, /audit, /pay, /scan — via Base.astro's `banner` prop).
 5. **Guides are Astro content collections** (`src/content/guides/*.md`, schema
    in `src/content.config.ts`). Real, device-accurate content only — per the
    no-guessing rule, do not invent device behavior.

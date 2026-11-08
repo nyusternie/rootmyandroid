@@ -36,8 +36,10 @@ const common = {
   footerTerms: 'Terms',
   footerPrivacy: 'Privacy',
   footerRefunds: 'Refunds',
-  // Keep Android Open campaign banner (zero-JS dismissible strip at the very
-  // top of every page — Base.astro). Campaign name + URL are never
+  // Keep Android Open campaign banner (Base.astro `banner` prop — rendered
+  // ONLY on the JS-shipping pages: /, /account, /audit, /pay, /scan; owner
+  // ruling 2026-11-08). Dismissal persists via localStorage (inline head
+  // script) with a no-JS checkbox fallback. Campaign name + URL are never
   // translated (glossary); the descriptive sentence IS. Claim verified
   // against Google's announcement (android-developers.googleblog.com
   // 2025-08: apps on certified Android devices must be registered by a
