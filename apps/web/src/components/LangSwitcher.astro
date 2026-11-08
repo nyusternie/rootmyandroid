@@ -1,0 +1,66 @@
+---
+// src/components/LangSwitcher.astro — language-switcher dropdown, shared by
+// the header (drop-down) and footer (drop-up) chrome in Base.astro. Pure
+// markup: a native <details>/<summary> toggle with zero JavaScript, so
+// content pages keep their zero-JS guarantee (AGENTS.md rule 4). Each
+// option links to the SAME page in its locale when that page is localized,
+// else to the locale home (LOCALIZED_ROUTES allowlist); the current locale
+// is marked with aria-current + a ✓. Flags come from LOCALE_FLAGS
+// (src/i18n/i18n.ts).
+import {
+  LOCALES,
+  LOCALE_FLAGS,
+  LOCALE_NAMES,
+  LOCALIZED_ROUTES,
+  defaultPath,
+  dictFor,
+  localeOf,
+  lp,
+} from '../i18n/i18n'
+
+interface Props {
+  /** Open the panel upward (footer) instead of downward (header). */
+  dropup?: boolean
+}
+
+const { dropup = false } = Astro.props
+const locale = localeOf(Astro.currentLocale)
+const d = dictFor(Astro.currentLocale)
+const bare = defaultPath(Astro.url.pathname)
+const target = (l: (typeof LOCALES)[number]) => (LOCALIZED_ROUTES.includes(bare) ? lp(l, bare) : lp(l, '/'))
+---
+
+<details class="group relative" aria-label={d.common.langLabel}>
+  <summary
+    class="flex cursor-pointer list-none items-center gap-[0.45rem] rounded-[0.5rem] border border-line bg-raise px-[0.65rem] py-[0.32rem] text-[0.85rem] font-semibold text-dim transition-[border-color,color] duration-150 hover:border-faint hover:text-ink [&::-webkit-details-marker]:hidden"
+  >
+    <span aria-hidden="true">{LOCALE_FLAGS[locale]}</span>
+    <span>{LOCALE_NAMES[locale]}</span>
+    <span class="text-[0.65rem] text-faint transition-transform duration-150 group-open:rotate-180" aria-hidden="true">▾</span>
+  </summary>
+  <ul
+    class:list={[
+      'absolute right-0 z-50 w-[10.5rem] list-none rounded-[0.6rem] border border-line bg-raise p-[0.35rem] shadow-[0_12px_32px_rgba(0,0,0,0.45)]',
+      dropup ? 'bottom-full mb-[0.45rem]' : 'mt-[0.45rem]',
+    ]}
+  >
+    {LOCALES.map((l) => (
+      <li>
+        <a
+          href={target(l)}
+          hreflang={l}
+          lang={l}
+          aria-current={l === locale ? 'page' : undefined}
+          class:list={[
+            'flex items-center gap-[0.55rem] rounded-[0.4rem] px-[0.6rem] py-[0.45rem] text-[0.9rem] no-underline hover:bg-inset hover:text-ink hover:no-underline',
+            l === locale ? 'font-semibold text-ink' : 'text-dim',
+          ]}
+        >
+          <span aria-hidden="true">{LOCALE_FLAGS[l]}</span>
+          <span class="flex-1">{LOCALE_NAMES[l]}</span>
+          {l === locale && <span class="text-ok" aria-hidden="true">✓</span>}
+        </a>
+      </li>
+    ))}
+  </ul>
+</details>

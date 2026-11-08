@@ -3,10 +3,10 @@
 // Analytics: no-JS browsers are counted by the first-party pixel at the
 // bottom of <body> (no scripts on content pages — see AGENTS.md rule 4).
 import '../styles/global.css'
+import LangSwitcher from '../components/LangSwitcher.astro'
 import {
   LOCALES,
   LOCALIZED_ROUTES,
-  LOCALE_NAMES,
   OG_LOCALES,
   alternateLinks,
   defaultPath,
@@ -215,25 +215,13 @@ const siteSchema = {
           <a href={lp(locale, '/roms')}>{d.common.navRoms}</a>
           <a href={lp(locale, '/gurus')}>{d.common.navGurus}</a>
           <a class="btn btn-primary btn-sm" href={lp(locale, '/scan')}>{d.common.navScan}</a>
-          {/* Language switcher (zero-JS plain links; current locale via
-              aria-current — the .nav CSS styles it). Targets the same page
-              when localized, else the locale home. Hidden on narrow
-              screens — the footer switcher below is the mobile path. */}
-          <span
-            class="ml-[0.25rem] hidden items-center gap-[0.6rem] border-l border-line pl-[0.9rem] min-[640px]:flex"
-            role="group"
-            aria-label={d.common.langLabel}
-          >
-            {LOCALES.map((l) => (
-              <a
-                href={LOCALIZED_ROUTES.includes(bare) ? lp(l, bare) : lp(l, '/')}
-                hreflang={l}
-                lang={l}
-                aria-current={l === locale ? 'page' : undefined}
-              >
-                {LOCALE_NAMES[l]}
-              </a>
-            ))}
+          {/* Language dropdown (zero-JS <details> toggle, flags + locale
+              names — see src/components/LangSwitcher.astro). Targets the
+              same page when localized, else the locale home. Hidden on
+              narrow screens — the footer switcher below is the mobile
+              path. */}
+          <span class="ml-[0.25rem] hidden items-center border-l border-line pl-[0.9rem] min-[640px]:flex">
+            <LangSwitcher />
           </span>
         </nav>
       </div>
@@ -288,18 +276,7 @@ const siteSchema = {
       </div>
       <div class="container footer-bottom">
         <span>© {year} Root My Android</span>
-        <span class="flex items-center gap-[0.6rem]" role="group" aria-label={d.common.langLabel}>
-          {LOCALES.map((l) => (
-            <a
-              href={LOCALIZED_ROUTES.includes(bare) ? lp(l, bare) : lp(l, '/')}
-              hreflang={l}
-              lang={l}
-              aria-current={l === locale ? 'page' : undefined}
-            >
-              {LOCALE_NAMES[l]}
-            </a>
-          ))}
-        </span>
+        <LangSwitcher dropup />
         <a href="https://rootmyandroid.com/v1/health" rel="noopener">API</a>
       </div>
     </footer>

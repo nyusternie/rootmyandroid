@@ -46,6 +46,17 @@ export const LOCALE_NAMES: Record<Locale, string> = {
   ko: '한국어',
 }
 
+// Flag emoji per locale — display-only, used by the language-switcher
+// dropdown (LangSwitcher.astro). English matches the en_US og:locale. On
+// platforms without color-flag emoji (Windows) these degrade to the
+// readable two-letter codes (US / CN / RU / KO).
+export const LOCALE_FLAGS: Record<Locale, string> = {
+  en: '🇺🇸',
+  zh: '🇨🇳',
+  ru: '🇷🇺',
+  ko: '🇰🇷',
+}
+
 // Open Graph locale codes (og:locale uses the language_TERRITORY form).
 export const OG_LOCALES: Record<Locale, string> = {
   en: 'en_US',
