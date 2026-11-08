@@ -35,14 +35,21 @@ notes }`.
   Google's factory-images page (page is JS-rendered; curl fetches the
   shell only — owner supplies the row's Link URL + SHA-256).
 
-## LEGAL — CONFIDENCE: 0 (needs a ruling before any public read)
+## LEGAL — RESOLVED 2026-11-08 (Google license, verified on the page)
 
-Redistribution rights for Google factory images are NOT verified. Until an
-authoritative answer exists:
+Google's factory-images page states verbatim: "These files are for use only
+on your personal Nexus or Pixel devices and may not be disassembled,
+decompiled, reverse engineered, modified or redistributed by you …".
 
-- the bucket is PRIVATE (signed URLs / API-mediated access only),
-- the portal prefers linking Google's official download where possible,
-- our objects serve internal/rollback use + checksum verification.
+Consequences:
+
+- REDISTRIBUTION IS PROHIBITED — the bucket is PRIVATE, internal-use only
+  (rollback/checksum servicing of OUR devices). NEVER serve objects to end
+  users.
+- The portal LINKS Google's official downloads; our library never
+  substitutes for them in any user-facing flow.
+- Checksums + source.json remain the primary value (trust anchor); the
+  boot.img bytes are a private operational convenience.
 
 ## Work items
 
