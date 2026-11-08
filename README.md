@@ -99,7 +99,7 @@ before any image task):
 | --------- | ------ |
 | **SU superhero** (cape + SU diamond shield) | Root My Android — OG card, landing hero, favicons |
 | **Guardian Angel** (halo) | The monitoring product |
-| **Colonel Rewt** (beard, glasses, monk robe, SU-staff) | The Rootz Pro professional-tools product |
+| **Colonel Su** (beard, glasses, monk robe, SU-staff) | The Rootz Pro professional-tools product |
 
 ## Docs
 

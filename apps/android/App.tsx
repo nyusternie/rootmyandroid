@@ -7,10 +7,10 @@
  * key before upload; the API only ever sees ciphertext.
  *
  * Account lives behind the top-right header button (modal), not a tab.
- * The header also carries the Halo energy bar: Halo is the billing unit
- * users buy and redeem for 30-day plan tiers (Basic/Advanced/Pro). Halo,
- * device scan, Devices, and Tools data is mocked for now; real probing and
- * API wiring come from native modules and the /v1 API.
+ * The header also carries the plan-time bar: plans are dollar top-up
+ * subscriptions (Mullvad-style — add time anytime, no auto-renewal).
+ * Plan time, device scan, Devices, and Tools data is mocked for now; real
+ * probing and API wiring come from native modules and the /v1 API.
  *
  * Styled with NativeWind (tailwind.config.js ↔ rootzColors in
  * packages/shared/src/theme.ts).
@@ -39,36 +39,43 @@ type Tab = 'scan' | 'devices' | 'backups' | 'tools';
 // lives in NativeWind classes).
 import { rootzColors as colors } from 'rootmyandroid-shared';
 
-/** Mock Halo level (0–100) until billing is wired to the API. */
-const MOCK_HALO = 62;
+/** Mock plan-time level (0–100) until billing is wired to the API. */
+const MOCK_PLAN_LEVEL = 62;
 
 /**
- * Mock 30-day plan tiers (owner ruling 2026-11-04) until plan redemption
- * is wired to the API. Server-side source of truth: GET /v1/halo/plans.
- * Features are cumulative — each tier includes everything below it.
+ * Mock plan tiers (owner ruling 2026-11-05) until checkout is wired to the
+ * API. Server-side source of truth: the MCP list_subscription_plans tool
+ * and its REST equivalent. Guardian Angel features are cumulative — Pro
+ * includes everything in Lite; Rootz Pro is a separate lane (no switching).
  */
 const MOCK_PLANS = [
   {
-    id: 'basic',
-    label: 'Basic',
-    halo: 1,
-    features: ['Read apps', 'Read messages', 'Read call logs'],
+    id: 'guardian-lite',
+    label: 'Guardian Angel Lite',
+    price: '$5',
+    period: '30 days',
+    features: ['Read apps', 'Read messages'],
   },
   {
-    id: 'advanced',
-    label: 'Advanced',
-    halo: 2,
-    features: ['Everything in Basic', 'View media', 'View camera / video'],
-  },
-  {
-    id: 'pro',
-    label: 'Pro',
-    halo: 3,
+    id: 'guardian-pro',
+    label: 'Guardian Angel Pro',
+    price: '$15',
+    period: '30 days',
     features: [
-      'Everything in Advanced',
+      'Everything in Lite',
+      'Read call logs',
+      'View media',
+      'View camera / video',
       'Real-time device monitoring',
       '"Smart" triggers (API-gated)',
     ],
+  },
+  {
+    id: 'rootz-pro',
+    label: 'Rootz Pro',
+    price: '$15',
+    period: '365 days',
+    features: ['Terminal Editor', 'Log Analysis'],
   },
 ];
 
@@ -83,7 +90,7 @@ function App() {
       <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
         <View className="flex-row items-center justify-between border-b border-border px-5 pb-3 pt-5">
           <Text className="text-xl font-bold text-text">Root My Android</Text>
-          <HaloBar level={MOCK_HALO} onPress={() => setAccountOpen(true)} />
+          <PlanBar level={MOCK_PLAN_LEVEL} onPress={() => setAccountOpen(true)} />
           <TouchableOpacity
             className="rounded-lg border border-accent px-3 py-1.5"
             onPress={() => setAccountOpen(true)}
@@ -131,11 +138,11 @@ function App() {
   );
 }
 
-function HaloBar({ level, onPress }: { level: number; onPress: () => void }) {
+function PlanBar({ level, onPress }: { level: number; onPress: () => void }) {
   const fillColor = level <= 20 ? colors.warn : colors.accent;
   return (
     <TouchableOpacity className="mx-3.5 flex-1 flex-row items-center" onPress={onPress}>
-      <Text className="mr-2 text-[10px] font-bold tracking-[1px] text-faint">Halo</Text>
+      <Text className="mr-2 text-[10px] font-bold tracking-[1px] text-faint">Time</Text>
       <View className="h-1.5 flex-1 overflow-hidden rounded-[3px] bg-border">
         <View className="h-1.5 rounded-[3px]" style={{ width: `${level}%`, backgroundColor: fillColor }} />
       </View>
@@ -462,22 +469,22 @@ function AccountScreen() {
         <Row label="Account number" value="1327 3076 2982 9434" />
         <Row label="Storage used" value="1.2 GB of 5 GB" />
       </Panel>
-      <Panel title="Halo">
-        <Row label="Balance" value="3 Halo" />
-        <Row label="Rate" value="$5 = 1 Halo" />
+      <Panel title="Plan time">
+        <Row label="Balance" value="34 days" />
+        <Row label="Renewal" value="None — top up anytime" />
       </Panel>
       {MOCK_PLANS.map((plan) => (
-        <Panel key={plan.id} title={`${plan.label} — ${plan.halo} Halo / 30 days`}>
+        <Panel key={plan.id} title={`${plan.label} — ${plan.price} / ${plan.period}`}>
           {plan.features.map((feature) => (
             <Row key={feature} label="•" value={feature} />
           ))}
         </Panel>
       ))}
-      <PrimaryButton label="Buy Halo — $5 / 1" />
+      <PrimaryButton label="Top up — from $5" />
       <GhostButton label="Create new account" />
       <Text className="mt-3.5 text-xs leading-[17px] text-faint">
-        Halo is the billing unit you redeem for 30-day plans: 1 Halo unlocks
-        Basic, 2 Advanced, 3 Pro. Your account number is the only
+        Plans are top-up subscriptions: add time whenever you like — no
+        auto-renewal, no stored card. Your account number is the only
         credential. Keep it safe — it cannot be recovered.
       </Text>
     </View>

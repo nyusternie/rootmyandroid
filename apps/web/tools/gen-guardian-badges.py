@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""apps/web/tools/gen-halo-badges.py — generate the Halo badge set
-(single/double/triple) for rootmyandroid.
+"""apps/web/tools/gen-guardian-badges.py — generate the Guardian Angel level
+badge set (lite = one gold ring, pro = two) for rootmyandroid.
 
-Usage: python3 apps/web/tools/gen-halo-badges.py apps/web/public/img
+Usage: python3 apps/web/tools/gen-guardian-badges.py apps/web/public/img
 
 Style: matches apps/web/public/img/badge-guardian.webp family —
-white canvas, cream rounded tile, kawaii android robot, gold halo ring(s).
+white canvas, cream rounded tile, kawaii android robot, gold ring(s).
 Palette sampled from the shipped badges (2026-11-03).
 Renders at 4x and downsamples (LANCZOS) for anti-aliasing.
 """
@@ -29,7 +29,7 @@ GOLD_LT    = (246, 190, 96)
 SHADOW     = (238, 226, 205)
 
 
-def halo(draw, cx, cy, w, h, wd):
+def ring(draw, cx, cy, w, h, wd):
     """One gold ring: ellipse outline with a light top highlight."""
     box = [cx - w // 2, cy - h // 2, cx + w // 2, cy + h // 2]
     draw.ellipse(box, outline=GOLD, width=wd)
@@ -39,13 +39,13 @@ def halo(draw, cx, cy, w, h, wd):
 
 
 def robot(draw, drop):
-    """Kawaii android; `drop` shifts the whole robot down (room for halos)."""
+    """Kawaii android; `drop` shifts the whole robot down (room for rings)."""
     d = drop
     # ground shadow (soft, on its own blurred layer would be nicer; flat is fine)
     draw.ellipse([360, 826 + d, 664, 874 + d], fill=SHADOW)
     # body
     draw.rounded_rectangle([376, 612 + d, 648, 838 + d], radius=96, fill=ORANGE)
-    # antennae (behind halo: they flank it)
+    # antennae (behind the rings: they flank them)
     for x0, x1 in ((398, 344), (626, 680)):
         draw.line([x0, 352 + d, x1, 262 + d], fill=ORANGE, width=26)
         draw.ellipse([x1 - 15, 262 + d - 15, x1 + 15, 262 + d + 15], fill=ORANGE)
@@ -79,20 +79,16 @@ def render(rings, out):
     lowest_cy = head_top - 92 - hh // 2
     for i in range(n):
         cy = lowest_cy - i * gap
-        halo(dr, CV // 2, cy, hw, hh, wd)
+        ring(dr, CV // 2, cy, hw, hh, wd)
     im = im.resize((SZ, SZ), Image.LANCZOS)
     im.save(out, 'WEBP', quality=92, method=6)
     print('wrote', out)
 
 
-FREE   = dict(n=0, w=0, h=0, wd=0, gap=0)
-SINGLE = dict(n=1, w=260, h=84, wd=26, gap=0)
-DOUBLE = dict(n=2, w=244, h=74, wd=24, gap=72)
-TRIPLE = dict(n=3, w=228, h=66, wd=20, gap=64)
+LITE = dict(n=1, w=260, h=84, wd=26, gap=0)
+PRO  = dict(n=2, w=244, h=74, wd=24, gap=72)
 
 if __name__ == '__main__':
     outdir = sys.argv[1] if len(sys.argv) > 1 else '/tmp'
-    render(FREE, f'{outdir}/badge-halo-free.webp')
-    render(SINGLE, f'{outdir}/badge-halo-single.webp')
-    render(DOUBLE, f'{outdir}/badge-halo-double.webp')
-    render(TRIPLE, f'{outdir}/badge-halo-triple.webp')
+    render(LITE, f'{outdir}/badge-guardian-lite.webp')
+    render(PRO, f'{outdir}/badge-guardian-pro.webp')

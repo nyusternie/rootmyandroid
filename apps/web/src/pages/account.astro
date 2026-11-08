@@ -1,9 +1,11 @@
 ---
-// src/pages/account.astro — account: account number creation + buy Halo.
+// src/pages/account.astro — account: account number creation, balance, redeem.
 // Pure vanilla JS (no framework island): a static <script type="module"> that
 // calls the API at rootmyandroid.com/v1. Same logic as the old React island.
+// 2026-11-08: the Halo currency was fully discontinued (owner ruling) — the
+// Buy panel and Halo balance bar were removed; plan checkout on this page
+// returns with the Guru Balance work (docs/HANDOFF-2026-11-08-gurus-page.md).
 import Base from '../layouts/Base.astro'
-import DepositPanel from '../components/DepositPanel.astro'
 ---
 
 <Base
@@ -45,71 +47,20 @@ import DepositPanel from '../components/DepositPanel.astro'
     </div>
 
     <div class="panel">
-      <h2>Halo</h2>
-      {/* Real balance: filled in from the API after an account lookup/create. */}
-      <a class="halo-bar" href="/pricing" aria-label="Halo balance — open the Pricing page">
-        <span class="halo-label">Halo</span>
-        <span class="halo-track"><span class="halo-fill w-0" id="halo-fill"></span></span>
-        <span class="halo-value" id="halo-value">0</span>
-      </a>
-      <p class="small faint" id="halo-hint">
-        Halo balances convert to subscription time when plans land.
-        Look up your account to see your balance. <a href="/pricing">Learn more</a>.
+      <h2>Add time</h2>
+      <p class="small muted">
+        Guardian Angel and Rootz Pro are top-up subscriptions: add time
+        whenever you like — no auto-renew, no stored card. See
+        {' '}<a href="/pricing">Pricing</a> for the current lineup. Checkout on
+        this page returns soon.
       </p>
     </div>
-
-    <div class="panel">
-      <h2>Buy Halo</h2>
-      <div class="grid-3">
-        <button class="plan" data-pack="halo_1" disabled>
-          <div class="price">$5</div>
-          <div class="term">1 Halo</div>
-          <div class="save">base rate</div>
-        </button>
-        <button class="plan" data-pack="halo_4" disabled>
-          <div class="price">$20</div>
-          <div class="term">4 Halos</div>
-          <div class="save">linear rate</div>
-        </button>
-        <button class="plan" data-pack="halo_6" disabled>
-          <div class="price">$30</div>
-          <div class="term">6 Halos</div>
-          <div class="save">linear rate</div>
-        </button>
-      </div>
-      <p class="small faint" id="plan-hint">Enter or generate an account number above to buy Halo.</p>
-      <div class="row mt-3">
-        <label class="small muted" for="pay-currency">Pay with</label>
-        <select id="pay-currency">
-          <option value="ltc" selected>LTC — Litecoin</option>
-          <option value="btc">BTC — Bitcoin</option>
-          <option value="eth">ETH — Ethereum</option>
-          <option value="usdttrc20">USDT — TRC-20</option>
-          <option value="usdc">USDC</option>
-          <option value="xmr">XMR — Monero</option>
-          <option value="sol">SOL — Solana</option>
-        </select>
-      </div>
-      <div class="row mt-3 items-center">
-        <span class="small muted">Or pay by card</span>
-        <button class="btn" type="button" disabled>Credit card — coming soon</button>
-      </div>
-      <p class="small faint">
-        Pick a pack and a coin — you pay right here on this page. Your Halo is
-        credited automatically once the network confirms ($5 = 1 Halo) and
-        converts to subscription time when plans land. Credit card checkout
-        launches as soon as our merchant account is approved — until then,
-        crypto gets you 15% off.
-      </p>
-    </div>
-
-    <DepositPanel />
 
     <div class="panel">
       <h2>Redeem a code</h2>
       <p class="small muted">
-        Have a voucher code? Enter it here to credit its value to the account
-        number above — Halo converts to subscription time when plans land.
+        Have a voucher code? Enter it here to credit its plan time to the account
+        number above.
       </p>
       <div class="row">
         <input

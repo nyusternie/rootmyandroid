@@ -1,13 +1,7 @@
 // src/scripts/account.ts — /account page logic (framework-free).
 // Calls the Root My Android API (rootmyandroid.com/v1). Bundled by Astro and
 // loaded as a module; the rest of the site ships zero JavaScript.
-import {
-  createAccount,
-  createHaloPayment,
-  getAccount,
-  redeemCode,
-} from '../lib/api.js'
-import { initDepositPanel } from './deposit.js'
+import { createAccount, getAccount, redeemCode } from '../lib/api.js'
 
 function $(id: string): HTMLElement {
   const el = document.getElementById(id)
@@ -20,22 +14,10 @@ const notice = $('notice')
 const error = $('error')
 const balance = $('balance')
 const creditDays = $('credit-days')
-const haloFill = $('halo-fill')
-const haloValue = $('halo-value')
 const lookupBtn = $('lookup-btn') as HTMLButtonElement
 const createBtn = $('create-btn') as HTMLButtonElement
-const planHint = $('plan-hint')
-const planButtons = [...document.querySelectorAll('.plan')] as HTMLButtonElement[]
 const redeemInput = $('redeem-code') as HTMLInputElement
 const redeemBtn = $('redeem-btn') as HTMLButtonElement
-const payCurrencySelect = $('pay-currency') as HTMLSelectElement
-
-// Render the account's Halo balance on the energy bar. The fill is capped
-// at 100%; the number always shows the real balance.
-function setHaloBalance(n: number): void {
-  haloValue.textContent = String(n)
-  haloFill.style.width = `${Math.max(0, Math.min(100, n))}%`
-}
 
 let busy = false
 
@@ -43,7 +25,7 @@ function setBusy(v: boolean): void {
   busy = v
   lookupBtn.disabled = v
   createBtn.disabled = v
-  syncPlans()
+  syncRedeem()
 }
 
 function show(el: HTMLElement, msg: string): void {
@@ -60,26 +42,11 @@ function accountNumber(): string {
   return numberInput.value.trim()
 }
 
-function syncPlans(): void {
-  const has = accountNumber().length > 0
-  planButtons.forEach((b) => (b.disabled = busy || !has))
-  redeemBtn.disabled = busy || !has
-  planHint.hidden = has
+function syncRedeem(): void {
+  redeemBtn.disabled = busy || accountNumber().length === 0
 }
 
-// Whitelabel checkout panel (address + QR + status polling), shared with
-// the standalone /account/payment/<id> invoice page.
-const depositPanel = initDepositPanel({
-  onNotice: (msg) => show(notice, msg),
-  onError: (msg) => show(error, msg),
-  onFinished: async () => {
-    // Refresh the displayed balance from the ledger.
-    const bal = await getAccount(accountNumber())
-    if (bal.ok) setHaloBalance(bal.data?.halo_balance ?? 0)
-  },
-})
-
-numberInput.addEventListener('input', syncPlans)
+numberInput.addEventListener('input', syncRedeem)
 
 createBtn.addEventListener('click', async () => {
   setBusy(true)
@@ -89,7 +56,6 @@ createBtn.addEventListener('click', async () => {
     if (res.ok && res.data?.account_number) {
       numberInput.value = res.data.account_number
       creditDays.textContent = String(res.data.credit_days ?? 0)
-      setHaloBalance(res.data.halo_balance ?? 0)
       balance.hidden = false
       show(notice, 'Save this number — it is the only way to access your account.')
     } else {
@@ -110,7 +76,6 @@ $('lookup-form').addEventListener('submit', async (e) => {
     const res = await getAccount(accountNumber())
     if (res.ok) {
       creditDays.textContent = String(res.data.credit_days ?? 0)
-      setHaloBalance(res.data.halo_balance ?? 0)
       balance.hidden = false
     } else if (res.status === 404) {
       balance.hidden = true
@@ -128,44 +93,15 @@ $('lookup-form').addEventListener('submit', async (e) => {
   }
 })
 
-planButtons.forEach((btn) =>
-  btn.addEventListener('click', async () => {
-    setBusy(true)
-    clearMessages()
-    const pack = btn.dataset.pack || 'halo_1'
-    try {
-      const res = await createHaloPayment({
-        accountNumber: accountNumber(),
-        pack,
-        payCurrency: payCurrencySelect.value,
-      })
-      if (res.ok && res.data?.pay_address) {
-        depositPanel.showDeposit(res.data)
-        return
-      }
-      if (res.status === 503) {
-        show(error, 'Checkout is temporarily unavailable. Please try again later.')
-      } else {
-        show(error, res.data?.error || 'Could not start checkout.')
-      }
-    } catch {
-      show(error, 'Network error. Is the API reachable?')
-    } finally {
-      setBusy(false)
-    }
-  })
-)
-
 redeemBtn.addEventListener('click', async () => {
   setBusy(true)
   clearMessages()
   try {
     const res = await redeemCode({ accountNumber: accountNumber(), code: redeemInput.value })
     if (res.ok) {
-      setHaloBalance(res.data?.halo_balance ?? 0)
       balance.hidden = false
       redeemInput.value = ''
-      show(notice, `Code redeemed — ${res.data?.redeemed} Halos added to your account.`)
+      show(notice, 'Code redeemed — plan time added to your account.')
     } else if (res.status === 409) {
       show(error, 'That code has already been redeemed.')
     } else if (res.status === 404) {
@@ -204,4 +140,4 @@ if (paymentParam) {
   location.replace(`/account/payment/${encodeURIComponent(paymentParam)}`)
 }
 
-syncPlans()
+syncRedeem()

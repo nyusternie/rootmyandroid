@@ -1,12 +1,15 @@
 ---
 // src/pages/rootz.astro — PRODUCT page for Rootz (the power-user toolkit;
-// Colonel Rewt's product). REPLACED 2026-11-07 (owner ruling): the old
+// Colonel Su's product — mascot named 2026-11-08). REPLACED
+// 2026-11-07 (owner ruling): the old
 // rooting-explainer content moved to src/pages/rooting.astro; /rootz is now
 // the product page with the AI-assistance roadmap. AI-status labels follow
 // the AI-positioning handoff (2026-11-07): owner ruling — the AI harness is
 // in active development, so every AI capability carries a status label
 // (LIVE / LABS / PLANNED) and no planned capability is presented as part of
-// the currently purchasable feature set. Tier facts mirror
+// the currently purchasable feature set. The capability-status table mirrors
+// the Live capability matrix on /agents (agents.astro) — keep the two in
+// sync until backend capability metadata ships. Tier facts mirror
 // src/pages/pricing.astro (the owner-ruled authority) and the landing-page
 // FAQ — keep them in sync. Encryption wording mirrors Terms §7 ("encrypted
 // on your device before upload; the key is held by you and never by us")
@@ -100,8 +103,8 @@ const appSchema = {
       </div>
       <div class="hero-art">
         <img class="block h-auto w-full rounded-[1.25rem] shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
-          src="/img/guru-terminal.webp"
-          alt="Illustration of Colonel Rewt — the wise green Android robot of Rootz Pro, bearded and robed, holding an SU staff in front of a glowing terminal window — Rootz Pro professional tools"
+          src="/img/colonel-su-terminal.webp"
+          alt="Illustration of Colonel Su — the wise green Android robot of Rootz Pro, bearded and robed, holding an SU staff in front of a glowing terminal window — Rootz Pro professional tools"
           width="880"
           height="880"
           fetchpriority="high"
@@ -162,6 +165,11 @@ const appSchema = {
     <p class="panel text-[1.1rem]">
       <strong>AI explains the evidence. Deterministic tools validate the
       plan. You approve every consequential action.</strong>
+    </p>
+    <p>
+      Your guide is <strong>Colonel Su</strong> — the wise old robot with the
+      SU staff from our artwork. He explains the evidence and walks the plan
+      with you; he never acts on his own.
     </p>
     <div class="grid-3 steps-grid mt-6">
       <div class="panel">

@@ -53,49 +53,14 @@ export function createCryptoCheckout({ accountNumber, plan }) {
   })
 }
 
-// POST /billing/halo/checkout — buy a Halo pack on the card rail
-// (NOWPayments). Pack ids are server-defined (halo_100 / halo_500 /
-// halo_1000); prices are enforced server-side.
-export function createHaloCheckout({ accountNumber, pack }) {
-  return request('/billing/halo/checkout', {
-    method: 'POST',
-    body: { account_number: accountNumber, pack },
-  })
-}
-
-// POST /billing/halo/payment — buy a Halo pack on the whitelabel rail:
-// the API returns a deposit address + amount in the chosen coin, and the
-// /account page renders the checkout UI itself (no hosted page, no redirect).
-export function createHaloPayment({ accountNumber, pack, payCurrency }) {
-  return request('/billing/halo/payment', {
-    method: 'POST',
-    body: { account_number: accountNumber, pack, pay_currency: payCurrency },
-  })
-}
-
 // GET /billing/payment/{id} — poll a whitelabel payment's status while the
 // deposit panel is open (waiting -> confirming -> finished).
 export function getPaymentStatus(paymentId) {
   return request(`/billing/payment/${encodeURIComponent(paymentId)}`)
 }
 
-// POST /halo — an account's Halo balance plus its recent ledger entries.
-// (POST so the account number travels in the body, not the URL/logs.)
-export function getHaloBalance(accountNumber) {
-  return request('/halo', {
-    method: 'POST',
-    body: { account_number: accountNumber },
-  })
-}
-
-// GET /halo/services — public catalog of PRO services + Halo prices, so
-// pages render pricing from the server-side table instead of hard-coding.
-export function getHaloServices() {
-  return request('/halo/services')
-}
-
-// POST /redeem — redeem a single-use voucher code, crediting its Halo to
-// the account. Codes are single-use; a redeemed code returns 409.
+// POST /redeem — redeem a single-use voucher code, crediting its plan time
+// to the account. Codes are single-use; a redeemed code returns 409.
 export function redeemCode({ accountNumber, code }) {
   return request('/redeem', {
     method: 'POST',

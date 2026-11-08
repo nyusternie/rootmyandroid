@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""apps/web/tools/gen-halo-hero.py — generate the landing-page hero art
-(Halo theme): the flat blue android robot (rooted — the roots are the
-product metaphor) with a golden halo floating above its head.
+"""apps/web/tools/gen-su-hero.py — legacy fallback generator for the
+landing-page hero art (pre-SU-superhero theme): the flat blue android
+robot (rooted — the roots are the product metaphor) with a golden ring
+floating above its head. The SHIPPED hero (public/img/hero-su.webp) is
+model-generated — see .agents/skills/brand-image/SKILL.md; this script no
+longer matches it and is kept for reference only.
 
 Style: matches the original hero.webp — dark vignette background, flat
-#3d9df2 robot, #3fb96b roots, blue sparkles. Halo gold matches the badge
-family (gen-halo-badges.py). Renders at 2x, downsamples LANCZOS.
+#3d9df2 robot, #3fb96b roots, blue sparkles. Ring gold matches the badge
+family (gen-guardian-badges.py). Renders at 2x, downsamples LANCZOS.
 
-Usage: python3 apps/web/tools/gen-halo-hero.py apps/web/public/img
+Usage: python3 apps/web/tools/gen-su-hero.py apps/web/public/img
 """
 import math
 import sys
@@ -65,21 +68,21 @@ def render(out):
     for x, y, r in ((470, 360, 9), (1290, 420, 8), (300, 1120, 8), (1470, 1080, 10), (1180, 200, 7), (520, 1420, 8)):
         dr.ellipse([x - r, y - r, x + r, y + r], fill=DOT)
 
-    # --- halo (own layer so we can add a soft glow) --------------------
-    halo = Image.new('RGBA', (CV, CV), (0, 0, 0, 0))
-    hd = ImageDraw.Draw(halo)
+    # --- ring (own layer so we can add a soft glow) --------------------
+    ring = Image.new('RGBA', (CV, CV), (0, 0, 0, 0))
+    hd = ImageDraw.Draw(ring)
     hx, hy, hw, hh, wd = CV // 2, 150, 300, 92, 22
     hd.ellipse([hx - hw, hy - hh, hx + hw, hy + hh], outline=GOLD + (255,), width=wd)
     hd.arc([hx - hw + 12, hy - hh + 12, hx + hw - 12, hy + hh - 12],
            start=205, end=335, fill=GOLD_LT + (255,), width=7)
-    glow2 = halo.filter(ImageFilter.GaussianBlur(26))
+    glow2 = ring.filter(ImageFilter.GaussianBlur(26))
     im.paste(Image.alpha_composite(
         Image.new('RGBA', (CV, CV), (0, 0, 0, 0)), glow2).convert('RGB'),
         (0, 0), glow2)
-    im.paste(halo.convert('RGB'), (0, 0), halo)
+    im.paste(ring.convert('RGB'), (0, 0), ring)
     dr = ImageDraw.Draw(im)
 
-    # --- robot (shifted down to leave room for the halo) ---------------
+    # --- robot (shifted down to leave room for the ring) ---------------
     cx = CV // 2
     # antennae
     for x0, x1 in ((cx - 150, cx - 250), (cx + 150, cx + 250)):
@@ -110,4 +113,4 @@ def render(out):
 
 if __name__ == '__main__':
     outdir = sys.argv[1] if len(sys.argv) > 1 else '/tmp'
-    render(f'{outdir}/hero-halo.webp')
+    render(f'{outdir}/hero-su.webp')

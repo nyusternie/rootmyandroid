@@ -46,6 +46,7 @@ The site is fully static. All dynamic/backend functionality lives in a public RE
 - [Download](https://rootmyandroid.com/download): direct APK downloads of the Rootz and Guardian Angel Android apps
 - [Rootz](https://rootmyandroid.com/rootz): the power-user toolkit for Android — free toolbox plus Pro ($15/365 days); client-side encrypted, AI assistance in development
 - [Guardian Angel](https://rootmyandroid.com/guardian-angel): parental device management — free tier, Lite $5/30 days, Pro $15/30 days; client-side encrypted, AI summaries in development
+- [Gurus](https://rootmyandroid.com/gurus): the AI assistants — advisors that explain and guide but never act on a device by themselves; pay-per-use from a prepaid Guru Balance, all currently PLANNED
 - [Rooting guide](https://rootmyandroid.com/rooting): what rooting is, how bootloader unlocking works, what you gain, and what you risk
 - [For Parents](https://rootmyandroid.com/parents): parental controls on Android, and what Guardian Angel adds on top
 

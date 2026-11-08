@@ -173,9 +173,12 @@ live in `.agents/skills/brand-image/` (read it before ANY image task):
   Android default: OG card, landing hero, favicons.
 - **Guardian Angel** (golden halo, no cape) — the monitoring product;
   wardrobe studies under `/img/brand/` await the owner's pick.
-- **Colonel Rewt** (white beard, round glasses, charcoal monk robe, staff
+- **Colonel Su** (white beard, round glasses, charcoal monk robe, staff
   bearing the SU emblem) — the Rootz Pro professional-tools product
-  (a play on "kernel root"; renamed from "The Guru" 2026-11-07).
+  ("Colonel" = kernel, "Su" = superuser — a play on "kernel root"; name
+  ruled FINAL 2026-11-08, after the 2026-11-07 interim "Colonel Rewt").
+  "Guru" now belongs to the AI-assistant product surface (the Gurus —
+  docs/HANDOFF-2026-11-08-gurus-page.md), never to this mascot.
 
 Hard rules: Android green `#3DDC84`; no root/plant motifs; icons must show
 the FULL body (head-only crops banned); any typography is rendered by the
@@ -185,8 +188,10 @@ image LLM itself, never composited in post (no PIL text).
 
 - Crypto payments are LIVE (the Buy panel on `/account` issues real
   invoices); crypto gets 15% off the listed prices (owner ruling 2026-11-05,
-  enforced server-side in `rootmyandroid-api`). Credit card checkout is
-  mocked in the UI and activates once the merchant account is approved.
+  narrowed 2026-11-08: subscription plans ONLY — never Guru Balance or
+  AI-usage top-ups); enforced server-side in `rootmyandroid-api`. Credit
+  card checkout is mocked in the UI and activates once the merchant account
+  is approved.
 - Preference: crypto-first, but support fiat methods that auto-convert to
   crypto **without a bank account**. Candidate processors to evaluate:
   BTCPay Server (self-hosted, no KYC), NOWPayments, Coinbase Commerce,
@@ -197,9 +202,11 @@ image LLM itself, never composited in post (no PIL text).
 
 ## Plans + pricing economy (owner-ruled 2026-11-05)
 
-The Halo credit unit is being RETIRED: pricing is now plain dollar top-up
-subscriptions (Mullvad-style: add time anytime, no auto-renewal, no stored
-card). The authoritative price table (also live on `/pricing`):
+The Halo credit unit is DISCONTINUED — retired 2026-11-05 and fully purged
+from this repo 2026-11-08 (owner ruling: no Halo references anywhere —
+copy, code, class names, or asset filenames). Pricing is plain dollar
+top-up subscriptions (Mullvad-style: add time anytime, no auto-renewal,
+no stored card). The authoritative price table (also live on `/pricing`):
 
 | product        | plan | price | period    |
 | -------------- | ---- | ----- | --------- |
@@ -212,7 +219,9 @@ card). The authoritative price table (also live on `/pricing`):
   Pro is a separate lane — no switching). Lite = `read_apps` +
   `read_messages`; Pro absorbs the remaining monitoring features; the exact
   feature packaging is still being finalized (owner: to be sorted out later).
-- Crypto payments get 15% off listed prices (owner ruling 2026-11-05);
+- Crypto payments get 15% off listed prices (owner ruling 2026-11-05;
+  narrowed 2026-11-08: subscription plans ONLY — never Guru Balance or
+  AI-usage top-ups, and no discount badges on Guru Balance UI);
   enforcement is server-side in `rootmyandroid-api` — do NOT hard-code
   discounted amounts in clients.
 - Each account links up to 5 devices (Mullvad parity, owner ruling
@@ -221,20 +230,21 @@ card). The authoritative price table (also live on `/pricing`):
   cooldown in user-facing copy until the owner rules it.
 - Changing any price requires explicit owner approval; a pinned API test
   locks the table.
-- Legacy Halo interim state: packs `halo_1` / `halo_4` / `halo_6`
-  ($5 = 1 Halo) are still purchasable via the `/account` Buy panel and
-  convert to subscription time on the backend when the plan system lands;
-  redeem codes will be redenominated to plan time (backend work, owned by
-  the API team). `/halo` and `/nitro` 301 to `/pricing`.
-- The API's plan-catalog endpoint is being built by the API team
-  (`rootmyandroid-api`); until it ships, `GET /v1/halo/services` (frozen
-  zero prices) remains the only live catalog endpoint. Never hard-code
-  prices in clients; do NOT invent the new contract client-side.
+- The AI-usage balance is `guruBalance` ("Guru Balance") — pay-per-use
+  with a published per-request price before each request, a running
+  balance, and an itemized receipt. Guru Balance top-ups are
+  NON-refundable, and the 15% crypto discount NEVER applies to them
+  (owner rulings 2026-11-08). The Guru Balance contract is owned by
+  `rootmyandroid-api` — do NOT invent it client-side
+  (docs/HANDOFF-2026-11-08-gurus-page.md).
+- The subscription-plan catalog is live via the MCP
+  `list_subscription_plans` tool and its REST equivalent (verified
+  2026-11-07 — see `apps/web/src/pages/agents.astro`). Never hard-code
+  prices in clients; do NOT invent catalog contracts client-side.
 - The old per-service burn model (`cloud_backup` / `guardian_angel_sync` /
-  `audit_report` consumes) is being RETIRED: services are repriced to 0
-  ("included/free while plans are finalized"), and the consume path +
-  services catalog go away when plan redemption lands (HANDOFF.md §10).
-  Do NOT present services as purchasable line items in new UI.
+  `audit_report` consumes) is RETIRED and its client surface was removed
+  with the 2026-11-08 purge (HANDOFF.md §10). Do NOT present services as
+  purchasable line items in new UI.
 - Payment crediting is self-healing: the status-polling endpoint reconciles
   terminal payments server-side, so webhook delivery is not on the critical
   path.
@@ -278,7 +288,7 @@ binding rules are:
   report to an account number (`saveAudit`, audit_type slug e.g. `scan` —
   the API's audit types are deliberately open-ended, pattern
   `^[a-z][a-z0-9-]{0,31}$`, so NO API change is needed; billed as
-  `audit_report` per the legacy service table, price rendered dynamically).
+  `audit_report` service slug, price rendered dynamically).
 - No guessing device behavior (rule 3): every detection rule cites its
   source (observed device + date) and unknown values render as "unknown".
 - Detection/parsing logic lives in pure, fixture-tested functions under

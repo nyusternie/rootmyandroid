@@ -88,6 +88,7 @@ const faqSchema = {
         <li><a href="#why">Why Root My Android is agent-friendly</a></li>
         <li><a href="#connect">Connect your agent (MCP server)</a></li>
         <li><a href="#capabilities">What agents can do</a></li>
+        <li><a href="#capability-matrix">Live capability matrix</a></li>
         <li><a href="#rest-api">The REST API behind it</a></li>
         <li><a href="#faq">Frequently asked questions</a></li>
       </ol>
@@ -215,6 +216,88 @@ const faqSchema = {
         <a href="/pricing">pricing page</a>.
       </p>
     </div>
+
+    <section id="capability-matrix" class="mt-10">
+      <h2>Live capability matrix</h2>
+      <p class="muted">
+        Labels: <strong>LIVE</strong> works today; <strong>PLANNED</strong> is
+        in development and not part of anything purchasable;
+        <strong>LABS</strong> is experimental. Nothing AI-facing is LIVE yet —
+        every planned capability is labeled as such.
+      </p>
+      <div class="table-wrap overflow-x-auto">
+        <table class="w-full min-w-[40rem] border-collapse text-[0.92rem]">
+          <caption class="faint small mb-2 text-left">
+            Agent-facing capabilities, their release status, where data goes,
+            and who is in charge.
+          </caption>
+          <thead>
+            <tr>
+              <th class="border border-line bg-raise px-3 py-[0.6rem] align-top text-left" scope="col">Capability</th>
+              <th class="border border-line bg-raise px-3 py-[0.6rem] align-top text-left" scope="col">Status</th>
+              <th class="border border-line bg-raise px-3 py-[0.6rem] align-top text-left" scope="col">Data destination</th>
+              <th class="border border-line bg-raise px-3 py-[0.6rem] align-top text-left" scope="col">Your authority</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Accounts, plans and entitlements</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left text-ok font-semibold">LIVE</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Root My Android API</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Account/session dependent</td>
+            </tr>
+            <tr>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Checkout and payment status</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left text-ok font-semibold">LIVE</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Existing payment rails</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Explicit checkout review</td>
+            </tr>
+            <tr>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">MCP support conversations</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left text-ok font-semibold">LIVE</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Root My Android support</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Message review required</td>
+            </tr>
+            <tr>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Local ADB device scan</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left text-ok font-semibold">LIVE</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Browser only, by default</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Physical device and ADB authorization</td>
+            </tr>
+            <tr>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">AI scan explanation</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold">PLANNED (beta at launch)</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Named inference provider</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Separate payload consent</td>
+            </tr>
+            <tr>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Live read-only agent session</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold">PLANNED (beta at launch)</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Local device bridge plus approved evidence</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">You can stop at any time</td>
+            </tr>
+            <tr>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Hardware-backed agent identity</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left text-accent font-semibold">LABS (when shipped)</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Attestation metadata only</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Device eligibility required</td>
+            </tr>
+            <tr>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">Guardian activity summaries</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold">PLANNED</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Aggregated data by default</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Per-category opt-in</td>
+            </tr>
+            <tr>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">State-changing rooting operations</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left text-accent font-semibold">LABS / future</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Local operation broker</td>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">Exact operation approval</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
     <section id="faq" class="faq-section mt-10">
       <h2>Frequently asked questions</h2>

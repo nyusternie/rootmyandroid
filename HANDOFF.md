@@ -14,6 +14,15 @@ is AGENTS.md ("Plans + pricing economy").
 > itself (AGENTS.md, "ADB / device analysis direction") and the API-side
 > plan system (owned by the API team — see AGENTS.md).
 
+> **Supersedes the Halo brand (2026-11-08, owner ruling):** the "Halo"
+> brand is discontinued entirely — it only ever belonged to Guardian Angel,
+> which is now on subscription billing. AI agents/assistants are "Gurus";
+> the AI balance is `guruBalance` / "Guru Balance". See
+> `docs/HANDOFF-2026-11-08-gurus-page.md` (frontend: `/gurus` page) and
+> `docs/HANDOFF-2026-11-07-agent-ux-frontend.md` (agent UX). Halo removal
+> across repos is tracked with the `rootmyandroid-api`
+> `feat/flat-tier-subscriptions` merge work.
+
 ---
 
 ## 1. Why
@@ -410,6 +419,14 @@ the structure:
   (no longer matches any product surface), terms/audit copy referencing
   the "Rootz app", `/download` Rootz section labeling, daemon
   distribution mechanism (no artifact exists).
+- **Mascot renamed again: Colonel Rewt → Colonel Su** (owner ruling
+  2026-11-08): "Colonel" = kernel, "Su" = superuser — the name still
+  echoes "kernel root", and it frees "Guru" for the AI-assistant product
+  surface (the Gurus, docs/HANDOFF-2026-11-08-gurus-page.md). Visual
+  canon unchanged (white beard, round glasses, charcoal monk robe, SU
+  staff); asset filenames migrated this time (`guru-staff.webp` →
+  `colonel-su-staff.webp`, `guru-terminal.webp` →
+  `colonel-su-terminal.webp`).
 
 ---
 

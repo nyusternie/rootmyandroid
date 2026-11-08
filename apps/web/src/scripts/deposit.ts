@@ -17,7 +17,6 @@ export interface DepositData {
   pay_currency: string
   price_amount: number
   price_currency: string
-  halo?: number | null
   expires_at: string | null
 }
 
@@ -31,17 +30,9 @@ export interface DepositHooks {
 // Statuses the payment processor reports; terminal ones stop the poller.
 const TERMINAL_STATUSES = new Set(['finished', 'failed', 'refunded', 'expired'])
 
-// Rebuild panel data from a payment-status API response. The Halo amount is
-// recovered from the order id ("<account>:<pack>").
-const HALO_BY_PACK: Record<string, number> = {
-  halo_1: 1,
-  halo_4: 4,
-  halo_6: 6,
-}
-
+// Rebuild panel data from a payment-status API response.
 export function depositDataFromStatus(data: Record<string, any>): DepositData | null {
   if (!data?.pay_address) return null
-  const pack = String(data.order_id || '').split(':')[1]
   return {
     payment_id: String(data.payment_id),
     pay_address: data.pay_address,
@@ -49,7 +40,6 @@ export function depositDataFromStatus(data: Record<string, any>): DepositData | 
     pay_currency: data.pay_currency,
     price_amount: data.price_amount,
     price_currency: data.price_currency,
-    halo: HALO_BY_PACK[pack] ?? null,
     expires_at: data.expires_at ?? null,
   }
 }
@@ -88,7 +78,7 @@ const STATUS_COPY: Record<string, string> = {
     'Waiting for your transaction to reach the network — once broadcast, detection usually takes a couple of minutes.',
   confirming: 'Payment detected on the network — waiting for confirmations…',
   partially_paid: 'Partial payment received — send the remaining amount to the same address.',
-  sending: 'Confirmed — crediting your Halo…',
+  sending: 'Confirmed — crediting your account…',
 }
 
 // Three-step progress line under the status: sent → detected → credited.
@@ -162,15 +152,15 @@ export function initDepositPanel(hooks: DepositHooks = {}) {
       if (!res.ok || !status) return
       depositProgress.textContent = progressCopy(status)
       if (status === 'finished') {
-        depositStatus.textContent = 'Payment confirmed — Halo credited to your account.'
-        hooks.onNotice?.('Payment received — your Halo balance has been credited.')
+        depositStatus.textContent = 'Payment confirmed — credited to your account.'
+        hooks.onNotice?.('Payment received — your balance has been credited.')
         stopStatusPolling()
         activePaymentId = null
         depositRecheckBtn.hidden = true
         confetti()
         await hooks.onFinished?.()
       } else if (TERMINAL_STATUSES.has(status)) {
-        depositStatus.textContent = `Payment ${status}. No Halo was credited.`
+        depositStatus.textContent = `Payment ${status}. Nothing was credited.`
         stopStatusPolling()
         activePaymentId = null
         depositRecheckBtn.hidden = true
@@ -186,8 +176,7 @@ export function initDepositPanel(hooks: DepositHooks = {}) {
     stopStatusPolling()
     activePaymentId = data.payment_id
     const coin = data.pay_currency.toUpperCase()
-    const haloPart = data.halo ? ` → ${data.halo} Halos` : ''
-    depositAmountLine.textContent = `Send exactly ${data.pay_amount} ${coin} ($${data.price_amount} ${String(data.price_currency).toUpperCase()}${haloPart}) to:`
+    depositAmountLine.textContent = `Send exactly ${data.pay_amount} ${coin} ($${data.price_amount} ${String(data.price_currency).toUpperCase()}) to:`
     depositAddress.textContent = data.pay_address
     const qr = qrcode(0, 'M')
     qr.addData(paymentUri(data))

@@ -16,7 +16,7 @@ type ConnState =
   | {kind: 'idle'}
   | {kind: 'busy'}
   | {kind: 'error'; message: string}
-  | {kind: 'ok'; accountNumber: string; halo: number; audits: number};
+  | {kind: 'ok'; accountNumber: string; days: number; audits: number};
 
 function App(): React.JSX.Element {
   const [accountNumber, setAccountNumber] = useState('');
@@ -28,9 +28,7 @@ function App(): React.JSX.Element {
       return;
     }
     setState({kind: 'busy'});
-    // halo_balance is the post-rebrand field; nitro_balance is accepted while
-    // the API cutover (Nitro → Halo) is in flight. Drop the fallback after.
-    const account = await getAccount<{halo_balance?: number; nitro_balance?: number}>(acct);
+    const account = await getAccount<{credit_days?: number}>(acct);
     if (!account.ok) {
       setState({
         kind: 'error',
@@ -42,7 +40,7 @@ function App(): React.JSX.Element {
     setState({
       kind: 'ok',
       accountNumber: acct,
-      halo: account.data?.halo_balance ?? account.data?.nitro_balance ?? 0,
+      days: account.data?.credit_days ?? 0,
       audits: audits.ok ? (audits.data ?? []).length : 0,
     });
   }, [accountNumber, state.kind]);
@@ -123,7 +121,7 @@ function App(): React.JSX.Element {
           <Text className="text-sm font-medium text-ink">{statusText}</Text>
           {state.kind === 'ok' ? (
             <Text className="text-[13px] leading-[18px] text-dim">
-              {state.halo} Halos · {state.audits} synced device
+              {state.days} days · {state.audits} synced device
               {state.audits === 1 ? '' : 's'}
             </Text>
           ) : null}

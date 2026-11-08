@@ -4,11 +4,7 @@ import {
   createAccount,
   createCheckout,
   createCryptoCheckout,
-  createHaloCheckout,
-  createHaloPayment,
   getAccount,
-  getHaloBalance,
-  getHaloServices,
   getPaymentStatus,
   createSupportConversation,
   getSupportMessages,
@@ -94,18 +90,6 @@ describe('api client', () => {
     expect(init.method).toBe('GET')
   })
 
-  it('getHaloServices GETs /halo/services', async () => {
-    fetch.mockImplementation(() =>
-      jsonResponse(200, { ok: true, services: [{ service: 'cloud_backup', price_halo: 20 }] })
-    )
-    const res = await getHaloServices()
-    expect(res.ok).toBe(true)
-    expect(res.data.services[0]).toEqual({ service: 'cloud_backup', price_halo: 20 })
-    const [url, init] = fetch.mock.calls[0]
-    expect(url).toBe(`${BASE}/halo/services`)
-    expect(init.method).toBe('GET')
-  })
-
   it('saveAudit posts the snapshot with its audit_type', async () => {
     fetch.mockImplementation(() => jsonResponse(201, { ok: true, device_id: 'd-1', audit_type: 'device' }))
     const snapshot = { os: 'Android 14', browser: 'Chrome 140' }
@@ -143,30 +127,6 @@ describe('api client', () => {
     })
   })
 
-  it('createHaloCheckout posts pack + account to the Halo card rail', async () => {
-    fetch.mockImplementation(() =>
-      jsonResponse(200, { ok: true, invoice_url: 'https://nowpayments.io/payment/?iid=1', pack: 'halo_500', halo: 500 })
-    )
-    const res = await createHaloCheckout({ accountNumber: '1', pack: 'halo_500' })
-    expect(res.data.pack).toBe('halo_500')
-    const [url, init] = fetch.mock.calls[0]
-    expect(url).toBe(`${BASE}/billing/halo/checkout`)
-    expect(JSON.parse(init.body)).toEqual({ account_number: '1', pack: 'halo_500' })
-  })
-
-  it('createHaloPayment posts pack + account + coin to the whitelabel rail', async () => {
-    fetch.mockImplementation(() =>
-      jsonResponse(200, { ok: true, payment_id: '6427529765', pay_address: 'MQ...', pay_amount: 0.08538997, pay_currency: 'ltc', payment_status: 'waiting' })
-    )
-    const res = await createHaloPayment({ accountNumber: '1', pack: 'halo_100', payCurrency: 'ltc' })
-    expect(res.data.payment_id).toBe('6427529765')
-    expect(res.data.pay_address).toBe('MQ...')
-    const [url, init] = fetch.mock.calls[0]
-    expect(url).toBe(`${BASE}/billing/halo/payment`)
-    expect(init.method).toBe('POST')
-    expect(JSON.parse(init.body)).toEqual({ account_number: '1', pack: 'halo_100', pay_currency: 'ltc' })
-  })
-
   it('getPaymentStatus reads a payment by id', async () => {
     fetch.mockImplementation(() => jsonResponse(200, { ok: true, payment_status: 'confirming' }))
     const res = await getPaymentStatus('6427529765')
@@ -176,19 +136,9 @@ describe('api client', () => {
     expect(init.method).toBe('GET')
   })
 
-  it('getHaloBalance posts the account number to /halo', async () => {
-    fetch.mockImplementation(() => jsonResponse(200, { ok: true, halo_balance: 500, recent: [] }))
-    const res = await getHaloBalance('1234 5678 9012 3456')
-    expect(res.data.halo_balance).toBe(500)
-    const [url, init] = fetch.mock.calls[0]
-    expect(url).toBe(`${BASE}/halo`)
-    expect(init.method).toBe('POST')
-    expect(JSON.parse(init.body)).toEqual({ account_number: '1234 5678 9012 3456' })
-  })
-
   it('redeemCode posts the account number and code to /redeem', async () => {
     fetch.mockImplementation(() =>
-      jsonResponse(200, { ok: true, redeemed: 100, halo_balance: 100 })
+      jsonResponse(200, { ok: true, redeemed: 100 })
     )
     const res = await redeemCode({
       accountNumber: '1234 5678 9012 3456',

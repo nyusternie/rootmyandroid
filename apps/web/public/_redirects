@@ -5,12 +5,10 @@
 # to a path under /account/payment/* loops on Pages' index.html normalization.
 /account/payment/*  /pay/  200
 
-# Pricing-page moves (Halo currency retired 2026-11-05): /nitro (pre-2026-11)
-# and /halo both land on /pricing; direct targets avoid redirect chains.
+# Pricing-page moves (pre-2026-11 currency brands retired): /nitro lands on
+# /pricing; direct targets avoid redirect chains.
 /nitro  /pricing  301
 /nitro/  /pricing  301
-/halo  /pricing  301
-/halo/  /pricing  301
 
 # Rooted app renamed Rootz (owner ruling 2026-11-07): the product page moved
 # /rooted -> /rootz. One-way only (direct traffic, no backlinks to preserve).

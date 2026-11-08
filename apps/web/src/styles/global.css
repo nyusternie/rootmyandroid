@@ -283,26 +283,6 @@
   .balance .label {
     @apply text-[0.75rem] uppercase tracking-[0.06em] text-faint;
   }
-
-  /* halo energy bar (on /account it links to /pricing) */
-  .halo-bar {
-    @apply mt-[1rem] flex items-center gap-[0.6rem] rounded-[0.5rem] border border-line bg-inset px-[1rem] py-[0.9rem] no-underline;
-  }
-  a.halo-bar:hover {
-    @apply border-faint;
-  }
-  .halo-bar .halo-label {
-    @apply text-[0.75rem] font-bold uppercase tracking-[0.06em] text-faint;
-  }
-  .halo-bar .halo-track {
-    @apply h-[6px] flex-1 overflow-hidden rounded-[3px] bg-line;
-  }
-  .halo-bar .halo-fill {
-    @apply block h-full rounded-[3px] bg-accent;
-  }
-  .halo-bar .halo-value {
-    @apply text-[1.1rem] font-bold text-accent;
-  }
 }
 
 /* ---------- device audit (/audit) ----------
@@ -335,18 +315,16 @@
   .audit .coverage {
     @apply mt-[1rem] flex items-center gap-[0.6rem] rounded-[0.5rem] border border-line bg-inset px-[1rem] py-[0.9rem];
   }
-  /* The coverage bar reuses the halo-bar part classes, but .halo-bar's child
-     rules are scoped to it — duplicate them under .coverage or the bar breaks. */
-  .audit .coverage .halo-label {
+  .audit .coverage .meter-label {
     @apply text-[0.75rem] font-bold uppercase tracking-[0.06em] text-faint;
   }
-  .audit .coverage .halo-track {
+  .audit .coverage .meter-track {
     @apply h-[6px] flex-1 overflow-hidden rounded-[3px] bg-line;
   }
-  .audit .coverage .halo-fill {
+  .audit .coverage .meter-fill {
     @apply block h-full rounded-[3px] bg-accent;
   }
-  .audit .coverage .halo-value {
+  .audit .coverage .meter-value {
     @apply text-[1.1rem] font-bold text-accent;
   }
   .audit .chips {

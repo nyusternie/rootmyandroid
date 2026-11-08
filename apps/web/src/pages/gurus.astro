@@ -1,0 +1,231 @@
+---
+// src/pages/gurus.astro — the Gurus page: what Gurus are, the roster, the
+// safety model, hardware-backed security, and how Gurus are paid for.
+// Built to docs/HANDOFF-2026-11-08-gurus-page.md (owner rulings 2026-11-08):
+// "Guru" is the product/name prefix for Root My Android's AI assistants —
+// advisors that explain, never act. Status labels follow the AI-positioning
+// handoff (docs/HANDOFF-2026-11-07-agent-ux-frontend.md): nothing here is
+// marked LIVE. No pricing numbers until the backend pricing surface ships.
+import Base from '../layouts/Base.astro'
+
+const statusBadge =
+  'ml-2 inline-block rounded-full border border-line px-2 py-[0.1rem] align-middle text-[0.72rem] font-bold tracking-[0.08em] muted'
+
+const limitsSentence =
+  'Gurus explain and guide. They never run device commands on their own, and they never see your data without your explicit consent.'
+
+const gurus = [
+  {
+    name: 'Rooting Guide Guru',
+    oneLiner:
+      'Explains your scan evidence, answers "is my phone rootable?", and prepares the safe path.',
+    href: '/agents',
+    linkLabel: 'The agent platform',
+  },
+  {
+    name: 'Rootz Diagnostic Guru',
+    oneLiner:
+      'Explains what Rootz found on an already-rooted device, in plain language.',
+    href: '/rootz',
+    linkLabel: 'Rootz',
+  },
+  {
+    name: 'Guardian Digest Guru',
+    oneLiner:
+      "Turns Guardian Angel's on-device filtering into daily/weekly parent-readable digests.",
+    href: '/guardian-angel',
+    linkLabel: 'Guardian Angel',
+  },
+]
+
+const hardwareRows = [
+  ['Browser session', 'Standard remote AI session'],
+  ['Android app sandbox', 'On-device agent runtime'],
+  ['Hardware-backed Keystore key', 'Device-bound cryptographic identity'],
+  ['Verified key attestation', 'Hardware-backed device/key attestation verified'],
+  ['StrongBox where available', 'StrongBox-backed key'],
+  [
+    'Actual trusted application in a TEE',
+    'Named only after a real implementation and security review',
+  ],
+]
+
+const faqs = [
+  {
+    q: 'Will a Guru root my phone for me?',
+    a: 'No. A Guru guides: it explains the evidence, prepares the plan, and walks you through it. Every consequential step waits for your explicit approval — you stay in charge of your device.',
+  },
+  {
+    q: 'What does a Guru see on my device?',
+    a: 'Only the evidence payload you approved. The exact items are itemized before anything is sent, and nothing leaves your device without that approval.',
+  },
+  {
+    q: 'Do I need a subscription?',
+    a: 'No. Gurus are pay-per-use from your Guru Balance — you see the price before each request runs. Subscriptions (Guardian Angel, Rootz Pro) are separate product plans and are never required to talk to a Guru.',
+  },
+  {
+    q: 'Are the Gurus available today?',
+    a: 'Not yet. Every Guru on this page is labeled PLANNED — they are being built and tested, and this page will be relabeled as they ship. What is live today is the agent platform they will build on.',
+  },
+]
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+}
+---
+
+<Base
+  title="Gurus — AI assistants that explain, never act"
+  description="AI explains the evidence. Deterministic tools validate the plan. You approve every consequential action."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
+  <section class="hero relative before:pointer-events-none before:absolute before:inset-x-0 before:-top-24 before:h-[32rem] before:bg-[radial-gradient(60%_70%_at_70%_30%,rgba(61,220,132,0.14),transparent_70%)] before:content-['']">
+    <div class="container relative">
+      <h1>Meet the <span class="hl text-accent">Gurus</span>.</h1>
+      <p class="lede">
+        A Guru is Root My Android&apos;s name for an AI assistant that
+        advises and explains — but never acts on a device by itself.
+      </p>
+      <p class="panel text-[1.1rem]">
+        <strong>AI explains the evidence. Deterministic tools validate the
+        plan. You approve every consequential action.</strong>
+      </p>
+      <div class="row mt-7">
+        <a class="btn btn-primary" href="/rootz">Explore Rootz</a>
+        <a class="btn" href="/guardian-angel">Meet Guardian Angel</a>
+        <a class="btn" href="/agents">For developers: the agent platform</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container pt-10 pb-8">
+    <h2>A Guru advises. It never acts.</h2>
+    <div class="grid-3 steps-grid mt-6">
+      <div class="panel">
+        <h3>Every recommendation is a plan</h3>
+        <p class="muted">
+          Not a vague suggestion: a plan with the exact commands and the
+          expected evidence, shown to you before anything runs.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Read-only checks run first</h3>
+        <p class="muted">
+          Inspection never modifies the device. Anything consequential waits
+          for an explicit tap from you — every single time.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>A mismatch stops the show</h3>
+        <p class="muted">
+          If the device doesn&apos;t match what the Guru expected, it stops
+          and shows what was seen versus what was expected — never a
+          hallucinated next step.
+        </p>
+      </div>
+    </div>
+    <p class="muted mt-5">{limitsSentence}</p>
+  </section>
+
+  <section class="container pb-8">
+    <h2>The Guru roster</h2>
+    <p class="muted">
+      Three Gurus, each tied to the product it advises on. The default Guru
+      is <strong>Sage</strong>; when the Gurus cannot answer, the escalation
+      Guru <strong>The Elder</strong> takes over.
+    </p>
+    <div class="grid gap-5 mt-6 min-[720px]:grid-cols-3">
+      {gurus.map((guru) => (
+        <div class="panel tier-card">
+          <h3 class="mt-0 mb-1 tracking-[0.1em] text-accent">
+            {guru.name}
+            <span class={statusBadge}>PLANNED</span>
+          </h3>
+          <p>{guru.oneLiner}</p>
+          <p class="small faint">{limitsSentence}</p>
+          <p class="small">
+            Lives in <a href={guru.href}>{guru.linkLabel}</a>.
+          </p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="container pb-8">
+    <h2>Hardware-backed security, stated precisely</h2>
+    <p class="muted">
+      You will never see a generic &quot;TEE secured&quot; badge from us.
+      Every surface states exactly which protection is in place:
+    </p>
+    <div class="table-wrap overflow-x-auto mt-4">
+      <table class="w-full min-w-[40rem] border-collapse text-[0.92rem]">
+        <caption class="faint small mb-2 text-left">
+          The implementation behind a protection, and the exact wording you
+          will see for it.
+        </caption>
+        <thead>
+          <tr>
+            <th class="border border-line bg-raise px-3 py-[0.6rem] align-top text-left" scope="col">Implementation</th>
+            <th class="border border-line bg-raise px-3 py-[0.6rem] align-top text-left" scope="col">What we call it</th>
+          </tr>
+        </thead>
+        <tbody>
+          {hardwareRows.map(([impl, wording]) => (
+            <tr>
+              <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">{impl}</th>
+              <td class="border border-line px-3 py-[0.6rem] align-top text-left">{wording}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="panel mt-4">
+      Hardware-backed identity helps protect keys and verify selected device
+      properties. Cloud inference still occurs with the named provider and is
+      not executed inside the Android TEE.
+    </p>
+    <p class="muted">
+      Rooted and unlocked devices may fail verified-boot or attestation
+      requirements. Rootz provides a supported lower-assurance mode rather
+      than blocking the rooting workflow — and it is never silently relabeled
+      as attested.
+    </p>
+  </section>
+
+  <section class="container pb-8">
+    <h2>How Gurus are paid for</h2>
+    <p>
+      Guru usage is pay-per-use from your <strong>Guru Balance</strong> — a
+      prepaid AI balance on your account number. No subscription is required:
+    </p>
+    <ul>
+      <li>The price is shown <strong>before</strong> the request runs.</li>
+      <li>A running balance is visible during use.</li>
+      <li>An itemized receipt follows every session.</li>
+      <li>Guru Balance top-ups are <strong>non-refundable</strong> — stated plainly before you pay.</li>
+      <li>The 15% crypto discount applies to subscription plans only — never to Guru usage or top-ups.</li>
+    </ul>
+    <p class="muted">
+      Model pricing is being finalized, so there are deliberately no numbers
+      on this page yet. Capability status lives on
+      {' '}<a href="/agents">the agent platform page</a>.
+    </p>
+  </section>
+
+  <section class="container faq-section pt-4 pb-4">
+    <h2>Frequently asked questions</h2>
+    {faqs.map((f) => (
+      <details class="panel my-3">
+        <summary class="cursor-pointer font-semibold">{f.q}</summary>
+        <p class="muted mt-2 mb-0">{f.a}</p>
+      </details>
+    ))}
+  </section>
+</Base>

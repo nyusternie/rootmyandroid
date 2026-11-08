@@ -64,57 +64,14 @@ export function createCryptoCheckout<T = unknown>({ accountNumber, plan }: { acc
   });
 }
 
-// POST /billing/halo/checkout — buy a Halo pack on the card rail
-// (NOWPayments). Pack ids are server-defined (halo_100 / halo_500 /
-// halo_1000); prices are enforced server-side.
-export function createHaloCheckout<T = unknown>({ accountNumber, pack }: { accountNumber: string; pack: string }) {
-  return request<T>('/billing/halo/checkout', {
-    method: 'POST',
-    body: { account_number: accountNumber, pack },
-  });
-}
-
-// POST /billing/halo/payment — buy a Halo pack on the whitelabel rail:
-// the API returns a deposit address + amount in the chosen coin, and the
-// client renders the checkout UI itself (no hosted page, no redirect).
-export function createHaloPayment<T = unknown>({
-  accountNumber,
-  pack,
-  payCurrency,
-}: {
-  accountNumber: string;
-  pack: string;
-  payCurrency: string;
-}) {
-  return request<T>('/billing/halo/payment', {
-    method: 'POST',
-    body: { account_number: accountNumber, pack, pay_currency: payCurrency },
-  });
-}
-
 // GET /billing/payment/{id} — poll a whitelabel payment's status while the
 // deposit panel is open (waiting -> confirming -> finished).
 export function getPaymentStatus<T = unknown>(paymentId: string) {
   return request<T>(`/billing/payment/${encodeURIComponent(paymentId)}`);
 }
 
-// POST /halo — an account's Halo balance plus its recent ledger entries.
-// (POST so the account number travels in the body, not the URL/logs.)
-export function getHaloBalance<T = unknown>(accountNumber: string) {
-  return request<T>('/halo', {
-    method: 'POST',
-    body: { account_number: accountNumber },
-  });
-}
-
-// GET /halo/services — public catalog of PRO services + Halo prices, so
-// clients render pricing from the server-side table instead of hard-coding.
-export function getHaloServices<T = unknown>() {
-  return request<T>('/halo/services');
-}
-
-// POST /redeem — redeem a single-use voucher code, crediting its Halo to
-// the account. Codes are single-use; a redeemed code returns 409.
+// POST /redeem — redeem a single-use voucher code, crediting its plan time
+// to the account. Codes are single-use; a redeemed code returns 409.
 export function redeemCode<T = unknown>({ accountNumber, code }: { accountNumber: string; code: string }) {
   return request<T>('/redeem', {
     method: 'POST',
