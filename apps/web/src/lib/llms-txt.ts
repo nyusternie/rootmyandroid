@@ -28,7 +28,7 @@ export function buildLlmsTxt(guides: LlmsGuide[], roms: LlmsRom[], deviceCount: 
 
 # Root My Android
 
-> Root My Android: release your Android's full power — a free, read-only, in-browser ADB device scan that produces a rooting / upgrade plan matched to your exact model, plus two apps: Rootz (power-user toolkit) and Guardian Angel (parental device management). Accounts are Mullvad-style 16-digit numbers: no email, no password, no personal data. Pricing: the scan core is free; Guardian Angel Lite is $5 / 30 days; Guardian Angel Pro is $15 / 30 days; Rootz Pro is $15 / 365 days; crypto payments save 15% (enforced server-side).
+> Root My Android: release your Android's full power — a free, read-only, in-browser ADB device scan that produces a rooting / upgrade plan matched to your exact model, plus two apps: Rootz (power-user toolkit) and Guardian Angel (parental device management). Accounts are Mullvad-style 16-digit numbers: no email, no password, no conventional signup identity. Pricing: the scan core is free; Guardian Angel Lite is $5 / 30 days; Guardian Angel Pro is $15 / 30 days; Rootz Pro is $15 / 365 days; crypto payments save 15% (enforced server-side).
 
 The site is fully static. All dynamic/backend functionality lives in a public REST API at https://rootmyandroid.com/v1 and a Model Context Protocol (MCP) server at https://rootmyandroid.com/mcp — both require no API key and no registration.
 

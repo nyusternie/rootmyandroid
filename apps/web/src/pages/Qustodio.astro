@@ -1,0 +1,94 @@
+---
+// src/pages/Qustodio.astro — SEO profile page for the third-party parental
+// control product Qustodio, in the shared Profile.astro pattern (added
+// 2026-11-08, owner-approved). Every Qustodio fact below is sourced from
+// the vendor's own website (https://www.qustodio.com/en/, fetched
+// 2026-11-08: "Parental control and digital wellbeing software", "over 9
+// million parents", feature sections, free sign-up + premium plans) — no
+// guessing (AGENTS.md rule 3). Guardian Angel facts mirror /pricing.
+import Profile from '../layouts/Profile.astro'
+---
+
+<Profile
+  title="Qustodio: Parental Control & Digital Wellbeing — and a Private Alternative"
+  description="Qustodio is a parental control and digital wellbeing app with filtering, activity monitoring, and screen-time tools. What it offers, and how Guardian Angel differs on privacy."
+  h1="Qustodio"
+  lede="One of the best-known parental control apps — filtering, monitoring, and screen-time management from a single dashboard."
+  image={{
+    src: '/img/topics/qustodio.webp',
+    alt: 'Illustration of a green Android robot holding a glowing protective shield over a smaller child robot, symbolizing parental control software.',
+    width: 480,
+    height: 480,
+    displayWidth: 320,
+  }}
+  credit={{
+    license: 'CC0 1.0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    made: true,
+  }}
+  name="Qustodio"
+  owner="Qustodio LLC"
+  ownerUrl="https://www.qustodio.com"
+  current="/Qustodio"
+>
+  <h2>What is Qustodio?</h2>
+  <p>
+    Qustodio is a commercial parental control and digital wellbeing
+    application. Parents install it on their children's devices and supervise
+    them from a single dashboard that covers smartphones, tablets, desktops,
+    Chromebooks, and more. The company says over 9 million parents use its
+    tools. A free plan is available, with paid premium plans for families
+    that need more.
+  </p>
+
+  <h2>What it offers</h2>
+  <p>According to its website, Qustodio's feature set includes:</p>
+  <ul>
+    <li>Web and app filtering — block or allow content and apps.</li>
+    <li>Activity monitoring — browsing, social media, and location, in real time.</li>
+    <li>Screen-time management — set screen-free times such as study or bedtime.</li>
+    <li>Calls and messages monitoring — alerts for concerning messages, with contact blocking.</li>
+    <li>Family location — see where devices are, with alerts when they arrive at or leave saved places.</li>
+    <li>Daily and weekly activity reports, plus search alerts.</li>
+  </ul>
+
+  <h2>How Guardian Angel is different</h2>
+  <p>
+    Guardian Angel — our own parental device-management app — covers the
+    same ground, but is built around privacy by default:
+  </p>
+  <ul>
+    <li>
+      <strong>No sign-up identity.</strong> No email, no password, no name —
+      your account is an anonymous 16-digit number.
+    </li>
+    <li>
+      <strong>Client-side encryption.</strong> Everything the app syncs is
+      encrypted on the device with a key only you hold — we cannot read it.
+    </li>
+    <li>
+      <strong>Simple top-up pricing.</strong> $5 / 30 days (Lite) or
+      $15 / 30 days (Pro), covering up to 5 devices — prepaid, no
+      auto-renewal, and crypto payments save 15%.
+    </li>
+  </ul>
+  <p>
+    Our <a href="/parents">parental-controls guide</a> compares the built-in
+    Android controls, Google Family Link, and dedicated apps side by side.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="/guardian-angel">Explore Guardian Angel</a>
+  </p>
+
+  <h2>Official links</h2>
+  <ul>
+    <li>
+      <a href="https://www.qustodio.com/en/" rel="noopener">qustodio.com</a>
+      — the product website
+    </li>
+    <li>
+      <a href="https://www.qustodio.com/en/premium/" rel="noopener">Premium plans</a>
+      — the vendor's current pricing
+    </li>
+  </ul>
+</Profile>

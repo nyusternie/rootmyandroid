@@ -1,8 +1,8 @@
 ---
-// src/layouts/Profile.astro — shared shell for the ten mock SEO profile
+// src/layouts/Profile.astro — shared shell for the eleven SEO profile
 // pages (/GrapheneOS, /Magisk, /TWRP, /Shizuku, /AOSP, /ADB, /KernelSU,
-// /APatch, /LineageOS, /Dhizuku — brand-cased canonical paths; see
-// public/_redirects for the lowercase/first-letter aliases). Layers on
+// /APatch, /LineageOS, /Dhizuku, /Qustodio — brand-cased canonical paths;
+// see public/_redirects for the lowercase/first-letter aliases). Layers on
 // top of Base.astro and gives
 // every profile independent SEO: per-page title/description/canonical (via
 // Base), per-page OG type/image/dims from the profile's own art (raster
@@ -64,6 +64,7 @@ const profiles = [
   { href: '/APatch', label: 'APatch' },
   { href: '/LineageOS', label: 'LineageOS' },
   { href: '/Dhizuku', label: 'Dhizuku' },
+  { href: '/Qustodio', label: 'Qustodio' },
 ]
 const related = profiles.filter((p) => p.href !== current)
 

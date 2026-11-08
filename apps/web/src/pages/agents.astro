@@ -38,7 +38,7 @@ const faqs = [
   },
   {
     q: 'Can an AI agent create an account without a human?',
-    a: 'Yes. The create_account tool (or POST /v1/accounts on the REST API) creates a Mullvad-style 16-digit account with no email, no password, and no personal data. The account number itself is the credential, so an agent can onboard a user end-to-end and hand them just the number.',
+    a: 'Yes. The create_account tool (or POST /v1/accounts on the REST API) creates a Mullvad-style 16-digit account with no email, no password, and no conventional signup identity. The account number itself is the credential, so an agent can onboard a user end-to-end and hand them just the number.',
   },
   {
     q: 'Can an agent take payments on behalf of a user?',
@@ -79,7 +79,7 @@ const faqSchema = {
       server expose every customer-facing service — Mullvad-style accounts,
       Guardian Angel subscriptions, card &amp; crypto checkout, vouchers,
       payment status, and human support — to any agent. No API key, no
-      registration, no personal data required anywhere.
+      registration, no email or conventional signup identity required anywhere.
     </p>
 
     <nav class="panel toc mb-10" aria-label="On this page">
@@ -101,8 +101,9 @@ const faqSchema = {
           Mullvad-style 16-digit numbers — there is no email, password,
           phone, or KYC step anywhere in the flow. Those identity gates are
           exactly where agents usually get stuck; here they do not exist.
-          An agent can create an account for its user and act on it
-          indefinitely with just the number.
+          An agent can create an account for its user and act on it with
+          just the number — revocable, scoped sessions for AI features
+          are on the roadmap.
         </li>
         <li>
           <strong>Public by design.</strong> No API keys, no OAuth apps, no

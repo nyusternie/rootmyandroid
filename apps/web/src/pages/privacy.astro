@@ -9,7 +9,7 @@ import Base from '../layouts/Base.astro'
 >
   <div class="container prose px-5 py-12">
     <h1>Privacy Policy</h1>
-    <p class="faint"><em>Last updated: October 20, 2026</em></p>
+    <p class="faint"><em>Last updated: November 8, 2026</em></p>
 
     <p>
       Root My Android is designed around data minimalism: accounts are random numbers, and the
@@ -40,12 +40,17 @@ import Base from '../layouts/Base.astro'
         <strong>Guardian pairing data</strong> — when you pair the Guardian Angel app to an
         account, the pairing record between that account number and the managed device's ID.
       </li>
+      <li>
+        <strong>Encrypted app data</strong> — data synced by our apps (backups, monitoring
+        data) is stored as ciphertext: it is encrypted on your device with a key only you
+        hold and is unreadable to us.
+      </li>
     </ul>
 
     <h2>2. What we never collect</h2>
     <ul>
       <li>Email addresses, passwords, names, or phone numbers (there is no field to enter them).</li>
-      <li>The contents of your backups — they are encrypted on your device with a key only you hold.</li>
+      <li>The contents of your backups and synced app data — they are encrypted on your device with a key only you hold.</li>
       <li>Contacts, messages, photos, or files from your device.</li>
       <li>Advertising identifiers or cross-site tracking of any kind.</li>
     </ul>
@@ -98,6 +103,8 @@ import Base from '../layouts/Base.astro'
       parent's account number. We do not knowingly collect any information directly from
       children, and no personal profile of a child is created or stored — the only records are
       the parent's account number and the managed device's audit data described above.
+      Monitoring data synced from the managed device is encrypted on that device with a
+      key held by the account owner — not by us.
     </p>
 
     <h2>6. Data sharing and disclosure</h2>

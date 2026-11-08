@@ -29,11 +29,11 @@ const faqs = [
   },
   {
     q: 'What is Rootz?',
-    a: 'Rootz is our power-user toolkit for your own device. The free tier includes a system profiler, a task manager and automation, a logcat reader, a firewall manager, a battery monitor, a terminal editor, a file explorer and manager, an APK installer, and a key mapper. Rootz Pro adds an AI harness, a logcat analyzer, an archive manager, and VNC, RDP and more.',
+    a: 'Rootz is our power-user toolkit for your own device. The free tier includes a system profiler, a task manager and automation, a logcat reader, a firewall manager, a battery monitor, a terminal editor, a file explorer and manager, an APK installer, and a key mapper. Rootz Pro adds the Terminal Editor and Log Analysis today, with an AI harness, an archive manager, VNC, and RDP coming soon.',
   },
   {
     q: 'What is Guardian Angel?',
-    a: "Guardian Angel is our parental device-management app: you install and configure it on your child's device yourself. The free tier includes short-term usage statistics of every app, a DNS-based ad blocker, and cleanup and maintenance. Paid tiers add long-term usage statistics, a screen recorder, a device locator, and an app lock.",
+    a: "Guardian Angel is our parental device-management app: you install and configure it on your child's device yourself. The free tier includes short-term usage statistics of every app, a DNS-based ad blocker, and cleanup and maintenance. Guardian Angel Lite adds reading installed apps and messages; Pro adds call logs, photos & media, and camera & video — covering up to 5 devices per account.",
   },
   {
     q: 'Do I need to install anything to scan my phone?',
@@ -66,7 +66,7 @@ const faqSchema = {
 
 <Base
   title="Release Your FULL Power"
-  description="Release your Android's full power — free in-browser root scan, the Rootz power-user toolkit, and Guardian Angel parental controls with usage stats, ad blocking, screen recorder & more."
+  description="Release your Android's full power — free in-browser root scan, the Rootz power-user toolkit, and Guardian Angel parental controls with usage stats, ad blocking, app and message monitoring & more."
 >
   <section class="hero relative before:pointer-events-none before:absolute before:inset-x-0 before:-top-24 before:h-[32rem] before:bg-[radial-gradient(60%_70%_at_70%_30%,rgba(61,220,132,0.14),transparent_70%)] before:content-['']">
     <div class="container hero-grid relative grid items-center gap-8 min-[720px]:grid-cols-[1.05fr_0.95fr]">
@@ -231,16 +231,18 @@ const faqSchema = {
       <div class="panel tier-card">
         <h3 class="mt-0 mb-1 tracking-[0.1em] text-accent">Guardian Angel LITE</h3>
         <ul class="checklist mt-3 mb-5 list-none p-0">
-          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Long-term usage statistics of every app</li>
-          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Screen recorder</li>
-          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Device locator</li>
-          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">App lock</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Read installed apps</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Read messages</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Cover up to 5 devices</li>
         </ul>
       </div>
       <div class="panel tier-card">
         <h3 class="mt-0 mb-1 tracking-[0.1em] text-accent">Guardian Angel PRO</h3>
         <ul class="checklist mt-3 mb-5 list-none p-0">
-          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Long-term usage statistics of every app</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Everything in Lite</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Read call logs</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">View photos &amp; media</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">View camera &amp; video</li>
         </ul>
       </div>
     </div>
@@ -292,10 +294,10 @@ const faqSchema = {
       <div class="panel tier-card">
         <h3 class="mt-0 mb-1 tracking-[0.1em] text-accent">Rootz PRO</h3>
         <ul class="checklist mt-3 mb-5 list-none p-0">
-          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">AI harness</li>
-          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Logcat analyzer</li>
-          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Archive manager</li>
-          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">VNC, RDP and more</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Terminal Editor</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Log Analysis</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">AI harness — coming soon</li>
+          <li class="relative mt-[0.55rem] pl-[1.6rem] before:absolute before:left-0 before:font-bold before:text-accent before:content-['✓']">Archive manager, VNC, RDP — coming soon</li>
         </ul>
       </div>
     </div>
@@ -328,7 +330,7 @@ const faqSchema = {
         by people. A public REST API and a Model Context Protocol (MCP)
         server expose accounts, subscription plans, card &amp; crypto
         checkout, vouchers, payment status, and human support — no API key,
-        no registration, no personal data anywhere.
+        no registration — no email or conventional signup identity is required.
       </p>
       <div class="row">
         <a class="btn" href="/agents">Read the agent guide</a>
