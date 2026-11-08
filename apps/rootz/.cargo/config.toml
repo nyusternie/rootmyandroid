@@ -1,0 +1,13 @@
+# apps/rootz/.cargo/config.toml
+# Android NDK clang wrappers, resolved from PATH on the build runner.
+# The runner provides the NDK (its path is runner-local env, never committed).
+# API level 24 matches typical RN 0.88 minSdk — confirm against product minSdk.
+
+[target.aarch64-linux-android]
+linker = "aarch64-linux-android24-clang"
+
+[target.armv7-linux-androideabi]
+linker = "armv7a-linux-androideabi24-clang"
+
+[target.x86_64-linux-android]
+linker = "x86_64-linux-android24-clang"
