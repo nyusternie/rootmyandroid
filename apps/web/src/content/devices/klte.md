@@ -7,5 +7,16 @@ supportstatus: "Current"
 maintainer:
   - "jcadduono"
 devicetree: "https://github.com/TeamWin/android_device_samsung_klte"
+variants:
+  - label: "International, Americas, and Oceanic (SM-G900F, SM-G900W8, SM-G900T, SM-G900M, SM-G900P, SM-G900V, SM-G900I)"
+    folder: "klte"
+  - label: "International Duos (SM-G900FD)"
+    folder: "klteduos"
+  - label: "China & China Duos (SM-G9006V, SM-G9008V, SM-G9006W, SM-G9008W, SM-G9009W)"
+    folder: "kltechn"
+  - label: "Japan (SCL23, SC-04F)"
+    folder: "kltekdi"
+  - label: "Korea (SM-G900K, SM-G900L, SM-G900S)"
+    folder: "klteskt"
 updated: 2026-11-08
 ---

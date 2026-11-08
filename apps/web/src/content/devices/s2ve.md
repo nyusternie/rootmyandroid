@@ -4,5 +4,10 @@ title: "Samsung Galaxy S2 Plus"
 oem: "Samsung"
 codename: "s2ve"
 supportstatus: "Current"
+variants:
+  - label: "s2ve"
+    folder: "s2ve"
+  - label: "s2vep"
+    folder: "s2vep"
 updated: 2026-11-08
 ---

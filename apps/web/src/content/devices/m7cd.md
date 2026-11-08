@@ -6,5 +6,12 @@ codename: "m7cd"
 supportstatus: "Current"
 maintainer:
   - "Bruno Martins (bgcngm)"
+variants:
+  - label: "m7cdtu"
+    folder: "m7cdtu"
+  - label: "m7cdug"
+    folder: "m7cdug"
+  - label: "m7cdwg"
+    folder: "m7cdwg"
 updated: 2026-11-08
 ---

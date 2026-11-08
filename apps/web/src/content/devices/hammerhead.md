@@ -8,5 +8,10 @@ maintainer:
   - "Dees_Troy"
   - "razorloves"
 devicetree: "https://github.com/TeamWin/android_device_lge_hammerhead"
+variants:
+  - label: "Normal (recommended)"
+    folder: "hammerhead"
+  - label: "hammerheadcaf (use only if you know this is what you need)"
+    folder: "hammerheadcaf"
 updated: 2026-11-08
 ---

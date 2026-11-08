@@ -55,6 +55,51 @@ export function isDownloadFolder(value) {
   return /^[A-Za-z0-9._-]+$/.test(String(value ?? ''))
 }
 
+// Parse a multi-SKU download-folder value into labeled { label, folder }
+// mirror entries. Observed upstream formats (twrp.me, fetched 2026-11-08):
+//   - alternating label/folder segments:
+//     'ROG Phone 5|I005D|ROG Phone 5S|I005DS'
+//     'Normal (recommended)|hammerhead|hammerheadcaf (use only if ...)|hammerheadcaf'
+//     (labels may carry HTML entities and a trailing colon:
+//     'Americas, Korea &amp; Europe (SM-N9005/hltexx, ...):|hlte|...')
+//   - folder names doubled as their own labels:
+//     'm7cdtu|m7cdtu|m7cdug|m7cdug|m7cdwg|m7cdwg'
+//   - exactly two bare folders with no labels: 'a51cml|tuhl'
+//   - exactly one labeled variant: 'International & Americas (...)|jflte'
+// Returns [] when the value is not a usable set of mirrors (odd segment
+// count, empty label, unsafe folder segment) — the caller then emits no
+// download data for the device rather than guessing at the right folder.
+export function parseDownloadVariants(value) {
+  const raw = String(value ?? '').replace(/\s+/g, ' ').trim()
+  if (!raw) return []
+  const parts = raw.split('|').map((p) => p.trim())
+  if (parts.length === 2) {
+    const [first, second] = parts
+    // Two bare folders, no labels: 'a51cml|tuhl'.
+    if (isDownloadFolder(first) && isDownloadFolder(second)) {
+      return parts.map((folder) => ({ label: folder, folder }))
+    }
+    // One labeled variant: 'International & Americas (...)|jflte'.
+    if (!isDownloadFolder(first) && isDownloadFolder(second)) {
+      const label = decodeEntities(first).replace(/:+$/, '').trim()
+      return label ? [{ label, folder: second }] : []
+    }
+    return []
+  }
+  if (parts.length % 2 !== 0) return []
+  const variants = []
+  const seen = new Set()
+  for (let i = 0; i < parts.length; i += 2) {
+    const label = decodeEntities(parts[i]).replace(/:+$/, '').trim()
+    const folder = parts[i + 1]
+    if (!label || !isDownloadFolder(folder)) return []
+    if (seen.has(folder)) continue
+    seen.add(folder)
+    variants.push({ label, folder })
+  }
+  return variants
+}
+
 // Parse the maintainer field into a clean list: comma-separated, trimmed,
 // placeholders dropped ('None', 'N/A', '?', '-', empty). Returns [] when the
 // device has no listed maintainer.

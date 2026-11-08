@@ -8,5 +8,20 @@ maintainer:
   - "jcadduono"
   - "bigbiff"
 devicetree: "https://github.com/TeamWin/android_device_samsung_zerolte"
+variants:
+  - label: "International GSM (SM-G925F, SM-G925FD, SM-G925I)"
+    folder: "zerolte"
+  - label: "Canada (SM-G925W8)"
+    folder: "zeroltecan"
+  - label: "T-Mobile (SM-G925T)"
+    folder: "zeroltetmo"
+  - label: "Sprint (SM-G925P)"
+    folder: "zeroltespr"
+  - label: "US Cellular (SM-G925R4)"
+    folder: "zerolteusc"
+  - label: "China (SM-G9250)"
+    folder: "zeroltezt"
+  - label: "Korea (SM-G925K, SM-G925L, SM-G925S)"
+    folder: "zerolteskt"
 updated: 2026-11-08
 ---

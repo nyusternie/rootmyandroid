@@ -8,5 +8,20 @@ maintainer:
   - "jcadduono"
   - "bigbiff"
 devicetree: "https://github.com/TeamWin/android_device_samsung_zeroflte"
+variants:
+  - label: "International GSM (SM-G920F, SM-G920FD, SM-G920I)"
+    folder: "zeroflte"
+  - label: "Canada (SM-G920W8)"
+    folder: "zerofltecan"
+  - label: "T-Mobile (SM-G920T)"
+    folder: "zerofltetmo"
+  - label: "Sprint (SM-G920P)"
+    folder: "zerofltespr"
+  - label: "US Cellular (SM-G920R4)"
+    folder: "zeroflteusc"
+  - label: "China & China Duos (SM-G9200, SM-G9208, SM-G9209)"
+    folder: "zerofltezt"
+  - label: "Korea (SM-G920K, SM-G920L, SM-G920S)"
+    folder: "zeroflteskt"
 updated: 2026-11-08
 ---

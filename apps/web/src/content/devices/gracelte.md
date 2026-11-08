@@ -8,5 +8,10 @@ maintainer:
   - "jcadduono"
   - "bigbiff"
 devicetree: "https://github.com/TeamWin/android_device_samsung_gracelte"
+variants:
+  - label: "International & Duos (SM-N930F, SM-N930FD)"
+    folder: "gracelte"
+  - label: "Korea (SM-N930K, SM-N930L, SM-N930S)"
+    folder: "graceltekor"
 updated: 2026-11-08
 ---

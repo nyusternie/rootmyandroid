@@ -76,6 +76,17 @@ const devices = defineCollection({
     // omitted when no single canonical folder exists for the device (e.g.
     // multi-SKU variants) — never invent one.
     downloadfolder: z.string().optional(),
+    // Labeled per-SKU download mirrors, parsed from pipe-joined label/folder
+    // pairs by the importer (e.g. ROG Phone 5 → I005D, ROG Phone 5S →
+    // I005DS); used when no single canonical folder exists.
+    variants: z
+      .array(z.object({ label: z.string(), folder: z.string() }))
+      .optional(),
+    // Maker's factory-image archive (Google Pixels).
+    factoryimages: z.string().url().optional(),
+    // Cautionary note (original prose, source-linked) rendered as a
+    // callout — e.g. Google's anti-rollback bootloader warnings for Pixels.
+    notes: z.string().optional(),
     // Date the device was (re-)imported into this catalog (ISO yyyy-mm-dd).
     // Rendered visibly as "Listed" and emitted as dateModified in the
     // page's TechArticle JSON-LD (structured data mirrors copy).

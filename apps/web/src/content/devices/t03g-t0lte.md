@@ -6,5 +6,10 @@ codename: "t03g & t0lte"
 supportstatus: "Current"
 maintainer:
   - "html6405"
+variants:
+  - label: "t03g"
+    folder: "t03g"
+  - label: "t0lte"
+    folder: "t0lte"
 updated: 2026-11-08
 ---

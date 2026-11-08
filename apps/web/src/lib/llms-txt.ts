@@ -17,7 +17,7 @@ export interface LlmsRom {
   description: string
 }
 
-export function buildLlmsTxt(guides: LlmsGuide[], roms: LlmsRom[]): string {
+export function buildLlmsTxt(guides: LlmsGuide[], roms: LlmsRom[], deviceCount: number): string {
   const guideLines = guides
     .map((g) => `- [${g.title}](https://rootmyandroid.com/guides/${g.id}.md): ${g.description}`)
     .join('\n')
@@ -58,6 +58,10 @@ ${guideLines}
 
 - [Custom ROMs](https://rootmyandroid.com/roms): curated catalog — crDroid, /e/OS, GrapheneOS, LineageOS — with official sources and device support
 ${romLines}
+
+## Device catalog
+
+- [Device catalog](https://rootmyandroid.com/device/): ${deviceCount} per-device pages — codenames, official TWRP support status, maintainers, download mirrors, and factory-image links for Google Pixels. Raw-Markdown alternates: append \`.md\` to any device URL.
 
 ## Third-party profiles
 

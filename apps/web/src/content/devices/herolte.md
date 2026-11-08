@@ -7,5 +7,10 @@ supportstatus: "Current"
 maintainer:
   - "ivanmeler"
 devicetree: "https://github.com/TeamWin/android_device_samsung_herolte"
+variants:
+  - label: "International & Canada (SM-G930F, SM-G930FD, SM-G930X, SM-G930W8)"
+    folder: "herolte"
+  - label: "Korea (SM-G930K, SM-G930L, SM-G930S)"
+    folder: "heroltekor"
 updated: 2026-11-08
 ---

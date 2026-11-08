@@ -7,5 +7,10 @@ supportstatus: "Current"
 maintainer:
   - "ripee"
 devicetree: "https://github.com/TeamWin/android_device_samsung_trlte"
+variants:
+  - label: "International, Americas, Duos & Edge (SM-N910F/trltexx, SM-N910G/trltedt, SM-N910P/trltespr, SM-N910R4/trlteusc, SM-N910T/trltetmo, SM-N910V/trltevzw, SM-N910W8/trltecan)"
+    folder: "trlte"
+  - label: "International Duos (SM-N9100ZC/trlteduoszc, SM-N9100ZH/trlteduoszh, SM-N9106W/trlteduoszn, SM-N9109W/trlteduosctc)"
+    folder: "trlteduos"
 updated: 2026-11-08
 ---

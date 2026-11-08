@@ -7,5 +7,8 @@ supportstatus: "Current"
 maintainer:
   - "ripee"
 devicetree: "https://github.com/TeamWin/android_device_samsung_jflte"
+variants:
+  - label: "International & Americas (SGH-I337/jflteatt, SGH-I337M/jfltecan, SCH-R970C/jfltecri, SCH-R970X/jfltecsp, SCH-I545L/jfltelra, SPH-L720/jfltespr, SGH-M919/jfltetmo, SCH-R970/jflteusc, SCH-I545/jfltevzw, GT-I9505/jfltexx, GT-I9505G/jgedlte)"
+    folder: "jflte"
 updated: 2026-11-08
 ---

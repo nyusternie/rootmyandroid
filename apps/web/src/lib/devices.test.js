@@ -13,6 +13,7 @@ import {
   decodeEntities,
   isCurrentStatus,
   isDownloadFolder,
+  parseDownloadVariants,
   slugify,
 } from './devices.js'
 
@@ -150,5 +151,81 @@ describe('isCurrentStatus', () => {
     expect(isCurrentStatus('No longer updated')).toBe(false)
     expect(isCurrentStatus('')).toBe(false)
     expect(isCurrentStatus(undefined)).toBe(false)
+  })
+})
+
+// Every fixture below is a verbatim upstream value (twrp.me, fetched
+// 2026-11-08) — the exact strings that made 21 devices undownloadable before
+// this parser existed.
+describe('parseDownloadVariants', () => {
+  it('parses alternating label/folder pairs', () => {
+    expect(parseDownloadVariants('ROG Phone 5|I005D|ROG Phone 5S|I005DS')).toEqual([
+      { label: 'ROG Phone 5', folder: 'I005D' },
+      { label: 'ROG Phone 5S', folder: 'I005DS' },
+    ])
+  })
+
+  it('keeps descriptive labels intact', () => {
+    expect(
+      parseDownloadVariants(
+        'Normal (recommended)|hammerhead|hammerheadcaf (use only if you know this is what you need)|hammerheadcaf',
+      ),
+    ).toEqual([
+      { label: 'Normal (recommended)', folder: 'hammerhead' },
+      {
+        label: 'hammerheadcaf (use only if you know this is what you need)',
+        folder: 'hammerheadcaf',
+      },
+    ])
+  })
+
+  it('decodes entities and strips trailing colons in labels', () => {
+    expect(
+      parseDownloadVariants(
+        'Americas, Korea &amp; Europe (SM-N9005/hltexx, SM-N900K/hltekor, SM-N900L/hlteskt, SM-N900S/hlteskt):|hlte|Japan (SCL22, SC-01F)|hltekdi',
+      ),
+    ).toEqual([
+      {
+        label: 'Americas, Korea & Europe (SM-N9005/hltexx, SM-N900K/hltekor, SM-N900L/hlteskt, SM-N900S/hlteskt)',
+        folder: 'hlte',
+      },
+      { label: 'Japan (SCL22, SC-01F)', folder: 'hltekdi' },
+    ])
+  })
+
+  it('parses folder names doubled as their own labels', () => {
+    expect(parseDownloadVariants('m7cdtu|m7cdtu|m7cdug|m7cdug|m7cdwg|m7cdwg')).toEqual([
+      { label: 'm7cdtu', folder: 'm7cdtu' },
+      { label: 'm7cdug', folder: 'm7cdug' },
+      { label: 'm7cdwg', folder: 'm7cdwg' },
+    ])
+  })
+
+  it('treats exactly two safe segments as two bare folders', () => {
+    expect(parseDownloadVariants('a51cml|tuhl')).toEqual([
+      { label: 'a51cml', folder: 'a51cml' },
+      { label: 'tuhl', folder: 'tuhl' },
+    ])
+  })
+
+  it('treats one label plus one folder as a single labeled variant', () => {
+    // Real upstream value (Galaxy S4 / jflte): one long SKU-list label.
+    const raw =
+      'International & Americas (SGH-I337/jflteatt, SGH-I337M/jfltecan, SCH-R970C/jfltecri, SCH-R970X/jfltecsp, SCH-I545L/jfltelra, SPH-L720/jfltespr, SGH-M919/jfltetmo, SCH-R970/jflteusc, SCH-I545/jfltevzw, GT-I9505/jfltexx, GT-I9505G/jgedlte)|jflte'
+    expect(parseDownloadVariants(raw)).toEqual([
+      {
+        label:
+          'International & Americas (SGH-I337/jflteatt, SGH-I337M/jfltecan, SCH-R970C/jfltecri, SCH-R970X/jfltecsp, SCH-I545L/jfltelra, SPH-L720/jfltespr, SGH-M919/jfltetmo, SCH-R970/jflteusc, SCH-I545/jfltevzw, GT-I9505/jfltexx, GT-I9505G/jgedlte)',
+        folder: 'jflte',
+      },
+    ])
+  })
+
+  it('refuses unusable values instead of guessing', () => {
+    expect(parseDownloadVariants('')).toEqual([])
+    expect(parseDownloadVariants(undefined)).toEqual([])
+    expect(parseDownloadVariants('Normal (recommended)|hammerhead|dangling-label')).toEqual([])
+    expect(parseDownloadVariants('hlte|not a folder')).toEqual([])
+    expect(parseDownloadVariants('|jflte')).toEqual([])
   })
 })

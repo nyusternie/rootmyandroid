@@ -8,5 +8,20 @@ maintainer:
   - "jcadduono"
   - "bigbiff"
 devicetree: "https://github.com/TeamWin/android_device_samsung_noblelte"
+variants:
+  - label: "International GSM (SM-N920C, SM-N920CD, SM-N920G, SM-N920I)"
+    folder: "noblelte"
+  - label: "Canada (SM-N920W8)"
+    folder: "nobleltecan"
+  - label: "T-Mobile (SM-N920T)"
+    folder: "nobleltetmo"
+  - label: "Sprint (SM-N920P)"
+    folder: "nobleltespr"
+  - label: "US Cellular (SM-N920R4)"
+    folder: "noblelteusc"
+  - label: "China & China Duos (SM-N9200, SM-N9208)"
+    folder: "nobleltezt"
+  - label: "Korea (SM-N920K, SM-N920L, SM-N920S)"
+    folder: "noblelteskt"
 updated: 2026-11-08
 ---

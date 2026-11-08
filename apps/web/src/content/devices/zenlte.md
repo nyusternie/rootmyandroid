@@ -7,5 +7,20 @@ supportstatus: "Current"
 maintainer:
   - "jcadduono"
 devicetree: "https://github.com/TeamWin/android_device_samsung_zenlte"
+variants:
+  - label: "International GSM (SM-G928F, SM-G928FD, SM-G928G, SM-G928I)"
+    folder: "zenlte"
+  - label: "Canada (SM-G928W8)"
+    folder: "zenltecan"
+  - label: "T-Mobile USA (SM-G928T)"
+    folder: "zenltetmo"
+  - label: "Sprint (SM-G928P)"
+    folder: "zenltespr"
+  - label: "US Cellular (SM-G928R4)"
+    folder: "zenlteusc"
+  - label: "China & China Duos (SM-G9280, SM-G9287, SM-G9287C)"
+    folder: "zenltezt"
+  - label: "Korea (SM-G928K, SM-G928L, SM-G928S)"
+    folder: "zenlteskt"
 updated: 2026-11-08
 ---

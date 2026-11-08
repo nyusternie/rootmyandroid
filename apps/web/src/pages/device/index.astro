@@ -32,19 +32,33 @@ const brands = [...groups.values()]
     ),
   }))
   .sort((a, b) => a.label.toLowerCase().localeCompare(b.label.toLowerCase()))
+
+// Copy mirrors the catalog composition exactly (AGENTS.md): devices with
+// official TWRP status Current vs. the Google Pixels with no official TWRP
+// build listed.
+const currentCount = devices.filter(
+  (device) => device.data.supportstatus.toLowerCase() === 'current'
+).length
+const noTwrpCount = devices.length - currentCount
 ---
 
 <Base
   title="Devices"
-  description={`All ${devices.length} devices with current official TWRP support — codenames, maintainers, downloads, and a free pre-flash device check.`}
+  description={`${currentCount} devices with current official TWRP support, plus ${noTwrpCount} Google Pixel phones and tablets — codenames, maintainers, downloads, factory images, and a free device check.`}
+  ogImage="/img/devices/og-device.png"
+  ogImageAlt="Root My Android device catalog — TWRP support status, codenames and downloads"
 >
   <div class="container" style="padding: 3rem 1.25rem">
     <h1 style="margin: 0 0 0.5rem">Devices</h1>
     <p class="muted" style="max-width: 44rem">
-      {devices.length} devices across {brands.length} brands with official TWRP
-      support status <strong>Current</strong>. Every page lists the device codename,
-      maintainer, official download folder, and what to check on your device before
-      flashing. Devices with other support statuses will follow.
+      {devices.length} devices across {brands.length} brands: {currentCount} with
+      official TWRP support status <strong>Current</strong>, plus the latest Google
+      Pixel phones and tablets ({noTwrpCount}) with no official TWRP build listed —
+      those pages cover root options and Google's factory images instead. Every page
+      lists the device codename, official download links, and what to check on your
+      device before changing anything. Devices with other support statuses will
+      follow. Raw-Markdown alternates for agents: append <code>.md</code> to any
+      device URL.
     </p>
 
     {

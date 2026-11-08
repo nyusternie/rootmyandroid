@@ -40,6 +40,7 @@ function collection(name) {
 
 const guides = collection('guides')
 const roms = collection('roms')
+const devices = collection('devices')
 
 describe('robots.txt AI-crawler policy', () => {
   const robots = readFileSync(join(WEB, 'public/robots.txt'), 'utf8')
@@ -78,6 +79,7 @@ describe('generated /llms.txt', () => {
   const txt = buildLlmsTxt(
     guides.map((g) => ({ id: g.id, title: g.data.title, description: g.data.description })),
     roms.map((r) => ({ id: r.id, name: r.data.name, description: r.data.description })),
+    devices.length,
   )
 
   it('has the required sections', () => {
@@ -87,11 +89,19 @@ describe('generated /llms.txt', () => {
       '## Core pages',
       '## Guides',
       '## Custom ROM catalog',
+      '## Device catalog',
       '## Third-party profiles',
       '## Legal',
     ]) {
       expect(txt).toContain(section)
     }
+  })
+
+  it('indexes the device catalog with the live collection count', () => {
+    expect(devices.length).toBeGreaterThan(0)
+    expect(txt).toContain(
+      `- [Device catalog](https://rootmyandroid.com/device/): ${devices.length} per-device pages`,
+    )
   })
 
   it('lists every non-draft guide with its Markdown alternate', () => {

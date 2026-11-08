@@ -33,6 +33,12 @@
 // 'bardock' (BQ Aquaris X vs X Pro) and 'odin' (Sony Xperia ZL vs Xiaomi
 // Mi Mix 4).
 //
+// MULTI-FOLDER DEVICES: upstream `downloadfolder` values that are not a
+// single folder (multi-SKU lists like 'ROG Phone 5|I005D|ROG Phone 5S|
+// I005DS') are parsed by parseDownloadVariants() into labeled per-SKU
+// mirrors (`variants:` in frontmatter, rendered as a table by the layout).
+// Values that fail parsing are still dropped (logged below) — never guess.
+//
 // Usage:
 //   node tools/import-twrp-devices.mjs          # Current devices only
 //   node tools/import-twrp-devices.mjs --all    # every status (NOT for
@@ -53,6 +59,7 @@ import {
   decodeEntities,
   isCurrentStatus,
   isDownloadFolder,
+  parseDownloadVariants,
   slugify,
 } from '../src/lib/devices.js'
 
@@ -106,6 +113,7 @@ const deviceFiles = readdirSync(repoRoot, { withFileTypes: true })
 
 const skipped = []
 const droppedFolders = []
+const variantFolders = { count: 0 }
 const droppedMaintainers = { count: 0 }
 const devices = []
 for (const file of deviceFiles) {
@@ -139,7 +147,15 @@ for (const file of deviceFiles) {
     droppedMaintainers.count += 1
   }
   if (device.downloadfolder && !isDownloadFolder(device.downloadfolder)) {
-    droppedFolders.push(`${device.codename}: '${device.downloadfolder}'`)
+    // Not a single canonical folder: try the multi-SKU parser (labeled
+    // per-variant mirrors); drop only when even that fails — never guess.
+    const variants = parseDownloadVariants(device.downloadfolder)
+    if (variants.length > 0) {
+      device.variants = variants
+      variantFolders.count += 1
+    } else {
+      droppedFolders.push(`${device.codename}: '${device.downloadfolder}'`)
+    }
     device.downloadfolder = undefined
   }
   devices.push(device)
@@ -204,6 +220,13 @@ for (const device of devices) {
   if (device.downloadfolder) {
     lines.push(`downloadfolder: ${JSON.stringify(device.downloadfolder)}`)
   }
+  if (device.variants) {
+    lines.push('variants:')
+    for (const variant of device.variants) {
+      lines.push(`  - label: ${JSON.stringify(variant.label)}`)
+      lines.push(`    folder: ${JSON.stringify(variant.folder)}`)
+    }
+  }
   lines.push(`updated: ${today}`)
   lines.push('---', '')
   writeFileSync(join(OUT_DIR, `${slugMap.get(device)}.md`), lines.join('\n'))
@@ -218,7 +241,8 @@ console.log(`removed ${removed} stale generated files`)
 console.log(`slug collisions resolved: ${collisions.length}`)
 for (const line of collisions) console.log(`  ${line}`)
 console.log(`devices without a listed maintainer: ${droppedMaintainers.count}`)
-console.log(`download folders dropped (not a single path segment): ${droppedFolders.length}`)
+console.log(`multi-folder devices parsed into variants: ${variantFolders.count}`)
+console.log(`download folders dropped (unparsable, no variants): ${droppedFolders.length}`)
 for (const line of droppedFolders) console.log(`  ${line}`)
 const skippedByReason = new Map()
 for (const line of skipped) {

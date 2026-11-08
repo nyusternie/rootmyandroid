@@ -6,6 +6,18 @@
 // every wording change is a single-point edit here. All prose is original
 // (owner ruling 2026-11-08: facts imported, prose 100% ours, no source
 // attribution on the page).
+//
+// RENDERING BRANCHES (2026-11-08 expansion):
+//   - supportstatus 'Current' (TWRP-imported): title "TWRP for …",
+//     download buttons (single folder) or a labeled per-SKU variants table.
+//   - anything else (Google-imported Pixels: 'No official TWRP build
+//     listed'): honest no-TWRP sections — root options (Magisk facts per
+//     our /Magisk profile and the official Magisk docs) and, when
+//     `factoryimages` is set, a factory-images section.
+//   - `notes` renders as a caution callout near the top (e.g. Google's
+//     anti-rollback warnings).
+//   - OG art: Google-branded pages get the Pixel catalog card, all other
+//     pages the general device catalog card (public/img/devices/).
 // These are CONTENT pages: zero JavaScript (AGENTS.md rule 4). Structured
 // data mirrors visible copy: the TechArticle dateModified matches the
 // visible "Listed" line, the BreadcrumbList matches the "← All devices"
@@ -21,11 +33,25 @@ const { device } = Astro.props
 const d = device.data
 
 const updatedIso = d.updated.toISOString().slice(0, 10)
-const title = `TWRP for ${d.title}`
-const description =
-  `TWRP for the ${d.title} (codename ${d.codename}): official support status, ` +
-  `maintainer, downloads, and a free pre-flash device check.`
+const isTwrpCurrent = d.supportstatus.toLowerCase() === 'current'
+const title = isTwrpCurrent
+  ? `TWRP for ${d.title}`
+  : `${d.title}: rooting & device facts`
+const description = isTwrpCurrent
+  ? `TWRP for the ${d.title} (codename ${d.codename}): official support status, ` +
+    `maintainer, downloads, and a free pre-flash device check.`
+  : `${d.title} (codename ${d.codename}): no official TWRP build is listed — root options, ` +
+    `factory images, device facts, and a free device check.`
 const canonical = new URL(`/device/${device.id}/`, Astro.site).href
+const markdownUrl = `/device/${device.id}.md`
+
+// Catalog OG art (see public/img/devices/): Pixel card for Google-branded
+// pages, general device card for everything else.
+const ogImage =
+  d.oem.toLowerCase() === 'google' ? '/img/devices/og-device-google.png' : '/img/devices/og-device.png'
+const ogImageAlt = isTwrpCurrent
+  ? `TWRP for the ${d.title} — device facts and downloads`
+  : `${d.title} — root options and device facts`
 
 // TechArticle JSON-LD — mirrors the visible headline, description, and
 // "Listed" date (structured data mirrors copy — AGENTS.md).
@@ -61,7 +87,15 @@ const related = [
 ]
 ---
 
-<Base title={title} description={description} ogType="article">
+<Base
+  title={title}
+  description={description}
+  ogType="article"
+  ogImage={ogImage}
+  ogImageAlt={ogImageAlt}
+>
+  <link slot="head" rel="alternate" type="text/markdown" href={markdownUrl} />
+
   <article class="container" style="padding: 3rem 1.25rem">
     <p><a href="/device">← All devices</a></p>
 
@@ -73,7 +107,21 @@ const related = [
     </p>
     <p class="faint small" style="margin: 0 0 1.75rem">
       Listed <time datetime={updatedIso}>{updatedIso}</time>
+      {' · '}
+      <a href={markdownUrl} rel="alternate" type="text/markdown">View as Markdown</a>
     </p>
+
+    {
+      d.notes && (
+        <aside
+          class="panel"
+          style="margin: 0 0 2rem; border-left: 3px solid var(--color-accent); max-width: 44rem"
+        >
+          <h2 style="margin-top: 0">Flashing caution</h2>
+          <p class="muted" style="margin: 0">{d.notes}</p>
+        </aside>
+      )
+    }
 
     <section class="panel" style="margin: 0 0 2rem">
       <h2 style="margin-top: 0">Device facts</h2>
@@ -106,6 +154,16 @@ const related = [
             </>
           )
         }
+        {
+          d.factoryimages && (
+            <>
+              <dt class="muted">Factory images</dt>
+              <dd style="margin: 0">
+                <a href={d.factoryimages} rel="noopener">{d.factoryimages}</a>
+              </dd>
+            </>
+          )
+        }
       </dl>
     </section>
 
@@ -133,14 +191,115 @@ const related = [
       )
     }
 
+    {
+      !d.downloadfolder && d.variants && d.variants.length > 0 && (
+        <section style="margin: 0 0 2rem">
+          <h2>Download TWRP</h2>
+          <p class="muted" style="max-width: 44rem">
+            This device has separate official builds per variant — pick the one that
+            matches your exact model or SKU. Builds are published on the TWRP
+            mirrors; only a build made for the {d.title} variant you own is safe to
+            use.
+          </p>
+          <table
+            style="width: 100%; max-width: 44rem; border-collapse: collapse; font-size: 0.95rem"
+          >
+            <thead>
+              <tr style="text-align: left">
+                <th style="padding: 0.4rem 0.75rem 0.4rem 0">Variant</th>
+                <th style="padding: 0.4rem 0.75rem 0.4rem 0">Folder</th>
+                <th style="padding: 0.4rem 0.75rem 0.4rem 0">Americas</th>
+                <th style="padding: 0.4rem 0">Europe</th>
+              </tr>
+            </thead>
+            <tbody>
+              {d.variants.map((variant) => (
+                <tr style="border-top: 1px solid var(--color-line)">
+                  <td style="padding: 0.5rem 0.75rem 0.5rem 0">{variant.label}</td>
+                  <td style="padding: 0.5rem 0.75rem 0.5rem 0">
+                    <code>{variant.folder}</code>
+                  </td>
+                  <td style="padding: 0.5rem 0.75rem 0.5rem 0">
+                    <a href={`https://dl.twrp.me/${variant.folder}/`} rel="noopener">
+                      dl.twrp.me
+                    </a>
+                  </td>
+                  <td style="padding: 0.5rem 0">
+                    <a href={`https://eu.dl.twrp.me/${variant.folder}/`} rel="noopener">
+                      eu.dl.twrp.me
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )
+    }
+
+    {
+      !isTwrpCurrent && (
+        <section style="margin: 0 0 2rem">
+          <h2>Rooting the {d.title}</h2>
+          <p class="muted" style="max-width: 44rem">
+            No official TWRP build is listed for the {d.title}. That does not rule
+            out root: the standard route on modern phones is Magisk — systemless
+            root that patches the boot image instead of modifying the system
+            partition. Magisk requires an unlocked bootloader, and rooting trips the
+            integrity checks that banking and payment apps actively look for, so
+            weigh that before you start.
+          </p>
+          <p class="muted" style="max-width: 44rem">
+            The Magisk app can patch a factory-image package directly
+            {d.factoryimages && (
+              <>
+                , and on Pixel devices it can even fetch the latest factory image
+                from Google's servers for you
+              </>
+            )}
+            . Read our <a href="/Magisk">Magisk profile</a> and stick to the
+            official Magisk documentation for the exact steps.
+          </p>
+        </section>
+      )
+    }
+
+    {
+      d.factoryimages && (
+        <section style="margin: 0 0 2rem">
+          <h2>Factory images</h2>
+          <p class="muted" style="max-width: 44rem">
+            Google publishes stock factory images for Pixel devices — the firmware
+            you flash to restore the device to its original factory state — on its
+            developer site.
+          </p>
+          <div class="row">
+            <a class="btn btn-primary" href={d.factoryimages} rel="noopener">
+              Google factory images
+            </a>
+          </div>
+        </section>
+      )
+    }
+
     <section style="margin: 0 0 2rem">
-      <h2>Before you flash</h2>
-      <p class="muted" style="max-width: 44rem">
-        TWRP is an open-source custom recovery: it can flash ZIP packages, take and
-        restore full partition backups (Nandroid), and manage partitions. Installing
-        a custom recovery generally requires an unlocked bootloader, and unlocking
-        factory-resets most phones.
-      </p>
+      <h2>{isTwrpCurrent ? 'Before you flash' : 'Before you root'}</h2>
+      {
+        isTwrpCurrent ? (
+          <p class="muted" style="max-width: 44rem">
+            TWRP is an open-source custom recovery: it can flash ZIP packages, take
+            and restore full partition backups (Nandroid), and manage partitions.
+            Installing a custom recovery generally requires an unlocked bootloader,
+            and unlocking factory-resets most phones.
+          </p>
+        ) : (
+          <p class="muted" style="max-width: 44rem">
+            Rooting starts with facts, not files: your exact model, your bootloader
+            state, and whether an official build of anything exists for it.
+            Guessing wrong is how phones get bricked.
+          </p>
+        )
+      }
       <p class="muted" style="max-width: 44rem">
         Two free reads on this site:{' '}
         <a href="/guides/check-bootloader-status">Check your bootloader status</a> and{' '}

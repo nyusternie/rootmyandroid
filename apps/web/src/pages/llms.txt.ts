@@ -16,9 +16,11 @@ const byOrder = (
 export const GET: APIRoute = async () => {
   const guides = (await getCollection('guides', ({ data }) => !data.draft)).sort(byOrder)
   const roms = (await getCollection('roms', ({ data }) => !data.draft)).sort(byOrder)
+  const devices = await getCollection('devices')
   const body = buildLlmsTxt(
     guides.map((g) => ({ id: g.id, title: g.data.title, description: g.data.description })),
     roms.map((r) => ({ id: r.id, name: r.data.name, description: r.data.description })),
+    devices.length,
   )
   return new Response(body, {
     headers: { 'content-type': 'text/plain; charset=utf-8' },

@@ -7,5 +7,12 @@ supportstatus: "Current"
 maintainer:
   - "html6405"
 devicetree: "https://github.com/TeamWin/android_device_samsung_n8000"
+variants:
+  - label: "n8000"
+    folder: "n8000"
+  - label: "n8010"
+    folder: "n8010"
+  - label: "n8020"
+    folder: "n8020"
 updated: 2026-11-08
 ---

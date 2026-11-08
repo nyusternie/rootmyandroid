@@ -7,5 +7,10 @@ supportstatus: "Current"
 maintainer:
   - "ivanmeler"
 devicetree: "https://github.com/TeamWin/android_device_samsung_hero2lte"
+variants:
+  - label: "International & Canada (SM-G935F, SM-G935FD, SM-G935X, SM-G935W8)"
+    folder: "hero2lte"
+  - label: "Korea (SM-G935K, SM-G935L, SM-G935S)"
+    folder: "hero2ltekor"
 updated: 2026-11-08
 ---

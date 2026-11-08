@@ -7,5 +7,10 @@ supportstatus: "Current"
 maintainer:
   - "ripee"
 devicetree: "https://github.com/TeamWin/android_device_samsung_hlte"
+variants:
+  - label: "Americas, Korea & Europe (SM-N9005/hltexx, SM-N900K/hltekor, SM-N900L/hltekor, SM-N900P/hltespr, SM-N900R4/hlteusc, SM-N900S/hltekor, SM-N900T/hltetmo, SM-N900V/hltevzw, SM-N900W8/hltecan)"
+    folder: "hlte"
+  - label: "Japan (SCL22, SC-01F)"
+    folder: "hltekdi"
 updated: 2026-11-08
 ---

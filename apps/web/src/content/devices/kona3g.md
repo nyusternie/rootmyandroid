@@ -7,5 +7,12 @@ supportstatus: "Current"
 maintainer:
   - "html6405"
 devicetree: "https://github.com/TeamWin/android_device_samsung_n5100"
+variants:
+  - label: "n5100"
+    folder: "n5100"
+  - label: "n5110"
+    folder: "n5110"
+  - label: "n5120"
+    folder: "n5120"
 updated: 2026-11-08
 ---
