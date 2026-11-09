@@ -59,8 +59,9 @@ class AdbKeyTest {
         assertTrue(usage[0])
         assertTrue(usage[5])
         assertTrue(usage[6])
-        // subjectKeyIdentifier present (content is cosmetic for adbd).
-        assertNotNull(cert.subjectKeyIdentifier)
+        // subjectKeyIdentifier extension present (2.5.29.14; content is
+        // cosmetic for adbd).
+        assertNotNull(cert.getExtensionValue("2.5.29.14"))
     }
 
     @Test
