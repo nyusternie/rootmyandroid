@@ -104,6 +104,7 @@ internal class PairingSession(
     }
 
     private fun openTlsSocket(connectHost: String): SSLSocket {
+        ensureBundledConscrypt()
         val keyStore = KeyStore.getInstance(KeyStore.getDefaultType()).apply { load(null) }
         val cert = CertificateFactory.getInstance("X.509")
             .generateCertificate(adbKey.certificateDer.inputStream()) as X509Certificate
@@ -140,14 +141,11 @@ internal class PairingSession(
      */
     private fun exportKeyingMaterial(socket: SSLSocket): ByteArray {
         try {
-            // The unbundled artifact ships org.conscrypt.Conscrypt; the
-            // platform module on-device is com.android.org.conscrypt.*
-            // (observed on blueline: Class.forName on the unbundled name
-            // fails). Try both.
-            val conscrypt = listOf("org.conscrypt.Conscrypt", "com.android.org.conscrypt.Conscrypt")
-                .map { runCatching { Class.forName(it) }.getOrNull() }
-                .firstOrNull()
-                ?: throw PairingException("no Conscrypt class found")
+            // EKM comes from the bundled Conscrypt's public static API.
+            // (The platform's hidden com.android.org.conscrypt.Conscrypt
+            // is not loadable by apps — observed on blueline: Class.forName
+            // fails for both names — so we ship our own provider.)
+            val conscrypt = Class.forName("org.conscrypt.Conscrypt")
             val method = conscrypt.getMethod(
                 "exportKeyingMaterial",
                 SSLSocket::class.java,
@@ -165,6 +163,22 @@ internal class PairingSession(
             throw e
         } catch (e: Exception) {
             throw PairingException("Conscrypt EKM unavailable: ${e.message}")
+        }
+    }
+
+    /**
+     * Installs the bundled Conscrypt as the top-priority provider (once).
+     * The platform Conscrypt registers as "AndroidOpenSSL"; the bundled
+     * one as "Conscrypt", so a name check is unambiguous.
+     */
+    private fun ensureBundledConscrypt() {
+        if (java.security.Security.getProvider("Conscrypt") != null) return
+        synchronized(PairingSession::class.java) {
+            if (java.security.Security.getProvider("Conscrypt") != null) return
+            val provider = Class.forName("org.conscrypt.Conscrypt")
+                .getMethod("newProvider")
+                .invoke(null) as java.security.Provider
+            java.security.Security.insertProviderAt(provider, 1)
         }
     }
 
