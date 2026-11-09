@@ -114,9 +114,11 @@ internal class AdbConnection(
                 A_OKAY -> if (remoteId < 0) remoteId = msg.arg0
                 A_WRTE -> {
                     out.append(String(msg.data))
+                    Log.i(TAG, "adb: WRTE ${msg.data.size}B")
                     write(output, A_OKAY, localId, msg.arg0, byteArrayOf())
                 }
                 A_CLSE -> {
+                    Log.i(TAG, "adb: CLSE — stream produced ${out.length} chars")
                     write(output, A_CLSE, localId, msg.arg0, byteArrayOf())
                     return out.toString()
                 }

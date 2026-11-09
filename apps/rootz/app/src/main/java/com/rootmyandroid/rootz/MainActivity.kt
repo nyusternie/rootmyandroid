@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pairStatus: TextView
     private lateinit var pairInput: TextInputEditText
     private lateinit var sendButton: MaterialButton
+    private lateinit var outputScroll: ScrollView
     private val adbWifi by lazy { AdbWifiDiscovery(this) }
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
@@ -140,14 +141,42 @@ class MainActivity : AppCompatActivity() {
             setTextIsSelectable(true)
             typeface = Typeface.MONOSPACE
             textSize = 12f
-            setPadding(dp(16), dp(12), dp(16), dp(12))
+            setPadding(0, dp(8), 0, dp(8))
         }
         val scroll = ScrollView(this).apply { addView(output) }
+        outputScroll = scroll
+        val logLabel = TextView(this).apply { text = "output" }
+        val clearButton = gradientButton("Clear").apply {
+            setOnClickListener { output.text = "" }
+        }
+        val logHeader = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            addView(
+                logLabel,
+                LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f),
+            )
+            addView(
+                clearButton,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                ),
+            )
+        }
+        val logInner = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(8), dp(16), dp(16))
+            addView(logHeader)
+            addView(
+                scroll,
+                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f),
+            )
+        }
         val logCard = MaterialCardView(this).apply {
             radius = dp(12).toFloat()
             cardElevation = dp(2).toFloat()
             useCompatPadding = true
-            addView(scroll)
+            addView(logInner)
         }
 
         val root = LinearLayout(this).apply {
@@ -293,6 +322,15 @@ class MainActivity : AppCompatActivity() {
         startPairing()
     }
 
+    /** Append a command + its output to the scrollback (terminal style)
+     *  and scroll to the bottom. An explicit marker for empty output keeps
+     *  silent failures visible (an `ls` that returns nothing MUST still
+     *  leave a trace). */
+    private fun appendOutput(cmd: String, text: String) {
+        output.append("\$ $cmd\n${text.ifEmpty { "(no output)" }}\n\n")
+        outputScroll.post { outputScroll.fullScroll(View.FOCUS_DOWN) }
+    }
+
     private fun runCommand(cmd: String, silent: Boolean = false) {
         if (cmd.isEmpty()) return
         runOnUiThread {
@@ -308,9 +346,12 @@ class MainActivity : AppCompatActivity() {
             if (ep != null) {
                 try {
                     val r = AdbConnection(ep.first, ep.second, AdbKeyStore.get(this)).runShell(cmd)
+                    val model = r.deviceBanner.split(";")
+                        .firstOrNull { it.startsWith("ro.product.model=") }
+                        ?.substringAfter("=") ?: "device"
                     runOnUiThread {
-                        status.text = "adb: wireless (${r.deviceBanner})"
-                        if (!silent) output.text = r.output.trim()
+                        status.text = "adb: wireless ($model @ ${ep.first}:${ep.second})"
+                        if (!silent) appendOutput(cmd, r.output.trim())
                     }
                     return@thread
                 } catch (e: Exception) {
@@ -335,7 +376,7 @@ class MainActivity : AppCompatActivity() {
                 if (result == null) {
                     status.text =
                         "daemon: NOT RUNNING — start rootzd via adb (see apps/rootz/README.md)"
-                    if (!silent) output.text = ""
+                    if (!silent) appendOutput(cmd, "(daemon not running)")
                 } else {
                     val tier = when {
                         result.contains("uid=0(") -> "root"
@@ -343,7 +384,7 @@ class MainActivity : AppCompatActivity() {
                         else -> "unknown"
                     }
                     status.text = "daemon: connected (tier: $tier)"
-                    if (!silent) output.text = result.trim()
+                    if (!silent) appendOutput(cmd, result.trim())
                 }
             }
           } finally {
