@@ -36,6 +36,9 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    // Material Components UI (toolbar, cards, outlined text fields, buttons).
+    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "com.google.android.material:material:1.12.0"
     // Pure-JVM unit tests for the pairing crypto (Ed25519/SPAKE2/HKDF/GCM)
     // — validated against RFC 8032 + RFC 5869 vectors, CI-gated in
     // .github/workflows/rootz.yml.

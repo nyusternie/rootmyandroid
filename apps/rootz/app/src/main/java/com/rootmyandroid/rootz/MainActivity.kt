@@ -1,14 +1,21 @@
 // apps/rootz/app/src/main/java/com/rootmyandroid/rootz/MainActivity.kt
 package com.rootmyandroid.rootz
 
-import android.app.Activity
+import android.content.Intent
+import android.graphics.Typeface
 import android.os.Bundle
 import android.text.InputType
-import android.widget.Button
-import android.widget.EditText
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import java.net.Socket
 import kotlin.concurrent.thread
 
@@ -17,54 +24,113 @@ import kotlin.concurrent.thread
  * (127.0.0.1:7357). Built from scratch — no fork, no third-party code.
  *
  * The daemon is started OUTSIDE the app for now (adb push for shell tier,
- * Magisk module for root tier — see apps/rootzd/README.md). In-app
- * wireless-debugging pairing + self-start is v0.2; the binder API for
- * third-party apps (our own namespace, HANDOFF §13 addendum) is v0.3.
+ * Magisk module for root tier — see apps/rootzd/README.md). The v0.2 line
+ * adds in-app wireless-debugging pairing (this build) and self-start
+ * (later); the binder API for third-party apps (our own namespace,
+ * HANDOFF §13 addendum) is v0.3.
  *
  * Protocol: one fresh TCP connection per command — write the command plus
  * "exit", then read until EOF (each connection gets its own piped sh in
  * the daemon, so "exit" cleanly closes it).
+ *
+ * UI: Material Components, dark (terminal-green Rootz identity).
  */
-class MainActivity : Activity() {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var status: TextView
     private lateinit var output: TextView
-    private lateinit var input: EditText
+    private lateinit var input: TextInputEditText
     private lateinit var pairStatus: TextView
-    private lateinit var pairInput: EditText
+    private lateinit var pairInput: TextInputEditText
     private val adbWifi by lazy { AdbWifiDiscovery(this) }
     private var adbKey: AdbKey? = null
 
+    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+
+    private fun cardMargins(height: Int = LinearLayout.LayoutParams.WRAP_CONTENT) =
+        LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height).apply {
+            setMargins(dp(12), dp(8), dp(12), 0)
+        }
+
+    /** A MaterialCardView wrapping a vertical, padded column of children. */
+    private fun sectionCard(vararg children: View): MaterialCardView {
+        val inner = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(12), dp(16), dp(16))
+            for (c in children) {
+                addView(
+                    c,
+                    LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                    ),
+                )
+            }
+        }
+        return MaterialCardView(this).apply {
+            radius = dp(12).toFloat()
+            cardElevation = dp(2).toFloat()
+            useCompatPadding = true
+            addView(inner)
+        }
+    }
+
+    private fun outlinedField(hintText: String, configure: TextInputEditText.() -> Unit = {}): Pair<TextInputLayout, TextInputEditText> {
+        val layout = TextInputLayout(this).apply {
+            hint = hintText
+            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
+        }
+        // TextInputEditText must be created with the TextInputLayout's
+        // (theme-wrapped) context — documented Material requirement.
+        val edit = TextInputEditText(layout.context).apply(configure)
+        layout.addView(edit)
+        return layout to edit
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
 
-        val pad = (16 * resources.displayMetrics.density).toInt()
-        status = TextView(this)
-        input = EditText(this).apply { hint = "command (e.g. id)" }
-        val send = Button(this).apply { text = "Send" }
-        output = TextView(this).apply { setTextIsSelectable(true) }
-        val scroll = ScrollView(this).apply { addView(output) }
-        pairStatus = TextView(this)
-        pairInput = EditText(this).apply {
-            hint = "6-digit pairing code"
+        val toolbar = MaterialToolbar(this).apply { title = "Rootz" }
+
+        status = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
+        val (commandLayout, commandEdit) = outlinedField("shell command (e.g. id)")
+        input = commandEdit
+        val send = MaterialButton(this).apply { text = "Send" }
+        val shellCard = sectionCard(status, commandLayout, send)
+
+        pairStatus = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
+        val (pairLayout, pairEdit) = outlinedField("6-digit pairing code") {
             inputType = InputType.TYPE_CLASS_NUMBER
         }
-        val pairButton = Button(this).apply { text = "Pair (wireless debugging)" }
+        pairInput = pairEdit
+        val pairButton = MaterialButton(this).apply { text = "Pair (wireless debugging)" }
+        val pairCard = sectionCard(pairStatus, pairLayout, pairButton)
+
+        output = TextView(this).apply {
+            setTextIsSelectable(true)
+            typeface = Typeface.MONOSPACE
+            textSize = 12f
+            setPadding(dp(16), dp(12), dp(16), dp(12))
+        }
+        val scroll = ScrollView(this).apply { addView(output) }
+        val logCard = MaterialCardView(this).apply {
+            radius = dp(12).toFloat()
+            cardElevation = dp(2).toFloat()
+            useCompatPadding = true
+            addView(scroll)
+        }
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(pad, pad, pad, pad)
-            addView(status)
-            addView(input)
-            addView(send)
-            addView(pairStatus)
-            addView(pairInput)
-            addView(pairButton)
+            addView(toolbar)
+            addView(shellCard, cardMargins())
+            addView(pairCard, cardMargins())
             addView(
-                scroll,
+                logCard,
                 LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f,
-                ),
+                ).apply { setMargins(dp(12), dp(8), dp(12), dp(12)) },
             )
         }
         setContentView(root)
@@ -95,13 +161,12 @@ class MainActivity : Activity() {
             pairStatus.text = "pairing: enter the 6-digit code shown on the device"
             return
         }
-        // Long-running discovery silently stops surfacing new services
-        // (observed on blueline); refresh and give the pairing service a
-        // few seconds to resolve before giving up.
         // The pairing server lives only ~37s after the dialog opens
         // (observed on blueline 2026-11-09) — every second matters. Fast
         // path: use the already-resolved endpoint; a dead server fails the
-        // TLS connect within ms. Fallback: refresh discovery and retry once.
+        // TLS connect within ms. Fallback: refresh discovery and retry once
+        // (long-running discovery silently stops surfacing new services —
+        // also observed on blueline).
         pairStatus.text = "pairing: starting…"
         thread {
             var ep = adbWifi.pairingEndpoint

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- apps/rootz/app/src/main/res/values/themes.xml -->
+<resources>
+    <style name="Theme.Rootz" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/rootz_primary</item>
+        <item name="colorPrimaryVariant">@color/rootz_primary_variant</item>
+        <item name="colorSecondary">@color/rootz_secondary</item>
+    </style>
+</resources>

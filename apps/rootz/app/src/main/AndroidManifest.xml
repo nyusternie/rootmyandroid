@@ -8,7 +8,7 @@
 
     <application
         android:label="Rootz"
-        android:theme="@android:style/Theme.Material"
+        android:theme="@style/Theme.Rootz"
         android:allowBackup="false"
         android:supportsRtl="true">
         <activity

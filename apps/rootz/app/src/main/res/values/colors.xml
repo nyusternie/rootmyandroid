@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- apps/rootz/app/src/main/res/values/colors.xml -->
+<resources>
+    <!-- Rootz identity: terminal-green on dark. -->
+    <color name="rootz_primary">#66BB6A</color>
+    <color name="rootz_primary_variant">#2E7D32</color>
+    <color name="rootz_secondary">#AED581</color>
+</resources>
