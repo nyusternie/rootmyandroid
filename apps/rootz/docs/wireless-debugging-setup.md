@@ -75,7 +75,12 @@ Measured deviation/note (2026-11-09): on blueline the connect-service
 instance was `adb-8CHX1PEQ1-eNJClj` where `8CHX1PEQ1` == the USB serial —
 consistent with `adb-<serialno>-<rand>`.
 
-## 3. Pairing protocol (client = Rootz app) 📖
+## 3. Pairing protocol (client = Rootz app) ✅ PROVEN on blueline 2026-11-09
+
+End-to-end success against the live Pairing Server (commit `38a1273`):
+TCP connect → TLS 1.3 → EKM → SPAKE2 exchange → AES-GCM PeerInfo →
+`device guid=adb-8CHX1PEQ1-eNJClj` (matches the mDNS instance name).
+Full pipeline completed in ~220 ms.
 
 Sources: `pairing_connection/pairing_connection.{h,cpp}`,
 `pairing_auth/pairing_auth.{h,cpp}`, `pairing_auth/aes_128_gcm.cpp`,
@@ -190,14 +195,42 @@ the enrolled key — see §4.)
   label both INCLUDE the trailing NUL; the HKDF info string does NOT.
   Off-by-one here = silent auth failure.
 - **EKM access on Android**: `SSLSession`/JSSE does not expose TLS
-  exporters; use Conscrypt (`org.conscrypt.Conscrypt.exportKeyingMaterial`)
-  — platform provider on Android 10+; if hidden-API reflection is blocked,
-  fall back to the `conscrypt-android` Maven artifact (Apache-2.0).
-  DECISION PENDING first on-device test. 🚧
+  exporters. RESOLVED (blueline, 2026-11-09): the platform's
+  `com.android.org.conscrypt.Conscrypt` is NOT class-loadable by apps
+  (`Class.forName` fails for both the bundled and platform names), so
+  reflection is a dead end. We BUNDLE `org.conscrypt:conscrypt-android`
+  (Apache-2.0), insert its provider at priority 1 (registers as
+  "Conscrypt"; the platform provider is "AndroidOpenSSL" — no name
+  collision), and call its public `Conscrypt.exportKeyingMaterial`.
 - **SPAKE2 has NO published KAT vectors** (BoringSSL test file:
-  "TODO: add tests with fixed vectors"). Our validation ladder: RFC 8032
-  vectors for the ed25519 primitives → Kotlin-alice/Kotlin-bob round-trip →
-  live run against the Pixel 3 Pairing Server (the ultimate oracle). 🚧
+  "TODO: add tests with fixed vectors"). VALIDATION COMPLETE: RFC 8032
+  vectors for the ed25519 primitives → Kotlin-alice/Kotlin-bob round-trip
+  → live run against the Pixel 3 Pairing Server PASSED 2026-11-09
+  (32-byte peer message, keys agreed, PeerInfo decrypted). ✅
+- **X.509 client cert is hand-rolled DER** (no bouncycastle): the
+  AttributeTypeAndValue SEQUENCE inside each RDN SET is mandatory —
+  OpenSSL's parser tolerated its absence, the JDK/Conscrypt parser did
+  not ("X500 RDN" IOException). Regression-locked by `AdbKeyTest`
+  (pure-JVM, CI-gated): v3 parse, subject/issuer CN=Adb/O=Android/C=US,
+  self-signature, CA:TRUE + keyUsage, SKID (SHA-1 over the
+  subjectPublicKey BIT STRING contents excluding tag/length/unused-bits
+  byte, per RFC 5280 §4.2.1.2 method 1).
+- **Pairing Server lifetime is SHORT** (blueline, 2026-11-09): ~10 s
+  with the dialog untouched, and it dies INSTANTLY when the Settings
+  activity loses the foreground (probed at 1 Hz from host + device
+  loopback; mDNS advertisement briefly outlives the listener — stale
+  resolves are normal). Practical consequence: launching OUR activity to
+  collect the code always kills the very server we need. The user flow
+  must collect the code WITHOUT foregrounding: notification inline reply
+  (Shizuku pattern) or an accessibility service reading the dialog.
+- **Same-device TCP from an app UID to the device's OWN external IP is
+  refused** (blueline: host over Wi-Fi OK, adb-shell UID OK, app UID
+  ECONNREFUSED — exact filtering mechanism unverified, no root to
+  inspect). Workaround: when the resolved host equals one of our own
+  interface addresses, substitute 127.0.0.1.
+- **NSD sessions go stale**: a long-running NsdManager discovery stops
+  delivering callbacks; a FRESH session resolves the pairing service in
+  ~100 ms. The pairing receiver always creates a new discovery instance.
 - **Protobuf**: only the 2-value Type enum is used; payloads are raw
   bytes — NO protobuf runtime needed.
 - The pairing connection is one-shot: a fresh Pairing Server instance per
