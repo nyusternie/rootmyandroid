@@ -140,7 +140,14 @@ internal class PairingSession(
      */
     private fun exportKeyingMaterial(socket: SSLSocket): ByteArray {
         try {
-            val conscrypt = Class.forName("org.conscrypt.Conscrypt")
+            // The unbundled artifact ships org.conscrypt.Conscrypt; the
+            // platform module on-device is com.android.org.conscrypt.*
+            // (observed on blueline: Class.forName on the unbundled name
+            // fails). Try both.
+            val conscrypt = listOf("org.conscrypt.Conscrypt", "com.android.org.conscrypt.Conscrypt")
+                .map { runCatching { Class.forName(it) }.getOrNull() }
+                .firstOrNull()
+                ?: throw PairingException("no Conscrypt class found")
             val method = conscrypt.getMethod(
                 "exportKeyingMaterial",
                 SSLSocket::class.java,
