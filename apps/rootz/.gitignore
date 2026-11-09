@@ -1,0 +1,5 @@
+# apps/rootz/.gitignore
+.gradle/
+**/build/
+local.properties
+gradle.properties

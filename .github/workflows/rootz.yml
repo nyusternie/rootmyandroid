@@ -1,0 +1,74 @@
+name: Rootz MVP build
+
+# Builds the Rootz MVP app (apps/rootz — plain Gradle Kotlin app, client
+# for the rootzd daemon) as a RELEASE APK. Manual dispatch only — see
+# .agents/skills/build/SKILL.md. Signed with the public debug key
+# (preview-only, never publish); install with: adb install -r app-release.apk
+#
+# Unlike android-preview.yml there is NO pnpm/node/RN-farm stage: this app
+# has no package.json and no JavaScript. gradle.properties is gitignored
+# (it can carry machine-specific/secret values), so the runner writes a
+# deterministic one — same pattern as the RN preview.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write # rolling prerelease asset upload
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Rootz MVP release APK
+    runs-on: [self-hosted, blackhost]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # blackhost is a minimal image: setup-android shells out to `unzip`,
+      # which is not preinstalled there.
+      - name: Ensure unzip
+        run: command -v unzip || (sudo apt-get update && sudo apt-get install -y unzip)
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
+
+      - name: Install SDK packages
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          # Platform 37's package id carries the dotted minor (verified
+          # against the known-good local SDK): platforms;android-37.0
+          sdkmanager "platform-tools" "platforms;android-37.0" "build-tools;37.0.0"
+
+      - name: Write gradle.properties
+        run: |
+          cat > apps/rootz/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m
+          android.newDsl=false
+          android.builtInKotlin=false
+          EOF
+
+      - name: Build release APK
+        run: cd apps/rootz && ./gradlew assembleRelease --no-daemon
+
+      # Published as a rolling prerelease asset instead of an Actions
+      # artifact (the account's Actions artifact-storage quota is exhausted
+      # and release assets don't count against it). The repo is public; the
+      # APK is a debug-signed preview, so public download is acceptable.
+      - name: Publish APK as rolling prerelease
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: rootz-preview-apk
+          name: Rootz MVP preview APK (rolling)
+          body: 'Rolling debug-signed preview of the Rootz MVP app (rootzd daemon client), built from master@${{ github.sha }} on blackhost. Install with `adb install -r app-release.apk` (package `com.rootmyandroid.rootz`).'
+          prerelease: true
+          files: apps/rootz/app/build/outputs/apk/release/app-release.apk

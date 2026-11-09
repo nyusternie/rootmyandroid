@@ -1,0 +1,22 @@
+// apps/rootz/build.gradle — Rootz MVP app (from scratch, NO fork). Plain
+// framework-UI Kotlin client for the rootzd daemon bridge. Toolchain
+// versions mirror the runner-proven RN shells (apps/ios/android):
+// AGP 9.2.1, Kotlin 2.2.0, Gradle wrapper 9.4.1, JDK 17.
+buildscript {
+    ext.kotlinVersion = "2.2.0"
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:9.2.1"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}

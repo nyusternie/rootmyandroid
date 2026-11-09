@@ -31,11 +31,14 @@ Top-ups are prepaid (Mullvad-style): add time anytime, no auto-renewal.
 │   │                 # (bundle id com.rootmyandroid; android/ is a
 │   │                 #  preview-only shell, com.rootmyandroid.preview), jest
 │   ├── guardian-angel/ # React Native 0.88 app (com.rootmyandroid.guardian_angel), jest
-│   └── rootz/        # Rootz daemon: Rust, rooted Android devices (scaffold; daemon team owns v1)
+│   ├── rootz/        # Rootz MVP app (from scratch, com.rootmyandroid.rootz): plain Gradle
+│   │                 # Kotlin client for the rootzd daemon bridge; CI: rootz.yml
+│   └── rootzd/       # Rootz daemon: Rust, rooted Android devices (verified on redfin)
 ├── packages/
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client
 │                     # shared by the mobile apps (TS source, no build step)
-├── .github/workflows/web.yml   # Web CI + Cloudflare Pages deploy gate
+├── .github/workflows/    # web.yml (web CI + Pages deploy gate),
+│                       # android-preview.yml, rootz.yml (manual mobile builds)
 ├── .agents/skills/   # Project agent skills (brand-image: brand canon)
 ├── .vendor/          # Vendored tarballs (hermes-compiler; see overrides in
 │                     # pnpm-workspace.yaml)
@@ -104,9 +107,10 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    in `src/content.config.ts`). Real, device-accurate content only — per the
    no-guessing rule, do not invent device behavior.
 6. **Never wipe third-party app data.** Do NOT run `pm clear`, `pm uninstall`,
-   or any other data-destroying command on any package other than our own two
+   or any other data-destroying command on any package other than our own
    (`com.rootmyandroid`, `com.rootmyandroid.preview`,
-   `com.rootmyandroid.guardian_angel`). Even for our own
+   `com.rootmyandroid.guardian_angel`, `com.rootmyandroid.rootz`). Even for
+   our own
    packages — and ALWAYS for anything system-level such as the launcher
    (`com.google.android.apps.nexuslauncher`) — a wipe requires a separate,
    explicit, same-turn user confirmation whose prompt names the exact

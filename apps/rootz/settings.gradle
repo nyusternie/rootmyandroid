@@ -1,0 +1,3 @@
+// apps/rootz/settings.gradle
+rootProject.name = "Rootz"
+include ":app"
