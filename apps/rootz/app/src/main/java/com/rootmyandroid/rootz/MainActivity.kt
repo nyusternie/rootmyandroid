@@ -72,6 +72,7 @@ class MainActivity : Activity() {
         send.setOnClickListener { runCommand(input.text.toString().trim()) }
         pairButton.setOnClickListener { startPairing() }
         runCommand("id", silent = true)
+        handlePairIntent(intent)
 
         // Wireless-debugging discovery spike: logcat-only (tag "AdbWifi").
         adbWifi.start()
@@ -97,40 +98,73 @@ class MainActivity : Activity() {
         // Long-running discovery silently stops surfacing new services
         // (observed on blueline); refresh and give the pairing service a
         // few seconds to resolve before giving up.
-        pairStatus.text = "pairing: refreshing discovery…"
-        adbWifi.restart()
+        // The pairing server lives only ~37s after the dialog opens
+        // (observed on blueline 2026-11-09) — every second matters. Fast
+        // path: use the already-resolved endpoint; a dead server fails the
+        // TLS connect within ms. Fallback: refresh discovery and retry once.
+        pairStatus.text = "pairing: starting…"
         thread {
-            var endpoint: Pair<String, Int>? = null
-            var tries = 0
-            while (endpoint == null && tries < 50) {
-                Thread.sleep(100)
-                endpoint = adbWifi.pairingEndpoint
-                tries += 1
+            var ep = adbWifi.pairingEndpoint
+            var result: PairingSession.Result? = null
+            if (ep != null) {
+                runOnUiThread { pairStatus.text = "pairing: contacting ${ep!!.first}:${ep!!.second}…" }
+                result = attemptPair(ep!!, code)
             }
-            val ep = endpoint
-            if (ep == null) {
-                runOnUiThread {
-                    pairStatus.text =
-                        "pairing: no _adb-tls-pairing service found — close & re-open the pairing dialog, then retry"
+            if (result == null) {
+                runOnUiThread { pairStatus.text = "pairing: refreshing discovery…" }
+                adbWifi.restart()
+                ep = null
+                var tries = 0
+                while (ep == null && tries < 50) {
+                    Thread.sleep(100)
+                    ep = adbWifi.pairingEndpoint
+                    tries += 1
                 }
-                return@thread
+                val ep2 = ep
+                if (ep2 == null) {
+                    runOnUiThread {
+                        pairStatus.text =
+                            "pairing: no _adb-tls-pairing service found — close & re-open the pairing dialog, then retry"
+                    }
+                    return@thread
+                }
+                runOnUiThread { pairStatus.text = "pairing: contacting ${ep2.first}:${ep2.second}…" }
+                result = attemptPair(ep2, code)
             }
-            runOnUiThread { pairStatus.text = "pairing: contacting ${ep.first}:${ep.second}…" }
-            val result = try {
-                val key = adbKey ?: loadOrCreateAdbKey().also { adbKey = it }
-                PairingSession(ep.first, ep.second, code, key).run()
-            } catch (e: Exception) {
-                android.util.Log.e("RootzPair", "pairing failed", e)
-                null
-            }
+            val res = result
             runOnUiThread {
-                pairStatus.text = if (result == null) {
+                pairStatus.text = if (res == null) {
                     "pairing: FAILED — wrong code or timeout (see logcat tag RootzPair)"
                 } else {
-                    "pairing: SUCCESS — device guid ${result.deviceGuid}"
+                    "pairing: SUCCESS — device guid ${res.deviceGuid}"
                 }
             }
         }
+    }
+
+    private fun attemptPair(ep: Pair<String, Int>, code: String): PairingSession.Result? = try {
+        val key = adbKey ?: loadOrCreateAdbKey().also { adbKey = it }
+        PairingSession(ep.first, ep.second, code, key).run()
+    } catch (e: Exception) {
+        android.util.Log.e("RootzPair", "pairing attempt failed", e)
+        null
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        handlePairIntent(intent)
+    }
+
+    /**
+     * Automation hook (and future QR/deep-link path):
+     *   am start -n com.rootmyandroid.rootz/.MainActivity --es pair_code NNNNNN
+     * fills the code and starts pairing immediately, skipping all UI
+     * automation latency (the pairing server window is ~37s).
+     */
+    private fun handlePairIntent(intent: Intent?) {
+        val code = intent?.getStringExtra("pair_code") ?: return
+        pairInput.setText(code)
+        startPairing()
     }
 
     /**
