@@ -8,7 +8,7 @@
 # (apps/web has no local node_modules at all), but React Native's gradle
 # plugin + codegen hardcode app-local node_modules paths (e.g.
 # apps/ios/node_modules/react-native/ReactAndroid/gradle.properties).
-# The farms under apps/android and apps/guardian are untracked local state
+# The farms under apps/android and apps/guardian-angel are untracked local state
 # that fresh runner checkouts do not have — this script recreates them
 # deterministically. Symlink targets are ABSOLUTE (computed at runtime), so
 # the script works on any host/runner checkout path.

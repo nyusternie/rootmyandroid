@@ -30,7 +30,7 @@ Top-ups are prepaid (Mullvad-style): add time anytime, no auto-renewal.
 │   ├── ios/          # RootMyAndroid (iOS monitoring edition): RN 0.88 app
 │   │                 # (bundle id com.rootmyandroid; android/ is a
 │   │                 #  preview-only shell, com.rootmyandroid.preview), jest
-│   ├── guardian/     # React Native 0.88 app (com.rootmyandroid.guardian_angel), jest
+│   ├── guardian-angel/ # React Native 0.88 app (com.rootmyandroid.guardian_angel), jest
 │   └── rootz/        # Rootz daemon: Rust, rooted Android devices (scaffold; daemon team owns v1)
 ├── packages/
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client

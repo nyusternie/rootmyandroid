@@ -97,7 +97,7 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
 
-  apps/guardian:
+  apps/guardian-angel:
     dependencies:
       '@react-native/new-app-screen':
         specifier: 0.88.0

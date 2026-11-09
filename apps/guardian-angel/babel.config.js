@@ -1,4 +1,4 @@
-// apps/guardian/babel.config.js
+// apps/guardian-angel/babel.config.js
 module.exports = {
   presets: [
     ['module:@react-native/babel-preset', { jsxImportSource: 'nativewind' }],

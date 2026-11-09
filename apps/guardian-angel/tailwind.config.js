@@ -1,4 +1,4 @@
-// apps/guardian/tailwind.config.js
+// apps/guardian-angel/tailwind.config.js
 // NativeWind theme — hex values MUST stay in sync with rootzColors in
 // packages/shared/src/theme.ts (Tailwind config is CJS and cannot import
 // the TS source; update both when the palette changes).
