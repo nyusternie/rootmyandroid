@@ -45,6 +45,9 @@ NEVER recorded here (rule 3a).
     builds"), `su` not found ✔ — clean no-root baseline
   - Android 12 ≥ 11 → AOSP wireless-debugging architecture applies
     (`_adb-tls-pairing` / `_adb-tls-connect`, docs/dev/adb_wifi.md) ✔
+  - wireless debugging TOGGLED ON 2026-11-09 (user): adbd published
+    `_adb-tls-connect._tcp` as `adb-8CHX1PEQ1-eNJClj`, resolved by the
+    Rootz discovery spike to 192.168.4.33:43277 ✔ (logcat tag `AdbWifi`)
 
 ## Pixel 7 — GrapheneOS trials
 

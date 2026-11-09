@@ -48,6 +48,15 @@ publish); published as a rolling prerelease asset `rootz-preview-apk`.
 - **v0.2** — in-app wireless-debugging pairing + daemon self-start
   (Android 11+; the no-computer flow). Daemon start mechanics already
   proven transport-independent (wireless-ADB smoke test, 2026-11-09).
+  Slice 1 shipped + validated 2026-11-09: `AdbWifiDiscovery.kt` finds and
+  resolves `_adb-tls-pairing._tcp` / `_adb-tls-connect._tcp` / `_adb._tcp`
+  (logcat tag `AdbWifi`); on blueline (Pixel 3, Android 12, locked),
+  toggling Wireless debugging ON surfaced `adb-8CHX1PEQ1-eNJClj` @
+  192.168.4.33:43277 within seconds — matching the AOSP `adb_wifi.md`
+  architecture (instance `adb-<serialno>`, random TLS port).
+  Implementation note: `onServiceFound` fires per address family — dedupe
+  by instance name before resolving (a duplicate resolve raced with
+  `FAILURE_ALREADY_ACTIVE`).
 - **v0.3** — binder API for third-party apps under OUR namespace
   (`com.rootmyandroid.rootz.*` constants, HANDOFF §13 addendum); legacy
   ecosystem interop only via a separate, clearly-labeled compat companion.
