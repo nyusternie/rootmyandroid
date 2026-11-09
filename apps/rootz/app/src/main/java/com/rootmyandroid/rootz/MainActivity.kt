@@ -191,16 +191,19 @@ class MainActivity : AppCompatActivity() {
         // also observed on blueline).
         pairStatus.text = "pairing: starting…"
         thread {
-            var ep = adbWifi.pairingEndpoint
+            // Capture into an immutable: posting a lambda that reads the
+            // var races with the refresh path nulling it (observed on
+            // blueline: NPE in the posted lambda killed the process).
+            val ep0 = adbWifi.pairingEndpoint
             var result: PairingSession.Result? = null
-            if (ep != null) {
-                runOnUiThread { pairStatus.text = "pairing: contacting ${ep!!.first}:${ep!!.second}…" }
-                result = attemptPair(ep!!, code)
+            if (ep0 != null) {
+                runOnUiThread { pairStatus.text = "pairing: contacting ${ep0.first}:${ep0.second}…" }
+                result = attemptPair(ep0, code)
             }
             if (result == null) {
                 runOnUiThread { pairStatus.text = "pairing: refreshing discovery…" }
                 adbWifi.restart()
-                ep = null
+                var ep: Pair<String, Int>? = null
                 var tries = 0
                 while (ep == null && tries < 50) {
                     Thread.sleep(100)
@@ -229,12 +232,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun attemptPair(ep: Pair<String, Int>, code: String): PairingSession.Result? = try {
-        val key = adbKey ?: loadOrCreateAdbKey().also { adbKey = it }
-        PairingSession(ep.first, ep.second, code, key).run()
-    } catch (e: Exception) {
-        android.util.Log.e("RootzPair", "pairing attempt failed", e)
-        null
+    // Retry a few times: adbd advertises the pairing service over mDNS
+    // before its listener is accepting (observed on blueline: immediate
+    // ECONNREFUSED on a freshly-published, correct port).
+    private fun attemptPair(ep: Pair<String, Int>, code: String): PairingSession.Result? {
+        repeat(3) { i ->
+            if (i > 0) Thread.sleep(400)
+            try {
+                val key = adbKey ?: loadOrCreateAdbKey().also { adbKey = it }
+                return PairingSession(ep.first, ep.second, code, key).run()
+            } catch (e: Exception) {
+                android.util.Log.e("RootzPair", "pairing attempt ${i + 1} failed", e)
+            }
+        }
+        return null
     }
 
     override fun onNewIntent(intent: Intent?) {
