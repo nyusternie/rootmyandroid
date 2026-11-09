@@ -28,7 +28,11 @@ class AdbWifiDiscovery(context: Context) {
     // on blueline 2026-11-09).
     private val resolving = java.util.Collections.synchronizedSet(mutableSetOf<String>())
 
+    private var started = false
+
     fun start() {
+        if (started) return
+        started = true
         for (type in SERVICE_TYPES) {
             val l = listener(type)
             listeners += l
@@ -40,6 +44,22 @@ class AdbWifiDiscovery(context: Context) {
     fun stop() {
         for (l in listeners) runCatching { nsd.stopServiceDiscovery(l) }
         listeners.clear()
+        pairingEndpoint = null
+        connectEndpoint = null
+        started = false
+    }
+
+    /**
+     * stop()+start(). Fresh discovery sessions reliably find currently-
+     * published services, while LONG-RUNNING ones silently stop delivering
+     * found-callbacks (observed on blueline 2026-11-09: a pairing service
+     * published ~2 min into a session never surfaced; an app restart found
+     * services in <1s). Called by the pairing flow before it needs the
+     * pairing endpoint.
+     */
+    fun restart() {
+        stop()
+        start()
     }
 
     private fun listener(type: String) = object : NsdManager.DiscoveryListener {

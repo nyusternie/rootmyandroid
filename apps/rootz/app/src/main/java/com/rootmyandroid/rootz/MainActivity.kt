@@ -94,17 +94,31 @@ class MainActivity : Activity() {
             pairStatus.text = "pairing: enter the 6-digit code shown on the device"
             return
         }
-        val endpoint = adbWifi.pairingEndpoint
-        if (endpoint == null) {
-            pairStatus.text =
-                "pairing: no _adb-tls-pairing service found — open Wireless debugging → 'Pair device with pairing code'"
-            return
-        }
-        pairStatus.text = "pairing: contacting ${endpoint.first}:${endpoint.second}…"
+        // Long-running discovery silently stops surfacing new services
+        // (observed on blueline); refresh and give the pairing service a
+        // few seconds to resolve before giving up.
+        pairStatus.text = "pairing: refreshing discovery…"
+        adbWifi.restart()
         thread {
+            var endpoint: Pair<String, Int>? = null
+            var tries = 0
+            while (endpoint == null && tries < 50) {
+                Thread.sleep(100)
+                endpoint = adbWifi.pairingEndpoint
+                tries += 1
+            }
+            val ep = endpoint
+            if (ep == null) {
+                runOnUiThread {
+                    pairStatus.text =
+                        "pairing: no _adb-tls-pairing service found — close & re-open the pairing dialog, then retry"
+                }
+                return@thread
+            }
+            runOnUiThread { pairStatus.text = "pairing: contacting ${ep.first}:${ep.second}…" }
             val result = try {
                 val key = adbKey ?: loadOrCreateAdbKey().also { adbKey = it }
-                PairingSession(endpoint.first, endpoint.second, code, key).run()
+                PairingSession(ep.first, ep.second, code, key).run()
             } catch (e: Exception) {
                 android.util.Log.e("RootzPair", "pairing failed", e)
                 null
