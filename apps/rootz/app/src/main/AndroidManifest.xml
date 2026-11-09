@@ -22,8 +22,8 @@
         </activity>
         <!-- Inline-reply target for notification-based same-device pairing.
              Exported so adb shell can also drive it directly (development
-             hook: am broadcast -n .../.PairingReplyReceiver --es pair_code
-             NNNNNN — pairs headless without foregrounding anything). -->
+             hook: am broadcast with a pair_code string extra — pairs
+             headless without foregrounding anything). -->
         <receiver
             android:name=".PairingReplyReceiver"
             android:exported="true" />
