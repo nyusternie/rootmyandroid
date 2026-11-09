@@ -45,6 +45,12 @@ Notes for guides:
 
 - The pairing dialog's **port changes every time** it is opened — guides
   must show discovery-based pairing, not memorized ports.
+- **The pairing code EXPIRES quickly**: the Pairing Server exits shortly
+  after the dialog opens (observed 2026-11-09 on blueline: service
+  resolvable at open+0s, gone a few minutes later while the dialog was
+  still visibly up). Enter the code PROMPTLY after opening the dialog;
+  if pairing fails with "service not found", close and re-open the dialog
+  for a fresh code. Exact server timeout: UNVERIFIED (order of minutes).
 - The Pairing Server **quits after 20 failed attempts** (brute-force
   protection; `pairing_connection/internal/constants.h` kMaxPairingAttempts). 📖
 - Wireless debugging does **not** survive being toggled off without
