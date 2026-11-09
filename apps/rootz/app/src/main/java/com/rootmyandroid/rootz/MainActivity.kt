@@ -46,7 +46,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pairStatus: TextView
     private lateinit var pairInput: TextInputEditText
     private val adbWifi by lazy { AdbWifiDiscovery(this) }
-    private var adbKey: AdbKey? = null
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
@@ -127,7 +126,8 @@ class MainActivity : AppCompatActivity() {
         }
         pairInput = pairEdit
         val pairButton = gradientButton("Pair (wireless debugging)")
-        val pairCard = sectionCard(pairStatus, pairLayout, pairButton)
+        val armButton = gradientButton("Arm pairing notification (same-device)")
+        val pairCard = sectionCard(pairStatus, pairLayout, pairButton, armButton)
 
         output = TextView(this).apply {
             setTextIsSelectable(true)
@@ -159,6 +159,13 @@ class MainActivity : AppCompatActivity() {
 
         send.setOnClickListener { runCommand(input.text.toString().trim()) }
         pairButton.setOnClickListener { startPairing() }
+        // Same-device pairing must NOT foreground this activity — that
+        // kills the Settings pairing server (measured on blueline). The
+        // notification's inline reply collects the code instead.
+        armButton.setOnClickListener {
+            PairingNotifier.postPairingPrompt(this)
+            pairStatus.text = "pairing notification armed — open the Settings pairing dialog, then type the code into the notification"
+        }
         runCommand("id", silent = true)
         handlePairIntent(intent)
 
@@ -239,7 +246,7 @@ class MainActivity : AppCompatActivity() {
         repeat(3) { i ->
             if (i > 0) Thread.sleep(400)
             try {
-                val key = adbKey ?: loadOrCreateAdbKey().also { adbKey = it }
+                val key = AdbKeyStore.get(this)
                 return PairingSession(ep.first, ep.second, code, key).run()
             } catch (e: Exception) {
                 android.util.Log.e("RootzPair", "pairing attempt ${i + 1} failed", e)
@@ -263,36 +270,6 @@ class MainActivity : AppCompatActivity() {
         val code = intent?.getStringExtra("pair_code") ?: return
         pairInput.setText(code)
         startPairing()
-    }
-
-    /**
-     * The app's persistent ADB identity (RSA-2048). Generated once and
-     * stored in SharedPreferences; the device enrolls THIS key during
-     * pairing, so regenerating it would force re-pairing. (Preview-grade
-     * storage; hardware-backed keystore hardening is a later slice.)
-     */
-    private fun loadOrCreateAdbKey(): AdbKey {
-        val prefs = getSharedPreferences("rootz", MODE_PRIVATE)
-        val privB64 = prefs.getString("adb_priv", null)
-        val pubB64 = prefs.getString("adb_pub", null)
-        if (privB64 != null && pubB64 != null) {
-            return AdbKey.restore(
-                android.util.Base64.decode(privB64, android.util.Base64.NO_WRAP),
-                android.util.Base64.decode(pubB64, android.util.Base64.NO_WRAP),
-            )
-        }
-        val key = AdbKey.generate()
-        prefs.edit()
-            .putString(
-                "adb_priv",
-                android.util.Base64.encodeToString(key.keyPair.private.encoded, android.util.Base64.NO_WRAP),
-            )
-            .putString(
-                "adb_pub",
-                android.util.Base64.encodeToString(key.keyPair.public.encoded, android.util.Base64.NO_WRAP),
-            )
-            .apply()
-        return key
     }
 
     private fun runCommand(cmd: String, silent: Boolean = false) {

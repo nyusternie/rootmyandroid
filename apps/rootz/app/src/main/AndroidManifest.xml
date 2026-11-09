@@ -20,6 +20,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Inline-reply target for notification-based same-device pairing;
+             app-internal PendingIntent only, so not exported. -->
+        <receiver
+            android:name=".PairingReplyReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>
