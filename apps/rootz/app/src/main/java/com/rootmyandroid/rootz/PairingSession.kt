@@ -37,8 +37,17 @@ internal class PairingSession(
     internal class Result(val deviceGuid: String)
 
     internal fun run(): Result {
-        Log.i(TAG, "pairing: connecting to $host:$port")
-        val socket = openTlsSocket()
+        // Same-device pairing quirk (observed on blueline 2026-11-09):
+        // connecting to the device's OWN external interface address gets
+        // ECONNREFUSED for an app UID, while the adb shell UID and remote
+        // LAN hosts connect fine, and adbd's pairing listener is bound to
+        // all interfaces. Loopback works for any UID, so substitute it
+        // when the mDNS-resolved host is one of our own addresses.
+        // (Exact filtering mechanism unverified — Magisk/netd per-UID
+        // rules are the suspect.)
+        val connectHost = if (isOwnAddress(host)) "127.0.0.1" else host
+        Log.i(TAG, "pairing: connecting to $connectHost:$port (resolved as $host)")
+        val socket = openTlsSocket(connectHost)
         try {
             Log.i(TAG, "pairing: TLS ${socket.session.protocol} established; exporting EKM")
             val ekm = exportKeyingMaterial(socket)
@@ -86,7 +95,15 @@ internal class PairingSession(
      * PKI) and our self-signed cert available when the server requests
      * client authentication.
      */
-    private fun openTlsSocket(): SSLSocket {
+    private fun isOwnAddress(host: String): Boolean = try {
+        java.net.NetworkInterface.getNetworkInterfaces().toList().any { ni ->
+            ni.inetAddresses.toList().any { it.hostAddress == host }
+        }
+    } catch (e: Exception) {
+        false
+    }
+
+    private fun openTlsSocket(connectHost: String): SSLSocket {
         val keyStore = KeyStore.getInstance(KeyStore.getDefaultType()).apply { load(null) }
         val cert = CertificateFactory.getInstance("X.509")
             .generateCertificate(adbKey.certificateDer.inputStream()) as X509Certificate
@@ -106,7 +123,7 @@ internal class PairingSession(
 
         val socket = context.socketFactory.createSocket() as SSLSocket
         socket.enabledProtocols = arrayOf("TLSv1.3")
-        socket.connect(InetSocketAddress(host, port), CONNECT_TIMEOUT_MS)
+        socket.connect(InetSocketAddress(connectHost, port), CONNECT_TIMEOUT_MS)
         socket.soTimeout = IO_TIMEOUT_MS
         socket.startHandshake()
         return socket
