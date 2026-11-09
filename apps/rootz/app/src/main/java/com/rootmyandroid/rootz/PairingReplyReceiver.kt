@@ -15,10 +15,14 @@ import kotlin.concurrent.thread
 class PairingReplyReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        val code = RemoteInput.getResultsFromIntent(intent)
-            ?.getCharSequence(PairingNotifier.KEY_PAIR_CODE)
-            ?.toString()
-            ?.trim()
+        // Code sources: the notification's inline reply, or (development
+        // hook — lets a host script drive pairing over adb without
+        // foregrounding anything) a "pair_code" string extra.
+        val code = intent.getStringExtra("pair_code")?.trim()
+            ?: RemoteInput.getResultsFromIntent(intent)
+                ?.getCharSequence(PairingNotifier.KEY_PAIR_CODE)
+                ?.toString()
+                ?.trim()
             ?: return
         if (!Regex("\\d{6}").matches(code)) {
             PairingNotifier.postResult(context, false, "The code is exactly 6 digits — try again.")
