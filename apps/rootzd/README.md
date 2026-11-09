@@ -32,6 +32,23 @@ Notes for the daemon team:
 Uses `.env.local` (gitignored — see `.env.local.example`) for the runner
 connection. Artifacts land in `apps/rootzd/dist/` (gitignored).
 
+## Install (root tier — customer path): Magisk module zip (Option B)
+
+Owner ruling 2026-11-09. Package + verify on device:
+
+    scripts/package-rootzd-module.sh    # needs the built binary in dist/
+    adb push apps/rootzd/dist/rootzd-magisk-module-v0.1.0.zip /data/local/tmp/
+    adb shell "su -c 'magisk --install-module /data/local/tmp/rootzd-magisk-module-v0.1.0.zip'"
+    adb reboot                          # Magisk finalizes module installs at boot
+
+Module source files live in `module/` (`module.prop`, `service.sh`,
+`customize.sh` — arm64-only guard + exec-bit fix). The module **supersedes**
+the manual `/data/adb/service.d/rootzd.sh` install — never run both (the
+second bind to 127.0.0.1:7357 collides). Customers install by tapping
+"Install from storage" in the Magisk app; enable/disable/uninstall is then
+one tap, and the module survives OTAs via Magisk's own mechanism.
+Verified on redfin 2026-11-09 (RS-44).
+
 ## Usage (dev, shell tier — no root needed)
 
     adb push apps/rootzd/dist/rootzd-aarch64-linux-android /data/local/tmp/rootzd
