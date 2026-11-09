@@ -28,10 +28,11 @@ records: a session log, a completed per-model template, and a catalog entry.
 4. **Bootloader unlock wipes the device.** State this consequence verbatim
    before every unlock. Never issue generic bootloader-RELOCK instructions
    (relocking non-stock software bricks devices).
-5. **TWRP/custom recovery is a RAM-boot tool only** (`fastboot boot`, never
-   `fastboot flash`) unless the per-model template explicitly approves
-   flashing it. Inside recovery, stage scratch files in `/tmp` (tmpfs) —
-   never assume `/sdcard` is available (decryption-dependent).
+5. **Custom recovery (TWRP et al.) is RETIRED from the pipeline** (owner
+   ruling 2026-11-09 — modern techniques only: factory-image patch-boot +
+   fastboot + Magisk modules). Do not download, RAM-boot, or flash any
+   custom recovery; if a model seems to require one, STOP and escalate to
+   the owner instead of working around this rule.
 6. Repo rule 6 applies unconditionally: never wipe/clear third-party packages.
 6a. **NEVER wipe to escape a root/grant problem.** A wipe is a workaround,
    not a fix, and paying customers' devices arrive in exactly these states.
@@ -80,17 +81,16 @@ records: a session log, a completed per-model template, and a catalog entry.
   verify SHA-256. Inner image zip is nested one directory deep — glob
   `*/image-redfin-*.zip` pattern `*/image-<codename>-*.zip` (hurdle H-08).
 - Extract `boot.img`, record SHA-256 + `source.json`.
-- TWRP (if needed for cross-verification): direct download is
-  interstitial-gated — fetch with a browser UA AND `Referer` header
-  (hurdle H-07); verify against the published `.sha256` sidecar.
 
-### Phase D — Cross-verification (agent, strong proof)
-- RAM-boot TWRP → root shell (`uid=0 context=u:r:su:s0`) →
-  `dd if=/dev/block/by-name/boot_<slot> of=/tmp/dump.img` → `adb pull` →
-  SHA-256 MUST equal the Google-extracted `boot.img`. Two independent
-  sources producing identical bytes is a hard integrity proof of both the
-  device state and the library artifact.
-- Reboot to Android (`adb reboot`); boot partition was read-only touched.
+### Phase D — Verification (post-flash canon)
+- The pre-flash raw-partition cross-dump (TWRP RAM-boot, used on redfin
+  RS-19/20) is RETIRED (owner ruling 2026-11-09): stock Android offers no
+  raw partition read path without an elevated environment, so the
+  "two independent byte sources" proof is no longer available pre-flash.
+- Verification is now post-flash (Phase F): the root canon
+  (`su -c id` → `uid=0 … u:r:magisk:s0`) proves the flash landed, and the
+  provenance of every byte flashed traces to the SHA-256-verified factory
+  zip (Phase C).
 
 ### Phase E — Scripted patch (agent, ZERO user taps)
 - `adb install` is race-prone right after boot: gate on

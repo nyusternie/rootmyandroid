@@ -451,6 +451,28 @@ the larger market wants privileged capabilities WITHOUT a wipe. So:
   Cloudflare `_redirects` pair only); new `/rootzd` page added for the
   daemon. `/rootz` page copy pass pending the APK product definition.
 
+**ADDENDUM 2 (owner rulings 2026-11-09) — from-scratch MVP; TWRP dropped;
+Magisk module zip shipped.**
+- **Rootz APK: fork REJECTED** (supersedes the 2026-11-08 fork-base line) —
+  built from scratch as a simple MVP at `apps/rootz` (plain Gradle Kotlin
+  client for the rootzd bridge, zero third-party deps; CI `rootz.yml`,
+  debug-signed preview APK published as rolling prerelease). The
+  `com.rootmyandroid.rootz.*` namespace plan stands — implemented natively.
+- **TWRP dropped from the roadmap entirely.** The fork strategy was
+  chat-only (never committed — no HANDOFF text to delete); the
+  device-unlock skill's TWRP RAM-boot cross-verification phase is retired
+  and replaced with post-flash canon verification. Modern techniques only:
+  factory-image patch-boot + fastboot + Magisk modules (the official
+  Magisk guide flow, proven on redfin). TWRP's redfin role stays in the
+  session log as historical record (incl. the RS-34 finding that TWRP
+  3.7.0 A14 FBE decrypt is non-functional — the ruling aligns with it).
+- **rootzd customer install path:** standard Magisk module zip shipped
+  (`apps/rootzd/module/` + `scripts/package-rootzd-module.sh`; verified
+  RS-44 — supersedes the manual service.d install).
+- **Test hardware roles fixed:** Pixel 3 = never-unlocked no-wipe-tier
+  verifier (first inspection pending); Pixel 7 = GrapheneOS trials
+  (registry: `apps/rootzd/docs/test-devices.md`).
+
 ---
 
 *Owner context: rebrand direction approved 2026-11-03 with a HARD cutover
