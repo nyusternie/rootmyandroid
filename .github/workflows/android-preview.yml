@@ -21,9 +21,9 @@ jobs:
     name: Test & build release APK
     runs-on: [self-hosted, blackhost]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 11.21.0
 
@@ -33,12 +33,12 @@ jobs:
       - name: Pin pnpm store path
         run: pnpm config set store-dir /home/gh-runner/pnpm-store/mobile
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
@@ -49,7 +49,7 @@ jobs:
         run: command -v unzip || (sudo apt-get update && sudo apt-get install -y unzip)
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           # Default "tools platform-tools" fails: the legacy `tools` package
           # no longer exists in current SDK repositories.
@@ -101,7 +101,7 @@ jobs:
       # blackhost has no gh CLI; this action bundles its own client and
       # replaces same-named assets on re-run (rolling prerelease).
       - name: Publish APK as rolling prerelease
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: preview-apk
           name: RootMyAndroid preview APK (rolling)

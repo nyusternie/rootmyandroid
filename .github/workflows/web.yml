@@ -19,9 +19,9 @@ jobs:
     name: Lint, test & build
     runs-on: [self-hosted, blackhost]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 11.21.0
 
@@ -31,7 +31,7 @@ jobs:
       - name: Pin pnpm store path
         run: pnpm config set store-dir /home/gh-runner/pnpm-store/web
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -46,7 +46,7 @@ jobs:
         run: pnpm --filter rootmyandroid-web test:coverage
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./apps/web/coverage/lcov.info
@@ -64,9 +64,9 @@ jobs:
     runs-on: [self-hosted, blackhost]
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 11.21.0
 
@@ -76,7 +76,7 @@ jobs:
       - name: Pin pnpm store path
         run: pnpm config set store-dir /home/gh-runner/pnpm-store/web
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
