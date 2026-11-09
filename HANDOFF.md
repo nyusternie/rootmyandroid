@@ -472,6 +472,19 @@ Magisk module zip shipped.**
 - **Test hardware roles fixed:** Pixel 3 = never-unlocked no-wipe-tier
   verifier (first inspection pending); Pixel 7 = GrapheneOS trials
   (registry: `apps/rootzd/docs/test-devices.md`).
+- **TWRP web presence STAYS (same-day owner ruling):** the `/TWRP` profile
+  page and the device catalog's TWRP support-status/download data are
+  customer-facing device FACTS, not roadmap — keep them; only the
+  pipeline/roadmap references were purged.
+- **Version labels move to DATE scheme (same-day owner ruling):** `v0.1`
+  → `v26.11.8` (YY.M.D, matching the rootzd crate's existing
+  `26.11.7`-style versioning). Applied to module.prop, the packaging
+  script, both READMEs, and the Rootz APK `versionName`; `versionCode`
+  integers keep incrementing unchanged.
+- **boot.img library approved ASAP (same-day owner ruling, "one thing at a
+  time"):** handoffs for the API + web teams:
+  `docs/HANDOFF-2026-11-09-api-bootimg-library.md`,
+  `docs/HANDOFF-2026-11-09-web-rootz.md`.
 
 ---
 

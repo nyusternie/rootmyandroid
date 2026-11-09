@@ -1,7 +1,7 @@
 # apps/rootzd/Cargo.toml — Rootz daemon crate (scaffold; daemon team owns v1).
 [package]
 name = "rootzd"
-version = "26.11.7" # date-format: YY.M.D — bumped at each release
+version = "26.11.8" # date-format: YY.M.D — bumped at each release
 edition = "2021"
 
 [dependencies]

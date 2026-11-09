@@ -7,7 +7,7 @@ Analysis ($15 / 365 days) — attach to this daemon. Mascot: **Colonel Rewt**.
 Rootz PRO applies to BOTH the Rootz APK product and this daemon (owner
 ruling 2026-11-08).
 
-Status: **v1 in progress** (daemon team) — terminal v0.1 landed: piped
+Status: **v1 in progress** (daemon team) — terminal v26.11.8 landed: piped
 `/system/bin/sh` bridge, uid-based tier detection, localhost listener
 (default bind 127.0.0.1; NO AUTH until the pairing/security pass).
 Binary renamed `rootz` -> `rootzd` (owner ruling 2026-11-08, superseding the
@@ -37,8 +37,8 @@ connection. Artifacts land in `apps/rootzd/dist/` (gitignored).
 Owner ruling 2026-11-09. Package + verify on device:
 
     scripts/package-rootzd-module.sh    # needs the built binary in dist/
-    adb push apps/rootzd/dist/rootzd-magisk-module-v0.1.1.zip /data/local/tmp/
-    adb shell "su -c 'magisk --install-module /data/local/tmp/rootzd-magisk-module-v0.1.1.zip'"
+    adb push apps/rootzd/dist/rootzd-magisk-module-v26.11.8.zip /data/local/tmp/
+    adb shell "su -c 'magisk --install-module /data/local/tmp/rootzd-magisk-module-v26.11.8.zip'"
     adb reboot                          # Magisk finalizes module installs at boot
 
 Module source files live in `module/` (`module.prop`, `service.sh`,
@@ -47,7 +47,7 @@ the manual `/data/adb/service.d/rootzd.sh` install — never run both (the
 second bind to 127.0.0.1:7357 collides). Customers install by tapping
 "Install from storage" in the Magisk app; enable/disable/uninstall is then
 one tap, and the module survives OTAs via Magisk's own mechanism.
-Verified on redfin 2026-11-09 (RS-44; v0.1.1 EOF fix RS-45).
+Verified on redfin 2026-11-09 (RS-44; v26.11.8 EOF fix RS-45).
 
 ## Usage (dev, shell tier — no root needed)
 
@@ -55,12 +55,13 @@ Verified on redfin 2026-11-09 (RS-44; v0.1.1 EOF fix RS-45).
     adb shell chmod 755 /data/local/tmp/rootzd
     adb shell 'nohup /data/local/tmp/rootzd >/dev/null 2>&1 </dev/null &'
     adb forward tcp:7357 tcp:7357
-    nc 127.0.0.1 7357          # remote /system/bin/sh as uid 2000 (no PTY in v0.1)
+    nc 127.0.0.1 7357          # remote /system/bin/sh as uid 2000 (no PTY in v26.11.8)
 
 Client contract (pinned by RS-45): the daemon closes the connection once
 the piped shell exits (e.g. after an `exit` line) — clients read until
-EOF; they do NOT need to half-close first (v0.1.0 deadlocked against
-wait-for-EOF clients; fixed in v0.1.1 via socket-level shutdown()).
+EOF; they do NOT need to half-close first (pre-fix builds deadlocked
+against wait-for-EOF clients; fixed in the v26.11.8 line via socket-level
+shutdown()).
 
 `ROOTZD_LAN_BIND=0.0.0.0` exposes the LAN fallback (camera path) — only after
 pairing lands.

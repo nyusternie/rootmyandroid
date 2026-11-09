@@ -6,7 +6,7 @@ Rootz brand is the no-wipe tier product; the daemon is `rootzd`
 (`apps/rootzd`). Rootz PRO spans both (2026-11-08 ruling).
 
 - Package id: `com.rootmyandroid.rootz` (owned namespace).
-- v0.1 VERIFIED on redfin 2026-11-09 (RS-45): CI-built APK ↔
+- v26.11.8 VERIFIED on redfin 2026-11-09 (RS-45): CI-built APK ↔
   module-installed rootzd — status `daemon: connected (tier: root)`,
   interactive `uname -a` round-trip rendered in-app.
 - Plain framework UI (no appcompat/material/Compose), Kotlin 2.2.0,
@@ -14,13 +14,13 @@ Rootz brand is the no-wipe tier product; the daemon is `rootzd`
 - Not a pnpm workspace package (no `package.json`) — `pnpm -r` skips it,
   like `apps/rootzd`.
 
-## v0.1 scope (this scaffold)
+## v26.11.8 scope (this scaffold)
 
 Single screen: daemon status + tier (parsed from `id`), command input,
 scrollable output. One fresh TCP connection per command; `exit` closes
 the piped shell. The daemon is started OUTSIDE the app.
 
-## Start the daemon for v0.1 testing
+## Start the daemon for v26.11.8 testing
 
 Shell tier (any device with adb — no root needed):
 

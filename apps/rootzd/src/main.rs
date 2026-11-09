@@ -15,7 +15,7 @@
 //! `adb forward tcp:7357 tcp:7357`. ROOTZD_LAN_BIND=0.0.0.0 exposes it on the
 //! LAN: DANGEROUS until the pairing/security pass (there is no auth yet).
 //!
-//! Terminal v0.1: piped /system/bin/sh per connection. std-only by design so
+//! Terminal v26.11.8: piped /system/bin/sh per connection. std-only by design so
 //! the first remote build needs no crates.io access; a real PTY (libc
 //! forkpty) lands in v0.2. Security pass (pairing, E2E crypto, kill switch,
 //! audit log) is NOT in this build.
@@ -66,7 +66,7 @@ fn pump<R: Read, W: Write>(mut from: R, to: &mut W) {
     }
 }
 
-/// Bridge one TCP connection to a piped /system/bin/sh (terminal v0.1).
+/// Bridge one TCP connection to a piped /system/bin/sh (terminal v26.11.8).
 fn handle_terminal(conn: TcpStream) {
     let mut child = match Command::new("/system/bin/sh")
         .stdin(Stdio::piped())
