@@ -89,6 +89,13 @@ internal class AdbConnection(
                     Log.i(TAG, "adb: connected — $banner")
                     return banner
                 }
+                // adb.cpp daemon-side A_CNXN handler: on a TLS transport
+                // adbd ALSO answers our CNXN with A_STLS ("to indicate the
+                // new protocol") ON TOP of the CNXN from
+                // adbd_wifi_secure_connect — a stray packet, safe to ignore
+                // (and must NOT be echoed: that would re-trigger
+                // adbd_auth_tls_handshake server-side).
+                A_STLS -> Log.i(TAG, "adb: ignoring stray A_STLS during connect")
                 else -> throw AdbException("expected AUTH/CNXN, got command=0x${msg.command.toString(16)}")
             }
         }
@@ -113,6 +120,7 @@ internal class AdbConnection(
                     write(output, A_CLSE, localId, msg.arg0, byteArrayOf())
                     return out.toString()
                 }
+                A_STLS -> Log.i(TAG, "adb: ignoring stray A_STLS on stream") // see connect()
                 else -> Log.w(TAG, "adb: unexpected stream command=0x${msg.command.toString(16)}")
             }
         }
