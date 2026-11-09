@@ -275,6 +275,25 @@ class MainActivity : AppCompatActivity() {
     private fun runCommand(cmd: String, silent: Boolean = false) {
         if (cmd.isEmpty()) return
         thread {
+            // Prefer wireless ADB (key enrolled via pairing) when the
+            // _adb-tls-connect endpoint is up; fall back to the rootd
+            // socket (needed for `su` tiers).
+            val ep = adbWifi.connectEndpoint
+            if (ep != null) {
+                try {
+                    val r = AdbConnection(ep.first, ep.second, AdbKeyStore.get(this)).runShell(cmd)
+                    runOnUiThread {
+                        status.text = "adb: wireless (${r.deviceBanner})"
+                        if (!silent) output.text = r.output.trim()
+                    }
+                    return@thread
+                } catch (e: Exception) {
+                    android.util.Log.e("Rootz", "wireless runCommand failed for '$cmd'", e)
+                    runOnUiThread {
+                        status.text = "adb: wireless FAILED (${e.message}) — trying daemon"
+                    }
+                }
+            }
             val result = try {
                 Socket("127.0.0.1", 7357).use { s ->
                     s.soTimeout = 10_000
