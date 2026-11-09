@@ -37,9 +37,9 @@ internal class Spake2(
 
     // BoringSSL pairing_auth: kClientRole = spake2_role_alice.
     private val myName = (if (isClient) "adb pair client" else "adb pair server")
-        .toByteArray(Charsets.US_ASCII) + byteOf(0)
+        .toByteArray(Charsets.US_ASCII) + byteArrayOf(0)
     private val theirName = (if (isClient) "adb pair server" else "adb pair client")
-        .toByteArray(Charsets.US_ASCII) + byteOf(0)
+        .toByteArray(Charsets.US_ASCII) + byteArrayOf(0)
 
     // Mask points from the BoringSSL precomp tables: entry 0 is 1·P
     // (x25519_ge_scalarmult_small_precomp stores j·P at j-1, as affine
