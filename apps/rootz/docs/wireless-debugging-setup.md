@@ -268,3 +268,84 @@ Capture during the first live pairing run (do NOT publish before verified):
   crypto/curve25519/{spake25519.cc, spake25519_test.cc}
 - Local: `SpakeTables.kt` (extracted constants), `AdbWifiDiscovery.kt`
   (slice 1), `apps/rootzd/docs/test-devices.md` (device matrix)
+
+## 9. Connect phase (measured end-to-end on blueline, 2026-11-09)
+
+Everything below was verified against a live Pixel 3 (Android 12, SQ1A.220205.002)
+running Rootz commit `ff26740`. AOSP citations are on the `android12-release`
+branch unless noted.
+
+### 9.1 The `_adb-tls-connect` port is NOT TLS-from-first-byte
+
+`transport.cpp` `BlockingConnectionAdapter::StartReadThread()` reads a plaintext
+24-byte ADB packet header FIRST. Only when that packet's command is `A_STLS`
+does the connection upgrade:
+
+- `adb.cpp` `handle_packet`, case `A_STLS`: sets `t->use_tls = true` and calls
+  `adbd_auth_tls_handshake(t)` (daemon side).
+- Constants (`adb.h` / `adb_protocol.h`): `A_STLS = 0x534C5453`,
+  `A_STLS_VERSION = 0x01000000`; the packet carries no payload.
+- Sending a raw TLS ClientHello as the first bytes is misparsed as a garbage
+  packet header and the connection is dropped instantly (measured: immediate
+  EOF / `decode_error`).
+
+Client sequence: open plain TCP → send `A_STLS(version=0x01000000)` → TLS-wrap
+the SAME socket (`SSLSocketFactory.createSocket(plain, host, port, true)`) →
+handshake → send `A_CNXN`.
+
+### 9.2 Client certificate: present it UNCONDITIONALLY
+
+adbd's TLS server requests a client certificate, but its CertificateRequest CA
+list contains PER-KEY issuers (`CN = SHA256(DER pubkey)` —
+`auth.cpp CreateCAIssuerFromEncodedKey`), which never matches the issuer of a
+normal self-signed ADB cert. The default X509KeyManager therefore finds no
+matching alias and sends NO certificate → handshake dies with
+`PEER_DID_NOT_RETURN_A_CERTIFICATE` (measured). Fix: wrap the KeyManager and
+return the ADB key alias unconditionally. Whether the key is authorized is the
+SERVER's decision (`adbd_tls_verify_cert` → `IteratePublicKeys` over
+`/data/misc/adb/adb_keys`, exact base64-string match).
+
+### 9.3 adbd sends a stray `A_STLS` after the `CNXN` — ignore it, never echo it
+
+`adb.cpp` daemon-side `A_CNXN` handler: on a TLS transport adbd answers the
+client's CNXN with `send_tls_request(t)` ("This should be the first packet the
+client receives to indicate the new protocol") IN ADDITION to the CNXN banner
+from `adbd_wifi_secure_connect`. Measured wire order server→client:
+`[CNXN(banner), A_STLS]`. Both the connect-phase and stream-phase readers must
+tolerate and ignore the stray packet. Do NOT echo an A_STLS back — the daemon
+would run `adbd_auth_tls_handshake` again on an established TLS connection.
+
+### 9.4 Key enrollment: the `mKeyMap` / `writeKey` trap
+
+Framework side (`AdbDebuggingManager.java`, frameworks/base):
+
+- Pairing success → `onPairingResult(publicKey)` →
+  `mAdbKeyStore.setLastConnectionTime(key, now)` → `writeKey(key)` appends to
+  `adb_keys` — but ONLY if `!mKeyMap.containsKey(key)` (line 2261).
+- `mKeyMap` is the framework's own grant store (in-memory in system_server,
+  persisted to `adb_temp_keys.xml`), SEPARATE from adbd's `adb_keys` file.
+- On blueline, restarting adbd WIPED `/data/misc/adb/adb_keys` but NOT
+  system_server's `mKeyMap` (system_server never restarted). Subsequent
+  re-pairing then SKIPPED `writeKey` (key already in `mKeyMap`) → the app key
+  never re-entered `adb_keys` → every TLS connect failed with
+  `PEER_DID_NOT_RETURN_A_CERTIFICATE` / `Invalid base64 key` (measured).
+
+**Repair procedure (measured)**: Settings → Developer options →
+"Revoke USB debugging authorisations" (clears BOTH stores) → re-allow the USB
+host → re-run pairing. Enrollment then lands and TLS connect succeeds.
+
+### 9.5 Additional blueline measurements
+
+- `adb wifi` status `ssdp: 0` is normal (advertisement is mDNS-based; there is
+  no separate SSDP component).
+- `settings put global adb_wifi_enabled 1` does NOT stick on this build —
+  SystemUI's WifiDebuggingActivity consent gate reverts it to 0 within seconds
+  unless the network was previously allowed. Toggling in the UI (+ consent
+  dialog) is the reliable path.
+- mDNS announcement cadence: announcements ride state changes; a discovery
+  session started between announcements can receive nothing until the next
+  one. Fresh sessions after an announcement resolve in <1s.
+- Full connect round-trip (A_STLS → TLS → CNXN → OPEN shell:id → output):
+  ~90ms on LAN.
+- The resulting shell runs as uid 2000 (shell) — confirmed via `id` output in
+  the app UI.

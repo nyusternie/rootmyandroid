@@ -41,10 +41,12 @@ import kotlin.concurrent.thread
 class MainActivity : AppCompatActivity() {
 
     private lateinit var status: TextView
+    private lateinit var wifiStatus: TextView
     private lateinit var output: TextView
     private lateinit var input: TextInputEditText
     private lateinit var pairStatus: TextView
     private lateinit var pairInput: TextInputEditText
+    private lateinit var sendButton: MaterialButton
     private val adbWifi by lazy { AdbWifiDiscovery(this) }
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
@@ -65,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         val gradient = GradientDrawable(
             GradientDrawable.Orientation.TL_BR,
             intArrayOf(0xFF66BB6A.toInt(), 0xFF2E7D32.toInt()),
-        ).apply { cornerRadius = dp(28).toFloat() }
+        ).apply { cornerRadius = dp(4).toFloat() } // M2 contained-button spec: 4dp corners
         return MaterialButton(this).apply {
             this.text = text
             backgroundTintList = null
@@ -73,18 +75,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** A MaterialCardView wrapping a vertical, padded column of children. */
+    /** A MaterialCardView wrapping a vertical, padded column of children
+     *  with 12dp gaps between them (Material 8dp grid, min touch spacing). */
     private fun sectionCard(vararg children: View): MaterialCardView {
         val inner = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(12), dp(16), dp(16))
-            for (c in children) {
+            setPadding(dp(16), dp(16), dp(16), dp(16))
+            children.forEachIndexed { i, c ->
                 addView(
                     c,
                     LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT,
-                    ),
+                    ).apply {
+                        if (i > 0) topMargin = dp(12)
+                    },
                 )
             }
         }
@@ -114,11 +119,13 @@ class MainActivity : AppCompatActivity() {
 
         val toolbar = MaterialToolbar(this).apply { title = "Rootz" }
 
-        status = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
+        wifiStatus = TextView(this)
+        status = TextView(this)
         val (commandLayout, commandEdit) = outlinedField("shell command (e.g. id)")
         input = commandEdit
         val send = gradientButton("Send")
-        val shellCard = sectionCard(status, commandLayout, send)
+        sendButton = send
+        val shellCard = sectionCard(wifiStatus, status, commandLayout, send)
 
         pairStatus = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
         val (pairLayout, pairEdit) = outlinedField("6-digit pairing code") {
@@ -156,6 +163,20 @@ class MainActivity : AppCompatActivity() {
             )
         }
         setContentView(root)
+
+        wifiStatus.text = "wireless adb: searching…"
+        wifiStatus.setTextColor(0xFFB0BEC5.toInt())
+        status.text = "daemon: not queried yet"
+        adbWifi.onEndpointsChanged = {
+            val ep = adbWifi.connectEndpoint
+            if (ep != null) {
+                wifiStatus.text = "wireless adb: ready — ${ep.first}:${ep.second}"
+                wifiStatus.setTextColor(0xFF66BB6A.toInt())
+            } else {
+                wifiStatus.text = "wireless adb: searching…"
+                wifiStatus.setTextColor(0xFFB0BEC5.toInt())
+            }
+        }
 
         send.setOnClickListener { runCommand(input.text.toString().trim()) }
         pairButton.setOnClickListener { startPairing() }
@@ -274,7 +295,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun runCommand(cmd: String, silent: Boolean = false) {
         if (cmd.isEmpty()) return
+        runOnUiThread {
+            sendButton.isEnabled = false
+            sendButton.text = "Running…"
+        }
         thread {
+          try {
             // Prefer wireless ADB (key enrolled via pairing) when the
             // _adb-tls-connect endpoint is up; fall back to the rootd
             // socket (needed for `su` tiers).
@@ -320,6 +346,12 @@ class MainActivity : AppCompatActivity() {
                     if (!silent) output.text = result.trim()
                 }
             }
+          } finally {
+            runOnUiThread {
+                sendButton.isEnabled = true
+                sendButton.text = "Send"
+            }
+          }
         }
     }
 }
