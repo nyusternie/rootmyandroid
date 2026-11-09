@@ -2,7 +2,10 @@
 package com.rootmyandroid.rootz
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.RippleDrawable
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
@@ -52,6 +55,25 @@ class MainActivity : AppCompatActivity() {
             setMargins(dp(12), dp(8), dp(12), 0)
         }
 
+    /**
+     * A MaterialButton with a diagonal green gradient fill. The gradient
+     * replaces the tinted Material background, so backgroundTintList must
+     * be nulled (documented MaterialButton pattern); the ripple is kept by
+     * wrapping the gradient in a RippleDrawable (gradient doubles as the
+     * ripple mask so the ripple respects the rounded corners).
+     */
+    private fun gradientButton(text: String): MaterialButton {
+        val gradient = GradientDrawable(
+            GradientDrawable.Orientation.TL_BR,
+            intArrayOf(0xFF66BB6A.toInt(), 0xFF2E7D32.toInt()),
+        ).apply { cornerRadius = dp(28).toFloat() }
+        return MaterialButton(this).apply {
+            this.text = text
+            backgroundTintList = null
+            background = RippleDrawable(ColorStateList.valueOf(0x40FFFFFF), gradient, gradient)
+        }
+    }
+
     /** A MaterialCardView wrapping a vertical, padded column of children. */
     private fun sectionCard(vararg children: View): MaterialCardView {
         val inner = LinearLayout(this).apply {
@@ -96,7 +118,7 @@ class MainActivity : AppCompatActivity() {
         status = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
         val (commandLayout, commandEdit) = outlinedField("shell command (e.g. id)")
         input = commandEdit
-        val send = MaterialButton(this).apply { text = "Send" }
+        val send = gradientButton("Send")
         val shellCard = sectionCard(status, commandLayout, send)
 
         pairStatus = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
@@ -104,7 +126,7 @@ class MainActivity : AppCompatActivity() {
             inputType = InputType.TYPE_CLASS_NUMBER
         }
         pairInput = pairEdit
-        val pairButton = MaterialButton(this).apply { text = "Pair (wireless debugging)" }
+        val pairButton = gradientButton("Pair (wireless debugging)")
         val pairCard = sectionCard(pairStatus, pairLayout, pairButton)
 
         output = TextView(this).apply {
