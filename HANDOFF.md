@@ -484,7 +484,12 @@ Magisk module zip shipped.**
 - **boot.img library approved ASAP (same-day owner ruling, "one thing at a
   time"):** handoffs for the API + web teams:
   `docs/HANDOFF-2026-11-09-api-bootimg-library.md`,
-  `docs/HANDOFF-2026-11-09-web-rootz.md`.
+  `docs/HANDOFF-2026-11-09-web-rootz.md`. Same-day follow-up ruling:
+  library downloads are **100% FREE** (no Nitro gating).
+- **Pixel 3 first-touch preflight done** (2026-11-09): blueline, user
+  build, Android 12 (SP1A.210812.016.C2), `flash.locked=1`, no root —
+  clean no-wipe tier baseline; measured values in
+  `apps/rootzd/docs/test-devices.md`.
 
 ---
 

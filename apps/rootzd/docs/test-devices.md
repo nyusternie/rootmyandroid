@@ -10,15 +10,16 @@ NEVER recorded here (rule 3a).
 | Device | Role | Bootloader | Notes |
 | ------ | ---- | ---------- | ----- |
 | Pixel 5 (redfin) | Root-tier rig + preview deploy target | UNLOCKED, Magisk v31.1 | rootzd lives here |
-| Pixel 3 | **No-wipe tier** verification (Rootz APK) | NEVER UNLOCKED — keep it that way | first adb inspection pending |
+| Pixel 3 | **No-wipe tier** verification (Rootz APK) | NEVER UNLOCKED — keep it that way | inspected 2026-11-09 (see section below) |
 | Pixel 7 | **GrapheneOS trials** | Locked w/ GrapheneOS trust root | see section below |
 
 ## Pixel 5 (redfin) — ROOTED
 
 - Magisk v31.1 on UP1A.231105.001.B2; root canon: `su -c id` → uid=0,
-  `u:r:magisk:s0`. Full run: `redfin-unlock-session.md` (RS-01..RS-42).
-- rootzd (v0.1) deployed at `/data/adb/rootzd/rootzd` +
-  `/data/adb/service.d/rootzd.sh`; reboot persistence VERIFIED (RS-41/42).
+  `u:r:magisk:s0`. Full run: `redfin-unlock-session.md` (RS-01..RS-45).
+- rootzd (v26.11.8) deployed as the Magisk module `rootzd`
+  (`/data/adb/modules/rootzd/`; the manual `service.d` install was RETIRED
+  RS-44 — module supersedes); reboot persistence VERIFIED (RS-41/42, RS-44).
 - Shell tier (uid 2000, `u:r:shell:s0`) verified over USB adb AND over a
   legacy wireless-ADB channel (`adb tcpip 5555`, 2026-11-09): the daemon
   start mechanics are transport-independent — the APK's later in-app
@@ -31,9 +32,19 @@ NEVER recorded here (rule 3a).
 - Owner ruling 2026-11-09: this device is the verification target for the
   Rootz APK tier (wireless-debugging start, shell uid 2000) and must
   NEVER be bootloader-unlocked — an unlock would invalidate the matrix.
-- Hardware/Android-version facts: PENDING first adb inspection (no
-  guessing — record `ro.build.*`, security patch, `adb_wifi_enabled`
-  support on first connect).
+- First-touch preflight (2026-11-09, serial `8CHX1PEQ1`, read-only —
+  Phase A of the device-unlock skill):
+  - `ro.build.fingerprint` = `google/blueline/blueline:12/SP1A.210812.016.C2/8618562:user/release-keys`
+  - codename `blueline` (standard Pixel 3, NOT the XL), user build, Android 12,
+    security patch 2021-10-05, bootloader `b1c1-0.4-7617406`
+  - `ro.boot.flash.locked=1` ✔ (locked, as the role requires); slot `_a`,
+    A/B = true, apex updatable = true, abi `arm64-v8a`
+  - `sys.oem_unlock_allowed=1` (factory-unlocked carrier flag — does NOT
+    affect the role; the flash lock stays 1)
+  - root probes: `adb root` refused ("cannot run as root in production
+    builds"), `su` not found ✔ — clean no-root baseline
+  - Android 12 ≥ 11 → AOSP wireless-debugging architecture applies
+    (`_adb-tls-pairing` / `_adb-tls-connect`, docs/dev/adb_wifi.md) ✔
 
 ## Pixel 7 — GrapheneOS trials
 

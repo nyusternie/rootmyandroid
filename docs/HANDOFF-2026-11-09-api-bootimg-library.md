@@ -80,14 +80,16 @@ fingerprint (not just build number) avoids collisions across regions/carriers.
 - Coverage stats surfaced on the site ("we have your exact boot image"
   during a /scan flow — free-tier value display).
 
-## OWNER DECISIONS NEEDED (block build start)
+## OWNER DECISIONS
 
-1. **Gating:** is `download` free or Nitro-billed? (Recommendation from the
-   workstream: metadata free, download Nitro-billed — it is the
-   recovery-era value replacement. Price needs owner approval per the
-   price-table rule; the pinned API price test must be updated if added.)
-2. **Agent token:** how is the upload-path token issued/stored (Wrangler
-   secret? 1Password entry? separate from all customer tokens).
+1. **Gating: RULED 2026-11-09 — downloads are 100% FREE** (supersedes the
+   earlier Nitro-billed recommendation). Metadata and download both free;
+   NO Nitro price-table change needed. Because downloads are free,
+   per-account RATE LIMITING is strongly advised (implementation choice
+   left to the API team) on top of the mandatory audit logging.
+2. **Agent token (still needed):** how is the upload-path token
+   issued/stored (Wrangler secret? 1Password entry? separate from all
+   customer tokens).
 
 ## Related, previously handed off (unchanged)
 
