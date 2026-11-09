@@ -57,6 +57,11 @@ jobs:
           android.builtInKotlin=false
           EOF
 
+      # Pairing-crypto unit tests (RFC 8032/5869 vectors + SPAKE2/GCM
+      # round-trips) gate the build — per the repo's tests-gate rule.
+      - name: Run unit tests
+        run: cd apps/rootz && ./gradlew testDebugUnitTest --no-daemon
+
       - name: Build release APK
         run: cd apps/rootz && ./gradlew assembleRelease --no-daemon
 

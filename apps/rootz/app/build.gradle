@@ -36,4 +36,8 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    // Pure-JVM unit tests for the pairing crypto (Ed25519/SPAKE2/HKDF/GCM)
+    // — validated against RFC 8032 + RFC 5869 vectors, CI-gated in
+    // .github/workflows/rootz.yml.
+    testImplementation "junit:junit:4.13.2"
 }
