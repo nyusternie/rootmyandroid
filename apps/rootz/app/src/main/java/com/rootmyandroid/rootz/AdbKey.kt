@@ -60,7 +60,12 @@ internal class AdbKey private constructor(val keyPair: KeyPair) {
             o += 4
         }
         fun putLe256(v: BigInteger) {
-            val be = v.toByteArray()
+            // Exactly 256 bytes: BigInteger's big-endian encoding may carry
+            // a leading 0x00 sign byte (257 bytes) or be short; normalize,
+            // then reverse into the little-endian slot.
+            var be = v.toByteArray()
+            if (be.size > 256) be = be.copyOfRange(be.size - 256, be.size)
+            if (be.size < 256) be = ByteArray(256 - be.size) + be
             var i = be.size - 1
             var j = 0
             while (i >= 0) { struct[o + j] = be[i]; i -= 1; j += 1 }

@@ -29,6 +29,7 @@ internal object AdbTls {
 
     private const val CONNECT_TIMEOUT_MS = 3_000
     private const val IO_TIMEOUT_MS = 5_000
+    private const val KEY_ALIAS = "adb"
 
     fun isOwnAddress(host: String): Boolean = try {
         java.net.NetworkInterface.getNetworkInterfaces().toList().any { ni ->
@@ -54,10 +55,27 @@ internal object AdbTls {
         val keyStore = KeyStore.getInstance(KeyStore.getDefaultType()).apply { load(null) }
         val cert = CertificateFactory.getInstance("X.509")
             .generateCertificate(adbKey.certificateDer.inputStream()) as X509Certificate
-        keyStore.setKeyEntry("adb", adbKey.keyPair.private, null, arrayOf(cert))
+        keyStore.setKeyEntry(KEY_ALIAS, adbKey.keyPair.private, null, arrayOf(cert))
 
         val kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
         kmf.init(keyStore, null)
+
+        // Present our cert UNCONDITIONALLY: adbd's CertificateRequest CA
+        // list contains per-key issuers (CN = SHA256(pubkey) — auth.cpp
+        // CreateCAIssuerFromEncodedKey) which never matches our cert's
+        // issuer, so the default KeyManager sends NO certificate and the
+        // handshake dies with PEER_DID_NOT_RETURN_A_CERTIFICATE (measured
+        // on blueline 2026-11-09). If our key is not enrolled the SERVER
+        // rejects the cert — the correct place for that decision.
+        val keyManagers = kmf.keyManagers.map { m ->
+            if (m is javax.net.ssl.X509KeyManager) object : javax.net.ssl.X509KeyManager by m {
+                override fun chooseClientAlias(
+                    keyType: Array<out String>?,
+                    issuers: Array<out java.security.Principal>?,
+                    socket: java.net.Socket?,
+                ): String = KEY_ALIAS
+            } else m
+        }.toTypedArray()
 
         val trustAll = object : X509TrustManager {
             override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
@@ -66,7 +84,7 @@ internal object AdbTls {
         }
 
         val context = SSLContext.getInstance("TLSv1.3")
-        context.init(kmf.keyManagers, arrayOf<TrustManager>(trustAll), null)
+        context.init(keyManagers, arrayOf<TrustManager>(trustAll), null)
         return context
     }
 
