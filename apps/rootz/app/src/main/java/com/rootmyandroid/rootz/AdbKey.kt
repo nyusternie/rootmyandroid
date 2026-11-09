@@ -100,8 +100,14 @@ internal class AdbKey private constructor(val keyPair: KeyPair) {
         val oidKeyUsage = byteArrayOf(0x06, 0x03, 0x55, 0x1D, 0x0F)
         val oidSkid = byteArrayOf(0x06, 0x03, 0x55, 0x1D, 0x0E)
 
+        // RDN ::= SET OF AttributeTypeAndValue; ATV ::= SEQUENCE { type, value }.
+        // (First cut missed the inner ATV SEQUENCE — Conscrypt's parser
+        // rejected the whole certificate with "No certificate found".)
         fun attribute(oid: ByteArray, stringTag: Int, value: String): ByteArray =
-            tlv(TAG_SEQUENCE, tlv(TAG_SET, oid + tlv(stringTag, value.toByteArray(Charsets.US_ASCII))))
+            tlv(
+                TAG_SEQUENCE,
+                tlv(TAG_SET, tlv(TAG_SEQUENCE, oid + tlv(stringTag, value.toByteArray(Charsets.US_ASCII)))),
+            )
 
         val name = tlv(
             TAG_SEQUENCE,
@@ -128,7 +134,9 @@ internal class AdbKey private constructor(val keyPair: KeyPair) {
                 tlv(TAG_BIT_STRING, byteArrayOf(0) + rsaPubDer),
         )
 
-        val skid = MessageDigest.getInstance("SHA-1").digest(byteArrayOf(0) + rsaPubDer).let {
+        // RFC 5280 §4.2.1.2 method 1: SHA-1 over the subjectPublicKey BITS
+        // (excluding tag, length, and the unused-bits byte).
+        val skid = MessageDigest.getInstance("SHA-1").digest(rsaPubDer).let {
             tlv(TAG_OCTET_STRING, tlv(TAG_OCTET_STRING, it))
         }
         val extensions = tlv(
