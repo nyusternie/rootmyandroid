@@ -33,7 +33,17 @@ internal class AdbConnection(
     class Result(val deviceBanner: String, val output: String)
 
     fun runShell(command: String): Result {
-        val socket = AdbTls.open(host, port, adbKey, ioTimeoutMs = IO_TIMEOUT_MS)
+        // The _adb-tls-connect port speaks PLAINTEXT ADB framing until the
+        // client sends A_STLS; only then does adbd start SSL_accept
+        // (AOSP transport.cpp/adb.cpp — raw ClientHello first gets parsed
+        // as an apacket header and the connection dies instantly).
+        val connectHost = if (AdbTls.isOwnAddress(host)) "127.0.0.1" else host
+        val plain = java.net.Socket()
+        plain.connect(java.net.InetSocketAddress(connectHost, port), CONNECT_TIMEOUT_MS)
+        plain.soTimeout = IO_TIMEOUT_MS
+        Log.i(TAG, "adb: sending A_STLS to $connectHost:$port")
+        write(DataOutputStream(plain.getOutputStream()), A_STLS, A_STLS_VERSION, 0, byteArrayOf())
+        val socket = AdbTls.wrap(plain, host, port, adbKey, IO_TIMEOUT_MS)
         socket.use { tls ->
             val input = DataInputStream(tls.getInputStream())
             val output = DataOutputStream(tls.getOutputStream())
@@ -52,6 +62,10 @@ internal class AdbConnection(
         while (true) {
             val msg = read(input)
             when (msg.command) {
+                // adb.cpp: "All AUTH commands are ignored in TLS mode" —
+                // the TLS-layer client-cert check against enrolled keys
+                // replaces the token/signature dance. Kept as a defensive
+                // fallback for adbd builds that still challenge over TLS.
                 A_AUTH -> when (msg.arg0) {
                     AUTH_TOKEN -> {
                         if (!sentPublicKey) {
@@ -161,14 +175,16 @@ internal class AdbConnection(
     companion object {
         private const val TAG = "AdbWifiConn"
         private const val IO_TIMEOUT_MS = 15_000
+        private const val CONNECT_TIMEOUT_MS = 3_000
 
-        private const val A_SYNC = 0x434e5953
         private const val A_CNXN = 0x4e584e43
         private const val A_AUTH = 0x48545541
         private const val A_OPEN = 0x4e45504f
         private const val A_OKAY = 0x59414b4f
         private const val A_CLSE = 0x45534c43
         private const val A_WRTE = 0x45545257
+        private const val A_STLS = 0x534c5453
+        private const val A_STLS_VERSION = 0x01000000
 
         private const val AUTH_TOKEN = 1
         private const val AUTH_SIGNATURE = 2

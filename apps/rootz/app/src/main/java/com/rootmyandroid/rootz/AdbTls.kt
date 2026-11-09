@@ -49,7 +49,7 @@ internal object AdbTls {
         }
     }
 
-    fun open(host: String, port: Int, adbKey: AdbKey, ioTimeoutMs: Int = IO_TIMEOUT_MS): SSLSocket {
+    private fun buildContext(adbKey: AdbKey): SSLContext {
         ensureBundledConscrypt()
         val keyStore = KeyStore.getInstance(KeyStore.getDefaultType()).apply { load(null) }
         val cert = CertificateFactory.getInstance("X.509")
@@ -67,11 +67,30 @@ internal object AdbTls {
 
         val context = SSLContext.getInstance("TLSv1.3")
         context.init(kmf.keyManagers, arrayOf<TrustManager>(trustAll), null)
+        return context
+    }
 
+    fun open(host: String, port: Int, adbKey: AdbKey, ioTimeoutMs: Int = IO_TIMEOUT_MS): SSLSocket {
+        val context = buildContext(adbKey)
         val connectHost = if (isOwnAddress(host)) "127.0.0.1" else host
         val socket = context.socketFactory.createSocket() as SSLSocket
         socket.enabledProtocols = arrayOf("TLSv1.3")
         socket.connect(InetSocketAddress(connectHost, port), CONNECT_TIMEOUT_MS)
+        socket.soTimeout = ioTimeoutMs
+        socket.startHandshake()
+        return socket
+    }
+
+    /**
+     * TLS-wraps an ALREADY-CONNECTED plain socket (the ADB A_STLS upgrade:
+     * the _adb-tls-connect port speaks plaintext ADB framing until the
+     * client sends A_STLS, then the server starts SSL_accept — see AOSP
+     * transport.cpp / adb.cpp, android12-release).
+     */
+    fun wrap(plain: java.net.Socket, host: String, port: Int, adbKey: AdbKey, ioTimeoutMs: Int = IO_TIMEOUT_MS): SSLSocket {
+        val context = buildContext(adbKey)
+        val socket = context.socketFactory.createSocket(plain, host, port, true) as SSLSocket
+        socket.enabledProtocols = arrayOf("TLSv1.3")
         socket.soTimeout = ioTimeoutMs
         socket.startHandshake()
         return socket
