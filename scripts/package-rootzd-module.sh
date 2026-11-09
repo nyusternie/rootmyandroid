@@ -8,7 +8,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 BIN=apps/rootzd/dist/rootzd-aarch64-linux-android
-OUT="$PWD/apps/rootzd/dist/rootzd-magisk-module-v0.1.0.zip"
+OUT="$PWD/apps/rootzd/dist/rootzd-magisk-module-v0.1.1.zip"
 
 [ -f "$BIN" ] || {
   echo "missing $BIN — build it first: scripts/build-rootzd-remote.sh" >&2

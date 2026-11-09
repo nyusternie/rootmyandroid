@@ -117,6 +117,13 @@ fn handle_terminal(conn: TcpStream) {
 
     let _ = out_pump.join();
     let _ = err_pump.join();
+    // The shell is dead (both pipes EOF'd). shutdown() is SOCKET-level: it
+    // unblocks stdin_pump's rx.read() even when the client keeps its side
+    // open (the Rootz app client reads until EOF and never half-closes), so
+    // every clone of this socket can close and the client observes a clean
+    // EOF. Without this, wait-for-EOF clients deadlock against stdin_pump
+    // (found by the Rootz MVP integration test on redfin).
+    let _ = conn.shutdown(std::net::Shutdown::Both);
     drop(conn);
     let _ = child.kill();
     let _ = child.wait();
