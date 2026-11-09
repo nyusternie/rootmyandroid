@@ -31,8 +31,10 @@ Top-ups are prepaid (Mullvad-style): add time anytime, no auto-renewal.
 │   │                 # (bundle id com.rootmyandroid; android/ is a
 │   │                 #  preview-only shell, com.rootmyandroid.preview), jest
 │   ├── guardian-angel/ # React Native 0.88 app (com.rootmyandroid.guardian_angel), jest
-│   ├── rootz/        # Rootz MVP app (from scratch, com.rootmyandroid.rootz): plain Gradle
-│   │                 # Kotlin client for the rootzd daemon bridge; CI: rootz.yml
+│   ├── rootz/        # Rootz app (from scratch, com.rootmyandroid.rootz): plain Gradle
+│   │                 # Kotlin — wireless-ADB pairing + shell client (v0.2 complete,
+│   │                 # measured on blueline); rootzd bridge client for su tiers;
+│   │                 # CI: rootz.yml
 │   └── rootzd/       # Rootz daemon: Rust, rooted Android devices (verified on redfin)
 ├── packages/
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client
@@ -318,3 +320,56 @@ binding rules are:
 - Device scanning, bootloader/unlock detection, and root-method selection are
   the free core; advanced features (automated flashing, backups, fleet
   management) are candidates for the paid tier — still to be defined.
+
+## Rootz app (live)
+
+`apps/rootz` (`com.rootmyandroid.rootz`) — plain Gradle/Kotlin, Material 2
+(dark, terminal-green identity; 4dp button corners per M2 spec, 8dp spacing
+grid). CI: `.github/workflows/rootz.yml` (manual/mobile builds; `preview-apk`
+prerelease updated on master). Reference docs:
+`apps/rootz/docs/wireless-debugging-setup.md` (§1–8 pairing, §9 connect
+phase — every claim below is measured and cited there).
+
+- **v0.2 COMPLETE (measured end-to-end on blueline, Pixel 3, Android 12,
+  2026-11-09):** mDNS discovery (`AdbWifiDiscovery`), SPAKE2 pairing
+  (`PairingSession`), TLS connect + shell streams (`AdbConnection`), and
+  same-device pairing via notification inline-reply (`PairingNotifier` +
+  `PairingReplyReceiver`) all work. `id` / `ls` execute in-app over wireless
+  ADB as uid 2000 (shell), ~90ms round-trip.
+- **Connect-phase wire protocol (measured):** the `_adb-tls-connect` port
+  speaks PLAINTEXT ADB framing until the client sends `A_STLS` (0x534C5453,
+  version 0x01000000, no payload); only then does the socket upgrade to
+  TLS 1.3 mutual auth. The client certificate must be presented
+  UNCONDITIONALLY — adbd's CertificateRequest CA list carries per-key
+  issuers (CN = SHA256(pubkey)) that never match a self-signed cert, so a
+  default KeyManager sends nothing and the handshake dies with
+  PEER_DID_NOT_RETURN_A_CERTIFICATE. After CNXN, adbd sends a stray A_STLS
+  packet: ignore it, never echo it (echoing re-triggers the server-side
+  handshake).
+- **Enrollment trap (measured):** the framework's `AdbDebuggingManager`
+  keeps its own grant store (`mKeyMap`, persisted to `adb_temp_keys.xml`)
+  separate from adbd's `/data/misc/adb/adb_keys`; `setLastConnectionTime`
+  SKIPS `writeKey` when the key is already in `mKeyMap`. Blueline wipes
+  `adb_keys` on adbd restart but system_server's `mKeyMap` survives —
+  re-pairing then silently does NOT re-enroll and TLS connects fail.
+  Repair: Settings → Developer options → "Revoke USB debugging
+  authorisations" (clears BOTH stores), re-allow the USB host, re-pair.
+- **NSD resilience (measured pain):** failed resolves retry 4× at 1s
+  intervals (code=3 / ALREADY_ACTIVE races are common); a watchdog restarts
+  discovery (bounded 6×10s) while no endpoint is known — sessions started
+  between mDNS announcements otherwise sit silent until the next state
+  change. `settings put global adb_wifi_enabled 1` does NOT stick on this
+  build (SystemUI consent gate reverts it) — toggle in the UI.
+- **Output UX:** terminal-style append-only scrollback with auto-scroll,
+  Clear button, explicit "(no output)" marker, busy state on Send, and a
+  "wireless adb: ready/searching" status line driven by discovery. The log
+  card has a FIXED 320dp height in a scrolling page — as a weighted sibling
+  of the input cards it was squeezed to 26dp and output was invisible
+  (measured via uiautomator bounds; uiautomator dump is the text-only way
+  to inspect the UI — never screenshot into context, rule 6).
+- **Next (v0.3): link Rootz devices to Root My Android accounts**
+  (Mullvad-style account numbers via the /v1 API — the contract lives in
+  the sibling rootmyandroid-api repo, which is NOT in this repository;
+  design the contract deliberately, no guessing per rule 3). Candidate
+  device identity: the app's persistent ADB keypair (hash of the enrolled
+  public key) — to be decided next session.
