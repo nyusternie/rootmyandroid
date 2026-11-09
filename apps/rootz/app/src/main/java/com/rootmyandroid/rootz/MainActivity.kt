@@ -16,7 +16,7 @@ import kotlin.concurrent.thread
  * (127.0.0.1:7357). Built from scratch — no fork, no third-party code.
  *
  * The daemon is started OUTSIDE the app for now (adb push for shell tier,
- * Magisk service.d for root tier — see apps/rootzd/README.md). In-app
+ * Magisk module for root tier — see apps/rootzd/README.md). In-app
  * wireless-debugging pairing + self-start is v0.2; the binder API for
  * third-party apps (our own namespace, HANDOFF §13 addendum) is v0.3.
  *
@@ -29,6 +29,7 @@ class MainActivity : Activity() {
     private lateinit var status: TextView
     private lateinit var output: TextView
     private lateinit var input: EditText
+    private val adbWifi by lazy { AdbWifiDiscovery(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +58,14 @@ class MainActivity : Activity() {
 
         send.setOnClickListener { runCommand(input.text.toString().trim()) }
         runCommand("id", silent = true)
+
+        // Wireless-debugging discovery spike: logcat-only (tag "AdbWifi").
+        adbWifi.start()
+    }
+
+    override fun onDestroy() {
+        adbWifi.stop()
+        super.onDestroy()
     }
 
     private fun runCommand(cmd: String, silent: Boolean = false) {
