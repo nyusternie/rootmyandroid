@@ -179,16 +179,27 @@ class MainActivity : AppCompatActivity() {
             addView(logInner)
         }
 
+        // Page layout: fixed toolbar, then a SCROLLING content column.
+        // The log card needs a fixed height — as a weighted sibling of the
+        // two (tall) input cards it was squeezed to ~26dp on a Pixel 3 and
+        // the output was invisible (measured via uiautomator bounds).
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             addView(toolbar)
-            addView(shellCard, cardMargins())
-            addView(pairCard, cardMargins())
+            val content = LinearLayout(this@MainActivity).apply {
+                orientation = LinearLayout.VERTICAL
+                addView(shellCard, cardMargins())
+                addView(pairCard, cardMargins())
+                addView(
+                    logCard,
+                    LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT, dp(320),
+                    ).apply { setMargins(dp(12), dp(8), dp(12), dp(12)) },
+                )
+            }
             addView(
-                logCard,
-                LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f,
-                ).apply { setMargins(dp(12), dp(8), dp(12), dp(12)) },
+                ScrollView(this@MainActivity).apply { addView(content) },
+                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f),
             )
         }
         setContentView(root)
