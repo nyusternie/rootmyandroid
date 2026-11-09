@@ -70,6 +70,7 @@ class MainActivity : Activity() {
                     s.getInputStream().readBytes().toString(Charsets.UTF_8)
                 }
             } catch (e: Exception) {
+                android.util.Log.e("Rootz", "runCommand failed for '$cmd'", e)
                 null
             }
             runOnUiThread {
