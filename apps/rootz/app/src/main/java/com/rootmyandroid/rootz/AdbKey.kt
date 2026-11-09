@@ -101,13 +101,14 @@ internal class AdbKey private constructor(val keyPair: KeyPair) {
         val oidSkid = byteArrayOf(0x06, 0x03, 0x55, 0x1D, 0x0E)
 
         // RDN ::= SET OF AttributeTypeAndValue; ATV ::= SEQUENCE { type, value }.
-        // (First cut missed the inner ATV SEQUENCE — Conscrypt's parser
-        // rejected the whole certificate with "No certificate found".)
+        // The attribute helper returns the RDN (a bare SET) — the Name's
+        // outer SEQUENCE OF wraps the RDNs directly. (History: first cut
+        // missed the inner ATV SEQUENCE; second cut wrongly wrapped the
+        // SET in an extra SEQUENCE — sun.security.x509.RDN rejected it
+        // with "X500 RDN". Verified against both the JDK and Conscrypt
+        // parsers via AdbKeyTest.)
         fun attribute(oid: ByteArray, stringTag: Int, value: String): ByteArray =
-            tlv(
-                TAG_SEQUENCE,
-                tlv(TAG_SET, tlv(TAG_SEQUENCE, oid + tlv(stringTag, value.toByteArray(Charsets.US_ASCII)))),
-            )
+            tlv(TAG_SET, tlv(TAG_SEQUENCE, oid + tlv(stringTag, value.toByteArray(Charsets.US_ASCII))))
 
         val name = tlv(
             TAG_SEQUENCE,
