@@ -19,6 +19,15 @@ class AdbWifiDiscovery(context: Context) {
     private val nsd = context.getSystemService(Context.NSD_SERVICE) as NsdManager
     private val listeners = mutableListOf<NsdManager.DiscoveryListener>()
 
+    /** Latest resolved endpoints (host, port), one per service type. */
+    @Volatile var pairingEndpoint: Pair<String, Int>? = null; private set
+    @Volatile var connectEndpoint: Pair<String, Int>? = null; private set
+
+    // onServiceFound fires once per address family; without this dedupe
+    // the duplicate resolve raced into FAILURE_ALREADY_ACTIVE (observed
+    // on blueline 2026-11-09).
+    private val resolving = java.util.Collections.synchronizedSet(mutableSetOf<String>())
+
     fun start() {
         for (type in SERVICE_TYPES) {
             val l = listener(type)
@@ -36,21 +45,39 @@ class AdbWifiDiscovery(context: Context) {
     private fun listener(type: String) = object : NsdManager.DiscoveryListener {
         override fun onServiceFound(info: NsdServiceInfo) {
             Log.i(TAG, "found [$type] name=${info.serviceName} — resolving")
+            if (!resolving.add("$type/${info.serviceName}")) {
+                Log.i(TAG, "dedupe: resolve already active for ${info.serviceName}")
+                return
+            }
             // Android requires a FRESH ResolveListener per resolve call.
             runCatching {
                 nsd.resolveService(info, object : NsdManager.ResolveListener {
                     override fun onServiceResolved(r: NsdServiceInfo) {
+                        resolving.remove("$type/${r.serviceName}")
                         Log.i(TAG, "resolved [$type] name=${r.serviceName} host=${r.host} port=${r.port}")
+                        val endpoint = r.host?.hostAddress?.let { it to r.port }
+                        when (type) {
+                            "_adb-tls-pairing._tcp" -> pairingEndpoint = endpoint
+                            "_adb-tls-connect._tcp" -> connectEndpoint = endpoint
+                        }
                     }
                     override fun onResolveFailed(i: NsdServiceInfo, code: Int) {
+                        resolving.remove("$type/${i.serviceName}")
                         Log.w(TAG, "resolve failed [$type] code=$code")
                     }
                 })
-            }.onFailure { Log.w(TAG, "resolve threw [$type]: $it") }
+            }.onFailure {
+                resolving.remove("$type/${info.serviceName}")
+                Log.w(TAG, "resolve threw [$type]: $it")
+            }
         }
 
         override fun onServiceLost(info: NsdServiceInfo) {
             Log.i(TAG, "lost [$type] name=${info.serviceName}")
+            when (type) {
+                "_adb-tls-pairing._tcp" -> pairingEndpoint = null
+                "_adb-tls-connect._tcp" -> connectEndpoint = null
+            }
         }
 
         override fun onDiscoveryStarted(t: String) { Log.i(TAG, "discovery started [$t]") }

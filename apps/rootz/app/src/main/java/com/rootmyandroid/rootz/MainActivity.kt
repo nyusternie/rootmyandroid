@@ -3,6 +3,7 @@ package com.rootmyandroid.rootz
 
 import android.app.Activity
 import android.os.Bundle
+import android.text.InputType
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -29,7 +30,10 @@ class MainActivity : Activity() {
     private lateinit var status: TextView
     private lateinit var output: TextView
     private lateinit var input: EditText
+    private lateinit var pairStatus: TextView
+    private lateinit var pairInput: EditText
     private val adbWifi by lazy { AdbWifiDiscovery(this) }
+    private var adbKey: AdbKey? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +44,12 @@ class MainActivity : Activity() {
         val send = Button(this).apply { text = "Send" }
         output = TextView(this).apply { setTextIsSelectable(true) }
         val scroll = ScrollView(this).apply { addView(output) }
+        pairStatus = TextView(this)
+        pairInput = EditText(this).apply {
+            hint = "6-digit pairing code"
+            inputType = InputType.TYPE_CLASS_NUMBER
+        }
+        val pairButton = Button(this).apply { text = "Pair (wireless debugging)" }
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -47,6 +57,9 @@ class MainActivity : Activity() {
             addView(status)
             addView(input)
             addView(send)
+            addView(pairStatus)
+            addView(pairInput)
+            addView(pairButton)
             addView(
                 scroll,
                 LinearLayout.LayoutParams(
@@ -57,6 +70,7 @@ class MainActivity : Activity() {
         setContentView(root)
 
         send.setOnClickListener { runCommand(input.text.toString().trim()) }
+        pairButton.setOnClickListener { startPairing() }
         runCommand("id", silent = true)
 
         // Wireless-debugging discovery spike: logcat-only (tag "AdbWifi").
@@ -66,6 +80,73 @@ class MainActivity : Activity() {
     override fun onDestroy() {
         adbWifi.stop()
         super.onDestroy()
+    }
+
+    /**
+     * v0.2 pairing slice: SPAKE2 handshake against the device's on-board
+     * Pairing Server (see docs/wireless-debugging-setup.md). Requires the
+     * user to open Developer options → Wireless debugging → "Pair device
+     * with pairing code" and type the shown 6-digit code here.
+     */
+    private fun startPairing() {
+        val code = pairInput.text.toString().trim()
+        if (code.length != 6 || code.any { !it.isDigit() }) {
+            pairStatus.text = "pairing: enter the 6-digit code shown on the device"
+            return
+        }
+        val endpoint = adbWifi.pairingEndpoint
+        if (endpoint == null) {
+            pairStatus.text =
+                "pairing: no _adb-tls-pairing service found — open Wireless debugging → 'Pair device with pairing code'"
+            return
+        }
+        pairStatus.text = "pairing: contacting ${endpoint.first}:${endpoint.second}…"
+        thread {
+            val result = try {
+                val key = adbKey ?: loadOrCreateAdbKey().also { adbKey = it }
+                PairingSession(endpoint.first, endpoint.second, code, key).run()
+            } catch (e: Exception) {
+                android.util.Log.e("RootzPair", "pairing failed", e)
+                null
+            }
+            runOnUiThread {
+                pairStatus.text = if (result == null) {
+                    "pairing: FAILED — wrong code or timeout (see logcat tag RootzPair)"
+                } else {
+                    "pairing: SUCCESS — device guid ${result.deviceGuid}"
+                }
+            }
+        }
+    }
+
+    /**
+     * The app's persistent ADB identity (RSA-2048). Generated once and
+     * stored in SharedPreferences; the device enrolls THIS key during
+     * pairing, so regenerating it would force re-pairing. (Preview-grade
+     * storage; hardware-backed keystore hardening is a later slice.)
+     */
+    private fun loadOrCreateAdbKey(): AdbKey {
+        val prefs = getSharedPreferences("rootz", MODE_PRIVATE)
+        val privB64 = prefs.getString("adb_priv", null)
+        val pubB64 = prefs.getString("adb_pub", null)
+        if (privB64 != null && pubB64 != null) {
+            return AdbKey.restore(
+                android.util.Base64.decode(privB64, android.util.Base64.NO_WRAP),
+                android.util.Base64.decode(pubB64, android.util.Base64.NO_WRAP),
+            )
+        }
+        val key = AdbKey.generate()
+        prefs.edit()
+            .putString(
+                "adb_priv",
+                android.util.Base64.encodeToString(key.keyPair.private.encoded, android.util.Base64.NO_WRAP),
+            )
+            .putString(
+                "adb_pub",
+                android.util.Base64.encodeToString(key.keyPair.public.encoded, android.util.Base64.NO_WRAP),
+            )
+            .apply()
+        return key
     }
 
     private fun runCommand(cmd: String, silent: Boolean = false) {
