@@ -109,6 +109,9 @@ function parseArgs() {
     else if (args[i] === '--device') out.device = args[++i]
     else if (args[i] === '--account') out.account = args[++i]
     else if (args[i] === '--cmd') out.cmd = args[++i]
+    // Seconds of silence between handshake and stdin — exercises relay
+    // restore-on-wake across a mid-session eviction (handoff 2026-11-10).
+    else if (args[i] === '--idle-before-cmd') out.idleSec = Number(args[++i])
   }
   return out
 }
@@ -133,7 +136,10 @@ function live({ device, account, cmd }) {
     if (!session?.key) fail(opened ? 'handshake timeout (open, but no welcome in 15s)' : 'connect timeout')
   }, 15_000)
   // Hard ceiling for ANY later stall (session established but no exit frame).
-  const hardTimer = setTimeout(() => fail('session stalled after 30s — no exit frame'), 30_000)
+  const hardTimer = setTimeout(
+    () => fail(`session stalled after ${(args.idleSec ?? 0) + 30}s — no exit frame`),
+    ((args.idleSec ?? 0) + 30) * 1000,
+  )
 
   ws.addEventListener('open', () => {
     opened = true
@@ -166,17 +172,25 @@ function live({ device, account, cmd }) {
       }
       clearTimeout(timer)
       console.log('probe: welcome verified — E2E session key established ✓')
-      const stdin = new TextEncoder().encode(`${cmd}\n`)
-      const nonce = randomBytes(12)
-      // seal() takes BYTES — passing a string silently encrypts garbage
-      // (untyped JS; e2e.ts's encodeInner returns TextEncoder output).
-      const innerJson = new TextEncoder().encode(JSON.stringify({ type: 'stdin', d: b64e(stdin) }))
-      const enc = JSON.stringify({
-        v: 1, type: 'enc', sid: b64e(session.sid), n: b64e(nonce),
-        d: b64e(new ChaCha20Poly1305(session.key).seal(nonce, innerJson)),
-      })
-      ws.send(enc)
-      console.log(`probe: stdin sent ($ ${cmd})`)
+      const sendStdin = () => {
+        const stdin = new TextEncoder().encode(`${cmd}\n`)
+        const nonce = randomBytes(12)
+        // seal() takes BYTES — passing a string silently encrypts garbage
+        // (untyped JS; e2e.ts's encodeInner returns TextEncoder output).
+        const innerJson = new TextEncoder().encode(JSON.stringify({ type: 'stdin', d: b64e(stdin) }))
+        const enc = JSON.stringify({
+          v: 1, type: 'enc', sid: b64e(session.sid), n: b64e(nonce),
+          d: b64e(new ChaCha20Poly1305(session.key).seal(nonce, innerJson)),
+        })
+        ws.send(enc)
+        console.log(`probe: stdin sent ($ ${cmd})`)
+      }
+      if (args.idleSec) {
+        console.log(`probe: idling ${args.idleSec}s before stdin (mid-session eviction test)`)
+        setTimeout(sendStdin, args.idleSec * 1000)
+      } else {
+        sendStdin()
+      }
       return
     }
 
