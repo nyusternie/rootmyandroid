@@ -83,14 +83,16 @@ Effect is immediate and already honored everywhere: new challenges →
 `403 device_revoked`; tunnel connect → close `4403`; the device vanishes
 from the list endpoint.
 
-**OPEN sub-item — the un-revoke (re-pair) flow needs a ruling.** Revocation
-is PERMANENT today: re-pairing a revoked key keeps returning
-`403 device_revoked` (this was the pre-existing behavior and the 11-07 doc
-did not pin the semantics down). Options: (a) re-pair by the owning account
-clears `revoked_at`; (b) a dedicated un-revoke endpoint; (c) permanent by
-design — a revoked key can never be re-used, a lost/replaced device
-generates a fresh keypair. The daemon + web teams and the owner pick; the
-API implements.
+**RULED 2026-11-09 — un-revoke: option (c), PERMANENT BY DESIGN.** A revoked
+key returns `403 device_revoked` forever; `revoked_at` is never cleared.
+Rationale (matches PKI practice — RFC 5280 key-compromise revocation is
+one-way): the kill switch exists for lost/stolen devices, and a key that
+left the owner's control cannot be proven uncompromised on return —
+un-revoking would silently re-arm an attacker who copied the key while the
+device was gone. **Recovery path, daemon-team action required:** on
+`device_revoked` the daemon generates a FRESH keypair and re-pairs as a new
+identity (zero API work; whether the daemon supports fresh-keypair
+generation today is UNVERIFIED — flagged to the daemon team).
 
 ## 3. Confirmations requested in 11-07 §4
 
@@ -132,8 +134,6 @@ Verified against the `rootmyandroid-relay` worker and the API repo:
 
 ## 5. Remaining open items
 
-- **Un-revoke flow ruling** (§2 above) — the only thing blocking full
-  kill-switch closure.
 - **Halo metering: NO ACTION** (11-07 §3, owner ruling 2026-11-04) —
   restated as still in force.
 
