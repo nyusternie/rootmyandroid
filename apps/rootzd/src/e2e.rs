@@ -10,7 +10,7 @@ use chacha20poly1305::{
 };
 use ed25519_dalek::{Signer, SigningKey};
 use hkdf::Hkdf;
-use rand::{rngs::OsRng, RngCore};
+use rand::{rng, RngCore};
 use sha2::{Digest, Sha256};
 
 /// Domain-separation label for the transcript signature AND the HKDF info
@@ -78,7 +78,7 @@ impl SessionCipher {
 
     pub fn seal(&self, plaintext: &[u8]) -> ([u8; 12], Vec<u8>) {
         let mut nonce = [0u8; 12];
-        OsRng.fill_bytes(&mut nonce);
+        rng().fill_bytes(&mut nonce);
         (nonce, self.seal_with_nonce(&nonce, plaintext))
     }
 

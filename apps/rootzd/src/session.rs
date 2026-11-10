@@ -85,7 +85,7 @@ pub fn spawn(
     // Watchdog: parity with handle_terminal — once BOTH pipes EOF the
     // shell is dead (closing one side must NOT kill a session mid-command,
     // e.g. `cat | grep x`); reap it and queue the exit frame.
-    let wd_done = done;
+    let wd_done = done.clone();
     thread::spawn(move || {
         let _ = out_pump.join();
         let _ = err_pump.join();
@@ -102,7 +102,6 @@ pub fn spawn(
 }
 
 fn stdin_loop(rx: Receiver<Vec<u8>>, shell_in: &mut impl std::io::Write) {
-    use std::io::Write as _;
     while let Ok(bytes) = rx.recv() {
         if shell_in.write_all(&bytes).is_err() {
             break; // shell died — watchdog reaps

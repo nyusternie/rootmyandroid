@@ -8,7 +8,7 @@ use std::io;
 use std::path::PathBuf;
 
 use ed25519_dalek::SigningKey;
-use rand::{rngs::OsRng, RngCore};
+use rand::{rng, RngCore};
 
 use crate::e2e::device_id_from_pubkey;
 
@@ -44,7 +44,7 @@ pub fn load_or_generate() -> io::Result<Identity> {
         }
         Err(e) if e.kind() == io::ErrorKind::NotFound => {
             let mut seed = [0u8; 32];
-            OsRng.fill_bytes(&mut seed);
+            rng().fill_bytes(&mut seed);
             fs::write(&key_path, seed)?;
             // The key IS the device identity — owner-only, like an SSH host key.
             #[cfg(unix)]

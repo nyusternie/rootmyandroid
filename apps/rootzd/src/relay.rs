@@ -18,7 +18,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use ed25519_dalek::Signer;
-use rand::{rngs::OsRng, Rng};
+use rand::{rng, Rng};
 use rustls::pki_types::ServerName;
 use rustls::{ClientConfig, ClientConnection, RootCertStore, StreamOwned};
 use tungstenite::{client as ws_client, Message, WebSocket};
@@ -88,7 +88,7 @@ pub fn run(cfg: RelayConfig, identity: Identity, tier_name: &'static str, versio
                 } else {
                     backoff = (backoff * 2).min(BACKOFF_MAX);
                 }
-                let jitter = Duration::from_millis(OsRng.random_range(0..=JITTER_MS));
+                let jitter = Duration::from_millis(rng().random_range(0..=JITTER_MS));
                 thread::sleep(backoff + jitter);
             }
             Outcome::Revoked => {
@@ -514,7 +514,7 @@ fn handle_frame(
                 Some(v) => v,
                 None => return,
             };
-            if let Some(t) = entry.handle.last_active.lock().ok() {
+            if let Some(mut t) = entry.handle.last_active.lock().ok() {
                 *t = Instant::now();
             }
             match inner {
