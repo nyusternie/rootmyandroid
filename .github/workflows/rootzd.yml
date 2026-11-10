@@ -1,0 +1,123 @@
+name: rootzd build
+
+# Builds apps/rootzd (Rust daemon for rooted Android devices) for
+# aarch64-linux-android and packages the Magisk module zip (the customer
+# install path, owner ruling 2026-11-09). Manual dispatch for the build,
+# mirroring rootz.yml — plus an automatic TEST-ONLY run on master pushes
+# touching the crate (cheap; the NDK/build stage stays manual).
+#
+# Tests gate the build (repo rule): `cargo test --locked` runs the crypto
+# conformance suite (RFC 8032/5869/8439 vectors, roundtrip, and the
+# cross-implementation fixture mirrored from apps/web) on the HOST target
+# before any Android artifact is produced. `--locked` is the Rust half of
+# the pinned-dependencies rule: Cargo.lock is committed and must match
+# Cargo.toml exactly.
+#
+# The NDK comes from sdkmanager (setup-android, same pattern as
+# rootz.yml): blackhost's interactive-shell toolchain profile is NOT
+# visible to Actions steps (bash --noprofile --norc), so the workflow
+# installs a fixed NDK (27.1.12297006 — verified in `sdkmanager --list`
+# 2026-11-10) and wires the llvm tools to cargo explicitly. API floor 24
+# (Android 7.0, 2016): getrandom 0.3 resolves libc::getrandom weakly at
+# runtime with a /dev/urandom fallback, so nothing in the crate needs a
+# newer bionic; raise only if a customer device demands it.
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [master]
+    paths:
+      - 'apps/rootzd/**'
+      - 'scripts/package-rootzd-module.sh'
+      - '.github/workflows/rootzd.yml'
+
+permissions:
+  contents: write # rolling prerelease asset upload
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: cargo test (host target)
+    runs-on: [self-hosted, blackhost]
+    steps:
+      - uses: actions/checkout@v7
+
+      # Actions steps run without profile/bashrc — rustup's shims live in
+      # ~/.cargo/bin.
+      - name: Ensure cargo/rustup on PATH
+        run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+      # ring (rustls' crypto provider) compiles its pregenerated asm with
+      # cc even for the host target; blackhost is a minimal image.
+      - name: Ensure C compiler
+        run: command -v cc || command -v gcc || (sudo apt-get update && sudo apt-get install -y gcc)
+
+      - name: cargo test --locked
+        run: cargo test --locked --manifest-path apps/rootzd/Cargo.toml
+
+  build:
+    name: build + package (aarch64-linux-android)
+    needs: test
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, blackhost]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Ensure cargo/rustup on PATH
+        run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+      # setup-android shells out to `unzip` (not preinstalled on
+      # blackhost); the packaging script needs `zip`.
+      - name: Ensure unzip + zip
+        run: (command -v unzip && command -v zip) || (sudo apt-get update && sudo apt-get install -y unzip zip)
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "ndk;27.1.12297006"
+
+      - name: Install Rust target
+        run: rustup target add aarch64-linux-android
+
+      # The SDK root is derived from sdkmanager's own path
+      # (…/cmdline-tools/latest/bin/sdkmanager → 3 levels up) rather than
+      # assuming the setup action's env exports. The cc crate picks up
+      # CC_/AR_<target>; cargo picks up CARGO_TARGET_*.
+      - name: Build release binary
+        run: |
+          SDK_ROOT="$(cd "$(dirname "$(command -v sdkmanager)")/../../.." && pwd)"
+          NDK_BIN="$SDK_ROOT/ndk/27.1.12297006/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="$NDK_BIN/aarch64-linux-android24-clang"
+          export CC_aarch64_linux_android="$CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER"
+          export AR_aarch64_linux_android="$NDK_BIN/llvm-ar"
+          cargo build --release --locked --target aarch64-linux-android --manifest-path apps/rootzd/Cargo.toml
+          mkdir -p apps/rootzd/dist
+          cp apps/rootzd/target/aarch64-linux-android/release/rootzd apps/rootzd/dist/rootzd-aarch64-linux-android
+
+      - name: Package Magisk module zip + checksums
+        run: |
+          scripts/package-rootzd-module.sh
+          (cd apps/rootzd/dist && sha256sum rootzd-aarch64-linux-android rootzd-magisk-module-*.zip > SHA256SUMS.txt)
+          cat apps/rootzd/dist/SHA256SUMS.txt
+
+      # Rolling prerelease instead of Actions artifacts (the account's
+      # Actions artifact-storage quota is exhausted — same pattern as
+      # rootz.yml). Public repo; the binary is unsigned and the module zip
+      # is a preview-quality package, so public download is acceptable.
+      - name: Publish rolling prerelease
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: rootzd-preview
+          name: rootzd preview (rolling)
+          body: 'Rolling build of the rootzd daemon (rooted Android devices) from master@${{ github.sha }} on blackhost: `rootzd-aarch64-linux-android` binary + `rootzd-magisk-module-*.zip` customer install package. Verify against SHA256SUMS.txt; install per apps/rootzd/README.md.'
+          prerelease: true
+          files: |
+            apps/rootzd/dist/rootzd-aarch64-linux-android
+            apps/rootzd/dist/rootzd-magisk-module-*.zip
+            apps/rootzd/dist/SHA256SUMS.txt

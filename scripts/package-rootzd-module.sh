@@ -3,12 +3,16 @@
 # as a standard Magisk module zip (Option B customer install path; owner
 # ruling 2026-11-09). Host-side packaging only (zip, no compiling) — the
 # no-host-builds rule still applies; produce the binary first via
-# scripts/build-rootzd-remote.sh on the build runner.
+# scripts/build-rootzd-remote.sh on the build runner. CI
+# (.github/workflows/rootzd.yml) runs this same script after its build.
+# The zip name tracks the crate version (Cargo.toml) — bump module.prop's
+# version/versionCode to match when the crate version moves.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 BIN=apps/rootzd/dist/rootzd-aarch64-linux-android
-OUT="$PWD/apps/rootzd/dist/rootzd-magisk-module-v26.11.8.zip"
+VER=$(grep -m1 '^version' apps/rootzd/Cargo.toml | cut -d'"' -f2)
+OUT="$PWD/apps/rootzd/dist/rootzd-magisk-module-v$VER.zip"
 
 [ -f "$BIN" ] || {
   echo "missing $BIN — build it first: scripts/build-rootzd-remote.sh" >&2

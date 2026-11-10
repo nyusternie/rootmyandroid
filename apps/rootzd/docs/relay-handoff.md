@@ -1,8 +1,8 @@
-<!-- apps/rootz/docs/relay-handoff.md -->
+<!-- apps/rootzd/docs/relay-handoff.md -->
 
 # Handoff: Rootz relay — for `rootmyandroid-api`
 
-Context: `apps/rootz` (Rust daemon) runs on paired Android devices behind
+Context: `apps/rootzd` (Rust daemon) runs on paired Android devices behind
 carrier NAT, so it dials OUTBOUND. The relay is a **dumb pipe** bridging the
 daemon and authorized clients. All payloads are E2E-encrypted between client
 and daemon — the relay never sees plaintext and MUST NOT need to.
@@ -14,7 +14,8 @@ the WebSocket tunnel is IMPLEMENTED in the dedicated `client-relay` worker
 owner ruling so relay expenses/usage are tracked separately). Sections §1–§3
 are the contract; edits below match the implementation. Follow-ups: the
 revoke ENDPOINT (the `revoked_at` kill switch is already honored everywhere),
-Halo metering (relay is FREE for now), metrics integration (§5).
+a device-list endpoint (relay-api-todo-2026-11-10.md), metering (relay is
+FREE for now), metrics integration (§5).
 
 ## 1. Device registration (pairing)
 

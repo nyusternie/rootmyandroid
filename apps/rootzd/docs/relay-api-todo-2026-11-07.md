@@ -1,14 +1,15 @@
-<!-- apps/rootz/docs/relay-api-todo-2026-11-07.md -->
+<!-- apps/rootzd/docs/relay-api-todo-2026-11-07.md -->
 
 # Relay/API — remaining work items (handoff to rootmyandroid-api team, 2026-11-07)
 
-Contract source of truth: `apps/rootz/docs/relay-handoff.md`. This doc lists
+Contract source of truth: `apps/rootzd/docs/relay-handoff.md`. This doc lists
 only what is still OPEN; it changes nothing in the contract.
 
-Daemon-side status: `rootz` v26.11.7 (CalVer YY.M.D) — terminal v0.1 proven
-on-device at shell tier (Pixel 5, uid 2000, via `adb forward`). The v0.2
-tunnel client (Ed25519 + `wss://relay.rootmyandroid.com/tunnel`) is the next
-daemon milestone; the items below are what daemon + portal clients depend on.
+Daemon-side status: `rootzd` v26.11.7 (CalVer YY.M.D) — terminal v26.11.7
+proven on-device at shell tier (Pixel 5, uid 2000, via `adb forward`). The
+v26.11.9 tunnel client (Ed25519 + `wss://relay.rootmyandroid.com/tunnel`)
+was the next daemon milestone; the items below are what daemon + portal
+clients depend on.
 
 ## 1. Kill-switch endpoint (BLOCKER for production pairing)
 
@@ -34,7 +35,7 @@ daemon milestone; the items below are what daemon + portal clients depend on.
 - Relay is FREE (owner ruling 2026-11-04); abuse control = the existing rate
   caps. Revisit only if §2 metrics show material cost. Do not build metering.
 
-## 4. Behaviors daemon v0.2 will exercise — please confirm
+## 4. Behaviors daemon v26.11.9 will exercise — please confirm
 
 - Supersede-on-reconnect closes the OLD session with 4000 (not 4401) for
   same-device reconnects — confirm.

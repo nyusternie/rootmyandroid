@@ -40,7 +40,9 @@ Top-ups are prepaid (Mullvad-style): add time anytime, no auto-renewal.
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client
 │                     # shared by the mobile apps (TS source, no build step)
 ├── .github/workflows/    # web.yml (web CI + Pages deploy gate),
-│                       # android-preview.yml, rootz.yml (manual mobile builds)
+│                       # android-preview.yml, rootz.yml, rootzd.yml (manual
+│                       # build dispatch; rootzd cargo tests also auto-run on
+│                       # master pushes touching the crate)
 ├── .agents/skills/   # Project agent skills (brand-image: brand canon)
 ├── .vendor/          # Vendored tarballs (hermes-compiler; see overrides in
 │                     # pnpm-workspace.yaml)
