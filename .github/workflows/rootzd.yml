@@ -45,10 +45,24 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Actions steps run without profile/bashrc — rustup's shims live in
-      # ~/.cargo/bin.
+      # Actions steps run without profile/bashrc. First ASK the runner's
+      # own login environment for cargo (build-rootzd-remote.sh builds
+      # over ssh, which sees that env; tail -n1 drops any banner noise);
+      # if cargo is genuinely absent, install rustup (minimal) —
+      # self-healing for any future runner state. Channel "stable"
+      # mirrors the repo's toolchain convention (setup-java pins java 17;
+      # Rust has no majors — the channel is the pin; crate DEPS are locked
+      # by Cargo.lock + --locked).
       - name: Ensure cargo/rustup on PATH
-        run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+        run: |
+          found="$(bash -lc 'command -v cargo' 2>/dev/null | tail -n1)"
+          if [ -n "$found" ]; then
+            dirname "$found" >> "$GITHUB_PATH"
+          else
+            command -v curl >/dev/null || (sudo apt-get update && sudo apt-get install -y curl)
+            curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable
+            echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          fi
 
       # ring (rustls' crypto provider) compiles its pregenerated asm with
       # cc even for the host target; blackhost is a minimal image.
@@ -66,8 +80,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Same login-env query + rustup self-heal as the test job.
       - name: Ensure cargo/rustup on PATH
-        run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+        run: |
+          found="$(bash -lc 'command -v cargo' 2>/dev/null | tail -n1)"
+          if [ -n "$found" ]; then
+            dirname "$found" >> "$GITHUB_PATH"
+          else
+            command -v curl >/dev/null || (sudo apt-get update && sudo apt-get install -y curl)
+            curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable
+            echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          fi
 
       # setup-android shells out to `unzip` (not preinstalled on
       # blackhost); the packaging script needs `zip`.
