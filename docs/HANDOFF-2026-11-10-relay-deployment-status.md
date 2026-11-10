@@ -53,3 +53,11 @@ No client-side changes are needed once `/health` answers — the daemon and
 web client already speak the final protocol (E2E envelope over the opaque
 frame bridge, `apps/rootzd/docs/e2e-protocol.md`, cross-implementation
 vector test green on both sides).
+
+---
+
+**RESOLVED 2026-11-10 (api team):** deployed + live — `/health` answers
+200; full smoke results in
+`docs/HANDOFF-REPLY-2026-11-10-relay-deployment-status.md`. (The NXDOMAIN
+was negative DNS cache on the requesting side; record verified live via
+DoH + blackhost.)
