@@ -82,7 +82,7 @@ internal fun splitSegments(cmd: String): List<String> {
                 cur.append(c)
             }
             quote != 0.toChar() && c == quote -> {
-                quote = 0
+                quote = 0.toChar()
                 cur.append(c)
             }
             quote == 0.toChar() && (c == ';' || c == '|') -> {
