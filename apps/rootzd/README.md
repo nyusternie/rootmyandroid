@@ -32,6 +32,13 @@ Notes for the daemon team:
 - Repo rules (../.. /AGENTS.md) apply: no guessing device behavior, read-only
   by default, never wipe third-party app data.
 
+## Tiers and privilege persistence
+
+Canonical reference: [docs/privilege-tiers.md](docs/privilege-tiers.md) —
+the three uid tiers (root / shell / app), what each can actually do, and
+the reboot-vs-root persistence table (incl. the blueline adbd enrollment
+trap). Install and dev-usage sections below defer to it.
+
 ## Build (remote only — NEVER on the local host)
 
     scripts/build-rootzd-remote.sh [target]   # default aarch64-linux-android

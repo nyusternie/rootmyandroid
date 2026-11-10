@@ -9,6 +9,10 @@ the bottom). No guessing.
 
 Status legend: ✅ verified on device · 📖 spec-cited · 🚧 not yet built
 
+Privilege tiers + persistence (reboot vs root, enrollment trap):
+[apps/rootzd/docs/privilege-tiers.md](../../rootzd/docs/privilege-tiers.md)
+is the canonical reference.
+
 ---
 
 ## 1. User-facing setup process (measured 2026-11-09 on Pixel 3 / blueline, Android 12)
