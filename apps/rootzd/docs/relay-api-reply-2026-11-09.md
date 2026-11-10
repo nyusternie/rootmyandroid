@@ -6,10 +6,14 @@ Answers to `apps/rootzd/docs/relay-api-todo-2026-11-07.md` (§1 kill switch,
 §4 confirmations) and `apps/rootzd/docs/relay-api-todo-2026-11-10.md`
 (device list). Both requested endpoints are SHIPPED.
 
-**Status caveat:** the code is committed on the API repo branch
-`feat/relay-pairing-challenge` (commits `96bd18f` list, `4b78961` revoke) —
-NOT yet merged to main or deployed to `api.rootmyandroid.com`. Tests: relay
-suite 34/34, full API suite 199/199.
+**Status: LIVE.** Merged to master via PR #6 (`0f3e978`) and deployed to
+production — CI run 42746975441 (tests + deploy, all green), merge at
+2026-11-10T03:04:10Z UTC. Both endpoints verified responding at
+`https://api.rootmyandroid.com/v1/relay/devices/list` and
+`.../v1/relay/devices/{id}` (DELETE). Tests at merge time: relay suite
+34/34, full API suite 199/199. Branch commits: `96bd18f` list, `4b78961`
+revoke, `a22f119` comment rename (Rooted -> Rootz, aligning with the
+product rename ruling and this handoff's own title).
 
 ## 1. SHIPPED — POST /v1/relay/devices/list (11-10 requirement 1)
 
@@ -131,7 +135,5 @@ Verified against the `rootmyandroid-relay` worker and the API repo:
 - **Un-revoke flow ruling** (§2 above) — the only thing blocking full
   kill-switch closure.
 - **Observability** (11-07 §2): metrics not yet emitted on either side.
-- **Merge + deploy** of `feat/relay-pairing-challenge` — the endpoints
-  above are dark until then.
 - **Halo metering: NO ACTION** (11-07 §3, owner ruling 2026-11-04) —
   restated as still in force.
