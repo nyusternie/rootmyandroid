@@ -32,10 +32,11 @@ Top-ups are prepaid (Mullvad-style): add time anytime, no auto-renewal.
 │   │                 #  preview-only shell, com.rootmyandroid.preview), jest
 │   ├── guardian-angel/ # React Native 0.88 app (com.rootmyandroid.guardian_angel), jest
 │   ├── rootz/        # Rootz app (from scratch, com.rootmyandroid.rootz): plain Gradle
-│   │                 # Kotlin — wireless-ADB pairing + shell client (v0.2 complete,
+│   │                 # Kotlin — wireless-ADB pairing + shell client (complete 2026-11-09,
 │   │                 # measured on blueline); rootzd bridge client for su tiers;
 │   │                 # CI: rootz.yml
-│   └── rootzd/       # Rootz daemon: Rust, rooted Android devices (verified on redfin)
+│   └── rootzd/       # Rootz daemon: Rust, rooted Android devices — relay
+│                     # tunnel + E2E verified live on redfin 2026-11-10
 ├── packages/
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client
 │                     # shared by the mobile apps (TS source, no build step)
@@ -170,6 +171,20 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    (Rule added 2026-11-10 after the agent prepared — and repeatedly
    offered — to deploy the `client-relay` worker itself; owner ruling:
    the relay is NOT this agent's lane.)
+10. **Date-based versioning, universal.** Every version label in this
+   monorepo uses `YY.M.D` (e.g. `v26.11.10`), bumped at each release;
+   Android `versionCode` integers keep incrementing independently. (Ruled
+   2026-11-09 for Rootz/rootzd — HANDOFF.md; extended monorepo-wide
+   2026-11-10.)
+11. **Operational credentials live ONLY on blackhost.** Never store API
+   tokens, Cloudflare/R2 credentials, infrastructure SSH keys, or any
+   other operational secret on the interactive workstation (no env files,
+   no dotfiles, no shell rc) — blackhost is the single credential store;
+   reach secrets there, use them there, leave them there. Complements
+   rule 9 (possession confers no authority) and rule 3a (secrets never
+   enter git history). (Owner ruling 2026-11-10: "I DO NOT WANT ANY
+   CREDENTIALS STORED HERE — EVERYTHING SHOULD STAY ON blackhost"; first
+   application: docs/HANDOFF-2026-11-10-bootimg-agent-token-storage.md.)
 
 ## Web SEO (live)
 
@@ -345,6 +360,7 @@ binding rules are:
 
 ## Rootz app (live)
 
+
 `apps/rootz` (`com.rootmyandroid.rootz`) — plain Gradle/Kotlin, Material 2
 (dark, terminal-green identity; 4dp button corners per M2 spec, 8dp spacing
 grid). CI: `.github/workflows/rootz.yml` (manual/mobile builds; `preview-apk`
@@ -352,8 +368,8 @@ prerelease updated on master). Reference docs:
 `apps/rootz/docs/wireless-debugging-setup.md` (§1–8 pairing, §9 connect
 phase — every claim below is measured and cited there).
 
-- **v0.2 COMPLETE (measured end-to-end on blueline, Pixel 3, Android 12,
-  2026-11-09):** mDNS discovery (`AdbWifiDiscovery`), SPAKE2 pairing
+- **Wireless-ADB milestone COMPLETE (measured end-to-end on blueline,
+  Pixel 3, Android 12, 2026-11-09):** mDNS discovery (`AdbWifiDiscovery`), SPAKE2 pairing
   (`PairingSession`), TLS connect + shell streams (`AdbConnection`), and
   same-device pairing via notification inline-reply (`PairingNotifier` +
   `PairingReplyReceiver`) all work. `id` / `ls` execute in-app over wireless
@@ -389,9 +405,68 @@ phase — every claim below is measured and cited there).
   of the input cards it was squeezed to 26dp and output was invisible
   (measured via uiautomator bounds; uiautomator dump is the text-only way
   to inspect the UI — never screenshot into context, rule 6).
-- **Next (v0.3): link Rootz devices to Root My Android accounts**
+- **Next milestone: link Rootz devices to Root My Android accounts**
   (Mullvad-style account numbers via the /v1 API — the contract lives in
   the sibling rootmyandroid-api repo, which is NOT in this repository;
   design the contract deliberately, no guessing per rule 3). Candidate
   device identity: the app's persistent ADB keypair (hash of the enrolled
-  public key) — to be decided next session.
+  public key) — to be decided next session. (The DAEMON lane of
+  account-linked remote access shipped meanwhile — see Rootz daemon
+  (live) below.)
+
+## Rootz daemon (live)
+
+`apps/rootzd` — Rust, single static binary (artifacts + Magisk module on
+the `rootzd-preview` prerelease; CI `.github/workflows/rootzd.yml`: cargo
+tests auto-run on every push, the full pipeline — incl. Android SDK setup
+— on manual dispatch). Canonical protocol doc:
+`apps/rootzd/docs/e2e-protocol.md` (v1); the web client is
+`apps/web/src/lib/e2e.ts`, served at `/terminal` (`src/scripts/terminal.ts`).
+
+- **Tiers** (from own uid, `src/main.rs`): root (uid 0, via `su`,
+  persistable), shell (uid 2000, via `adb shell`, not persistable), app
+  (embedded fallback). The tier label rides in `session_info`; the relay
+  path is identical for all tiers.
+- **Transports:** the relay tunnel is PRIMARY (since v26.11.9): outbound
+  `wss://relay.rootmyandroid.com/tunnel?device=<device_id>`; pairing
+  (`POST /v1/relay/devices`, account digits-only + device_pubkey) once per
+  account (marker file in the state dir), then challenge
+  (`POST /v1/relay/challenge`) + first-message Ed25519 auth per dial-out.
+  Reconnect: exponential backoff 1s→60s+jitter, reset after `authed`;
+  403/4403 (revoked) parks the lane, 409 (key bound elsewhere) is
+  operator-fatal. The LAN listener (127.0.0.1:7357, `adb forward`) is
+  fallback/dev only — it has NO AUTH. Pairing/challenge issuance live in
+  `rootmyandroid-api`; the relay worker in `rootmyandroid-relay` (both
+  siblings — rule 9).
+- **E2E crypto:** Ed25519 identity (`device_id` = hex SHA-256(pubkey)) at
+  `<state>/device.key` (0600; default state dir `/data/local/tmp/rootzd`),
+  X25519 ephemeral per session, HKDF-SHA256, ChaCha20-Poly1305. The
+  cross-implementation fixture (`apps/rootzd/tests/fixtures/e2e-vector.json`)
+  is MIRRORED with `apps/web/src/lib/fixtures/e2e-vector.json` — regenerate
+  both together with `apps/web/tools/gen-e2e-vector.mjs`, never edit one
+  copy. Inner `d` payloads chunk at 32 KiB (`MAX_INNER_CHUNK`) so wrapped
+  frames stay under the relay's 64 KiB cap.
+- **VERIFIED LIVE 2026-11-10 on redfin (Pixel 5, Android 14):** full
+  round-trip (pair → challenge → auth → E2E handshake → encrypted stdin →
+  shell → stdout → exit → close) through the PRODUCTION relay in BOTH
+  tiers (`uid=2000(shell) context=u:r:shell:s0` and
+  `uid=0(root) context=u:r:magisk:s0`), and owner-confirmed in a real
+  browser at `/terminal`. Driver: `apps/rootzd/tools/e2e-probe.mjs` — a
+  scriptable client (Node ≥22) that self-validates against the fixture
+  before networking; `--idle-before-cmd N` exercises mid-session DO
+  eviction.
+- **Relay DO hibernation incident (2026-11-10, RESOLVED):** the relay's
+  Durable Object lost its in-memory daemon reference on eviction → idle
+  devices refused clients (503 at the upgrade → browsers saw 1006). Fixed
+  relay-side (restore-on-wake via socket attachments, relay@877b8c5) and
+  re-validated with the probe (idle-connect + 75s mid-session eviction).
+  Paper trail: `docs/HANDOFF-2026-11-10-relay-hibernation.md`,
+  `docs/HANDOFF-REPLY-2026-11-10-relay-hibernation.md`,
+  `docs/HANDOFF-2026-11-10-relay-hibernation-validation.md`.
+- **Open items:** no device-list endpoint yet (`/terminal` takes the
+  device_id manually — API-team handoff still open,
+  `apps/rootzd/docs/relay-api-todo-2026-11-10.md`); the audit log and an
+  operator-facing revoke endpoint are NOT in this build (`src/main.rs`
+  header); the daemon silently drops undecodable inner frames — a one-line
+  diagnostic log is PROPOSED, awaiting owner ruling (do not add unruled);
+  a real PTY (forkpty) replaces the piped sh in a later release.
