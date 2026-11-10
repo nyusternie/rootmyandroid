@@ -385,7 +385,7 @@ fn session_loop(
                 handle_frame(&text, identity, &mut sessions, &out_tx, ws, tier_name, version, device_name);
             }
             Ok(Message::Close(frame)) => {
-                eprintln!("rootzd: relay closed (code {:?})", frame.map(|f| f.code.into() as u16));
+                eprintln!("rootzd: relay closed (code {:?})", frame.map(|f| u16::from(f.code)));
                 return Outcome::Retry;
             }
             Ok(_) => {}
@@ -475,7 +475,7 @@ fn handle_frame(
                 return;
             }
             let client_eph: [u8; 32] = eph.as_slice().try_into().expect("parse_frame checks eph length");
-            let daemon_eph_secret = EphemeralSecret::random_from_rng(OsRng);
+            let daemon_eph_secret = EphemeralSecret::random();
             let daemon_eph = X25519Public::from(&daemon_eph_secret).to_bytes();
             let shared = daemon_eph_secret.diffie_hellman(&X25519Public::from(client_eph));
             let key = e2e::derive_key(shared.as_bytes(), &client_eph, &daemon_eph);

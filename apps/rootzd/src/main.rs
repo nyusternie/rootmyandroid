@@ -34,6 +34,7 @@ mod proto;
 mod relay;
 mod session;
 
+use std::fs;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::process::{Command, Stdio};
@@ -57,9 +58,16 @@ impl Tier {
     }
 }
 
+/// No libc dependency: read our own uid from procfs.
 fn tier() -> Tier {
-    // SAFETY: getuid is always safe.
-    match unsafe { libc::getuid() } {
+    let status = fs::read_to_string("/proc/self/status").unwrap_or_default();
+    let uid = status
+        .lines()
+        .find_map(|l| l.strip_prefix("Uid:"))
+        .and_then(|l| l.split_whitespace().next())
+        .and_then(|n| n.parse::<u32>().ok())
+        .unwrap_or(u32::MAX);
+    match uid {
         0 => Tier::Root,
         2000 => Tier::Shell,
         _ => Tier::App,
@@ -121,75 +129,71 @@ fn main() {
 
 /// piped shell bridge: connection <-> /system/bin/sh with stdin/stdout/stderr
 /// pipes. A PTY (libc forkpty) is the planned upgrade — see the crate docs.
-fn handle_terminal(stream: TcpStream) {
-    let spawn_result = Command::new("/system/bin/sh")
+fn handle_terminal(conn: TcpStream) {
+    let mut child = match Command::new("/system/bin/sh")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .spawn();
-
-    let mut child = match spawn_result {
+        .spawn()
+    {
         Ok(c) => c,
         Err(e) => {
             eprintln!("rootzd: shell spawn failed: {e}");
             return;
         }
     };
-
     let mut shell_in = child.stdin.take().expect("piped stdin");
     let shell_out = child.stdout.take().expect("piped stdout");
     let shell_err = child.stderr.take().expect("piped stderr");
 
-    let mut conn_in = match stream.try_clone() {
+    let mut rx = match conn.try_clone() {
         Ok(s) => s,
-        Err(e) => {
-            eprintln!("rootzd: stream clone failed: {e}");
-            let _ = child.kill();
-            return;
-        }
+        Err(_) => return,
     };
-    let mut conn_out = stream;
-    let mut conn_err = match stream.try_clone() {
+    let mut tx_out = match conn.try_clone() {
         Ok(s) => s,
-        Err(e) => {
-            eprintln!("rootzd: stream clone failed: {e}");
-            let _ = child.kill();
-            return;
-        }
+        Err(_) => return,
+    };
+    let mut tx_err = match conn.try_clone() {
+        Ok(s) => s,
+        Err(_) => return,
     };
 
-    // connection -> shell
-    let stdin_pump = thread::spawn(move || {
-        pump(&mut conn_in, &mut shell_in);
-        // Client disconnected: close shell stdin so the shell exits.
+    // socket -> shell stdin
+    let stdin_pump = thread::spawn(move || loop {
+        let mut buf = [0u8; 4096];
+        match rx.read(&mut buf) {
+            Ok(0) | Err(_) => break,
+            Ok(n) => {
+                if shell_in.write_all(&buf[..n]).is_err() {
+                    break;
+                }
+            }
+        }
     });
+    // shell stdout -> socket
+    let out_pump = thread::spawn(move || pump(shell_out, &mut tx_out));
+    // shell stderr -> socket (merged into the same stream; the v0.2 PTY makes
+    // this a real tty where stderr separation no longer matters)
+    let err_pump = thread::spawn(move || pump(shell_err, &mut tx_err));
 
-    // shell -> connection (stdout and stderr on separate clones of the socket
-    // so a blocked reader on one doesn't stall the other)
-    let stdout_pump = thread::spawn(move || pump(&mut shell_out, &mut conn_out));
-    let stderr_pump = thread::spawn(move || pump(&mut shell_err, &mut conn_err));
-
-    // Reap the shell when it exits. The watchdog joins on the OUTPUT pumps
-    // (stdout+stderr EOF) — not stdin — so a half-close from the client
-    // doesn't kill a long-running command that's still producing output.
-    // NOTE: this waits for BOTH pipes to EOF. `nc` on the host may hold the
-    // socket open briefly after the shell dies; the client observes a clean
-    // EOF regardless. Closing ONE side (client or shell) must NOT kill the
-    // session — e.g. `cat | grep x` needs stdin EOF while output continues.
-    let watchdog = thread::spawn(move || {
-        let _ = stdout_pump.join();
-        let _ = stderr_pump.join();
-        // The shell is dead (both pipes EOF'd) — kill and reap it.
-        let _ = child.kill();
-        let _ = child.wait();
-        eprintln!("rootzd: shell exited and reaped");
-        drop(stdin_pump); // detach; its thread ends when the socket closes
-    });
-    drop(watchdog); // detach watchdog; it cleans up asynchronously
+    let _ = out_pump.join();
+    let _ = err_pump.join();
+    // The shell is dead (both pipes EOF'd). shutdown() is SOCKET-level: it
+    // unblocks stdin_pump's rx.read() even when the client keeps its side
+    // open (the Rootz app client reads until EOF and never half-closes), so
+    // every clone of this socket can close and the client observes a clean
+    // EOF. Without this, wait-for-EOF clients deadlock against stdin_pump
+    // (found by the Rootz MVP integration test on redfin).
+    let _ = conn.shutdown(std::net::Shutdown::Both);
+    drop(conn);
+    let _ = child.kill();
+    let _ = child.wait();
+    drop(stdin_pump);
 }
 
-fn pump(from: &mut impl Read, to: &mut impl Write) {
-    let mut buf = [0u8; 8192];
+fn pump<R: Read, W: Write>(mut from: R, to: &mut W) {
+    let mut buf = [0u8; 4096];
     loop {
         match from.read(&mut buf) {
             Ok(0) => break, // EOF

@@ -8,7 +8,7 @@
 
 use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc::{sync_channel, Receiver, Sender, SyncSender};
+use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Instant;
@@ -24,7 +24,7 @@ pub struct SessionHandle {
     /// the receiving end. Dropping this (reap / teardown) closes the
     /// shell's stdin pipe: /system/bin/sh EOF-exits (the v26.11.8 TCP
     /// terminal relies on the same semantics).
-    pub to_stdin: Sender<Vec<u8>>,
+    pub to_stdin: SyncSender<Vec<u8>>,
     pub last_active: Arc<Mutex<Instant>>,
     /// Set by the session's watchdog once the shell is reaped and the
     /// exit frame has been queued; the daemon then forgets the session.

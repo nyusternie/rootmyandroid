@@ -72,7 +72,7 @@ pub struct SessionCipher {
 impl SessionCipher {
     pub fn new(key: &[u8; 32]) -> SessionCipher {
         SessionCipher {
-            cipher: ChaCha20Poly1305::new(Key::from_slice(key)),
+            cipher: ChaCha20Poly1305::new(&Key::from(*key)),
         }
     }
 
@@ -86,14 +86,14 @@ impl SessionCipher {
     /// implementation fixture tests where the nonce is pinned.
     pub fn seal_with_nonce(&self, nonce: &[u8; 12], plaintext: &[u8]) -> Vec<u8> {
         self.cipher
-            .encrypt(Nonce::from_slice(nonce), plaintext)
+            .encrypt(&Nonce::from(*nonce), plaintext)
             .expect("encryption cannot fail for in-range inputs")
     }
 
     /// None on authentication failure (docs/e2e-protocol.md §2.4: abort
     /// the session).
     pub fn open(&self, nonce: &[u8; 12], ciphertext: &[u8]) -> Option<Vec<u8>> {
-        self.cipher.decrypt(Nonce::from_slice(nonce), ciphertext).ok()
+        self.cipher.decrypt(&Nonce::from(*nonce), ciphertext).ok()
     }
 }
 
@@ -155,10 +155,10 @@ mod tests {
         let nonce: [u8; 12] = hex_decode("070000004041424344454647").try_into().unwrap();
         let aad = hex_decode("50515253c0c1c2c3c4c5c6c7");
         let plaintext = b"Ladies and Gentlemen of the class of '99: If I could offer you only one tip for the future, sunscreen would be it.";
-        let cipher = ChaCha20Poly1305::new(Key::from_slice(&key));
+        let cipher = ChaCha20Poly1305::new(&Key::from(key));
         let ct = cipher
             .encrypt(
-                Nonce::from_slice(&nonce),
+                &Nonce::from(nonce),
                 chacha20poly1305::aead::Payload { msg: plaintext, aad: &aad },
             )
             .unwrap();
