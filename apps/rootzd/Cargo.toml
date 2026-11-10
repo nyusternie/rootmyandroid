@@ -1,10 +1,27 @@
 # apps/rootzd/Cargo.toml — Rootz daemon crate (scaffold; daemon team owns v1).
 [package]
 name = "rootzd"
-version = "26.11.8" # date-format: YY.M.D — bumped at each release
+version = "26.11.9" # date-format: YY.M.D — bumped at each release
 edition = "2021"
 
+# v26.11.9 (owner ruling 2026-11-10): std-only is NO LONGER required — the
+# relay tunnel client + E2E pass (docs/e2e-protocol.md) needs real crypto and
+# TLS, which std does not have. All pins are EXACT; bump deliberately.
 [dependencies]
+base64 = "=0.23.1"
+chacha20poly1305 = "=0.11.0"
+ed25519-dalek = "=3.0.0"
+hkdf = "=0.13.0"
+rand = "=0.10.3"
+rustls = { version = "=0.23.46", default-features = false, features = ["ring", "std", "tls12"] }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.154"
+sha2 = "=0.11.1"
+tungstenite = { version = "=0.30.0", default-features = false }
+ureq = { version = "=3.5.1", default-features = false, features = ["rustls"] }
+webpki-roots = "=1.0.11"
+x25519-dalek = "=3.0.0"
+zeroize = "=1.9.1"
 
 [profile.release]
 strip = true
