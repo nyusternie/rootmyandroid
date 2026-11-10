@@ -284,6 +284,12 @@
     @apply text-[0.75rem] uppercase tracking-[0.06em] text-faint;
   }
 
+  /* /terminal scrollback — fixed height so the log can't be squeezed away
+     by sibling content (the Rootz app's measured layout lesson, 2026-11-09). */
+  .termlog {
+    @apply h-[20rem] overflow-y-auto whitespace-pre-wrap break-words rounded-[0.5rem] border border-line bg-inset px-[0.75rem] py-[0.6rem] font-mono text-[0.85rem];
+  }
+
   /* Keep Android Open banner (Base.astro `banner` prop pages) — persisted
      dismissed state: the inline head script adds .kao-dismissed to <html>
      from localStorage before first paint, so a dismissed banner does not

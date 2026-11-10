@@ -1,0 +1,107 @@
+---
+// src/pages/terminal.astro — /terminal: browser-based remote shell on your
+// Rootz device. Connects through the relay with an E2E-encrypted session
+// (apps/rootzd/docs/e2e-protocol.md); the relay never sees plaintext.
+// Pure vanilla JS (no framework island): same pattern as account.astro.
+import Base from '../layouts/Base.astro'
+---
+
+<Base
+  title="Terminal"
+  description="Open a Rootz Terminal on your device from the browser — end-to-end encrypted through the relay. Rootz Pro feature."
+  banner
+>
+  <div class="container px-5 py-12">
+    <h1 class="mt-0 mb-2">Terminal</h1>
+    <p class="muted">
+      A shell on your device, from this browser. The connection is
+      end-to-end encrypted — the relay in between forwards only ciphertext.
+      A <a href="/rootz">Rootz Pro</a> feature.
+    </p>
+
+    <div class="panel">
+      <h2>Connect</h2>
+      <p class="small muted">
+        Enter your account number and the device_id that rootzd prints at
+        startup (also in <code>device_id</code> next to the daemon's key —
+        default <code>/data/local/tmp/rootzd/device_id</code>). A device
+        picker returns once the API ships a device-list endpoint.
+      </p>
+      <div class="stack">
+        <input
+          id="account-number"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="1234 5678 9012 3456"
+        />
+        <input
+          id="device-id"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="device_id (64 hex characters)"
+        />
+        <div class="row">
+          <button type="button" class="btn btn-primary" id="connect-btn">Connect</button>
+          <button type="button" class="btn" id="disconnect-btn" disabled>Disconnect</button>
+        </div>
+      </div>
+      <p id="conn-status" class="small muted">Not connected.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Device</h2>
+      <dl class="row flex-wrap gap-x-8">
+        <div>
+          <dt class="small muted">device_id (verified)</dt>
+          <dd class="m-0 break-all" id="devinfo-id">—</dd>
+        </div>
+        <div>
+          <dt class="small muted">model</dt>
+          <dd class="m-0" id="devinfo-name">—</dd>
+        </div>
+        <div>
+          <dt class="small muted">tier</dt>
+          <dd class="m-0" id="devinfo-tier">—</dd>
+        </div>
+        <div>
+          <dt class="small muted">daemon</dt>
+          <dd class="m-0" id="devinfo-version">—</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="panel">
+      <h2>Shell</h2>
+      <div id="terminal-log" class="termlog" aria-live="polite"></div>
+      <div class="row">
+        <button type="button" class="btn" id="clear-btn">Clear</button>
+      </div>
+      <form id="command-form" class="row">
+        <input
+          id="command-input"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="id; uname -a; getprop ro.build.version.release"
+          class="flex-1"
+          disabled
+        />
+        <button type="submit" class="btn btn-primary" id="send-btn" disabled>Send</button>
+      </form>
+      <p class="small muted">
+        Commands run as the daemon's uid on the device. Output streams back
+        live; each command line is echoed above. Nothing is logged by this
+        page beyond usage analytics.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    import '../scripts/analytics.ts'
+    import '../scripts/terminal.ts'
+    import '../scripts/support.ts'
+  </script>
+</Base>
