@@ -162,7 +162,10 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    infrastructure (credential possession confers NO authority), and not
    even when their commits carry the agent's own authorship from an
    earlier engagement. Requests to the owning team are written as handoff
-   docs in THIS repo's `docs/` only. Only a direct, explicit, same-task
+   docs in THIS repo's `docs/` only. Stated explicitly per owner ruling
+   2026-11-10: the agent MAY **write** handoff docs (here, in this repo);
+   it may NEVER **commit** (or push) ANYTHING — code, docs, or comments —
+   to a sibling repo. Only a direct, explicit, same-task
    instruction from the owner can suspend this rule.
    (Rule added 2026-11-10 after the agent prepared — and repeatedly
    offered — to deploy the `client-relay` worker itself; owner ruling:
