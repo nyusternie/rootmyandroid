@@ -134,6 +134,82 @@ Verified against the `rootmyandroid-relay` worker and the API repo:
 
 - **Un-revoke flow ruling** (§2 above) — the only thing blocking full
   kill-switch closure.
-- **Observability** (11-07 §2): metrics not yet emitted on either side.
 - **Halo metering: NO ACTION** (11-07 §3, owner ruling 2026-11-04) —
   restated as still in force.
+
+## 6. Observability — SHIPPED 2026-11-09 (11-07 §2)
+
+Relay telemetry now lands in the first-party analytics D1
+(`rootmyandroid-analytics` — the same database the Admin Center reads),
+from BOTH workers, both write paths fire-and-forget and never throwing
+(the `recordEvent` precedent: analytics must never break the tunnel/money
+path). No device ids or account numbers are ever written — aggregate
+metrics only, matching the database's privacy posture.
+
+**From rootmyandroid-api** (events table, `source = 'server'`, no visitor
+hash — daemon IPs are machine clients, webhook parity):
+
+- `relay_pair_failed` — `detail` = error code: `invalid_account_number` |
+  `account_not_found` | `invalid_device_pubkey` | `device_already_paired` |
+  `device_revoked`. (Unparseable bodies return `invalid_json` before any
+  attribution context exists and are deliberately not instrumented.)
+- `relay_rate_limited` — `detail` = the scope that tripped: `pair_ip` |
+  `pair_account` | `challenge_device` | `challenge_account` | `list_ip` |
+  `list_account` | `revoke_ip` | `revoke_account`.
+
+**From rootmyandroid-relay** (DeviceTunnel Durable Object):
+
+- New `relay_tunnels` table — ONE row per authenticated daemon session:
+  `opened_ts` / `closed_ts` (unix seconds, NULL while open), `close_code`
+  (1000 normal, 4000 superseded, 4403 revoked, 4429 rate-limited, ...),
+  and opaque payload volume per direction (`bytes_from_daemon`,
+  `bytes_to_daemon`, `frames_from_daemon`, `frames_to_daemon`). Counters
+  accrue in DO memory (free) and flush ONCE at close.
+- `relay_superseded` event — emitted exactly once when a fresh daemon
+  connection supersedes the old one (close 4000). Counting flap frequency
+  is the 11-07 §2 use case.
+
+**Ready-made dashboard queries** (D1 SQL):
+
+```sql
+-- devices online now (gauge approximation — see caveats)
+SELECT COUNT(*) AS online FROM relay_tunnels WHERE closed_ts IS NULL;
+-- tunnel uptime, last 24 h (seconds)
+SELECT SUM(closed_ts - opened_ts) AS uptime_s FROM relay_tunnels
+ WHERE opened_ts > unixepoch() - 86400 AND closed_ts IS NOT NULL;
+-- bytes + frames relayed, last 24 h
+SELECT SUM(bytes_from_daemon + bytes_to_daemon) AS bytes,
+       SUM(frames_from_daemon + frames_to_daemon) AS frames
+  FROM relay_tunnels WHERE opened_ts > unixepoch() - 86400;
+-- abuse signal, last 24 h (pairing failures, rate-limit hits, supersedes)
+SELECT name, detail, COUNT(*) AS n FROM events
+ WHERE ts > unixepoch() - 86400
+   AND name IN ('relay_pair_failed', 'relay_rate_limited', 'relay_superseded')
+ GROUP BY name, detail;
+```
+
+**Caveats (documented in code, restated here):**
+
+- workerd does not fire a DO's `webSocketClose` for SERVER-initiated
+  `ws.close()` (verified empirically against workerd 1.20250906.0), so
+  DO-initiated closes (supersede 4000, rate-cap 4429, oversize 4409, error
+  1011) flush at their close CALL SITES; peer closes flush in
+  `webSocketClose`. The flush SQL is idempotent (`WHERE closed_ts IS NULL`)
+  so double-path coverage is free.
+- A DO eviction with no close event leaves a stale open row and loses that
+  session's counters: the online gauge and volume sums are approximations,
+  not billing-grade. Good enough for 11-07 §2's purposes.
+- The analytics schema is additive-only for the Admin Center: its
+  `src/lib/analytics.js` carries NO DDL copy (verified 2026-11-09) and
+  queries by table/column name, so `relay_tunnels` needed no admin-repo
+  change. The api repo's overbroad "KEEP THE SCHEMA IN SYNC" comment was
+  corrected to state this rule.
+
+**Deployment status:** the API half ships with the api worker (CI deploy on
+merge, PR #10 — tests 201/201). The relay half is committed to
+`rootmyandroid-relay` main (`6054062`, tests 27/27) but needs
+`npm run deploy` from a wrangler-authenticated shell — no Cloudflare
+credential exists in the commit environment, and the relay repo has no CI.
+No migration is needed: the api worker self-ensures `relay_tunnels` at
+runtime on its next analytics write. Until the relay deploy happens, only
+the API-side events flow.
