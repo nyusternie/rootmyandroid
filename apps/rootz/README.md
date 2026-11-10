@@ -45,7 +45,8 @@ publish); published as a rolling prerelease asset `rootz-preview-apk`.
 
 ## Roadmap (approved direction)
 
-- **v0.2** — in-app wireless-debugging pairing + daemon self-start
+- **pairing milestone (slice 1 shipped 26.11.8; self-start pending)** —
+  in-app wireless-debugging pairing + daemon self-start
   (Android 11+; the no-computer flow). Daemon start mechanics already
   proven transport-independent (wireless-ADB smoke test, 2026-11-09).
   Slice 1 shipped + validated 2026-11-09: `AdbWifiDiscovery.kt` finds and
@@ -57,6 +58,7 @@ publish); published as a rolling prerelease asset `rootz-preview-apk`.
   Implementation note: `onServiceFound` fires per address family — dedupe
   by instance name before resolving (a duplicate resolve raced with
   `FAILURE_ALREADY_ACTIVE`).
-- **v0.3** — binder API for third-party apps under OUR namespace
+- **binder milestone (planned)** — binder API for third-party apps under
+  OUR namespace
   (`com.rootmyandroid.rootz.*` constants, HANDOFF §13 addendum); legacy
   ecosystem interop only via a separate, clearly-labeled compat companion.

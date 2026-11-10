@@ -1,6 +1,6 @@
 # Wireless Debugging Setup — process documentation + protocol spec
 
-Rootz v0.2 self-pairing flow. This document is the authoritative reference
+Rootz self-pairing flow (26.11.8). This document is the authoritative reference
 for (a) the user-facing setup process (source material for the future
 step-by-step guides) and (b) the wire protocol the app implements.
 Everything below is either measured on our test hardware (dates noted) or
@@ -69,7 +69,7 @@ mDNS service types (all published BY the device; clients are consumers):
 | `_adb-tls-pairing._tcp` | system_server  | Pairing Server active            | `adb-<persist.adb.wifi.guid>` |
 | `_adb-tls-connect._tcp` | adbd/Framework | adbd TLS server (A_STLS) active  | `adb-<ro.serialno>-<rand>`    |
 
-(QR pairing uses a `studio-<RANDOM-10>` instance name — out of scope for v0.2.)
+(QR pairing uses a `studio-<RANDOM-10>` instance name — out of scope for 26.11.8.)
 
 Measured deviation/note (2026-11-09): on blueline the connect-service
 instance was `adb-8CHX1PEQ1-eNJClj` where `8CHX1PEQ1` == the USB serial —

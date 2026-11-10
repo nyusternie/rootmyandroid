@@ -27,6 +27,17 @@
         <receiver
             android:name=".PairingReplyReceiver"
             android:exported="true" />
+        <!-- Shares exported scrollback .txt files from cacheDir/exports
+             (Terminal Editor export) — no storage permission needed. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>
