@@ -150,6 +150,23 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    in `pnpm-lock.yaml`, then run `pnpm install` to sync the lockfile.
    (Rule added 2026-11-08: owner mandate — no package may be installable
    un-pinned.)
+9. **Sibling repos are READ-ONLY — handoff docs are the only write
+   channel.** `rootmyandroid-api`, `rootmyadmin`, `rootmyandroid-relay`,
+   and every other sibling repo are other workstreams' codebases. In them
+   the agent may ONLY read files/docs (to keep contracts in sync) and run
+   read-only verification commands (test suites, status queries). It must
+   NEVER: edit their files, commit or push to them, run their builds or
+   deploys (`wrangler deploy`, `gradle`, `astro build`, …), provision
+   secrets, or execute any other state-changing operational command —
+   not even when it possesses working credentials for their
+   infrastructure (credential possession confers NO authority), and not
+   even when their commits carry the agent's own authorship from an
+   earlier engagement. Requests to the owning team are written as handoff
+   docs in THIS repo's `docs/` only. Only a direct, explicit, same-task
+   instruction from the owner can suspend this rule.
+   (Rule added 2026-11-10 after the agent prepared — and repeatedly
+   offered — to deploy the `client-relay` worker itself; owner ruling:
+   the relay is NOT this agent's lane.)
 
 ## Web SEO (live)
 
