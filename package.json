@@ -1,6 +1,6 @@
 {
   "name": "rootmyandroid",
-  "version": "23.1.0",
+  "version": "26.11.10",
   "private": true,
   "description": "Root My Android — ADB-based device analysis for rooting and upgrade planning.",
   "scripts": {
