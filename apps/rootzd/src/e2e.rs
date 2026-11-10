@@ -18,7 +18,7 @@ use sha2::{Digest, Sha256};
 pub const PROTOCOL_INFO: &[u8] = b"rootz-e2e-v1";
 
 /// The signed transcript: PROTOCOL_INFO || sid || client_eph || daemon_eph
-/// (13 + 16 + 32 + 32 = 93 bytes).
+/// (12 + 16 + 32 + 32 = 92 bytes).
 pub fn transcript(sid: &[u8; 16], client_eph: &[u8; 32], daemon_eph: &[u8; 32]) -> Vec<u8> {
     let mut t = Vec::with_capacity(PROTOCOL_INFO.len() + 16 + 32 + 32);
     t.extend_from_slice(PROTOCOL_INFO);
@@ -186,7 +186,7 @@ mod tests {
     #[test]
     fn transcript_layout() {
         let t = transcript(&[1u8; 16], &[2u8; 32], &[3u8; 32]);
-        assert_eq!(t.len(), 13 + 16 + 32 + 32);
+        assert_eq!(t.len(), 12 + 16 + 32 + 32);
         assert_eq!(&t[..13], PROTOCOL_INFO);
         assert_eq!(&t[13..29], &[1u8; 16]);
         assert_eq!(&t[29..61], &[2u8; 32]);

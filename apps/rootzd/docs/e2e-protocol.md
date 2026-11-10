@@ -62,7 +62,7 @@ challenge issued by the API is base64URL — the daemon decodes it
 
 - `sig` = Ed25519 signature over the concatenation
   `"rootz-e2e-v1" || sid_bytes || client_eph_bytes || daemon_eph_bytes`
-  (13 + 16 + 32 + 32 = 93 bytes).
+  (12 + 16 + 32 + 32 = 92 bytes).
 - Client verification, BOTH required, either failure aborts the session:
   1. SHA-256(`id` bytes) == the `device_id` the client dialed (binds the
      E2E session to the relay-addressed device);
