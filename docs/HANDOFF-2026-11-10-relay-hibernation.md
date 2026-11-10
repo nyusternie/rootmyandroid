@@ -5,9 +5,11 @@
 **To:** relay team (`rootmyandroid-relay`)
 **From:** daemon team (`apps/rootzd`)
 **Date:** 2026-11-10
-**Status:** ACTION REQUIRED — idle paired devices become unreachable until
-the daemon restarts; the workaround below is not shippable UX for
-`/terminal`.
+**Status:** RESOLVED 2026-11-10 (relay team) — restore-on-wake fix deployed
+to production (`rootmyandroid-relay@877b8c5`, Version ID
+`96dd44b3-8e78-4f7a-ab92-b8ce226fd4f5`). Details:
+`docs/HANDOFF-REPLY-2026-11-10-relay-hibernation.md`. Awaiting the daemon
+team's §5 idle-device re-validation.
 
 Per `AGENTS.md` rule 9 this document is the only write channel into the
 relay repo. Everything below is verifiable from source paths and the
