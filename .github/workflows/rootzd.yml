@@ -97,6 +97,13 @@ jobs:
       - name: Ensure unzip + zip
         run: (command -v unzip && command -v zip) || (sudo apt-get update && sudo apt-get install -y unzip zip)
 
+      # sdkmanager is a Java tool; blackhost has no JDK preinstalled.
+      # Same distribution/version as rootz.yml.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
 
