@@ -24,8 +24,10 @@ const RELAY_CONNECT = 'wss://relay.rootmyandroid.com/connect'
 const LS_ACCOUNT = 'rma.terminal.account'
 const LS_DEVICE = 'rma.terminal.device'
 
-// API formatAccountNumber parity: digits grouped in 4s ("1234 5678 …") —
-// the relay's pairing lookup matches this exact string.
+// API formatAccountNumber parity: digits grouped in 4s ("1234 5678 …").
+// The relay entry normalizes both sides to raw digits before comparing
+// (verified live 2026-11-10), so spaced or raw input connects — we keep
+// the canonical spaced form for display and localStorage.
 function formatAccountNumber(input: string): string {
   return input.replace(/[^0-9]/g, '').replace(/(.{4})(?=.)/g, '$1 ')
 }
