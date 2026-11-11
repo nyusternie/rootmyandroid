@@ -151,6 +151,46 @@ internal object Ed25519 {
         return left.encode().contentEquals(right.encode())
     }
 
+    /**
+     * RFC 8032 §5.1.5 public key derivation: [a]B where a is the clamped
+     * lower half of SHA-512(seed). Added for the APK's relay-DAEMON role
+     * (owner ruling 2026-11-11): the daemon owns a persistent Ed25519
+     * identity keypair whose SHA-256 is the device_id (e2e-protocol.md §0).
+     */
+    internal fun publicKey(seed: ByteArray): ByteArray {
+        require(seed.size == 32)
+        return B.scalarMult(clampScalar(sha512(seed))).encode()
+    }
+
+    /**
+     * RFC 8032 §5.1.6 deterministic signing (pure Ed25519, no context):
+     * R = [r]B with r = SHA-512(prefix || M) mod L, then
+     * S = (r + SHA-512(R || A || M) · a) mod L, sig = R || S.
+     * Added for the APK's relay-DAEMON role (owner ruling 2026-11-11): the
+     * daemon signs the welcome transcript (e2e-protocol.md §2.2) and the
+     * tunnel-auth challenge (relay-handoff.md §1).
+     */
+    internal fun sign(seed: ByteArray, message: ByteArray): ByteArray {
+        require(seed.size == 32)
+        val h = sha512(seed)
+        val aBytes = clampScalar(h)
+        val pubkey = B.scalarMult(aBytes).encode()
+        val r = scReduce(sha512(h.copyOfRange(32, 64) + message))
+        val rEnc = B.scalarMult(bigIntToLe32(r)).encode()
+        val k = scReduce(sha512(rEnc + pubkey + message))
+        val s = r.add(k.multiply(leToBigInt(aBytes))).mod(L)
+        return rEnc + bigIntToLe32(s)
+    }
+
+    /** RFC 8032 §5.1.5 clamp: the lower 32 bytes of SHA-512(seed). */
+    private fun clampScalar(h: ByteArray): ByteArray {
+        val a = h.copyOfRange(0, 32)
+        a[0] = (a[0].toInt() and 248).toByte()
+        a[31] = (a[31].toInt() and 127).toByte()
+        a[31] = (a[31].toInt() or 64).toByte()
+        return a
+    }
+
     private fun sha512(data: ByteArray): ByteArray =
         java.security.MessageDigest.getInstance("SHA-512").digest(data)
 

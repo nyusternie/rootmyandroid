@@ -38,6 +38,48 @@ class Ed25519Test {
         }
     }
 
+    // RFC 8032 §7.1 TEST 1 / TEST 2 / TEST 3 signatures (seeds + public
+    // keys are the rfc8032 table above): pins Ed25519.sign (added for the
+    // relay-daemon role, owner ruling 2026-11-11) against independent
+    // OpenSSL output captured 2026-11-11.
+    private val rfc8032Signatures = listOf(
+        Triple(
+            "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60",
+            "",
+            "e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e06522490155" +
+                "5fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b",
+        ),
+        Triple(
+            "4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb",
+            "72",
+            "92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da" +
+                "085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00",
+        ),
+        Triple(
+            "c5aa8df43f9f837bedb7442f31dcb7b166d38535076f094b85ce3a2e0b4458f7",
+            "af82",
+            "6291d657deec24024827e69c3abe01a30ce548a284743a445e3680d7db5ac3ac" +
+                "18ff9b538d16f290ae67f760984dc6594a7c15e9716ed28dc027beceea1ec40a",
+        ),
+    )
+
+    @Test
+    fun rfc8032SignAndVerify() {
+        for ((skHex, msgHex, expectedSigHex) in rfc8032Signatures) {
+            val sk = hex(skHex)
+            val msg = hex(msgHex)
+            val sig = Ed25519.sign(sk, msg)
+            assertEquals(expectedSigHex, hex(sig))
+            // Round-trip through our own verifier (independently pinned by
+            // the E2E fixture's welcome_sig_b64 in E2eVectorTest).
+            assertTrue(Ed25519.verify(Ed25519.publicKey(sk), msg, sig))
+        }
+        // publicKey() must reproduce the rfc8032 table for the same seeds.
+        for ((skHex, expectedPkHex) in rfc8032) {
+            assertEquals(expectedPkHex, hex(Ed25519.publicKey(hex(skHex))))
+        }
+    }
+
     @Test
     fun decodeRoundTripsPublicKeys() {
         for ((_, pkHex) in rfc8032) {
