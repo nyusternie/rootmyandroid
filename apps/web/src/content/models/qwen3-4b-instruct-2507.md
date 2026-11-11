@@ -94,6 +94,42 @@ benchmarks:
       measured". 8,192 ctx with f16 KV (1.12 GiB) and 16,384 ctx with
       q8_0 KV (1.12 GiB) both fit; 32,768 does not (4.50/2.25 GiB KV
       arithmetic — see below).
+  - date: 2026-11-11
+    device: Pixel 5 (redfin), Android 14, 8 GB RAM
+    toolchain: llama.cpp v0.9.0 (commit cd959ba), llama-cli, static arm64-v8a NDK build, CPU backend
+    log: https://github.com/nyusternie/rootmyandroid/blob/master/apps/rootzd/tools/llm-bench/results/bench-phase3-20261111-181000.log
+    cells:
+      - name: agent-smoke-t1-json-answer
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: generation (greedy, -n 256), tps: 2.2, err: 0.0 }
+      - name: agent-smoke-t2-tool-call
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: generation (greedy, -n 256), tps: 2.3, err: 0.0 }
+      - name: agent-smoke-t3-plan-then-react
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: generation (greedy, -n 256), tps: 1.3, err: 0.0 }
+    notes: >-
+      Phase-3 agent-quality smoke (harness bench-phase3.sh, scorer
+      score-phase3.py — both committed alongside the log): 3/3 PASS —
+      the only tier that passed t3. t1 PASS: valid JSON {"answer":
+      "Paris", "confidence": 1.0}. t2 PASS: valid {"tool": "shell",
+      "cmd": "getprop ro.build.version.release"} — a real, read-only
+      Android command. t3 PASS: given a transcript whose tool already
+      returned uid=0(root), it did NOT re-issue the same command (both
+      smaller models did) and continued investigating: {"tool": "shell",
+      "cmd": "ls /system/app/Superuser.apk"} — reacting to tool results
+      is the core agent-loop capability this site benchmarks for. Greedy
+      (--temp 0), single repetition per cell (0.0 stddev = "not
+      measured"). Generation t/s here is not comparable to the
+      llama-bench fit numbers — llama-cli adds chat-template/sampling
+      scaffolding and these cells ran back-to-back.
+
 ---
 
 ## What this model is
@@ -135,7 +171,10 @@ keep prompts tight rather than re-sending history.
 ## On-device agent suitability
 
 Same thermal profile as [Qwen3-4B](/model/qwen3-4b/): plan around
-~3 t/s sustained generation on this device class. The reason to pick
+~3 t/s sustained generation on this device class. Capability is
+measured, not assumed: it scored 3/3 on the 2026-11-11 agent-quality
+smoke below — including the only pass at reacting to a tool result
+instead of re-issuing the same command. The reason to pick
 the 2507 over its sibling is instruction-following quality and the
 context headroom, not speed.
 

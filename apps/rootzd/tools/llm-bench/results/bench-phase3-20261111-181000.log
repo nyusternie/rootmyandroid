@@ -1,0 +1,360 @@
+[phase3 2026-11-11T22:41:58Z] === Phase 3 — agent-quality smoke on redfin ===
+[phase3 2026-11-11T22:41:58Z] models under test: qwen2.5-0.5b-instruct-q4_k_m qwen2.5-1.5b-instruct-q4_k_m Qwen_Qwen3-4B-Instruct-2507-Q4_K_M
+[phase3 2026-11-11T22:41:58Z] cooldown: cpu temp 46.500004C <= 50C and status 0 < 2 — proceeding
+[phase3 2026-11-11T22:41:58Z] RUN t1 model=qwen2.5-0.5b-instruct-q4_k_m (./llama-cli -m qwen2.5-0.5b-instruct-q4_k_m.gguf -st --temp 0 -t 8 -c 4096 -n 256) — thermal: status=0 cpu=46.500004C memavail=4301336kB
+=== RESULT t1 model=qwen2.5-0.5b-instruct-q4_k_m ===
+
+
+Loading model... |-\|/-\|/-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b1-cd959ba
+model      : qwen2.5-0.5b-instruct-q4_k_m.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+
+> You are an on-device assistant. Reply with ONLY a JSON object with two keys: "answer" (a string) and "confidence" (a number between 0 and 1). No other text. Question: what is the capital of France?
+```json
+{
+  "answer": "Paris",
+  "confidence": 1
+}
+```
+
+[ Prompt: 36.8 t/s | Generation: 11.0 t/s ]
+
+
+Exiting...
+=== END t1 model=qwen2.5-0.5b-instruct-q4_k_m rc=0 ===
+[phase3 2026-11-11T22:42:04Z] END t1 model=qwen2.5-0.5b-instruct-q4_k_m rc=0 — thermal: status=0 cpu=46.500004C
+[phase3 2026-11-11T22:42:05Z] cooldown: cpu temp 46.500004C <= 50C and status 0 < 2 — proceeding
+[phase3 2026-11-11T22:42:05Z] RUN t2 model=qwen2.5-0.5b-instruct-q4_k_m (./llama-cli -m qwen2.5-0.5b-instruct-q4_k_m.gguf -st --temp 0 -t 8 -c 4096 -n 256) — thermal: status=0 cpu=46.500004C memavail=4325172kB
+=== RESULT t2 model=qwen2.5-0.5b-instruct-q4_k_m ===
+
+
+Loading model... |-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b1-cd959ba
+model      : qwen2.5-0.5b-instruct-q4_k_m.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+
+> You control an Android device through one read-only tool: shell(cmd) — it runs a shell command and returns the output. Reply with ONLY a JSON object of the form {"tool": "shell", "cmd": "<command>"}. No other text. Task: find out which Android version this device runs.
+{"tool": "shell", "cmd": "system info"}
+
+[ Prompt: 37.1 t/s | Generation: 9.9 t/s ]
+
+
+Exiting...
+=== END t2 model=qwen2.5-0.5b-instruct-q4_k_m rc=0 ===
+[phase3 2026-11-11T22:42:10Z] END t2 model=qwen2.5-0.5b-instruct-q4_k_m rc=0 — thermal: status=0 cpu=46.500004C
+[phase3 2026-11-11T22:42:10Z] cooldown: cpu temp 46.500004C <= 50C and status 0 < 2 — proceeding
+[phase3 2026-11-11T22:42:10Z] RUN t3 model=qwen2.5-0.5b-instruct-q4_k_m (./llama-cli -m qwen2.5-0.5b-instruct-q4_k_m.gguf -st --temp 0 -t 8 -c 4096 -n 256) — thermal: status=0 cpu=46.500004C memavail=4397440kB
+=== RESULT t3 model=qwen2.5-0.5b-instruct-q4_k_m ===
+
+
+Loading model... |-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b1-cd959ba
+model      : qwen2.5-0.5b-instruct-q4_k_m.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+
+> This is a transcript of an agent session. User: "Check whether this device is rooted. Reply only with JSON actions." Assistant: {"tool": "shell", "cmd": "id"} Tool result: "uid=0(root) gid=0(root)". Assistant:
+{"tool": "shell", "cmd": "id"}
+
+[ Prompt: 35.1 t/s | Generation: 10.1 t/s ]
+
+
+Exiting...
+=== END t3 model=qwen2.5-0.5b-instruct-q4_k_m rc=0 ===
+[phase3 2026-11-11T22:42:15Z] END t3 model=qwen2.5-0.5b-instruct-q4_k_m rc=0 — thermal: status=0 cpu=46.500004C
+[phase3 2026-11-11T22:42:15Z] cooldown: cpu temp 46.500004C <= 50C and status 0 < 2 — proceeding
+[phase3 2026-11-11T22:42:15Z] RUN t1 model=qwen2.5-1.5b-instruct-q4_k_m (./llama-cli -m qwen2.5-1.5b-instruct-q4_k_m.gguf -st --temp 0 -t 8 -c 4096 -n 256) — thermal: status=0 cpu=46.500004C memavail=4384556kB
+=== RESULT t1 model=qwen2.5-1.5b-instruct-q4_k_m ===
+
+
+Loading model... |-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b1-cd959ba
+model      : qwen2.5-1.5b-instruct-q4_k_m.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+
+> You are an on-device assistant. Reply with ONLY a JSON object with two keys: "answer" (a string) and "confidence" (a number between 0 and 1). No other text. Question: what is the capital of France?
+```json
+{
+  "answer": "Paris",
+  "confidence": 1.0
+}
+```
+
+[ Prompt: 13.3 t/s | Generation: 4.4 t/s ]
+
+
+Exiting...
+=== END t1 model=qwen2.5-1.5b-instruct-q4_k_m rc=0 ===
+[phase3 2026-11-11T22:42:30Z] END t1 model=qwen2.5-1.5b-instruct-q4_k_m rc=0 — thermal: status=0 cpu=46.500004C
+[phase3 2026-11-11T22:42:30Z] cooldown: cpu temp 46.500004C <= 50C and status 0 < 2 — proceeding
+[phase3 2026-11-11T22:42:30Z] RUN t2 model=qwen2.5-1.5b-instruct-q4_k_m (./llama-cli -m qwen2.5-1.5b-instruct-q4_k_m.gguf -st --temp 0 -t 8 -c 4096 -n 256) — thermal: status=0 cpu=46.500004C memavail=4384812kB
+=== RESULT t2 model=qwen2.5-1.5b-instruct-q4_k_m ===
+
+
+Loading model... |-\|/-\|/-\|/-\|/ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b1-cd959ba
+model      : qwen2.5-1.5b-instruct-q4_k_m.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+
+> You control an Android device through one read-only tool: shell(cmd) — it runs a shell command and returns the output. Reply with ONLY a JSON object of the form {"tool": "shell", "cmd": "<command>"}. No other text. Task: find out which Android version this device runs.
+{"tool": "shell", "cmd": "getprop ro.build.version.release"}
+
+[ Prompt: 13.4 t/s | Generation: 4.5 t/s ]
+
+
+Exiting...
+=== END t2 model=qwen2.5-1.5b-instruct-q4_k_m rc=0 ===
+[phase3 2026-11-11T22:42:43Z] END t2 model=qwen2.5-1.5b-instruct-q4_k_m rc=0 — thermal: status=0 cpu=46.500004C
+[phase3 2026-11-11T22:42:43Z] cooldown: cpu temp 46.500004C <= 50C and status 0 < 2 — proceeding
+[phase3 2026-11-11T22:42:43Z] RUN t3 model=qwen2.5-1.5b-instruct-q4_k_m (./llama-cli -m qwen2.5-1.5b-instruct-q4_k_m.gguf -st --temp 0 -t 8 -c 4096 -n 256) — thermal: status=0 cpu=46.500004C memavail=4382840kB
+=== RESULT t3 model=qwen2.5-1.5b-instruct-q4_k_m ===
+
+
+Loading model... |-\|/-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b1-cd959ba
+model      : qwen2.5-1.5b-instruct-q4_k_m.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+
+> This is a transcript of an agent session. User: "Check whether this device is rooted. Reply only with JSON actions." Assistant: {"tool": "shell", "cmd": "id"} Tool result: "uid=0(root) gid=0(root)". Assistant:
+```json
+{
+  "tool": "shell",
+  "cmd": "id"
+}
+```
+
+[ Prompt: 12.8 t/s | Generation: 4.3 t/s ]
+
+
+Exiting...
+=== END t3 model=qwen2.5-1.5b-instruct-q4_k_m rc=0 ===
+[phase3 2026-11-11T22:42:56Z] END t3 model=qwen2.5-1.5b-instruct-q4_k_m rc=0 — thermal: status=0 cpu=46.500004C
+[phase3 2026-11-11T22:42:56Z] cooldown: cpu temp 46.500004C <= 50C and status 0 < 2 — proceeding
+[phase3 2026-11-11T22:42:56Z] RUN t1 model=Qwen_Qwen3-4B-Instruct-2507-Q4_K_M (./llama-cli -m Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf -st --temp 0 -t 8 -c 4096 -n 256) — thermal: status=0 cpu=46.500004C memavail=4375532kB
+=== RESULT t1 model=Qwen_Qwen3-4B-Instruct-2507-Q4_K_M ===
+
+
+Loading model... |-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b1-cd959ba
+model      : Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+
+> You are an on-device assistant. Reply with ONLY a JSON object with two keys: "answer" (a string) and "confidence" (a number between 0 and 1). No other text. Question: what is the capital of France?
+{"answer": "Paris", "confidence": 1.0}
+
+[ Prompt: 4.8 t/s | Generation: 2.2 t/s ]
+
+
+Exiting...
+=== END t1 model=Qwen_Qwen3-4B-Instruct-2507-Q4_K_M rc=0 ===
+[phase3 2026-11-11T22:43:25Z] END t1 model=Qwen_Qwen3-4B-Instruct-2507-Q4_K_M rc=0 — thermal: status=0 cpu=46.500004C
+[phase3 2026-11-11T22:43:25Z] cooldown: cpu temp 46.500004C <= 50C and status 0 < 2 — proceeding
+[phase3 2026-11-11T22:43:25Z] RUN t2 model=Qwen_Qwen3-4B-Instruct-2507-Q4_K_M (./llama-cli -m Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf -st --temp 0 -t 8 -c 4096 -n 256) — thermal: status=0 cpu=46.500004C memavail=4461308kB
+=== RESULT t2 model=Qwen_Qwen3-4B-Instruct-2507-Q4_K_M ===
+
+
+Loading model... |-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b1-cd959ba
+model      : Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+
+> You control an Android device through one read-only tool: shell(cmd) — it runs a shell command and returns the output. Reply with ONLY a JSON object of the form {"tool": "shell", "cmd": "<command>"}. No other text. Task: find out which Android version this device runs.
+{"tool": "shell", "cmd": "getprop ro.build.version.release"}
+
+[ Prompt: 4.9 t/s | Generation: 2.3 t/s ]
+
+
+Exiting...
+=== END t2 model=Qwen_Qwen3-4B-Instruct-2507-Q4_K_M rc=0 ===
+[phase3 2026-11-11T22:43:50Z] END t2 model=Qwen_Qwen3-4B-Instruct-2507-Q4_K_M rc=0 — thermal: status=0 cpu=46.500004C
+[phase3 2026-11-11T22:43:50Z] cooldown: cpu temp 46.500004C <= 50C and status 0 < 2 — proceeding
+[phase3 2026-11-11T22:43:50Z] RUN t3 model=Qwen_Qwen3-4B-Instruct-2507-Q4_K_M (./llama-cli -m Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf -st --temp 0 -t 8 -c 4096 -n 256) — thermal: status=0 cpu=46.500004C memavail=4465100kB
+=== RESULT t3 model=Qwen_Qwen3-4B-Instruct-2507-Q4_K_M ===
+
+
+Loading model... |-\|/-\|/-\|/-\|/-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b1-cd959ba
+model      : Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+
+> This is a transcript of an agent session. User: "Check whether this device is rooted. Reply only with JSON actions." Assistant: {"tool": "shell", "cmd": "id"} Tool result: "uid=0(root) gid=0(root)". Assistant:
+{"tool": "shell", "cmd": "ls /system/app/Superuser.apk"}
+
+[ Prompt: 4.9 t/s | Generation: 1.3 t/s ]
+
+
+Exiting...
+=== END t3 model=Qwen_Qwen3-4B-Instruct-2507-Q4_K_M rc=0 ===
+[phase3 2026-11-11T22:44:21Z] END t3 model=Qwen_Qwen3-4B-Instruct-2507-Q4_K_M rc=0 — thermal: status=0 cpu=46.500004C
+[phase3 2026-11-11T22:44:21Z] === Phase 3 suite finished — score with: python3 score-phase3.py <log> ===

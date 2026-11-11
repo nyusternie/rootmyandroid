@@ -74,6 +74,40 @@ benchmarks:
       rate is lower still. Entered warm at Status 1 (directly after the
       Phase-2 suite). Single repetition — 0.00 stddev means "not
       measured".
+  - date: 2026-11-11
+    device: Pixel 5 (redfin), Android 14, 8 GB RAM
+    toolchain: llama.cpp v0.9.0 (commit cd959ba), llama-cli, static arm64-v8a NDK build, CPU backend
+    log: https://github.com/nyusternie/rootmyandroid/blob/master/apps/rootzd/tools/llm-bench/results/bench-phase3-20261111-181000.log
+    cells:
+      - name: agent-smoke-t1-json-answer
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: generation (greedy, -n 256), tps: 4.4, err: 0.0 }
+      - name: agent-smoke-t2-tool-call
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: generation (greedy, -n 256), tps: 4.5, err: 0.0 }
+      - name: agent-smoke-t3-plan-then-react
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: generation (greedy, -n 256), tps: 4.3, err: 0.0 }
+    notes: >-
+      Phase-3 agent-quality smoke (harness bench-phase3.sh, scorer
+      score-phase3.py — both committed alongside the log): 2/3 PASS. t1
+      PASS: valid JSON {"answer": "Paris", "confidence": 1.0}. t2 PASS:
+      valid {"tool": "shell", "cmd": "getprop ro.build.version.release"}
+      — a real, read-only Android command. t3 FAIL: given a transcript
+      whose tool already returned uid=0(root), it re-issued the exact
+      earlier action ("id") instead of reacting to the result — an
+      agent-loop harness at this tier must detect repeated actions
+      itself. Greedy (--temp 0), single repetition per cell (0.0 stddev
+      = "not measured"). Generation t/s here is not comparable to the
+      llama-bench fit numbers — llama-cli adds chat-template/sampling
+      scaffolding and these cells ran back-to-back.
+
 ---
 
 ## What this model is
@@ -120,8 +154,11 @@ Measured on redfin:
   on our 7.29 GiB device, leaving room for the runtime, the harness, and
   everyday apps.
 
-This is the smallest model we would put on sustained agent duty on an
-8 GB phone — everything below it is for routing and formatting, not for
+Its agent-quality smoke below (2/3) carries the caveat: it emits real
+commands but re-issues the same tool call in the face of its own tool
+result, so the harness — not the model — must detect loops. With that
+guard, this is the smallest model we would put on sustained agent duty
+on an 8 GB phone — everything below it is for routing and formatting, not for
 following instructions.
 
 ## Reproduce these numbers

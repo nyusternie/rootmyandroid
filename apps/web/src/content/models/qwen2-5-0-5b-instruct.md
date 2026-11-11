@@ -60,6 +60,41 @@ benchmarks:
       abort policy never engaged. Ran under a harness with abort at
       Thermal Status ≥ 2 and inter-run cooldown to ≤ 50 °C
       (apps/rootzd/tools/llm-bench/bench-phase0.sh).
+  - date: 2026-11-11
+    device: Pixel 5 (redfin), Android 14, 8 GB RAM
+    toolchain: llama.cpp v0.9.0 (commit cd959ba), llama-cli, static arm64-v8a NDK build, CPU backend
+    log: https://github.com/nyusternie/rootmyandroid/blob/master/apps/rootzd/tools/llm-bench/results/bench-phase3-20261111-181000.log
+    cells:
+      - name: agent-smoke-t1-json-answer
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: generation (greedy, -n 256), tps: 11.0, err: 0.0 }
+      - name: agent-smoke-t2-tool-call
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: generation (greedy, -n 256), tps: 9.9, err: 0.0 }
+      - name: agent-smoke-t3-plan-then-react
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: generation (greedy, -n 256), tps: 10.1, err: 0.0 }
+    notes: >-
+      Phase-3 agent-quality smoke (harness bench-phase3.sh, scorer
+      score-phase3.py — both committed alongside the log): 2/3 PASS. t1
+      PASS: valid JSON {"answer": "Paris", "confidence": 1}. t2 PASS on
+      FORMAT ONLY: the JSON parses with tool="shell", but the emitted
+      cmd was "system info" — a plausible-looking non-command that would
+      fail at exec time. t3 FAIL: given a transcript whose tool already
+      returned uid=0(root), it re-issued the exact earlier action
+      ("id") instead of reacting to the result — context-blindness an
+      agent-loop harness must guard against itself at this tier. Greedy
+      (--temp 0), single repetition per cell (0.0 stddev = "not
+      measured"). Generation t/s here is not comparable to the
+      llama-bench fit numbers — llama-cli adds chat-template/sampling
+      scaffolding.
+
 ---
 
 ## What this model is
@@ -96,7 +131,10 @@ carries the YaRN-extended 131,072.)
 
 ## On-device agent suitability
 
-Measured on redfin, this model is a fast, shallow thinker:
+Measured on redfin, this model is a fast, shallow thinker. The 2026-11-11
+agent-quality smoke below puts numbers on that: 2/3 — it obeys JSON
+formatting but invents plausible-looking non-commands and re-issues
+the same tool call in the face of its own tool result:
 
 - **Prompt processing** (47.7 t/s on all eight cores) is cheap enough for
   high-chatter loops — routing, classification, extraction, templating.
