@@ -39,8 +39,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --store-dir /home/gh-runner/pnpm-store/web
 
-      - name: Type-check (astro check)
-        run: pnpm --filter rootmyandroid-web check
+      - name: Type-check + repo gates (pinned versions, web styling, astro check)
+        # Root `pnpm check` runs tools/check-pinned-versions.mjs +
+        # tools/check-web-styling.mjs + `pnpm --filter rootmyandroid-web
+        # check` — AGENTS.md rule 7/8 enforcement lives ONLY here (before
+        # 2026-11-11 this step ran the web package's check alone, so the
+        # tools/ gates never ran in CI).
+        run: pnpm check
 
       - name: Run tests with coverage
         run: pnpm --filter rootmyandroid-web test:coverage
