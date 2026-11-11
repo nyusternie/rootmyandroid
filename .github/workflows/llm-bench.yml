@@ -88,8 +88,12 @@ jobs:
           # Derive the SDK root from sdkmanager's own location instead of
           # hard-coding: on this runner the canonical root is
           # /opt/android-sdk (ubuntu-latest uses /usr/local/lib/android/sdk).
+          # Layout note (observed 2026-11-11, run 43053327255): modern
+          # cmdline-tools live at <sdk>/cmdline-tools/latest/bin, so the
+          # root is THREE levels above the binary — the legacy <sdk>/tools/bin
+          # layout needed two (rootzd.yml carries the two-level form).
           sdkmanager_bin="$(command -v sdkmanager)"
-          sdk_root="$(cd "$(dirname "$sdkmanager_bin")/../.." && pwd)"
+          sdk_root="$(cd "$(dirname "$sdkmanager_bin")/../../.." && pwd)"
           echo "SDK_ROOT=$sdk_root" >> "$GITHUB_ENV"
           echo "SDK_ROOT pinned: $sdk_root"
           # Skip when the NDK is already on the runner (repeat dispatches);
