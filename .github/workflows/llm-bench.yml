@@ -139,10 +139,15 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DGGML_NATIVE=OFF \
             -DBUILD_SHARED_LIBS=OFF \
+            -DGGML_OPENMP=OFF \
             -DLLAMA_BUILD_TESTS=OFF \
             -DLLAMA_BUILD_EXAMPLES=OFF \
             -DLLAMA_BUILD_SERVER=ON
-          # LLAMA_BUILD_SERVER=ON is load-bearing on v0.9.0: tools/cli is
+          # GGML_OPENMP=OFF: the NDK's libomp exists only as a shared object,
+      # so an OpenMP build CANNOT LINK on-device (libomp.so not found —
+      # observed pushing run 43055766189's artifacts 2026-11-11); ggml's
+      # own threading covers llama-bench's workloads without it.
+      # LLAMA_BUILD_SERVER=ON is load-bearing on v0.9.0: tools/cli is
           # add_subdirectory'd only inside the server gate (llama-cli-impl
           # links llama-server-impl) — verified in tools/CMakeLists.txt
           # lines 24-26 (observed failure in run 43054311812). llama-server
