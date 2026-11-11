@@ -29,7 +29,7 @@ export const GET: APIRoute = ({ props }) => {
     '',
     `> ${d.description}`,
     '',
-    `- HF data verified: ${verifiedIso}`,
+    `- Hugging Face data verified: ${verifiedIso}`,
     `- Updated: ${updatedIso}`,
     `- HTML page: https://rootmyandroid.com/model/${model.id}/`,
     '',

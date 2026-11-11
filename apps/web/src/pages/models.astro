@@ -85,8 +85,8 @@ const tiers: { name: string; blurb: string; rows: Row[] }[] = [
       'Top end of what an 8 GB-class phone can host alongside everyday apps.',
     rows: [
       { model: 'Phi-3.5-mini-instruct', repo: 'bartowski/Phi-3.5-mini-instruct-GGUF', params: '3.82B', size: '2.23', quant: 'Q4_K_M', ctx: '131,072', license: 'MIT', downloads: '37,691' },
-      { model: 'Qwen3-4B', repo: 'Qwen/Qwen3-4B-GGUF', params: '4.02B', size: '2.33', quant: 'Q4_K_M', ctx: '40,960', license: 'Apache-2.0', downloads: '717,563', note: 'official GGUF' },
-      { model: 'Qwen3-4B-Instruct-2507', repo: 'bartowski/Qwen_Qwen3-4B-Instruct-2507-GGUF', params: '4.02B', size: '2.33', quant: 'Q4_K_M', ctx: '262,144', license: 'Apache-2.0', downloads: '103,159', note: 'longest context on this page' },
+      { model: 'Qwen3-4B', profile: '/model/qwen3-4b/', repo: 'Qwen/Qwen3-4B-GGUF', params: '4.02B', size: '2.33', quant: 'Q4_K_M', ctx: '40,960', license: 'Apache-2.0', downloads: '717,563', note: 'official GGUF' },
+      { model: 'Qwen3-4B-Instruct-2507', profile: '/model/qwen3-4b-instruct-2507/', repo: 'bartowski/Qwen_Qwen3-4B-Instruct-2507-GGUF', params: '4.02B', size: '2.33', quant: 'Q4_K_M', ctx: '262,144', license: 'Apache-2.0', downloads: '103,159', note: 'longest context on this page' },
       { model: 'Gemma 3 4B IT', repo: 'bartowski/google_gemma-3-4b-it-GGUF', params: '4.30B', size: '2.32', quant: 'Q4_K_M', ctx: '131,072', license: 'Gemma Terms of Use', downloads: '43,147' },
     ],
   },
@@ -247,7 +247,7 @@ const faqSchema = {
                     {r.profile ? (
                       <>
                         <a href={r.profile}>{r.model}</a>{' '}
-                        <a class="faint small" href={`https://huggingface.co/${r.repo}`} title={`${r.repo} on Hugging Face`}>HF↗</a>
+                        <a class="faint small" href={`https://huggingface.co/${r.repo}`} title={`${r.repo} on Hugging Face`}><abbr title="Hugging Face">HF</abbr>↗</a>
                       </>
                     ) : (
                       <a href={`https://huggingface.co/${r.repo}`}>{r.model}</a>

@@ -124,7 +124,7 @@ this silicon.
 
 ## Data provenance
 
-HF API verification: 2026-11-11 (repos, parameter totals, context values,
+Hugging Face API verification: 2026-11-11 (repos, parameter totals, context values,
 license, monthly downloads, exact quant file bytes). Device measurements:
 redfin (Pixel 5, Android 14), 2026-11-11, via the harness above. No
 third-party phone specifications are used anywhere in this profile.

@@ -68,7 +68,7 @@ agent harness needs."
 The base repository's safetensors total is **1,543,714,304** unique
 weights; the shipped GGUF's metadata reports **1,777,088,000**, counting
 the tied input/output embedding matrix twice. Same convention difference
-as the 0.5B profile documents — both values are exact HF API reads from
+as the 0.5B profile documents — both values are exact Hugging Face API reads from
 the verification date.
 
 ## Context: read the GGUF, not the headline
@@ -110,7 +110,7 @@ following instructions.
 
 ## Data provenance
 
-HF API verification: 2026-11-11 (repos, parameter totals, context values,
+Hugging Face API verification: 2026-11-11 (repos, parameter totals, context values,
 license, monthly downloads, exact quant file bytes). Device measurements:
 redfin (Pixel 5, Android 14), 2026-11-11, via the harness above. No
 third-party phone specifications are used anywhere in this profile.
