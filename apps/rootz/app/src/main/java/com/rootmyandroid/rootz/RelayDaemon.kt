@@ -83,7 +83,13 @@ internal class RelayDaemon(
         val worker: ExecutorService = Executors.newSingleThreadExecutor { r ->
             Thread(r).apply { isDaemon = true; name = "relay-session" }
         },
-    )
+    ) {
+        /** Set by the exact-exit path (owner ruling 2026-11-11): the exit
+         *  frame must drain BEFORE the session is removed — the drain drops
+         *  frames for unknown sessions. Further stdin is dropped meanwhile
+         *  (rootzd parity: stdin after sh death goes nowhere). */
+        @Volatile var closing = false
+    }
 
     private val random = SecureRandom()
     private val outbound = ArrayDeque<Pair<String, ByteArray>>()
@@ -299,6 +305,7 @@ internal class RelayDaemon(
     private fun onEnc(frame: E2eSession.Frame.Enc) {
         val sidKey = E2eSession.B64.encode(frame.sid)
         val entry = sessions[sidKey] ?: return // unknown sid: drop (relay.rs parity)
+        if (entry.closing) return // exit already queued: the session is over
         when (val inner = entry.session.openInner(frame)) {
             null -> removeSession(sidKey) // AEAD auth failure: reap the session (spec §2.4)
             is E2eSession.Inner.Stdin -> {
@@ -350,7 +357,7 @@ internal class RelayDaemon(
         }
         if (line.trim() == "exit") { // owner ruling 2026-11-11 — see class doc
             enqueueInner(sidKey, E2eSession.encodeInnerExit(0))
-            removeSession(sidKey)
+            sessions[sidKey]?.closing = true // drain sends exit, THEN removes
             return
         }
         val endpoint = adbWifi.connectEndpoint
@@ -427,6 +434,7 @@ internal class RelayDaemon(
                 return
             }
             sentInWindow++
+            if (entry.closing) sessions.remove(sidKey)?.worker?.shutdownNow()
         }
         if (now - lastSweepMs >= SWEEP_INTERVAL_MS) {
             lastSweepMs = now
