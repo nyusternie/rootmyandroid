@@ -120,17 +120,18 @@ class E2eVectorTest {
 
     @Test
     fun `daemon session_info encoding matches fixture content`() {
-        // Content parity, NOT byte-exact: the Maven org.json on the test JVM
-        // uses HashMap (deliberately unordered keys — JSON object order is
-        // not significant per RFC 8259 §4), while serde and every parser in
-        // the pipeline read frames BY KEY. Compare the decoded fields.
+        // Content parity, NOT byte-exact: org.json key emission order is
+        // impl-dependent (unspecified — RFC 8259 §4) while serde and every
+        // parser in the pipeline read frames BY KEY. Compare by key, using
+        // only the classic org.json API surface (the unit-test compile
+        // classpath binds JSONObject to android.jar, which predates
+        // keySet()/toMap()).
         val encoded = JSONObject(String(E2eSession.encodeInnerSessionInfo("Pixel 5", "root", "26.11.9"), Charsets.UTF_8))
         val fixtureJson = JSONObject(fixture.getString("plaintext_inner_json"))
-        assertEquals(fixtureJson.getString("type"), encoded.getString("type"))
-        assertEquals(fixtureJson.getString("name"), encoded.getString("name"))
-        assertEquals(fixtureJson.getString("tier"), encoded.getString("tier"))
-        assertEquals(fixtureJson.getString("version"), encoded.getString("version"))
-        assertEquals(fixtureJson.toMap().keys, encoded.toMap().keys)
+        assertEquals(fixtureJson.length(), encoded.length())
+        for (key in fixtureJson.keys()) {
+            assertEquals(fixtureJson.getString(key), encoded.getString(key))
+        }
     }
 
     @Test
