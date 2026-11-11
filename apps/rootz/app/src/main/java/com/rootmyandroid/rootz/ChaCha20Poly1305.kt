@@ -130,6 +130,30 @@ internal object ChaCha20Poly1305 {
         return bigIntToLe16(acc.add(s).mod(TWO_128))
     }
 
+    // TEMPORARY DEBUG (2026-11-11, CI tag-mismatch hunt) — exposes Poly1305
+    // internals as a printable string. REMOVE with the debug test.
+    internal fun debugTag(key: ByteArray, nonce: ByteArray, ct: ByteArray): String {
+        val otk = block(key, 0, nonce).copyOfRange(0, 32)
+        val r = leToBigInt(otk.copyOfRange(0, 16)).and(R_CLAMP)
+        val s = leToBigInt(otk.copyOfRange(16, 32))
+        val padded = ct + ByteArray((16 - ct.size % 16) % 16) + ByteArray(16)
+        for (i in 0 until 8) padded[padded.size - 8 + i] = (ct.size ushr (8 * i)).toByte()
+        var acc = BigInteger.ZERO
+        var offset = 0
+        val sb = StringBuilder()
+        sb.append("otk=").append(otk.joinToString("") { "%02x".format(it) })
+        sb.append(" r=").append(r.toString(16))
+        sb.append(" s=").append(s.toString(16))
+        while (offset < padded.size) {
+            val n = leToBigInt(padded.copyOfRange(offset, offset + 16)).add(TWO_128)
+            acc = acc.add(n).multiply(r).mod(POLY_P)
+            sb.append(" acc[$offset]=").append(acc.toString(16))
+            offset += 16
+        }
+        sb.append(" final=").append(bigIntToLe16(acc.add(s).mod(TWO_128)).joinToString("") { "%02x".format(it) })
+        return sb.toString()
+    }
+
     private fun constantTimeEq(a: ByteArray, b: ByteArray): Boolean {
         if (a.size != b.size) return false
         var diff = 0
