@@ -236,6 +236,12 @@ async function main() {
   say('--- transcript ---')
 
   const transcript = []
+  // 2026-11-11 iteration 3 (owner-approved): repeated-action detection
+  // lives in the DRIVER, not the model — Phase-3 t3 + both demo runs
+  // measured that models at EVERY tier (4B-2507 included) loop on a
+  // stalled sub-goal under greedy decoding. An exact repeat of an
+  // ALREADY-EXECUTED command is refused to execute and nudged back.
+  const executed = new Set()
   let parseFails = 0
   for (let turn = 1; turn <= MAX_TURNS; turn++) {
     const t = thermal()
@@ -268,7 +274,10 @@ async function main() {
     if (!verdict.allow) {
       const worst = verdict.findings.find(f => f.risk === verdict.risk)
       result = JSON.stringify({ guard: 'REFUSED', risk: Object.keys(Risk)[verdict.risk], pattern: worst.key, reason: worst.reason })
+    } else if (executed.has(action.cmd.trim().replace(/\s+/g, ' '))) {
+      result = JSON.stringify({ guard: 'LOOP', error: 'you already ran this exact command — pick a DIFFERENT command that targets the first unanswered checklist item' })
     } else {
+      executed.add(action.cmd.trim().replace(/\s+/g, ' '))
       const ex = adb(action.cmd, 15000)
       result = JSON.stringify({ rc: ex.rc, stdout: ex.stdout.slice(0, 400), stderr: ex.stderr.slice(0, 200) })
     }
