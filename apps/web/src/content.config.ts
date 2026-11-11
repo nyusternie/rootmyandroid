@@ -94,4 +94,85 @@ const devices = defineCollection({
   }),
 })
 
-export const collections = { guides, roms, devices }
+const models = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/models' }),
+  // Model profiles (/model/<id>) — unique on-device model records mixing
+  // Hugging Face-verified metadata with our own measured benchmark
+  // history. AGENTS.md rule 3 applies to every field: params/context/
+  // license/downloads come from the HF API on `verified`; throughput
+  // numbers come from device runs whose raw logs are committed to this
+  // repository and linked from each benchmark entry.
+  schema: z.object({
+    // Canonical model name as shipped (e.g. "Qwen2.5-0.5B-Instruct").
+    name: z.string(),
+    // Family + vendor, free-form (e.g. "Qwen2.5 (Alibaba)").
+    family: z.string(),
+    // One-paragraph description for meta/OG and the profile lede.
+    description: z.string(),
+    // Hugging Face repo ids (org/name) — base weights and the GGUF we
+    // verified + benchmarked (official or community).
+    hfBase: z.string(),
+    hfGguf: z.string(),
+    // License tag as listed on the HF repo at verification time.
+    license: z.string(),
+    // Monthly downloads reported by the HF API on `verified`.
+    downloadsMonthly: z.number(),
+    // Unique parameters: safetensors.total of the BASE repo.
+    paramsUnique: z.number(),
+    // GGUF-reported parameter total (gguf.total — counts tied embeddings
+    // twice on models that tie them); null when not extracted.
+    paramsGguf: z.number().nullable(),
+    // Native context from the base repo's config.json
+    // (max_position_embeddings / text_config).
+    contextTokens: z.number(),
+    // context_length stored in the SHIPPED GGUF's metadata — what
+    // llama.cpp actually defaults to; null when not extracted. Differs
+    // from contextTokens on real models (observed 2026-11-11), hence a
+    // separate field rather than an assumption of equality.
+    contextGguf: z.number().nullable(),
+    // Quant of the verified/benchmarked GGUF file (e.g. "Q4_K_M").
+    quant: z.string(),
+    // Exact filename of that GGUF within its repo.
+    ggufFile: z.string(),
+    // Exact shipped byte size of that file (HF tree API on `verified`).
+    ggufBytes: z.number(),
+    // Free-RAM tier label, matching the /models catalog grouping.
+    tier: z.string(),
+    // HF verification date (ISO yyyy-mm-dd).
+    verified: z.coerce.date(),
+    // Last content-change date — bump on any edit; drives the visible
+    // "Updated" line and dateModified in the TechArticle JSON-LD.
+    updated: z.coerce.date(),
+    // Measured benchmark history, newest last. `log` links the committed
+    // raw output; tps/err are the mean ± stddev llama-bench reports.
+    benchmarks: z
+      .array(
+        z.object({
+          date: z.coerce.date(),
+          device: z.string(),
+          toolchain: z.string(),
+          log: z.string().url(),
+          cells: z.array(
+            z.object({
+              name: z.string(),
+              mask: z.string(),
+              threads: z.number(),
+              tests: z.array(
+                z.object({
+                  name: z.string(),
+                  tps: z.number(),
+                  err: z.number(),
+                }),
+              ),
+            }),
+          ),
+          notes: z.string().optional(),
+        }),
+      )
+      .optional()
+      .default([]),
+    draft: z.boolean().optional().default(false),
+  }),
+})
+
+export const collections = { guides, roms, devices, models }

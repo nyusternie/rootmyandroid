@@ -21,6 +21,8 @@ const common = {
   footerTagline:
     'Scan your Android device and get a rooting / upgrade plan. No email, no password.',
   footerProduct: 'Product',
+  footerResources: 'Resources',
+  footerModels: 'Models',
   footerLegal: 'Legal',
   footerScan: 'Scan',
   footerGuides: 'Guides',

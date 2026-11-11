@@ -567,13 +567,29 @@
 
   /* ---------- footer ---------- */
   .site-footer {
-    @apply mt-[4rem] border-t border-line pb-[3rem] pt-[2.5rem] text-[0.85rem] text-faint;
+    @apply relative isolate mt-[4rem] border-t border-line pb-[3rem] pt-[2.5rem] text-[0.85rem] text-faint;
+  }
+  /* Circuit-roots backdrop (owner request 2026-11-11): a 240x200 SVG tile
+     — right-angle circuit traces with node pads plus a few organic
+     root-like branches — at ~9% opacity of the Android green accent.
+     Decorative only: pseudo-element with pointer-events disabled, no
+     effect on link/text contrast. The data-URI has < > percent-encoded
+     (RFC 2397-safe in every browser). */
+  .site-footer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.09;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='200' viewBox='0 0 240 200'%3E%3Cg fill='none' stroke='rgba(61,220,132,0.55)' stroke-width='1'%3E%3Cpath d='M-2 34h58l14 14h44'/%3E%3Cpath d='M242 66h-64l-12 12v38'/%3E%3Cpath d='M28 -2v48l16 16v32'/%3E%3Cpath d='M96 202v-44l12-12h32l12-12v-34'/%3E%3Cpath d='M186 202v-32l-14-14h-34'/%3E%3Cpath d='M52 104l22 22v18l10 10'/%3E%3Cpath d='M150 42l12 12h36'/%3E%3Cpath d='M210 148l12 12v26'/%3E%3Cpath d='M44 128c12 8 8 22 16 32 8 9 18 8 24 18'/%3E%3Cpath d='M140 158c8 10 4 20 12 28'/%3E%3Cpath d='M30 96c10 6 6 16 14 24'/%3E%3C/g%3E%3Cg fill='rgba(61,220,132,0.55)'%3E%3Ccircle cx='118' cy='48' r='2.4'/%3E%3Ccircle cx='166' cy='154' r='2.4'/%3E%3Ccircle cx='44' cy='94' r='2.4'/%3E%3Ccircle cx='152' cy='112' r='2.4'/%3E%3Ccircle cx='84' cy='144' r='2.4'/%3E%3Ccircle cx='202' cy='54' r='2.4'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 240px 200px;
   }
   .site-footer .container {
     @apply max-w-[60rem];
   }
   .footer-grid {
-    @apply flex flex-wrap justify-between gap-[2rem];
+    @apply grid grid-cols-1 gap-[2rem] min-[560px]:grid-cols-2 min-[940px]:grid-cols-[1.2fr_1fr_1fr_0.8fr];
   }
   .footer-brand {
     @apply min-w-[12rem] max-w-[16rem] flex-1;

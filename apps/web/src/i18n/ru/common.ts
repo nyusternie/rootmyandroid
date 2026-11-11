@@ -14,6 +14,8 @@ const common: typeof en = {
   footerTagline:
     'Отсканируйте ваше Android-устройство и получите план рутирования / обновления. Без email, без пароля.',
   footerProduct: 'Продукт',
+  footerResources: 'Ресурсы',
+  footerModels: 'Модели',
   footerLegal: 'Правовая информация',
   footerScan: 'Сканирование',
   footerGuides: 'Гайды',

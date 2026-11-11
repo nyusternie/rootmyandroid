@@ -13,6 +13,8 @@ const common: typeof en = {
   footerTagline:
     'Android 기기를 스캔하고 루팅 / 업그레이드 계획을 받으세요. 이메일도 비밀번호도 필요 없습니다.',
   footerProduct: '제품',
+  footerResources: '리소스',
+  footerModels: '모델',
   footerLegal: '법적 정보',
   footerScan: '스캔',
   footerGuides: '가이드',

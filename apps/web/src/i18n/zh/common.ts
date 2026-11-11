@@ -12,6 +12,8 @@ const common: typeof en = {
   langLabel: '语言',
   footerTagline: '扫描你的 Android 设备，获取 root / 升级方案。无需邮箱，无需密码。',
   footerProduct: '产品',
+  footerResources: '资源',
+  footerModels: '模型',
   footerLegal: '法律信息',
   footerScan: '扫描',
   footerGuides: '指南',
