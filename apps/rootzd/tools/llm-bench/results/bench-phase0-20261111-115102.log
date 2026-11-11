@@ -1,0 +1,33 @@
+bench-phase0 start 2026-11-11 11:51:02 -> /data/local/tmp/llama/bench-phase0-20261111-115102.log
+
+=== silver-6 (mask 3f, -t 6) 2026-11-11 11:51:02 ===
+thermal before: status , cpu-0-0-usr 46C
+| model                          |       size |     params | backend    | threads |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --------------: | -------------------: |
+| qwen2 1B Q4_K - Medium         | 462.96 MiB |   630.17 M | CPU        |       6 |           pp128 |         20.43 ± 0.03 |
+| qwen2 1B Q4_K - Medium         | 462.96 MiB |   630.17 M | CPU        |       6 |            tg64 |         12.08 ± 0.14 |
+
+build: cd959ba (1)
+thermal after: status , cpu-0-0-usr 46C
+
+=== gold-2 (mask c0, -t 2) 2026-11-11 11:51:45 ===
+thermal before: status , cpu-0-0-usr 46C
+| model                          |       size |     params | backend    | threads |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --------------: | -------------------: |
+| qwen2 1B Q4_K - Medium         | 462.96 MiB |   630.17 M | CPU        |       2 |           pp128 |         27.57 ± 0.14 |
+| qwen2 1B Q4_K - Medium         | 462.96 MiB |   630.17 M | CPU        |       2 |            tg64 |         19.87 ± 0.01 |
+
+build: cd959ba (1)
+thermal after: status , cpu-0-0-usr 46C
+
+=== all-8 (mask ff, -t 8) 2026-11-11 11:52:14 ===
+thermal before: status , cpu-0-0-usr 46C
+| model                          |       size |     params | backend    | threads |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --------------: | -------------------: |
+| qwen2 1B Q4_K - Medium         | 462.96 MiB |   630.17 M | CPU        |       8 |           pp128 |         47.72 ± 0.05 |
+| qwen2 1B Q4_K - Medium         | 462.96 MiB |   630.17 M | CPU        |       8 |            tg64 |         20.47 ± 0.13 |
+
+build: cd959ba (1)
+thermal after: status , cpu-0-0-usr 46C
+
+bench-phase0 done 2026-11-11 11:52:35
