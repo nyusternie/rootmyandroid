@@ -410,14 +410,42 @@ phase — every claim below is measured and cited there).
   of the input cards it was squeezed to 26dp and output was invisible
   (measured via uiautomator bounds; uiautomator dump is the text-only way
   to inspect the UI — never screenshot into context, rule 6).
-- **Next milestone: link Rootz devices to Root My Android accounts**
-  (Mullvad-style account numbers via the /v1 API — the contract lives in
-  the sibling rootmyandroid-api repo, which is NOT in this repository;
-  design the contract deliberately, no guessing per rule 3). Candidate
-  device identity: the app's persistent ADB keypair (hash of the enrolled
-  public key) — to be decided next session. (The DAEMON lane of
-  account-linked remote access shipped meanwhile — see Rootz daemon
-  (live) below.)
+- **Relay DAEMON lane in the APK — SHIPPED + VERIFIED LIVE 2026-11-11
+  on blueline (Pixel 3, Android 12) through the PRODUCTION relay**
+  (owner ruling 2026-11-11: the APK IS the daemon on non-rooted phones;
+  rootzd stays the root tier): RelayIdentity.kt (Ed25519 keypair at
+  filesDir/relay/device.key; device_id = hex sha256(pubkey)),
+  RelayDaemon.kt (pair-once marker filesDir/relay/paired → POST
+  /v1/relay/challenge → wss tunnel → first-message Ed25519 auth; backoff
+  1s→60s+jitter; 90 frames/s pacing under the relay's 100/s cap; 10-min
+  idle reap; 403/4403 revoked park, 409 key-conflict operator-fatal park
+  — relay.rs parity), E2eSession.kt daemon functions (daemon fixture
+  replay tests in E2eVectorTest). Execution: each stdin LINE is a
+  one-shot through the app's wireless-ADB loop (AdbConnection, uid 2000)
+  — no persistent sh, no cwd/env across lines (a local Runtime sh would
+  run at the app's lesser uid). Every line passes
+  CommandGuard.decisionFor first; gated commands are REFUSED with an
+  stderr frame + on-device receipt (interactive approval of remote
+  commands is a later build). Owner ruling 2026-11-11: a line exactly
+  `exit` (trimmed) emits exit{code:0} and closes the session
+  server-side — the session is marked `closing` and the drain SENDS the
+  exit frame BEFORE removing it (live probe caught the first cut
+  removing first: the drain drops frames for removed sessions).
+  Browser /terminal owner-verified: `id` → uid=2000(shell),
+  `getprop ro.product.model` → Pixel 3, `exit` → code 0.
+- **Live-test lessons (2026-11-11):** (1) cross-account client attach is
+  refused by the relay with the SAME 404 as an unknown device
+  (anti-enumeration — rootmyandroid-relay/src/index.js:74-76); browsers
+  surface it as WS close 1006 — always drive /terminal with the account
+  the device is ACTUALLY paired to (account numbers stay out of the
+  repo, rule 3a). (2) The daemon is bound to the app process (no
+  foreground service yet): with the screen off the backgrounded app's
+  network access is suspended (observed: challenge POSTs fail in that
+  state, recover on wake — Android doze/background restrictions); a
+  foreground service is the TOP follow-up. (3) Always dispatch
+  rootz.yml with an explicit `--ref master` — `gh workflow run` bare,
+  fired seconds after a push, was observed resolving a STALE head
+  (2026-11-11: run built f5070fa instead of the just-pushed 67cbecf).
 
 ## Rootz daemon (live)
 
