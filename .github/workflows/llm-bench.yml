@@ -91,7 +91,18 @@ jobs:
           sdkmanager_bin="$(command -v sdkmanager)"
           sdk_root="$(cd "$(dirname "$sdkmanager_bin")/../.." && pwd)"
           echo "SDK_ROOT=$sdk_root" >> "$GITHUB_ENV"
-          yes | sdkmanager "ndk;27.1.12297006" >/dev/null
+          echo "SDK_ROOT pinned: $sdk_root"
+          # Skip when the NDK is already on the runner (repeat dispatches);
+          # capture the installer log (the bare >/dev/null form swallowed
+          # real errors — observed 2026-11-11), suspend pipefail for this
+          # one pipeline (yes dies by SIGPIPE on prompt-free installs),
+          # and gate on the directory existing afterwards.
+          if [ ! -d "$sdk_root/ndk/27.1.12297006" ]; then
+            set +o pipefail
+            yes | sdkmanager "ndk;27.1.12297006" >/tmp/ndk-install.log 2>&1 || { tail -50 /tmp/ndk-install.log; exit 1; }
+            set -o pipefail
+          fi
+          test -d "$sdk_root/ndk/27.1.12297006"
 
       - name: Fetch llama.cpp v0.9.0 (pinned + SHA-verified)
         shell: bash
