@@ -59,8 +59,15 @@ cooldown() {
   i=0
   while [ "$i" -lt 20 ]; do
     t=$(cpu_temp)
-    [ "${t:-999}" -le 50 ] && return 0
-    echo "cooldown: cpu-0-0-usr ${t}C > 50C, waiting 30s ($((i + 1))/20)" | tee -a "$OUT"
+    s=$(thermal_status)
+    s=${s:-9}
+    t_int=${t%.*}
+    t_int=${t_int:-999}
+    # Both gates: temp <= 50C AND status < 2 (fixed 2026-11-11 — the
+    # Phase-2 run showed a temperature-only gate re-running at status 2
+    # when a different sensor drives the status).
+    [ "$t_int" -le 50 ] && [ "$s" -lt 2 ] && return 0
+    echo "cooldown: cpu-0-0-usr ${t}C / status ${s} — waiting 30s ($((i + 1))/20)" | tee -a "$OUT"
     sleep 30
     guard
     i=$((i + 1))

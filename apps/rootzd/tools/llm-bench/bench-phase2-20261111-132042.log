@@ -1,0 +1,170 @@
+[phase2 2026-11-11T18:20:42Z] === Phase 2 — 4B upper-bound fit + context envelope on redfin ===
+[phase2 2026-11-11T18:20:42Z] device: Pixel 5 / 14 / redfin
+-rw-rw-rw- 1 shell shell 2497280256 2026-11-11 13:17 Qwen3-4B-Q4_K_M.gguf
+-rw-rw-rw- 1 shell shell 2497280736 2026-11-11 13:15 Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf
+[phase2 2026-11-11T18:20:42Z] --- A) Qwen3-4B Q4_K_M fit test ---
+[phase2 2026-11-11T18:20:42Z] MemAvailable before fit-all-8: 3865120 kB
+[phase2 2026-11-11T18:20:42Z] RUN fit-all-8 (Qwen3-4B-Q4_K_M.gguf -p 128 -n 128 -r 3) — thermal: status=0 cpu=46.500004C
+| model                          |       size |     params | backend    | threads |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --------------: | -------------------: |
+| qwen3 4B Q4_K - Medium         |   2.32 GiB |     4.02 B | CPU        |       8 |           pp128 |          5.84 ± 0.04 |
+| qwen3 4B Q4_K - Medium         |   2.32 GiB |     4.02 B | CPU        |       8 |           tg128 |          3.44 ± 0.06 |
+
+build: cd959ba (1)
+[phase2 2026-11-11T18:20:42Z] END fit-all-8 rc=0 — thermal: status=1 cpu=46.500004C
+[phase2 2026-11-11T18:20:42Z] MemAvailable after fit-all-8: 4120832 kB
+[phase2 2026-11-11T18:20:42Z] cooldown: cpu temp 46.500004C <= 50C — proceeding
+[phase2 2026-11-11T18:20:42Z] --- B) Qwen3-4B-Instruct-2507 Q4_K_M fit test ---
+[phase2 2026-11-11T18:20:42Z] MemAvailable before fit-all-8: 4120468 kB
+[phase2 2026-11-11T18:20:42Z] RUN fit-all-8 (Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf -p 128 -n 128 -r 3) — thermal: status=1 cpu=46.500004C
+| model                          |       size |     params | backend    | threads |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --------------: | -------------------: |
+| qwen3 4B Q4_K - Medium         |   2.32 GiB |     4.02 B | CPU        |       8 |           pp128 |          5.18 ± 0.00 |
+| qwen3 4B Q4_K - Medium         |   2.32 GiB |     4.02 B | CPU        |       8 |           tg128 |          2.97 ± 0.23 |
+
+build: cd959ba (1)
+[phase2 2026-11-11T18:20:42Z] END fit-all-8 rc=0 — thermal: status=2 cpu=46.500004C
+[phase2 2026-11-11T18:20:42Z] MemAvailable after fit-all-8: 4361796 kB
+[phase2 2026-11-11T18:20:42Z] cooldown: cpu temp 46.500004C <= 50C — proceeding
+[phase2 2026-11-11T18:20:42Z] --- C) 2507 context envelope: 8k f16 KV ---
+[phase2 2026-11-11T18:20:42Z] MemAvailable before env-8k-f16: 4362712 kB
+[phase2 2026-11-11T18:20:42Z] ABORT: Thermal Status 2 (>= 2) — skipping run, cooling down
+[phase2 2026-11-11T18:20:42Z] cooldown: cpu temp 46.500004C <= 50C — proceeding
+[phase2 2026-11-11T18:20:42Z] RUN env-8k-f16 (Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf -c 8192 -p 4096 -n 32 -r 1) — thermal: status=2 cpu=46.500004C
+error: invalid parameter for argument: -c
+usage: ./llama-bench [options]
+
+options:
+  -h, --help
+  --version                                   show version and build info
+  --numa <distribute|isolate|numactl>         numa mode (default: disabled)
+  -r, --repetitions <n>                       number of times to repeat each test (default: 5)
+  --prio <-1|0|1|2|3>                         process/thread priority (default: 0)
+  --delay <0...N> (seconds)                   delay between each test (default: 0)
+  -o, --output <csv|json|jsonl|md|sql>        output format printed to stdout (default: md)
+  -oe, --output-err <csv|json|jsonl|md|sql>   output format printed to stderr (default: none)
+  --list-devices                              list available devices and exit
+  -v, --verbose                               verbose output
+  --progress                                  print test progress indicators
+  --no-warmup                                 skip warmup runs before benchmarking
+  -fitt, --fit-target <MiB>                   fit model to device memory with this margin per device in MiB (default: off)
+  -fitc, --fit-ctx <n>                        minimum ctx size for --fit-target (default: 0)
+
+test parameters:
+  -m, --model <filename>                            (default: models/7B/ggml-model-q4_0.gguf)
+  -hf, -hfr, --hf-repo <user>/<model>[:quant]       Hugging Face model repository; quant is optional, case-insensitive
+                                                    default to Q4_K_M, or falls back to the first file in the repo if Q4_K_M doesn't exist.
+                                                    example: ggml-org/GLM-4.7-Flash-GGUF:Q4_K_M
+                                                    (default: unused)
+  -hff, --hf-file <file>                            Hugging Face model file. If specified, it will override the quant in --hf-repo
+                                                    (default: unused)
+  -hft, --hf-token <token>                          Hugging Face access token
+                                                    (default: value from HF_TOKEN environment variable)
+  --offline                                         Offline mode: forces use of cache, prevents network access
+                                                    (default: disabled)
+  -p, --n-prompt <n>                                (default: 512)
+  -n, --n-gen <n>                                   (default: 128)
+  -pg <pp,tg>                                       (default: )
+  -d, --n-depth <n>                                 (default: 0)
+  -b, --batch-size <n>                              (default: 2048)
+  -ub, --ubatch-size <n>                            (default: 512)
+  -ctk, --cache-type-k <t>                          (default: f16)
+  -ctv, --cache-type-v <t>                          (default: f16)
+  -t, --threads <n>                                 (default: 8)
+  -C, --cpu-mask <hex,hex>                          (default: 0x0)
+  --cpu-strict <0|1>                                (default: 0)
+  --poll <0...100>                                  (default: 50)
+  -ngl, --n-gpu-layers <n>                          (default: -1)
+  -ncmoe, --n-cpu-moe <n>                           (default: 0)
+  -sm, --split-mode <none|layer|row|tensor>         (default: layer)
+  -mg, --main-gpu <i>                               (default: 0)
+  -nkvo, --no-kv-offload <0|1>                      (default: 0)
+  -fa, --flash-attn <on|off|auto>                   (default: auto)
+  -dev, --device <dev0/dev1/...>                    (default: auto)
+  -lm, --load-mode <auto|none|mmap|mlock|mmap+mlock|dio> (default: auto)
+  -lzm, --lazy-mode <on|auto|off>                   (default: auto)
+  -embd, --embeddings <0|1>                         (default: 0)
+  -ts, --tensor-split <ts0/ts1/..>                  (default: 0)
+  -ot --override-tensor <tensor name pattern>=<buffer type>;...
+                                                    (default: disabled)
+  -nopo, --no-op-offload <0|1>                      (default: 0)
+  --no-host <0|1>                                   (default: 0)
+  --repack <0|1>                                    (default: 1)
+
+Multiple values can be given for each parameter by separating them with ','
+or by specifying the parameter multiple times. Ranges can be given as
+'first-last' or 'first-last+step' or 'first-last*mult'.
+[phase2 2026-11-11T18:20:42Z] END env-8k-f16 rc=1 — thermal: status=2 cpu=46.500004C
+[phase2 2026-11-11T18:20:42Z] MemAvailable after env-8k-f16: 4362652 kB
+[phase2 2026-11-11T18:20:42Z] cooldown: cpu temp 46.500004C <= 50C — proceeding
+[phase2 2026-11-11T18:20:42Z] --- C) 2507 context envelope: 16k q8 KV ---
+[phase2 2026-11-11T18:20:42Z] MemAvailable before env-16k-q8: 4362580 kB
+[phase2 2026-11-11T18:20:42Z] ABORT: Thermal Status 2 (>= 2) — skipping run, cooling down
+[phase2 2026-11-11T18:20:42Z] cooldown: cpu temp 46.500004C <= 50C — proceeding
+[phase2 2026-11-11T18:20:42Z] RUN env-16k-q8 (Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf -c 16384 -p 4096 -n 32 -r 1 -ctk q8_0 -ctv q8_0) — thermal: status=2 cpu=46.500004C
+error: invalid parameter for argument: -c
+usage: ./llama-bench [options]
+
+options:
+  -h, --help
+  --version                                   show version and build info
+  --numa <distribute|isolate|numactl>         numa mode (default: disabled)
+  -r, --repetitions <n>                       number of times to repeat each test (default: 5)
+  --prio <-1|0|1|2|3>                         process/thread priority (default: 0)
+  --delay <0...N> (seconds)                   delay between each test (default: 0)
+  -o, --output <csv|json|jsonl|md|sql>        output format printed to stdout (default: md)
+  -oe, --output-err <csv|json|jsonl|md|sql>   output format printed to stderr (default: none)
+  --list-devices                              list available devices and exit
+  -v, --verbose                               verbose output
+  --progress                                  print test progress indicators
+  --no-warmup                                 skip warmup runs before benchmarking
+  -fitt, --fit-target <MiB>                   fit model to device memory with this margin per device in MiB (default: off)
+  -fitc, --fit-ctx <n>                        minimum ctx size for --fit-target (default: 0)
+
+test parameters:
+  -m, --model <filename>                            (default: models/7B/ggml-model-q4_0.gguf)
+  -hf, -hfr, --hf-repo <user>/<model>[:quant]       Hugging Face model repository; quant is optional, case-insensitive
+                                                    default to Q4_K_M, or falls back to the first file in the repo if Q4_K_M doesn't exist.
+                                                    example: ggml-org/GLM-4.7-Flash-GGUF:Q4_K_M
+                                                    (default: unused)
+  -hff, --hf-file <file>                            Hugging Face model file. If specified, it will override the quant in --hf-repo
+                                                    (default: unused)
+  -hft, --hf-token <token>                          Hugging Face access token
+                                                    (default: value from HF_TOKEN environment variable)
+  --offline                                         Offline mode: forces use of cache, prevents network access
+                                                    (default: disabled)
+  -p, --n-prompt <n>                                (default: 512)
+  -n, --n-gen <n>                                   (default: 128)
+  -pg <pp,tg>                                       (default: )
+  -d, --n-depth <n>                                 (default: 0)
+  -b, --batch-size <n>                              (default: 2048)
+  -ub, --ubatch-size <n>                            (default: 512)
+  -ctk, --cache-type-k <t>                          (default: f16)
+  -ctv, --cache-type-v <t>                          (default: f16)
+  -t, --threads <n>                                 (default: 8)
+  -C, --cpu-mask <hex,hex>                          (default: 0x0)
+  --cpu-strict <0|1>                                (default: 0)
+  --poll <0...100>                                  (default: 50)
+  -ngl, --n-gpu-layers <n>                          (default: -1)
+  -ncmoe, --n-cpu-moe <n>                           (default: 0)
+  -sm, --split-mode <none|layer|row|tensor>         (default: layer)
+  -mg, --main-gpu <i>                               (default: 0)
+  -nkvo, --no-kv-offload <0|1>                      (default: 0)
+  -fa, --flash-attn <on|off|auto>                   (default: auto)
+  -dev, --device <dev0/dev1/...>                    (default: auto)
+  -lm, --load-mode <auto|none|mmap|mlock|mmap+mlock|dio> (default: auto)
+  -lzm, --lazy-mode <on|auto|off>                   (default: auto)
+  -embd, --embeddings <0|1>                         (default: 0)
+  -ts, --tensor-split <ts0/ts1/..>                  (default: 0)
+  -ot --override-tensor <tensor name pattern>=<buffer type>;...
+                                                    (default: disabled)
+  -nopo, --no-op-offload <0|1>                      (default: 0)
+  --no-host <0|1>                                   (default: 0)
+  --repack <0|1>                                    (default: 1)
+
+Multiple values can be given for each parameter by separating them with ','
+or by specifying the parameter multiple times. Ranges can be given as
+'first-last' or 'first-last+step' or 'first-last*mult'.
+[phase2 2026-11-11T18:20:42Z] END env-16k-q8 rc=1 — thermal: status=2 cpu=46.500004C
+[phase2 2026-11-11T18:20:42Z] MemAvailable after env-16k-q8: 4361200 kB
+[phase2 2026-11-11T18:20:42Z] === Phase 2 suite finished ===

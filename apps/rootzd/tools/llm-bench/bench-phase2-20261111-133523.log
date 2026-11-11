@@ -1,0 +1,59 @@
+[phase2 2026-11-11T18:35:23Z] === Phase 2 — 4B upper-bound fit + context envelope on redfin ===
+[phase2 2026-11-11T18:35:23Z] device: Pixel 5 / 14 / redfin
+-rw-rw-rw- 1 shell shell 2497280256 2026-11-11 13:17 Qwen3-4B-Q4_K_M.gguf
+-rw-rw-rw- 1 shell shell 2497280736 2026-11-11 13:15 Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf
+[phase2 2026-11-11T18:35:23Z] --- A) Qwen3-4B Q4_K_M fit test ---
+[phase2 2026-11-11T18:35:23Z] MemAvailable before fit-all-8: 4388436 kB
+[phase2 2026-11-11T18:35:23Z] RUN fit-all-8 (./llama-bench -m Qwen3-4B-Q4_K_M.gguf -p 128 -n 128 -r 3) — thermal: status=1 cpu=46.500004C
+| model                          |       size |     params | backend    | threads |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --------------: | -------------------: |
+| qwen3 4B Q4_K - Medium         |   2.32 GiB |     4.02 B | CPU        |       8 |           pp128 |          4.48 ± 0.29 |
+| qwen3 4B Q4_K - Medium         |   2.32 GiB |     4.02 B | CPU        |       8 |           tg128 |          3.01 ± 0.13 |
+
+build: cd959ba (1)
+[phase2 2026-11-11T18:35:23Z] END fit-all-8 rc=0 — thermal: status=2 cpu=46.500004C
+[phase2 2026-11-11T18:35:23Z] MemAvailable after fit-all-8: 4484332 kB
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (1/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (2/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (3/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (4/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (5/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (6/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (7/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C <= 50C and status 1 < 2 — proceeding
+[phase2 2026-11-11T18:35:23Z] --- B) Qwen3-4B-Instruct-2507 Q4_K_M fit test ---
+[phase2 2026-11-11T18:35:23Z] MemAvailable before fit-all-8: 4452380 kB
+[phase2 2026-11-11T18:35:23Z] RUN fit-all-8 (./llama-bench -m Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf -p 128 -n 128 -r 3) — thermal: status=1 cpu=46.500004C
+| model                          |       size |     params | backend    | threads |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --------------: | -------------------: |
+| qwen3 4B Q4_K - Medium         |   2.32 GiB |     4.02 B | CPU        |       8 |           pp128 |          5.20 ± 0.03 |
+| qwen3 4B Q4_K - Medium         |   2.32 GiB |     4.02 B | CPU        |       8 |           tg128 |          2.90 ± 0.24 |
+
+build: cd959ba (1)
+[phase2 2026-11-11T18:35:23Z] END fit-all-8 rc=0 — thermal: status=2 cpu=46.500004C
+[phase2 2026-11-11T18:35:23Z] MemAvailable after fit-all-8: 4620988 kB
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (1/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (2/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (3/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (4/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (5/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (6/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (7/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (8/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (9/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (10/20)
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C <= 50C and status 1 < 2 — proceeding
+[phase2 2026-11-11T18:35:23Z] --- C) 2507 context envelope: 8k f16 KV ---
+[phase2 2026-11-11T18:35:23Z] MemAvailable before env-8k-f16: 4577708 kB
+[phase2 2026-11-11T18:35:23Z] RUN env-8k-f16 (./llama-cli -m Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf -c 8192 -no-cnv -ctk f16 -ctv f16 -p You are a helpful assistant. Answer in one short sentence: what is 2 + 2? -n 32) — thermal: status=1 cpu=46.500004C
+error: invalid argument: -no-cnv
+[phase2 2026-11-11T18:35:23Z] END env-8k-f16 rc=1 — thermal: status=1 cpu=46.500004C
+[phase2 2026-11-11T18:35:23Z] MemAvailable after env-8k-f16: 4576496 kB
+[phase2 2026-11-11T18:35:23Z] cooldown: cpu temp 46.500004C <= 50C and status 1 < 2 — proceeding
+[phase2 2026-11-11T18:35:23Z] --- C) 2507 context envelope: 16k q8 KV ---
+[phase2 2026-11-11T18:35:23Z] MemAvailable before env-16k-q8: 4577056 kB
+[phase2 2026-11-11T18:35:23Z] RUN env-16k-q8 (./llama-cli -m Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf -c 16384 -no-cnv -ctk q8_0 -ctv q8_0 -p You are a helpful assistant. Answer in one short sentence: what is 2 + 2? -n 32) — thermal: status=1 cpu=46.500004C
+error: invalid argument: -no-cnv
+[phase2 2026-11-11T18:35:23Z] END env-16k-q8 rc=1 — thermal: status=1 cpu=46.500004C
+[phase2 2026-11-11T18:35:23Z] MemAvailable after env-16k-q8: 4577224 kB
+[phase2 2026-11-11T18:35:23Z] === Phase 2 suite finished ===

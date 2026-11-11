@@ -1,0 +1,87 @@
+[phase2 2026-11-11T19:12:45Z] === Phase 2 — 4B upper-bound fit + context envelope on redfin ===
+[phase2 2026-11-11T19:12:45Z] device: Pixel 5 / 14 / redfin
+-rw-rw-rw- 1 shell shell 2497280256 2026-11-11 13:17 Qwen3-4B-Q4_K_M.gguf
+-rw-rw-rw- 1 shell shell 2497280736 2026-11-11 13:15 Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf
+[phase2 2026-11-11T19:12:45Z] --- C) 2507 context envelope: 8k f16 KV ---
+[phase2 2026-11-11T19:12:45Z] MemAvailable before env-8k-f16: 4546292 kB
+[phase2 2026-11-11T19:12:45Z] ABORT: Thermal Status 2 (>= 2) — skipping run, cooling down
+[phase2 2026-11-11T19:12:45Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (1/20)
+[phase2 2026-11-11T19:12:45Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (2/20)
+[phase2 2026-11-11T19:12:45Z] cooldown: cpu temp 46.500004C, status 2 — waiting 30s (3/20)
+[phase2 2026-11-11T19:12:45Z] cooldown: cpu temp 46.500004C <= 50C and status 1 < 2 — proceeding
+[phase2 2026-11-11T19:12:45Z] RUN env-8k-f16 (./llama-cli -m Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf -c 8192 -st -t 8 -ctk f16 -ctv f16 -p You are a helpful assistant. Answer in one short sentence: what is 2 + 2? -n 32) — thermal: status=1 cpu=46.500004C
+
+
+Loading model... |-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\| 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b1-cd959ba
+model      : Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+
+> You are a helpful assistant. Answer in one short sentence: what is 2 + 2?
+2 + 2 is 4.
+
+[ Prompt: 4.2 t/s | Generation: 2.9 t/s ]
+
+
+Exiting...
+[phase2 2026-11-11T19:12:45Z] END env-8k-f16 rc=0 — thermal: status=1 cpu=46.500004C
+[phase2 2026-11-11T19:12:45Z] MemAvailable after env-8k-f16: 4774036 kB
+[phase2 2026-11-11T19:12:45Z] cooldown: cpu temp 46.500004C <= 50C and status 1 < 2 — proceeding
+[phase2 2026-11-11T19:12:45Z] --- C) 2507 context envelope: 16k q8 KV ---
+[phase2 2026-11-11T19:12:45Z] MemAvailable before env-16k-q8: 4774796 kB
+[phase2 2026-11-11T19:12:45Z] RUN env-16k-q8 (./llama-cli -m Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf -c 16384 -st -t 8 -ctk q8_0 -ctv q8_0 -p You are a helpful assistant. Answer in one short sentence: what is 2 + 2? -n 32) — thermal: status=1 cpu=46.500004C
+
+
+Loading model... |-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\ 
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b1-cd959ba
+model      : Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf
+ftype      : Q4_K - Medium
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+
+> You are a helpful assistant. Answer in one short sentence: what is 2 + 2?
+2 + 2 is 4.
+
+[ Prompt: 4.6 t/s | Generation: 3.2 t/s ]
+
+
+Exiting...
+[phase2 2026-11-11T19:12:45Z] END env-16k-q8 rc=0 — thermal: status=1 cpu=46.500004C
+[phase2 2026-11-11T19:12:45Z] MemAvailable after env-16k-q8: 4776936 kB
+[phase2 2026-11-11T19:12:45Z] === Phase 2 suite finished ===
