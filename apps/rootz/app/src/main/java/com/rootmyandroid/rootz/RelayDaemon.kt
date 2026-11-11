@@ -398,7 +398,7 @@ internal class RelayDaemon(
             val socket = ws ?: break
             // Raw queued items are already-complete wire frames (the pre-
             // session error frames) — no session exists to seal them with.
-            if (inner.startsWith(RAW_FRAME_SENTINEL)) {
+            if (inner.isNotEmpty() && inner[0] == RAW_FRAME_SENTINEL[0]) {
                 try {
                     socket.send(String(inner, RAW_FRAME_SENTINEL.size, inner.size - RAW_FRAME_SENTINEL.size, Charsets.UTF_8))
                 } catch (e: Exception) {
