@@ -1,0 +1,15 @@
+bench-phase1 start 2026-11-11 11:58:24 -> /data/local/tmp/llama/bench-phase1-20261111-115824.log
+MemAvailable before: 3807772 kB
+
+=== fit-all-8 (mask ff, -t 8) 2026-11-11 11:58:25 ===
+thermal before: status 0, cpu-0-0-usr 46C
+| model                          |       size |     params | backend    | threads |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | ------: | --------------: | -------------------: |
+| qwen2 1.5B Q4_K - Medium       |   1.04 GiB |     1.78 B | CPU        |       8 |           pp128 |         15.71 ± 0.05 |
+| qwen2 1.5B Q4_K - Medium       |   1.04 GiB |     1.78 B | CPU        |       8 |           tg128 |          7.53 ± 0.01 |
+
+build: cd959ba (1)
+thermal after: status 0, cpu-0-0-usr 46C
+
+MemAvailable after: 3785920 kB
+bench-phase1 done 2026-11-11 11:59:49
