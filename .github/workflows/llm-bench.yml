@@ -116,7 +116,11 @@ jobs:
           cd llama-cpp
           actual="$(git rev-parse HEAD)"
           echo "llama.cpp HEAD: $actual"
-          test "$actual" = "c4261a74a59c5a719e8f73038e28633b08f2bea4"
+          # v0.9.0 is an ANNOTATED tag: tag object c4261a74a59c5a719e8f73038e28633b08f2bea4,
+          # peeled commit (v0.9.0^{}) cd959bae99ff4bed22bef2604f45241c09bbb8c8 — the
+          # latter is what HEAD resolves to after a clone (gate corrected
+          # 2026-11-11 after run 43053816728).
+          test "$actual" = "cd959bae99ff4bed22bef2604f45241c09bbb8c8"
 
       # GGML_NATIVE=OFF is load-bearing: without it the build passes the
       # HOST's -march=native flags into a cross-compile for the phone.
@@ -155,7 +159,7 @@ jobs:
           done
           (cd dist && sha256sum llama-bench llama-cli | tee checksums.txt)
           {
-            echo "llama.cpp: v0.9.0 (commit c4261a74a59c5a719e8f73038e28633b08f2bea4)"
+            echo "llama.cpp: v0.9.0 (commit cd959bae99ff4bed22bef2604f45241c09bbb8c8)"
             echo "ndk: 27.1.12297006"
             echo "abi: arm64-v8a (min android-28), static, GGML_NATIVE=OFF"
             echo "built: $(date -u +%Y-%m-%dT%H:%M:%SZ) on blackhost"
