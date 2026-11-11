@@ -25,7 +25,7 @@ benchmarks:
   - date: 2026-11-11
     device: Pixel 5 (redfin), Android 14, 8 GB RAM
     toolchain: llama.cpp v0.9.0 (commit cd959ba), llama-bench, static arm64-v8a NDK build, CPU backend
-    log: https://raw.githubusercontent.com/root-my-android/rootmyandroid/master/apps/rootzd/tools/llm-bench/bench-phase2-20261111-132042.log
+    log: https://github.com/nyusternie/rootmyandroid/blob/master/apps/rootzd/tools/llm-bench/results/bench-phase2-20261111-132042.log
     cells:
       - name: fit-all-8
         mask: 'ff'
@@ -44,7 +44,7 @@ benchmarks:
   - date: 2026-11-11
     device: Pixel 5 (redfin), Android 14, 8 GB RAM
     toolchain: llama.cpp v0.9.0 (commit cd959ba), llama-bench, static arm64-v8a NDK build, CPU backend
-    log: https://raw.githubusercontent.com/root-my-android/rootmyandroid/master/apps/rootzd/tools/llm-bench/bench-phase2-20261111-133523.log
+    log: https://github.com/nyusternie/rootmyandroid/blob/master/apps/rootzd/tools/llm-bench/results/bench-phase2-20261111-133523.log
     cells:
       - name: fit-all-8
         mask: 'ff'

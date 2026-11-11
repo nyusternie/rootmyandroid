@@ -30,10 +30,11 @@
 //   - Bench-program line: llama.cpp v0.9.0 release (ggml-org/llama.cpp,
 //     annotated tag c4261a74…, peeled commit
 //     cd959bae99ff4bed22bef2604f45241c09bbb8c8, published 2026-11-04).
-//     Throughput numbers are NOT claimed on this page — measured results
-//     live on the per-model profiles (/model/…) as the program records
-//     them; Qwen2.5-0.5B-Instruct and Qwen2.5-1.5B-Instruct have the
-//     first ones (redfin, 2026-11-11).
+//     The planning-figures panel below claims ONLY the headline measured
+//     numbers (burst + sustained generation, prompt processing) from the
+//     2026-11-11 redfin runs; full per-cell tables and raw logs live on
+//     the four per-model profiles (/model/…): Qwen2.5-0.5B-Instruct,
+//     Qwen2.5-1.5B-Instruct, Qwen3-4B, Qwen3-4B-Instruct-2507.
 import Base from '../layouts/Base.astro'
 
 const verified = '2026-11-11'
@@ -198,6 +199,21 @@ const faqSchema = {
         Q4_K_M (1.88–1.96 GiB) fits comfortably inside that idle budget; the
         7–8B class (4.07–4.58 GiB) exceeds it. Your phone's numbers will
         differ — the method is what transfers.
+      </p>
+    </div>
+    <div class="panel mt-6">
+      <h3>Measured planning figures: tokens per second (same device, same day)</h3>
+      <p class="muted">
+        Generation speed is what an agent loop or a chat actually feels.
+        Measured on this Pixel 5 with llama.cpp v0.9.0 on all 8 cores
+        ({verified}): the <strong>4B class sustains ≈3 tokens/s</strong>
+        (3.44 cool-burst, 2.90–3.01 once warm); the <strong>1.5B class
+        bursts 7.53 tokens/s cool and averages 5.43 across a 6½-minute
+        sustained soak</strong> (throttle onset at 125&nbsp;s — a 28%
+        thermal tax); the <strong>0.5B class runs ≈20 tokens/s</strong>.
+        Prompt processing: 4.5–5.8 (4B), 15.7 (1.5B), 47.7 (0.5B)
+        tokens/s. Plan agent duty around the sustained figures, not the
+        bursts — per-cell tables and raw logs: each model's profile page.
       </p>
     </div>
     <p class="mt-6">

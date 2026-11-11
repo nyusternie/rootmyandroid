@@ -49,6 +49,31 @@ benchmarks:
       policy never engaged. Harness:
       apps/rootzd/tools/llm-bench/bench-phase1.sh (abort at Thermal
       Status ≥ 2, hard-halt ≥ 3, inter-run cooldown to ≤ 50 °C).
+  - date: 2026-11-11
+    device: redfin (Pixel 5, Android 14)
+    toolchain: >-
+      llama.cpp v0.9.0 (commit cd959bae), NDK 27.1.12297006, static
+      arm64-v8a, GGML_NATIVE=OFF, GGML_OPENMP=OFF — llama-bench binary
+      from this repo's llama-bench-preview prerelease (run 43057927216)
+    log: https://github.com/nyusternie/rootmyandroid/blob/master/apps/rootzd/tools/llm-bench/results/bench-soak-20261111-140338.log
+    cells:
+      - name: soak-all-8
+        mask: ff
+        threads: 8
+        tests:
+          - { name: pp128 (warm start), tps: 10.91, err: 0.00 }
+          - { name: tg2048 (sustained), tps: 5.43, err: 0.00 }
+    notes: >-
+      Thermal soak: one sustained 2,048-token generation under 10-second
+      telemetry (thermal status + per-core kHz, logged in the raw log).
+      Max clocks until 114 s; throttle onset at 125 s (gold cluster
+      steps down, status still 1); Thermal Status 2 at 228 s (silver
+      clamped to 1,363,200 kHz, gold ~1.48/1.77 GHz); run finished at
+      394 s. The 5.43 t/s whole-run average against the 7.53 t/s
+      cool-burst above is a 28% thermal tax; the steady-state throttled
+      rate is lower still. Entered warm at Status 1 (directly after the
+      Phase-2 suite). Single repetition — 0.00 stddev means "not
+      measured".
 ---
 
 ## What this model is
@@ -82,9 +107,11 @@ for the context you actually allocate, not for the headline number.
 
 Measured on redfin:
 
-- **Generation at 7.5 t/s** is the deliberate-pacing tier: acceptable for
-  an agent loop that spends most of its wall-clock time executing tool
-  calls, slow for interactive chat.
+- **Generation at 7.5 t/s cool, 5.4 t/s sustained**: the burst figure
+  is the deliberate-pacing tier (fine for an agent loop that spends most
+  of its wall-clock time executing tool calls, slow for interactive
+  chat); the sustained figure is the measured thermal-soak average below
+  — plan duty cycles around 5.4 t/s, not 7.5.
 - **Prompt processing at 15.7 t/s** is the real planning constraint — a
   2,000-token system prompt costs about two seconds of silence before the
   first token. Keep prompts tight or cache them (the GGUF context of
