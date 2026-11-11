@@ -10,7 +10,9 @@ android {
         applicationId "com.rootmyandroid.rootz"
         minSdk 24
         targetSdk 36
-        versionCode 3
+        // versionCode = YYYYMMDD of versionName (owner ruling 2026-11-11 —
+        // the two must ALWAYS match; applies repo-wide).
+        versionCode 20261111
         versionName "26.11.11"
     }
 
