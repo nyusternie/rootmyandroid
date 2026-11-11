@@ -1,0 +1,290 @@
+---
+// src/pages/models.astro — SEO catalog: on-device LLMs for Android phones,
+// organized by memory tier. Keyword target: "local LLM on android" /
+// "on-device AI models" / "run AI model on phone". CONTENT page: zero
+// JavaScript (AGENTS.md rule 4).
+//
+// DATA PROVENANCE (AGENTS.md rule 3 — nothing on this page is guessed):
+//   - Every model row was verified live against the Hugging Face API on
+//     2026-11-11: repo existence, parameter totals (safetensors.total on
+//     the base repo, or gguf.total on the GGUF repo), context length
+//     (config.json max_position_embeddings / text_config, or
+//     gguf.context_length), license tag, monthly download count, and the
+//     exact byte size of the shipped quant file (file tree API). Sizes
+//     below are bytes / 2^30 (GiB).
+//   - Qwen/Qwen3-0.6B-GGUF and Qwen/Qwen3-1.7B-GGUF ship Q8_0 only — no
+//     official Q4_K_M existed at verification time (tree listing).
+//   - Qwen3-30B-A3B active-parameter count is computed from its verified
+//     config.json fields (128 experts, 8 active, moe_intermediate_size
+//     768, hidden_size 2048, 48 layers): 30,532,122,624 total minus
+//     120×768×3×2048×48 routed-expert params = 3,353,032,704 active.
+//   - Device anchor numbers are MEASURED on our own Pixel 5 (redfin,
+//     Android 14, /proc/meminfo, 2026-11-11). We name no third-party
+//     phone: GSMArena blocks automated access and Wikipedia's infoboxes
+//     resisted three extraction attempts, so memory tiers are labeled by
+//     RAM amount alone rather than by unverified device specs.
+//   - Bench-program line: llama.cpp v0.9.0 release (ggml-org/llama.cpp,
+//     tag commit c4261a74a59c5a719e8f73038e28633b08f2bea4, published
+//     2026-11-04). No throughput numbers are claimed anywhere on this
+//     page — none have been measured yet.
+import Base from '../layouts/Base.astro'
+
+const verified = '2026-11-11'
+
+type Row = {
+  model: string
+  repo: string
+  params: string
+  size: string
+  quant: string
+  ctx: string
+  license: string
+  downloads: string
+  note?: string
+}
+
+const tiers: { name: string; blurb: string; rows: Row[] }[] = [
+  {
+    name: 'Fits in ~1 GiB',
+    blurb:
+      'The everything-runs tier: old phones, small free-RAM budgets, background duty alongside other apps.',
+    rows: [
+      { model: 'Qwen2.5-0.5B-Instruct', repo: 'Qwen/Qwen2.5-0.5B-Instruct-GGUF', params: '0.49B', size: '0.46', quant: 'Q4_K_M', ctx: '32,768', license: 'Apache-2.0', downloads: '453,903', note: 'official GGUF' },
+      { model: 'Qwen3-0.6B', repo: 'Qwen/Qwen3-0.6B-GGUF', params: '0.75B', size: '0.60', quant: 'Q8_0', ctx: '40,960', license: 'Apache-2.0', downloads: '218,793', note: 'official GGUF ships Q8_0 only' },
+      { model: 'Llama-3.2-1B-Instruct', repo: 'bartowski/Llama-3.2-1B-Instruct-GGUF', params: '1.24B', size: '0.75', quant: 'Q4_K_M', ctx: '131,072', license: 'Llama 3.2 Community License', downloads: '137,003' },
+      { model: 'Gemma 3 1B IT', repo: 'bartowski/google_gemma-3-1b-it-GGUF', params: '1.00B', size: '0.75', quant: 'Q4_K_M', ctx: '32,768', license: 'Gemma Terms of Use', downloads: '24,004' },
+      { model: 'Qwen2.5-1.5B-Instruct', repo: 'Qwen/Qwen2.5-1.5B-Instruct-GGUF', params: '1.54B', size: '1.04', quant: 'Q4_K_M', ctx: '32,768', license: 'Apache-2.0', downloads: '523,012', note: 'official GGUF' },
+      { model: 'SmolLM2-1.7B-Instruct', repo: 'bartowski/SmolLM2-1.7B-Instruct-GGUF', params: '1.71B', size: '0.98', quant: 'Q4_K_M', ctx: '8,192', license: 'Apache-2.0', downloads: '15,248' },
+    ],
+  },
+  {
+    name: '1–2 GiB',
+    blurb:
+      'The practical sweet spot for most phones that still have a few GiB free.',
+    rows: [
+      { model: 'Qwen3-1.7B', repo: 'Qwen/Qwen3-1.7B-GGUF', params: '2.03B', size: '1.71', quant: 'Q8_0', ctx: '40,960', license: 'Apache-2.0', downloads: '178,900', note: 'official GGUF ships Q8_0 only' },
+      { model: 'Granite 3.1 2B Instruct', repo: 'bartowski/granite-3.1-2b-instruct-GGUF', params: '2.53B', size: '1.44', quant: 'Q4_K_M', ctx: '131,072', license: 'Apache-2.0', downloads: '4,096' },
+      { model: 'Gemma 2 2B IT', repo: 'bartowski/gemma-2-2b-it-GGUF', params: '2.61B', size: '1.59', quant: 'Q4_K_M', ctx: '8,192', license: 'Gemma Terms of Use', downloads: '66,782' },
+      { model: 'Qwen2.5-3B-Instruct', repo: 'Qwen/Qwen2.5-3B-Instruct-GGUF', params: '3.09B', size: '1.96', quant: 'Q4_K_M', ctx: '32,768', license: 'other (Qwen license — see repo)', downloads: '303,187', note: 'official GGUF' },
+      { model: 'Qwen2.5-Coder-3B-Instruct', repo: 'Qwen/Qwen2.5-Coder-3B-Instruct-GGUF', params: '3.09B', size: '1.96', quant: 'Q4_K_M', ctx: '32,768', license: 'other (Qwen license — see repo)', downloads: '98,915', note: 'official GGUF; code-focused' },
+      { model: 'Llama-3.2-3B-Instruct', repo: 'bartowski/Llama-3.2-3B-Instruct-GGUF', params: '3.21B', size: '1.88', quant: 'Q4_K_M', ctx: '131,072', license: 'Llama 3.2 Community License', downloads: '190,648' },
+    ],
+  },
+  {
+    name: '2–3 GiB',
+    blurb:
+      'Top end of what an 8 GB-class phone can host alongside everyday apps.',
+    rows: [
+      { model: 'Phi-3.5-mini-instruct', repo: 'bartowski/Phi-3.5-mini-instruct-GGUF', params: '3.82B', size: '2.23', quant: 'Q4_K_M', ctx: '131,072', license: 'MIT', downloads: '37,691' },
+      { model: 'Qwen3-4B', repo: 'Qwen/Qwen3-4B-GGUF', params: '4.02B', size: '2.33', quant: 'Q4_K_M', ctx: '40,960', license: 'Apache-2.0', downloads: '717,563', note: 'official GGUF' },
+      { model: 'Qwen3-4B-Instruct-2507', repo: 'bartowski/Qwen_Qwen3-4B-Instruct-2507-GGUF', params: '4.02B', size: '2.33', quant: 'Q4_K_M', ctx: '262,144', license: 'Apache-2.0', downloads: '103,159', note: 'longest context on this page' },
+      { model: 'Gemma 3 4B IT', repo: 'bartowski/google_gemma-3-4b-it-GGUF', params: '4.30B', size: '2.32', quant: 'Q4_K_M', ctx: '131,072', license: 'Gemma Terms of Use', downloads: '43,147' },
+    ],
+  },
+  {
+    name: '4–6 GiB',
+    blurb:
+      '12–16 GB RAM territory. On our measured 8 GB Pixel 5 these exceed the idle free-RAM budget — see the anchor box above.',
+    rows: [
+      { model: 'Mistral-7B-Instruct-v0.3', repo: 'bartowski/Mistral-7B-Instruct-v0.3-GGUF', params: '7.25B', size: '4.07', quant: 'Q4_K_M', ctx: '32,768', license: 'Apache-2.0', downloads: '49,505' },
+      { model: 'Qwen2.5-7B-Instruct', repo: 'Qwen/Qwen2.5-7B-Instruct-GGUF', params: '7.62B', size: '4.36', quant: 'Q4_K_M', ctx: '32,768', license: 'Apache-2.0', downloads: '751,216', note: 'official GGUF' },
+      { model: 'DeepSeek-R1-Distill-Qwen-7B', repo: 'bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF', params: '7.62B', size: '4.36', quant: 'Q4_K_M', ctx: '131,072', license: 'MIT', downloads: '138,595', note: 'reasoning (R1-distilled)' },
+      { model: 'Llama-3.1-8B-Instruct', repo: 'bartowski/Meta-Llama-3.1-8B-Instruct-GGUF', params: '8.03B', size: '4.58', quant: 'Q4_K_M', ctx: '131,072', license: 'Llama 3.1 Community License', downloads: '328,161' },
+      { model: 'Functionary-small-v3.2', repo: 'bartowski/functionary-small-v3.2-GGUF', params: '8.03B', size: '4.58', quant: 'Q4_K_M', ctx: '131,072', license: 'MIT', downloads: '2,201', note: 'tool-calling specialist' },
+      { model: 'Gemma 2 9B IT', repo: 'bartowski/gemma-2-9b-it-GGUF', params: '9.24B', size: '5.37', quant: 'Q4_K_M', ctx: '8,192', license: 'Gemma Terms of Use', downloads: '31,190' },
+    ],
+  },
+  {
+    name: '6 GiB and up',
+    blurb:
+      'Flagship-only headroom — or plugged-in, nothing-else-running duty. Listed so the full landscape is visible, not because most phones can host them.',
+    rows: [
+      { model: 'Gemma 3 12B IT', repo: 'bartowski/google_gemma-3-12b-it-GGUF', params: '12.19B', size: '6.80', quant: 'Q4_K_M', ctx: '131,072', license: 'Gemma Terms of Use', downloads: '23,187' },
+      { model: 'Qwen3-14B', repo: 'Qwen/Qwen3-14B-GGUF', params: '14.77B', size: '8.38', quant: 'Q4_K_M', ctx: '40,960', license: 'Apache-2.0', downloads: '435,501', note: 'official GGUF' },
+      { model: 'Qwen3-30B-A3B', repo: 'Qwen/Qwen3-30B-A3B-GGUF', params: '30.53B total / 3.35B active', size: '17.28', quant: 'Q4_K_M', ctx: '40,960', license: 'Apache-2.0', downloads: '130,061', note: 'official GGUF; mixture-of-experts, 128 experts / 8 active' },
+    ],
+  },
+]
+
+const faq = [
+  {
+    q: 'Can a phone really run an AI model offline?',
+    a: 'Yes. Once the model file (GGUF) is downloaded onto the device, inference happens entirely on that device — no network connection is involved in generating answers. The constraint is memory, not connectivity: the model weights must fit in free RAM alongside the runtime and the context (KV cache), which is why this page is organized by model file size.',
+  },
+  {
+    q: 'What are GGUF and Q4_K_M?',
+    a: 'GGUF is the model file format consumed by llama.cpp, the open-source inference engine behind most on-device LLM apps. Q4_K_M is a 4-bit quantization — the model is compressed to roughly half a byte per parameter, which is what makes multi-billion-parameter models fit in a phone at all. Q8_0 is a larger, higher-fidelity 8-bit quantization; two Qwen3 models on this page ship officially in Q8_0 only.',
+  },
+  {
+    q: 'Do I need root to run AI models on Android?',
+    a: 'No. An app that bundles an inference engine can run small models on a completely stock phone. Root expands what is practical: persistent background daemons, higher memory ceilings for long sessions, and scripted device tooling. Our own Rootz daemon (rootzd) runs rooted and is the harness we benchmark these models under — but that is our engineering lane, not a requirement for trying a local model.',
+  },
+  {
+    q: 'Which model is best for my phone?',
+    a: 'Start from free RAM, not from the model name. Compare the quant size in the tables against the memory your phone has free with nothing heavy running; the weights, the runtime, and the context cache must all fit at once. On our measured 8 GB Pixel 5 the comfortable ceiling is the 3B class at Q4_K_M — your device may differ, which is why we publish the method rather than a single answer.',
+  },
+]
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+}
+---
+
+<Base
+  title="On-Device AI Models for Android: Every Reasonable LLM, by Memory (2026)"
+  description="A verified catalog of local AI models for Android phones — Llama, Gemma, Qwen, Phi, Mistral, DeepSeek, Granite, SmolLM, Functionary — with real parameter counts, GGUF quant sizes, context lengths, and licenses, organized by how much free RAM they need."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
+  <section class="hero relative before:pointer-events-none before:absolute before:inset-x-0 before:-top-24 before:h-[32rem] before:bg-[radial-gradient(60%_70%_at_70%_30%,rgba(61,220,132,0.14),transparent_70%)] before:content-['']">
+    <div class="container hero-grid relative grid items-center gap-8 min-[720px]:grid-cols-[1.05fr_0.95fr]">
+      <div>
+        <h1>On-device AI models for Android. <span class="hl text-accent">By the numbers.</span></h1>
+        <p class="lede">
+          Every reasonable local LLM for a phone — Llama, Gemma, Qwen, Phi,
+          Mistral, DeepSeek, Granite, SmolLM, Functionary — with real
+          parameter counts, quant file sizes, context lengths, and licenses,
+          verified against Hugging Face on {verified}. No marketing blurbs:
+          the tables below are organized by the one constraint that decides
+          everything on a phone — free RAM.
+        </p>
+        <div class="row mt-7">
+          <a class="btn btn-primary" href="/scan">Scan your device — free</a>
+          <a class="btn" href="#catalog">Browse the catalog</a>
+        </div>
+      </div>
+      <div class="hero-art">
+        <img class="block h-auto w-full rounded-[1.25rem] shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          src="/img/hero-su.webp"
+          alt="The green SU superhero Android robot — the Root My Android mascot — in a red cape with a yellow SU shield on its chest"
+          width="880"
+          height="880"
+          fetchpriority="high"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="container pt-10 pb-8">
+    <h2>The one device fact that matters: free RAM</h2>
+    <p>
+      A local model's weights must fit in free RAM together with the
+      inference runtime and the context cache (which grows with the context
+      length you actually use). Everything else — speed, battery drain —
+      decides whether the experience is pleasant; memory decides whether it
+      runs at all. We anchor this page to a device we measured ourselves:
+    </p>
+    <div class="panel mt-6">
+      <h3>Measured anchor: Pixel 5 (redfin), Android 14</h3>
+      <p class="muted">
+        7.29 GiB total RAM (7,640,596 kB), 3.71 GiB free at idle
+        (3,893,436 kB) — read from <code>/proc/meminfo</code> on
+        {verified}. Arithmetic against the tables below: the 3B class at
+        Q4_K_M (1.88–1.96 GiB) fits comfortably inside that idle budget; the
+        7–8B class (4.07–4.58 GiB) exceeds it. Your phone's numbers will
+        differ — the method is what transfers.
+      </p>
+    </div>
+    <p class="mt-6">
+      We deliberately name no third-party phones here: we could not verify
+      their specs ourselves (one major spec site blocks automated access,
+      and Wikipedia's infoboxes resisted three extraction attempts), and
+      this site does not publish device claims we cannot stand behind
+      (AGENTS.md rule 3). The memory tiers below are labeled by what they
+      cost — GiB of free RAM — so they apply to any device once you know
+      its free-RAM figure.
+    </p>
+  </section>
+
+  <section class="container pb-8" id="catalog">
+    <h2>The catalog — 25 models, five memory tiers</h2>
+    <p>
+      Quant sizes are the exact shipped file sizes (bytes / 2^30) from each
+      linked repository, not estimates. Downloads are monthly download
+      counts reported by the Hugging Face API on {verified}. &ldquo;Official
+      GGUF&rdquo; means the model's own authors publish the GGUF; the other
+      rows link the long-standing community packager bartowski.
+    </p>
+    {tiers.map((tier) => (
+      <div class="mt-8">
+        <h3>{tier.name}</h3>
+        <p class="muted">{tier.blurb}</p>
+        <div class="mt-3 overflow-x-auto">
+          <table class="w-full min-w-[56rem] border-collapse text-[0.92rem]">
+            <caption class="faint small mb-2 text-left">
+              {tier.name} tier — models verified against the Hugging Face API on {verified}.
+            </caption>
+            <thead>
+              <tr>
+                <th class="border border-line bg-[#171b21] px-3 py-[0.6rem] align-top text-left" scope="col">Model</th>
+                <th class="border border-line bg-[#171b21] px-3 py-[0.6rem] align-top text-left" scope="col">Parameters</th>
+                <th class="border border-line bg-[#171b21] px-3 py-[0.6rem] align-top text-left" scope="col">Quant size (GiB)</th>
+                <th class="border border-line bg-[#171b21] px-3 py-[0.6rem] align-top text-left" scope="col">Context</th>
+                <th class="border border-line bg-[#171b21] px-3 py-[0.6rem] align-top text-left" scope="col">License</th>
+                <th class="border border-line bg-[#171b21] px-3 py-[0.6rem] align-top text-left" scope="col">Downloads/mo</th>
+                <th class="border border-line bg-[#171b21] px-3 py-[0.6rem] align-top text-left" scope="col">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tier.rows.map((r) => (
+                <tr>
+                  <th class="border border-line px-3 py-[0.6rem] align-top text-left font-semibold" scope="row">
+                    <a href={`https://huggingface.co/${r.repo}`}>{r.model}</a>
+                  </th>
+                  <td class="border border-line px-3 py-[0.6rem] align-top">{r.params}</td>
+                  <td class="border border-line px-3 py-[0.6rem] align-top">{r.size} <span class="faint small">({r.quant})</span></td>
+                  <td class="border border-line px-3 py-[0.6rem] align-top">{r.ctx}</td>
+                  <td class="border border-line px-3 py-[0.6rem] align-top">{r.license}</td>
+                  <td class="border border-line px-3 py-[0.6rem] align-top">{r.downloads}</td>
+                  <td class="border border-line px-3 py-[0.6rem] align-top">{r.note ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    ))}
+    <p class="muted mt-6">
+      Absence note: a well-known model missing from these tables means no
+      verified GGUF package could be located for it at verification time —
+      not an endorsement judgment. The landscape moves weekly; this page is
+      re-verified as our own benchmark program (below) progresses.
+    </p>
+  </section>
+
+  <section class="container pb-8">
+    <h2>What we run ourselves</h2>
+    <p>
+      This catalog feeds our own on-device agent program: we are
+      cross-compiling <strong>llama.cpp v0.9.0</strong> for arm64 Android
+      (release published 2026-11-04) and benchmarking the 3B-class
+      candidates on the rooted Pixel 5 anchored above — CPU first, then the
+      GPU backends — under a thermal safety policy that aborts runs when the
+      device reports moderate heat. No throughput numbers appear on this
+      page yet because none have been measured; when they exist, they will
+      be published with the device and the date attached, same as the
+      anchor. The harness rides on <a href="/rootz"><strong>Rootz</strong></a>,
+      our open-source rooted-device daemon.
+    </p>
+  </section>
+
+  <section class="container pb-12">
+    <h2>Frequently asked questions</h2>
+    {faq.map((f) => (
+      <details class="faq-item mt-3 rounded-xl border border-[#2a2f36] px-5 py-4">
+        <summary class="cursor-pointer font-semibold">{f.q}</summary>
+        <p class="mt-3 mb-1">{f.a}</p>
+      </details>
+    ))}
+    <p class="mt-8">
+      <a class="btn btn-primary" href="/scan">Scan your device — free</a>
+    </p>
+  </section>
+
+</Base>

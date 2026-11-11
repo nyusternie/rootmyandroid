@@ -1,0 +1,158 @@
+# .github/workflows/llm-bench.yml — manual-dispatch builder for the
+# on-device LLM bench harness: cross-compiles llama.cpp's llama-bench +
+# llama-cli for arm64-v8a on the self-hosted blackhost runner and publishes
+# them to the llama-bench-preview prerelease (see AGENTS.md build/deploy
+# rules: NEVER build on the interactive host; artifacts are downloaded and
+# adb-pushed by the operator). Not wired to any push trigger — this is a
+# bench tool, built on demand only.
+#
+# llama.cpp is PINNED to release v0.9.0 (ggml-org/llama.cpp, published
+# 2026-11-04) and the tag's commit SHA is verified after cloning, so a
+# re-pointed tag fails the build loudly instead of silently shipping
+# different code.
+#
+# Runner topology: .github/workflows/runners.* has the inventory; this job
+# targets only [self-hosted, blackhost].
+name: LLM Bench (Android)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write # release upload
+
+concurrency:
+  group: llm-bench-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SDK_ROOT: /opt/android-sdk # CI-standard SDK location (setup-android default)
+
+jobs:
+  build:
+    runs-on: [self-hosted, blackhost]
+    outputs:
+      artifacts: ${{ steps.artifacts.outputs.tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # Every step must see cargo/rustup, no matter how blackhost was
+      # launched. Self-hosted runners spawned via `nohup .../run.sh &`
+      # have a bare environment; load the login profile into BASH_ENV so
+      # each `run:` shell sources it, then verify explicitly.
+      - name: Ensure cargo + rustup are on PATH for every step
+        shell: bash
+        run: |
+          set -euo pipefail
+          profile="$HOME/.bashrc"
+          [ -f "$HOME/.profile" ] && profile="$HOME/.profile"
+          printf 'source %s\n' "$profile" >> "$HOME/.bash_env"
+          echo "BASH_ENV=$HOME/.bash_env" >> "$GITHUB_ENV"
+          source "$profile"
+          source "$HOME/.cargo/env" 2>/dev/null || true
+          command -v cargo
+          command -v rustup
+
+      - name: Install unzip/zip (required by Android SDK setup)
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v unzip || sudo apt-get install -y unzip
+          command -v zip || sudo apt-get install -y zip
+
+      # llama.cpp's C++ build needs cmake + a generator; blackhost's
+      # documented toolset (AGENTS.md) does not list them, so self-heal
+      # the same way as unzip above instead of assuming.
+      - name: Ensure cmake + make are available
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v cmake || sudo apt-get install -y cmake
+          command -v make || sudo apt-get install -y make
+          cmake --version | head -1
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install Android NDK 27.1.12297006 and pin SDK_ROOT
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Derive the SDK root from sdkmanager's own location instead of
+          # hard-coding: on this runner the canonical root is
+          # /opt/android-sdk (ubuntu-latest uses /usr/local/lib/android/sdk).
+          sdkmanager_bin="$(command -v sdkmanager)"
+          sdk_root="$(cd "$(dirname "$sdkmanager_bin")/../.." && pwd)"
+          echo "SDK_ROOT=$sdk_root" >> "$GITHUB_ENV"
+          yes | sdkmanager "ndk;27.1.12297006" >/dev/null
+
+      - name: Fetch llama.cpp v0.9.0 (pinned + SHA-verified)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch v0.9.0 https://github.com/ggml-org/llama.cpp llama-cpp
+          cd llama-cpp
+          actual="$(git rev-parse HEAD)"
+          echo "llama.cpp HEAD: $actual"
+          test "$actual" = "c4261a74a59c5a719e8f73038e28633b08f2bea4"
+
+      # GGML_NATIVE=OFF is load-bearing: without it the build passes the
+      # HOST's -march=native flags into a cross-compile for the phone.
+      # BUILD_SHARED_LIBS=OFF produces fully static binaries — what we
+      # adb push to /data/local/tmp/llama/ has no installer to resolve
+      # shared objects with.
+      - name: Cross-compile llama-bench + llama-cli (arm64-v8a)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd llama-cpp
+          cmake -B build-android \
+            -DCMAKE_TOOLCHAIN_FILE="$SDK_ROOT/ndk/27.1.12297006/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-28 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DGGML_NATIVE=OFF \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DLLAMA_BUILD_TESTS=OFF \
+            -DLLAMA_BUILD_EXAMPLES=OFF \
+            -DLLAMA_BUILD_SERVER=OFF
+          cmake --build build-android --config Release -j"$(nproc)" --target llama-bench llama-cli
+
+      - name: Collect artifacts
+        id: artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          strip="$SDK_ROOT/ndk/27.1.12297006/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
+          for tool in llama-bench llama-cli; do
+            src="$(find llama-cpp/build-android -maxdepth 3 -type f -name "$tool" | head -1)"
+            test -n "$src"
+            cp "$src" "dist/$tool"
+            [ -x "$strip" ] && "$strip" "dist/$tool" || true
+          done
+          (cd dist && sha256sum llama-bench llama-cli | tee checksums.txt)
+          {
+            echo "llama.cpp: v0.9.0 (commit c4261a74a59c5a719e8f73038e28633b08f2bea4)"
+            echo "ndk: 27.1.12297006"
+            echo "abi: arm64-v8a (min android-28), static, GGML_NATIVE=OFF"
+            echo "built: $(date -u +%Y-%m-%dT%H:%M:%SZ) on blackhost"
+          } | tee dist/VERSIONS
+          (cd dist && zip -q llama-bench-android-arm64.zip llama-bench llama-cli checksums.txt VERSIONS)
+          ls -la dist
+          echo "tag=llama-bench-preview" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifacts to release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.artifacts.outputs.tag }}
+          files: dist/*
+          name: LLM bench (llama.cpp v0.9.0, Android arm64)
+          prerelease: true
