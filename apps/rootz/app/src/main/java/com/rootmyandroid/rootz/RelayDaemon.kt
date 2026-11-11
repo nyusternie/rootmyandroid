@@ -35,7 +35,11 @@ import javax.net.ssl.HttpsURLConnection
  * stdin semantics: newline-terminated command lines (the /terminal web
  * client sends one frame per "cmd\n"). A trailing '\r' is stripped;
  * keystroke-streaming clients are unsupported — same as rootzd's piped
- * sh, which would treat a bare '\r' as a literal byte.
+ * sh, which would treat a bare '\r' as a literal byte. A line that is
+ * exactly `exit` (trimmed) maps rootzd's persistent-sh death onto the
+ * one-shot model: emit exit{code:0} and close the session server-side
+ * (owner ruling 2026-11-11); lines merely CONTAINING exit stay ordinary
+ * one-shot text (no shell-grammar parsing, rule 3).
  *
  * CommandGuard (A6): every inbound line passes guard.decisionFor BEFORE
  * execution. allow → execute; anything gated is REFUSED with an stderr
@@ -342,6 +346,11 @@ internal class RelayDaemon(
                 ),
             )
             onReceipt("! relay-daemon blocked: $line")
+            return
+        }
+        if (line.trim() == "exit") { // owner ruling 2026-11-11 — see class doc
+            enqueueInner(sidKey, E2eSession.encodeInnerExit(0))
+            removeSession(sidKey)
             return
         }
         val endpoint = adbWifi.connectEndpoint

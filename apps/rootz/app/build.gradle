@@ -12,7 +12,7 @@ android {
         targetSdk 36
         // versionCode = YYYYMMDD of versionName (owner ruling 2026-11-11 —
         // the two must ALWAYS match; applies repo-wide).
-        versionCode 20261112
+        versionCode 20261113
         versionName "26.11.11"
     }
 
