@@ -59,8 +59,12 @@ jobs:
 
       # Pairing-crypto unit tests (RFC 8032/5869 vectors + SPAKE2/GCM
       # round-trips) gate the build — per the repo's tests-gate rule.
+      # On failure, dump the JUnit XML into the log: gradle's console shows
+      # only the exception class + line, the assertion MESSAGES live in the
+      # XML — and the account's artifact-storage quota is exhausted, so
+      # actions/upload-artifact is not an option (added 2026-11-11).
       - name: Run unit tests
-        run: cd apps/rootz && ./gradlew testDebugUnitTest --no-daemon
+        run: cd apps/rootz && ./gradlew testDebugUnitTest --no-daemon || { cat app/build/test-results/testDebugUnitTest/*.xml; exit 1; }
 
       - name: Build release APK
         run: cd apps/rootz && ./gradlew assembleRelease --no-daemon

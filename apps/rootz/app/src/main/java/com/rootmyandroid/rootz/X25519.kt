@@ -74,8 +74,11 @@ internal object X25519 {
             val e = aa.subtract(bb).mod(P)
             val c = x3.add(z3).mod(P)
             val d = x3.subtract(z3).mod(P)
-            val da = d.multiply(d).mod(P)
-            val cb = c.multiply(c).mod(P)
+            // DA and CB are PRODUCTS (D*A and C*B per RFC 7748 notation) —
+            // a 2026-11-11 CI failure transcribed them as squares and the
+            // ladder degenerated; the fixture + RFC §5.2 vector pin this.
+            val da = d.multiply(a).mod(P)
+            val cb = c.multiply(b).mod(P)
             x3 = da.add(cb).mod(P).let { it.multiply(it).mod(P) }
             z3 = x1.multiply(da.subtract(cb).mod(P).let { it.multiply(it).mod(P) }).mod(P)
             x2 = aa.multiply(bb).mod(P)
