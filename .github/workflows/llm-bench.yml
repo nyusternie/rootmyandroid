@@ -141,8 +141,14 @@ jobs:
             -DBUILD_SHARED_LIBS=OFF \
             -DLLAMA_BUILD_TESTS=OFF \
             -DLLAMA_BUILD_EXAMPLES=OFF \
-            -DLLAMA_BUILD_SERVER=OFF
-          cmake --build build-android --config Release -j"$(nproc)" --target llama-bench llama-cli
+            -DLLAMA_BUILD_SERVER=ON
+          # LLAMA_BUILD_SERVER=ON is load-bearing on v0.9.0: tools/cli is
+          # add_subdirectory'd only inside the server gate (llama-cli-impl
+          # links llama-server-impl) — verified in tools/CMakeLists.txt
+          # lines 24-26 (observed failure in run 43054311812). llama-server
+          # is collected too: it is the OpenAI-compatible on-device API for
+          # the later agent harness.
+          cmake --build build-android --config Release -j"$(nproc)" --target llama-bench llama-cli llama-server
 
       - name: Collect artifacts
         id: artifacts
@@ -151,20 +157,20 @@ jobs:
           set -euo pipefail
           mkdir -p dist
           strip="$SDK_ROOT/ndk/27.1.12297006/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
-          for tool in llama-bench llama-cli; do
+          for tool in llama-bench llama-cli llama-server; do
             src="$(find llama-cpp/build-android -maxdepth 3 -type f -name "$tool" | head -1)"
             test -n "$src"
             cp "$src" "dist/$tool"
             [ -x "$strip" ] && "$strip" "dist/$tool" || true
           done
-          (cd dist && sha256sum llama-bench llama-cli | tee checksums.txt)
+          (cd dist && sha256sum llama-bench llama-cli llama-server | tee checksums.txt)
           {
             echo "llama.cpp: v0.9.0 (commit cd959bae99ff4bed22bef2604f45241c09bbb8c8)"
             echo "ndk: 27.1.12297006"
             echo "abi: arm64-v8a (min android-28), static, GGML_NATIVE=OFF"
             echo "built: $(date -u +%Y-%m-%dT%H:%M:%SZ) on blackhost"
           } | tee dist/VERSIONS
-          (cd dist && zip -q llama-bench-android-arm64.zip llama-bench llama-cli checksums.txt VERSIONS)
+          (cd dist && zip -q llama-tools-android-arm64.zip llama-bench llama-cli llama-server checksums.txt VERSIONS)
           ls -la dist
           echo "tag=llama-bench-preview" >> "$GITHUB_OUTPUT"
 
@@ -173,5 +179,5 @@ jobs:
         with:
           tag_name: ${{ steps.artifacts.outputs.tag }}
           files: dist/*
-          name: LLM bench (llama.cpp v0.9.0, Android arm64)
+          name: llama.cpp v0.9.0 Android arm64 (bench, cli, server)
           prerelease: true
