@@ -1,0 +1,21 @@
+[agent-demo 2026-11-11T23:28:17.590Z] Lane-B harness demo — serial=0C151FDD400648 server=http://127.0.0.1:8399 turns<=8
+[agent-demo] preflight thermal: status=0 cpu=46.500004C
+[agent-demo] llama-server healthy. Guard: MIRRORED CommandGuard.kt, empty approval stores (fail closed).
+--- transcript ---
+turn 1 | assistant: {"tool":"shell","cmd":"getprop ro.product.model"} (40827ms, gen 1.55 t/s)
+turn 1 | result: {"rc":0,"stdout":"Pixel 5","stderr":""}
+turn 2 | assistant: {"tool":"shell","cmd":"getprop ro.build.version.release"} (14686ms, gen 2.23 t/s)
+turn 2 | result: {"rc":0,"stdout":"14","stderr":""}
+turn 3 | assistant: {"tool":"shell","cmd":"getprop selinux.status"} (14032ms, gen 2.22 t/s)
+turn 3 | result: {"rc":0,"stdout":"","stderr":""}
+turn 4 | assistant: {"tool":"shell","cmd":"getprop ro.build.version.security_patch"} (17115ms, gen 1.76 t/s)
+turn 4 | result: {"rc":0,"stdout":"2023-11-05","stderr":""}
+turn 5 | assistant: {"tool":"shell","cmd":"getprop ro.build.version.codename"} (19588ms, gen 1.80 t/s)
+turn 5 | result: {"rc":0,"stdout":"REL","stderr":""}
+turn 6 | assistant: {"tool":"shell","cmd":"getprop ro.build.version.incremental"} (25902ms, gen 1.18 t/s)
+turn 6 | result: {"rc":0,"stdout":"11260668","stderr":""}
+turn 7 | assistant: {"tool":"shell","cmd":"getprop ro.build.version.sdk"} (17440ms, gen 2.08 t/s)
+turn 7 | result: {"rc":0,"stdout":"34","stderr":""}
+turn 8 | assistant: {"tool":"shell","cmd":"getprop ro.build.version.release"} (21414ms, gen 1.53 t/s)
+turn 8 | result: {"rc":0,"stdout":"14","stderr":""}
+--- end transcript ---
