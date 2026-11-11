@@ -1,0 +1,17 @@
+{
+  "sid_b64": "ABEiM0RVZneImaq7zN3u/w==",
+  "client_eph_seed_b64": "qrvM3e7/ABEiM0RVZneImaq7zN3u/wARIjNEVWZ3iJk=",
+  "daemon_seed_b64": "ESIzRFVmd4iZAKq7zN3u/xEiM0RVZneImQCqu8zd7v8=",
+  "daemon_eph_seed_b64": "/+7dzLuqAJmId2ZVRDMiEf/u3cy7qgCZiHdmVUQzIhE=",
+  "nonce_b64": "AQIDBAUGBwgJCgsM",
+  "plaintext_inner_json": "{\"type\":\"session_info\",\"name\":\"Pixel 5\",\"tier\":\"root\",\"version\":\"26.11.9\"}",
+  "expect": {
+    "client_eph_pub_b64": "fslMX9HmJy+nx3IycmIj7maI06Im9ot2mslMQxzUKHc=",
+    "daemon_pubkey_b64": "I6wHcKEGAkFgSo5gpHFm4+W0A01O4yHb4Zs0LoWyFUQ=",
+    "device_id": "716076634cadcce48cd9d2ae69e11284e3e6f484d7078b262d4edb7ddc9e06a8",
+    "daemon_eph_pub_b64": "e1gZLEod+6e3rDuQg6TYGOaSf2IOfwfkbkEOHGJY/Cg=",
+    "welcome_sig_b64": "kl8z2AFxaZ4JMgr6TrJNE3+KZ8PhJcvKeKFoeoHZIjj4CWKE5wK7T8BjmFkjkWXCLgluDEvAwfrKxd5Wp4UWAw==",
+    "session_key_hex": "bfa4d63f5f7d747594bc17e2fbd1331503d1c51ef814a33f01ff390048e5134e",
+    "ciphertext_b64": "7zi7ven/acPF7FY0Cx4lEMk9OvNu5+c1jAVDsbh+2r7PeF7XCAwr6QCx2/GcajcbUs9q3UE9ip10x1fEwx2n2rtdJwDVrTCCyl6Cc9v+746eRBK5K3+rSwEm"
+  }
+}

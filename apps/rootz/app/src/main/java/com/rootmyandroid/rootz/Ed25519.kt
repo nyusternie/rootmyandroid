@@ -130,6 +130,30 @@ internal object Ed25519 {
         return Point(x, y, BigInteger.ONE, mul(x, y))
     }
 
+    /**
+     * RFC 8032 §5.1.7 signature verification (cofactorless group-equation
+     * check — the RFC's first option): S < L, R and A must decode, and
+     * [S]B == R + [k]A with k = SHA-512(R || A || M) mod L.
+     * Added for the E2E relay client (welcome-transcript verification,
+     * e2e-protocol.md §2.2); pinned by E2eVectorTest via the fixture's
+     * welcome_sig_b64.
+     */
+    internal fun verify(pubkey: ByteArray, message: ByteArray, sig: ByteArray): Boolean {
+        if (pubkey.size != 32 || sig.size != 64) return false
+        val a = decode(pubkey) ?: return false
+        val rBytes = sig.copyOfRange(0, 32)
+        val r = decode(rBytes) ?: return false
+        val s = leToBigInt(sig.copyOfRange(32, 64))
+        if (s >= L) return false
+        val k = leToBigInt(sha512(rBytes + pubkey + message)).mod(L)
+        val left = B.scalarMult(bigIntToLe32(s))
+        val right = r + a.scalarMult(bigIntToLe32(k))
+        return left.encode().contentEquals(right.encode())
+    }
+
+    private fun sha512(data: ByteArray): ByteArray =
+        java.security.MessageDigest.getInstance("SHA-512").digest(data)
+
     /** Affine constructor (for the SPAKE2 precomp table entries, which store x||y). */
     internal fun fromAffine(x: BigInteger, y: BigInteger): Point =
         Point(x.mod(P), y.mod(P), BigInteger.ONE, mul(x, y))
