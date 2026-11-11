@@ -33,8 +33,10 @@ Top-ups are prepaid (Mullvad-style): add time anytime, no auto-renewal.
 │   ├── guardian-angel/ # React Native 0.88 app (com.rootmyandroid.guardian_angel), jest
 │   ├── rootz/        # Rootz app (from scratch, com.rootmyandroid.rootz): plain Gradle
 │   │                 # Kotlin — wireless-ADB pairing + shell client (complete 2026-11-09,
-│   │                 # measured on blueline); rootzd bridge client for su tiers;
-│   │                 # CI: rootz.yml
+│   │                 # measured on blueline); rootzd bridge client for su tiers; the APK
+│   │                 # is ALSO the relay DAEMON on non-rooted phones (owner ruling
+│   │                 # 2026-11-11 — RelayDaemon.kt: pair → challenge → tunnel auth → E2E
+│   │                 # sessions over wireless ADB, uid 2000); CI: rootz.yml
 │   ├── rootzd/       # Rootz daemon: Rust, rooted Android devices — relay
 │   │                 # tunnel + E2E verified live on redfin 2026-11-10
 │   └── desktop/      # Root My Android Desktop — final relay CLIENT (owner
