@@ -1,0 +1,4 @@
+/* apps/desktop/src/styles.css — Tailwind v4 entry (scaffold). Design tokens
+   arrive with the real UI; the Rootz terminal-green identity is the target
+   palette (see apps/rootz + README.md). */
+@import 'tailwindcss';

@@ -35,8 +35,11 @@ Top-ups are prepaid (Mullvad-style): add time anytime, no auto-renewal.
 │   │                 # Kotlin — wireless-ADB pairing + shell client (complete 2026-11-09,
 │   │                 # measured on blueline); rootzd bridge client for su tiers;
 │   │                 # CI: rootz.yml
-│   └── rootzd/       # Rootz daemon: Rust, rooted Android devices — relay
-│                     # tunnel + E2E verified live on redfin 2026-11-10
+│   ├── rootzd/       # Rootz daemon: Rust, rooted Android devices — relay
+│   │                 # tunnel + E2E verified live on redfin 2026-11-10
+│   └── desktop/      # Root My Android Desktop — final relay CLIENT (owner
+│                     # ruling 2026-11-11): Tauri v2 + Tailwind; SCAFFOLD
+│                     # ONLY (see its README), not wired into CI yet
 ├── packages/
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client
 │                     # shared by the mobile apps (TS source, no build step)

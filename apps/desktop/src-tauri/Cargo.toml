@@ -1,0 +1,11 @@
+[package]
+name = "rootmyandroid-desktop"
+version = "26.11.11"
+description = "Root My Android Desktop — final relay client (scaffold)"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "=2.7.4", features = [] }
+
+[dependencies]
+tauri = { version = "=2.12.5", features = [] }
