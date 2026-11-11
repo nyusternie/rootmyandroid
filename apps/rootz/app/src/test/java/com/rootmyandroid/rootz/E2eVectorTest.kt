@@ -130,7 +130,7 @@ class E2eVectorTest {
         assertEquals(fixtureJson.getString("name"), encoded.getString("name"))
         assertEquals(fixtureJson.getString("tier"), encoded.getString("tier"))
         assertEquals(fixtureJson.getString("version"), encoded.getString("version"))
-        assertEquals(fixtureJson.keySet().toSet(), encoded.keySet().toSet())
+        assertEquals(fixtureJson.toMap().keys, encoded.toMap().keys)
     }
 
     @Test
