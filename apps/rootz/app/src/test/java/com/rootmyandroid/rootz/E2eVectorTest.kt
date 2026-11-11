@@ -3,15 +3,18 @@ package com.rootmyandroid.rootz
 import org.json.JSONObject
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Self-validation for the E2E relay client crypto — the same discipline the
- * web client and daemon follow: the shared cross-implementation fixture is
- * replayed HERE, against OUR primitives, before any networking is trusted.
+ * Self-validation for the E2E relay crypto core (DAEMON role — owner ruling
+ * 2026-11-11: this APK is the relay daemon; the clients live in
+ * apps/web/src/lib/e2e.ts, the Root My Android apps, and apps/desktop) —
+ * the same discipline the web client and rootzd follow: the shared
+ * cross-implementation fixture is replayed HERE, against OUR primitives,
+ * before any networking is trusted. Daemon-side session replay tests land
+ * with the daemon session functions (E2eSession.kt).
  *
  * Fixture: app/src/test/resources/e2e-vector.json — a byte-exact COPY of
  * apps/rootzd/tests/fixtures/e2e-vector.json (mirrored with
@@ -69,28 +72,6 @@ class E2eVectorTest {
     }
 
     @Test
-    fun `full client handshake replay derives fixture session key`() {
-        val expect = fixture.getJSONObject("expect")
-        val session = E2eSession.ClientSession(
-            sid = E2eSession.B64.decode(fixture.getString("sid_b64"))!!,
-            ephSecret = E2eSession.B64.decode(fixture.getString("client_eph_seed_b64"))!!,
-        )
-        assertArrayEquals(session.ephPub, E2eSession.B64.decode(expect.getString("client_eph_pub_b64"))!!)
-
-        val welcomeText = JSONObject()
-            .put("v", 1).put("type", "welcome")
-            .put("sid", fixture.getString("sid_b64"))
-            .put("id", expect.getString("daemon_pubkey_b64"))
-            .put("eph", expect.getString("daemon_eph_pub_b64"))
-            .put("sig", expect.getString("welcome_sig_b64"))
-            .toString()
-        val frame = E2eSession.parseFrame(welcomeText)
-        assertTrue(frame is E2eSession.Frame.Welcome)
-        E2eSession.processWelcome(session, frame as E2eSession.Frame.Welcome, expect.getString("device_id"))
-        assertEquals(expect.getString("session_key_hex"), hexOf(session.key!!))
-    }
-
-    @Test
     fun `chacha20 poly1305 fixture open and seal`() {
         val expect = fixture.getJSONObject("expect")
         val key = hex(expect.getString("session_key_hex"))
@@ -142,32 +123,6 @@ class E2eVectorTest {
         val sealed = ChaCha20Poly1305.seal(key, nonce, "guard me".toByteArray())
         sealed[sealed.size - 1] = (sealed[sealed.size - 1].toInt() xor 1).toByte()
         assertNull(ChaCha20Poly1305.open(key, nonce, sealed))
-    }
-
-    @Test
-    fun `seal open roundtrip through session`() {
-        val expect = fixture.getJSONObject("expect")
-        val session = E2eSession.ClientSession(
-            sid = E2eSession.B64.decode(fixture.getString("sid_b64"))!!,
-            ephSecret = E2eSession.B64.decode(fixture.getString("client_eph_seed_b64"))!!,
-        )
-        val welcomeText = JSONObject()
-            .put("v", 1).put("type", "welcome")
-            .put("sid", fixture.getString("sid_b64"))
-            .put("id", expect.getString("daemon_pubkey_b64"))
-            .put("eph", expect.getString("daemon_eph_pub_b64"))
-            .put("sig", expect.getString("welcome_sig_b64"))
-            .toString()
-        E2eSession.processWelcome(
-            session,
-            E2eSession.parseFrame(welcomeText) as E2eSession.Frame.Welcome,
-            expect.getString("device_id"),
-        )
-        val encText = E2eSession.sealInner(session, E2eSession.encodeClose())
-        val frame = E2eSession.parseFrame(encText)
-        assertTrue(frame is E2eSession.Frame.Enc)
-        val inner = E2eSession.openInner(session, frame as E2eSession.Frame.Enc)
-        assertNotNull(inner)
     }
 
     @Test

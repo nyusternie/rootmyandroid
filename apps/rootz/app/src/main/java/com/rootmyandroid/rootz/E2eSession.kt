@@ -5,11 +5,18 @@ import java.security.MessageDigest
 import java.security.SecureRandom
 
 /**
- * Rootz E2E session cryptography, CLIENT role — Kotlin port of the web
- * client (apps/web/src/lib/e2e.ts), pinned to the same canonical spec
- * (apps/rootzd/docs/e2e-protocol.md v1) and the same mirrored fixture
- * (apps/rootzd/tests/fixtures/e2e-vector.json, copied to
- * app/src/test/resources/e2e-vector.json).
+ * Rootz E2E session cryptography, DAEMON role (owner ruling 2026-11-11:
+ * the Rootz APK is the relay daemon on non-rooted phones — the device
+ * lane). This object carries the SHARED crypto core + wire vocabulary
+ * pinned to the canonical spec (apps/rootzd/docs/e2e-protocol.md v1) and
+ * the same mirrored fixture (apps/rootzd/tests/fixtures/e2e-vector.json,
+ * copied to app/src/test/resources/e2e-vector.json). The daemon-side
+ * session functions (welcome build+sign, enc stdin/stdout, session
+ * demux) land here next.
+ *
+ * The relay CLIENT implementations live elsewhere: apps/web/src/lib/e2e.ts
+ * (the /terminal page — shipped + cross-tested against rootzd), the Root
+ * My Android android/ios apps, and the Desktop app (apps/desktop).
  *
  * Field names in the JSON frames are the WIRE CONTRACT — do not rename.
  *
@@ -85,10 +92,6 @@ internal object E2eSession {
         object Other : Frame()
     }
 
-    fun encodeHello(sid: ByteArray, ephPub: ByteArray): String =
-        JSONObject().put("v", 1).put("type", "hello")
-            .put("sid", B64.encode(sid)).put("eph", B64.encode(ephPub)).toString()
-
     fun parseFrame(text: String): Frame {
         val p = try {
             JSONObject(text)
@@ -136,32 +139,6 @@ internal object E2eSession {
         object Other : Inner()
     }
 
-    fun encodeStdin(d: ByteArray): ByteArray =
-        JSONObject().put("type", "stdin").put("d", B64.encode(d)).toString().toByteArray(Charsets.UTF_8)
-
-    fun encodeClose(): ByteArray =
-        JSONObject().put("type", "close").toString().toByteArray(Charsets.UTF_8)
-
-    private fun parseInner(plaintext: ByteArray): Inner {
-        val p = try {
-            JSONObject(String(plaintext, Charsets.UTF_8))
-        } catch (e: Exception) {
-            return Inner.Other
-        }
-        val d = p.optString("d").let { if (it.isEmpty()) null else B64.decode(it) }
-        return when (p.optString("type")) {
-            "stdout" -> if (d != null) Inner.Stdout(d) else Inner.Other
-            "stderr" -> if (d != null) Inner.Stderr(d) else Inner.Other
-            "exit" -> Inner.Exit(if (p.has("code") && !p.isNull("code")) p.optInt("code") else null)
-            "session_info" -> Inner.SessionInfo(
-                name = if (p.has("name") && !p.isNull("name")) p.optString("name") else null,
-                tier = p.optString("tier"),
-                version = p.optString("version"),
-            )
-            else -> Inner.Other
-        }
-    }
-
     // --- crypto core (spec §1/§2.2/§2.4) ----------------------------------------
 
     fun deviceIdFromPubkey(pubkey: ByteArray): String =
@@ -180,68 +157,9 @@ internal object E2eSession {
             length = 32,
         )
 
-    // --- client session state ----------------------------------------------------
-
-    /**
-     * Defaults are cryptographically random (production); tests inject the
-     * fixture's fixed values to replay the cross-implementation vector
-     * deterministically (E2eVectorTest).
-     */
-    class ClientSession(
-        /** 16 random bytes — the client-chosen session id (spec §0). */
-        val sid: ByteArray = randomBytes(16),
-        /** X25519 ephemeral secret — held until the handshake completes. */
-        val ephSecret: ByteArray = randomBytes(32),
-    ) {
-        val ephPub: ByteArray by lazy { X25519.publicKey(ephSecret) }
-
-        /** Session key — set once [processWelcome] verifies the daemon. */
-        var key: ByteArray? = null
-            private set
-
-        /** Called by [E2eSession.processWelcome] after BOTH verifications pass. */
-        internal fun completeHandshake(sessionKey: ByteArray) {
-            key = sessionKey
-        }
-    }
+    // --- daemon session state (lands next) ----------------------------------------
 
     private fun randomBytes(n: Int): ByteArray = ByteArray(n).also { random.nextBytes(it) }
-
-    fun clientHello(session: ClientSession = ClientSession()): Pair<ClientSession, String> =
-        session to encodeHello(session.sid, session.ephPub)
-
-    /**
-     * Verify the daemon's welcome (spec §2.2): device-id binding + transcript
-     * signature, then derive the session key. Throws on ANY mismatch.
-     */
-    fun processWelcome(session: ClientSession, welcome: Frame.Welcome, expectedDeviceId: String) {
-        if (!welcome.sid.contentEquals(session.sid)) throw E2eException("sid mismatch")
-        if (deviceIdFromPubkey(welcome.id) != expectedDeviceId.lowercase()) {
-            throw E2eException("device id mismatch — this is not the device you dialed")
-        }
-        if (!Ed25519.verify(welcome.id, transcript(session.sid, session.ephPub, welcome.eph), welcome.sig)) {
-            throw E2eException("bad transcript signature")
-        }
-        val shared = X25519.sharedSecret(session.ephSecret, welcome.eph)
-        session.completeHandshake(deriveKey(shared, session.ephPub, welcome.eph))
-    }
-
-    fun sealInner(session: ClientSession, innerJson: ByteArray): String {
-        val key = session.key ?: throw E2eException("handshake not complete")
-        val nonce = ByteArray(12).also { random.nextBytes(it) }
-        val d = ChaCha20Poly1305.seal(key, nonce, innerJson)
-        return JSONObject().put("v", 1).put("type", "enc")
-            .put("sid", B64.encode(session.sid)).put("n", B64.encode(nonce))
-            .put("d", B64.encode(d)).toString()
-    }
-
-    /** null on authentication failure (spec §2.4: abort the session). */
-    fun openInner(session: ClientSession, frame: Frame.Enc): Inner? {
-        val key = session.key ?: return null
-        if (!frame.sid.contentEquals(session.sid)) return Inner.Other // broadcast for another client — skip
-        val plaintext = ChaCha20Poly1305.open(key, frame.n, frame.d) ?: return null
-        return parseInner(plaintext)
-    }
 
     class E2eException(message: String) : Exception(message)
 }

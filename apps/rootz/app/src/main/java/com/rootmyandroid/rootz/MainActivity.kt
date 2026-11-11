@@ -64,17 +64,11 @@ class MainActivity : AppCompatActivity() {
     private val guard by lazy { CommandGuard(this) }
     private val bookmarks by lazy { Bookmarks(this) }
 
-    // Relay transport (26.11.11): the production E2E path — the app speaks
-    // the relay client protocol (apps/rootzd/docs/e2e-protocol.md v1,
-    // RelayConnection.kt). LOCAL keeps the wireless-adb/daemon-socket paths.
-    private lateinit var relayAccount: TextInputEditText
-    private lateinit var relayDevice: TextInputEditText
-    private lateinit var relayFields: LinearLayout
-    private lateinit var transportLocalButton: MaterialButton
-    private lateinit var transportRelayButton: MaterialButton
-    private var transport = Transport.LOCAL
-
-    private enum class Transport { LOCAL, RELAY }
+    // Relay roles (owner ruling 2026-11-11): the Rootz APK is the relay
+    // DAEMON on non-rooted phones (device lane; implementation lands next —
+    // E2eSession.kt carries the shared crypto core). The relay CLIENTS are
+    // the web /terminal page, the Root My Android android/ios apps, and the
+    // Desktop app — never this APK.
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
@@ -171,39 +165,6 @@ class MainActivity : AppCompatActivity() {
         sendButton = send
         val shellCard = sectionCard(wifiStatus, status, commandLayout, send)
 
-        // Transport selector — relay (production E2E) vs local paths.
-        val transportLabel = TextView(this).apply { text = "transport" }
-        transportLocalButton = gradientButton("local")
-        transportRelayButton = gradientButton("relay (E2E)")
-        val buttonParams = LinearLayout.LayoutParams(
-            0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f,
-        )
-        transportLocalButton.layoutParams = buttonParams
-        transportRelayButton.layoutParams = LinearLayout.LayoutParams(buttonParams)
-        val transportRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            addView(
-                transportLabel,
-                LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f),
-            )
-            addView(transportLocalButton)
-            addView(transportRelayButton)
-        }
-        val (accountLayout, accountEdit) = outlinedField("16-digit account number") {
-            inputType = InputType.TYPE_CLASS_NUMBER
-        }
-        relayAccount = accountEdit
-        val (deviceLayout, deviceEdit) =
-            outlinedField("device_id (64 hex — rootzd prints it at startup)")
-        relayDevice = deviceEdit
-        relayFields = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            addView(accountLayout)
-            addView(deviceLayout)
-            visibility = View.GONE
-        }
-        val transportCard = sectionCard(transportRow, relayFields)
-
         pairStatus = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
         val (pairLayout, pairEdit) = outlinedField("6-digit pairing code") {
             inputType = InputType.TYPE_CLASS_NUMBER
@@ -264,7 +225,6 @@ class MainActivity : AppCompatActivity() {
             addView(toolbar)
             val content = LinearLayout(this@MainActivity).apply {
                 orientation = LinearLayout.VERTICAL
-                addView(transportCard, cardMargins())
                 addView(shellCard, cardMargins())
                 addView(pairCard, cardMargins())
                 addView(
@@ -296,8 +256,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         send.setOnClickListener { guardedRun(input.text.toString().trim()) }
-        transportLocalButton.setOnClickListener { selectTransport(Transport.LOCAL) }
-        transportRelayButton.setOnClickListener { selectTransport(Transport.RELAY) }
         pairButton.setOnClickListener { startPairing() }
         // Same-device pairing must NOT foreground this activity — that
         // kills the Settings pairing server (measured on blueline). The
@@ -306,18 +264,6 @@ class MainActivity : AppCompatActivity() {
             PairingNotifier.postPairingPrompt(this)
             pairStatus.text = "pairing notification armed — open the Settings pairing dialog, then type the code into the notification"
         }
-        // Restore persisted transport + relay fields BEFORE the silent id
-        // probe so a returning user on the relay transport probes the relay.
-        val prefs = getSharedPreferences(PREFS_TRANSPORT, MODE_PRIVATE)
-        relayAccount.setText(prefs.getString(KEY_RELAY_ACCOUNT, ""))
-        relayDevice.setText(prefs.getString(KEY_RELAY_DEVICE, ""))
-        selectTransport(
-            if (prefs.getString(KEY_TRANSPORT, null) == Transport.RELAY.name) {
-                Transport.RELAY
-            } else {
-                Transport.LOCAL
-            },
-        )
         runCommand("id", silent = true)
         handlePairIntent(intent)
 
@@ -433,69 +379,8 @@ class MainActivity : AppCompatActivity() {
         outputScroll.post { outputScroll.fullScroll(View.FOCUS_DOWN) }
     }
 
-    /**
-     * Relay transport path (26.11.11): one E2E session per command through
-     * relay.rootmyandroid.com (RelayConnection.kt). Account-number auth
-     * happens at the relay; the daemon proves identity inside the handshake.
-     */
-    private fun runRelay(cmd: String, silent: Boolean) {
-        val account = relayAccount.text.toString().replace(Regex("[^0-9]"), "")
-        val device = relayDevice.text.toString().trim().lowercase()
-        if (account.length != 16) {
-            status.text = "relay: enter your 16-digit account number"
-            return
-        }
-        if (!device.matches(Regex("[0-9a-f]{64}"))) {
-            status.text = "relay: enter the device_id rootzd printed at startup (64 hex)"
-            return
-        }
-        getSharedPreferences(PREFS_TRANSPORT, MODE_PRIVATE).edit()
-            .putString(KEY_RELAY_ACCOUNT, relayAccount.text.toString())
-            .putString(KEY_RELAY_DEVICE, device)
-            .apply()
-        runOnUiThread {
-            sendButton.isEnabled = false
-            sendButton.text = "Running…"
-        }
-        thread {
-            try {
-                val r = RelayConnection(device, account).run(cmd)
-                runOnUiThread {
-                    status.text =
-                        "relay: E2E ✓ tier ${r.tier} · rootzd ${r.version} · ${r.name ?: (device.take(12) + "…")}"
-                    if (!silent) appendOutput(cmd, r.output.trim())
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("Rootz", "relay runCommand failed for '$cmd'", e)
-                runOnUiThread {
-                    status.text = "relay: FAILED (${e.message})"
-                    if (!silent) appendOutput(cmd, "(relay failed: ${e.message})")
-                }
-            } finally {
-                runOnUiThread {
-                    sendButton.isEnabled = true
-                    sendButton.text = "Send"
-                }
-            }
-        }
-    }
-
-    private fun selectTransport(t: Transport) {
-        transport = t
-        relayFields.visibility = if (t == Transport.RELAY) View.VISIBLE else View.GONE
-        transportLocalButton.alpha = if (t == Transport.LOCAL) 1f else 0.6f
-        transportRelayButton.alpha = if (t == Transport.RELAY) 1f else 0.6f
-        getSharedPreferences(PREFS_TRANSPORT, MODE_PRIVATE).edit()
-            .putString(KEY_TRANSPORT, t.name)
-            .apply()
-    }
-
     private fun runCommand(cmd: String, silent: Boolean = false) {
         if (cmd.isEmpty()) return
-        if (transport == Transport.RELAY) {
-            runRelay(cmd, silent)
-            return
-        }
         runOnUiThread {
             sendButton.isEnabled = false
             sendButton.text = "Running…"
@@ -740,9 +625,5 @@ class MainActivity : AppCompatActivity() {
         private const val MENU_EXPORT = 4
         /** Semi-transparent Rootz green for search highlights. */
         private const val SEARCH_HIGHLIGHT = 0x5566BB6A
-        private const val PREFS_TRANSPORT = "rootz_transport"
-        private const val KEY_TRANSPORT = "transport"
-        private const val KEY_RELAY_ACCOUNT = "relay_account"
-        private const val KEY_RELAY_DEVICE = "relay_device"
     }
 }
