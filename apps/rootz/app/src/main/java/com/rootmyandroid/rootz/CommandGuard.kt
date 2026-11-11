@@ -240,7 +240,10 @@ class CommandGuard(context: Context) {
 
     private val prefs =
         context.applicationContext.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
-    private val sessionApproved = mutableSetOf<String>()
+    // synchronizedSet: decisionFor also runs on the relay-daemon executor
+    // thread while the UI thread writes here (recordRunOnce) — decide()
+    // performs only contains() lookups, atomic on a synchronized wrapper.
+    private val sessionApproved: MutableSet<String> = java.util.Collections.synchronizedSet(mutableSetOf())
 
     fun decisionFor(cmd: String): Decision =
         decide(classify(cmd), sessionApproved, prefs.all.keys)

@@ -12,7 +12,7 @@ import javax.net.ssl.SSLSocketFactory
 
 /**
  * Minimal RFC 6455 WebSocket client over TLS — just enough for the relay
- * (wss://relay.rootmyandroid.com/connect?…): text messages, ping/pong,
+ * (wss://relay.rootmyandroid.com/tunnel?device=…): text messages, ping/pong,
  * close codes, continuation reassembly. Hand-rolled (no OkHttp) to match
  * the app's from-scratch identity and keep the APK lean.
  *

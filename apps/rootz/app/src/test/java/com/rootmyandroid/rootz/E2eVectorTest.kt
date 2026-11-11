@@ -13,8 +13,8 @@ import org.junit.Test
  * apps/web/src/lib/e2e.ts, the Root My Android apps, and apps/desktop) —
  * the same discipline the web client and rootzd follow: the shared
  * cross-implementation fixture is replayed HERE, against OUR primitives,
- * before any networking is trusted. Daemon-side session replay tests land
- * with the daemon session functions (E2eSession.kt).
+ * before any networking is trusted. Daemon-side session replay tests live
+ * in the daemon session replay section below (E2eSession.kt).
  *
  * Fixture: app/src/test/resources/e2e-vector.json — a byte-exact COPY of
  * apps/rootzd/tests/fixtures/e2e-vector.json (mirrored with
@@ -81,6 +81,107 @@ class E2eVectorTest {
 
         assertArrayEquals(plaintext, ChaCha20Poly1305.open(key, nonce, ciphertext))
         assertArrayEquals(ciphertext, ChaCha20Poly1305.seal(key, nonce, plaintext))
+    }
+
+    // --- daemon session replay (spec §2.2/§3 — the device lane) ------------------
+
+    @Test
+    fun `daemon session derives fixture key and signs fixture welcome`() {
+        val expect = fixture.getJSONObject("expect")
+        val sid = E2eSession.B64.decode(fixture.getString("sid_b64"))!!
+        val clientEph = E2eSession.B64.decode(expect.getString("client_eph_pub_b64"))!!
+        val session = E2eSession.newDaemonSession(
+            sid = sid,
+            clientEph = clientEph,
+            identitySeed = E2eSession.B64.decode(fixture.getString("daemon_seed_b64"))!!,
+            identityPub = E2eSession.B64.decode(expect.getString("daemon_pubkey_b64"))!!,
+            daemonEphSeed = E2eSession.B64.decode(fixture.getString("daemon_eph_seed_b64"))!!,
+        )
+        assertArrayEquals(E2eSession.B64.decode(expect.getString("daemon_eph_pub_b64"))!!, session.daemonEphPub)
+        assertEquals(expect.getString("session_key_hex"), hexOf(session.key))
+        // Ed25519 is deterministic: the welcome signature must match the
+        // fixture byte for byte (spec §2.2 transcript).
+        val welcome = E2eSession.parseFrame(session.welcomeJson)
+        assertTrue(welcome is E2eSession.Frame.Welcome)
+        welcome as E2eSession.Frame.Welcome
+        assertArrayEquals(sid, welcome.sid)
+        assertArrayEquals(session.daemonEphPub, welcome.eph)
+        assertEquals(expect.getString("welcome_sig_b64"), E2eSession.B64.encode(welcome.sig))
+        // …and it verifies under the daemon's own long-term key.
+        val pubkey = E2eSession.B64.decode(expect.getString("daemon_pubkey_b64"))!!
+        assertTrue(
+            Ed25519.verify(
+                pubkey,
+                "rootz-e2e-v1".toByteArray(Charsets.UTF_8) + sid + clientEph + session.daemonEphPub,
+                welcome.sig,
+            ),
+        )
+    }
+
+    @Test
+    fun `daemon session_info encoding matches fixture content`() {
+        // Content parity, NOT byte-exact: the Maven org.json on the test JVM
+        // uses HashMap (deliberately unordered keys — JSON object order is
+        // not significant per RFC 8259 §4), while serde and every parser in
+        // the pipeline read frames BY KEY. Compare the decoded fields.
+        val encoded = JSONObject(String(E2eSession.encodeInnerSessionInfo("Pixel 5", "root", "26.11.9"), Charsets.UTF_8))
+        val fixtureJson = JSONObject(fixture.getString("plaintext_inner_json"))
+        assertEquals(fixtureJson.getString("type"), encoded.getString("type"))
+        assertEquals(fixtureJson.getString("name"), encoded.getString("name"))
+        assertEquals(fixtureJson.getString("tier"), encoded.getString("tier"))
+        assertEquals(fixtureJson.getString("version"), encoded.getString("version"))
+        assertEquals(fixtureJson.keySet().toSet(), encoded.keySet().toSet())
+    }
+
+    @Test
+    fun `daemon opens sealed stdin and close frames`() {
+        val expect = fixture.getJSONObject("expect")
+        val key = hex(expect.getString("session_key_hex"))
+        val nonce = E2eSession.B64.decode(fixture.getString("nonce_b64"))!!
+        val session = E2eSession.DaemonSession(
+            sid = E2eSession.B64.decode(fixture.getString("sid_b64"))!!,
+            daemonEphPub = E2eSession.B64.decode(expect.getString("daemon_eph_pub_b64"))!!,
+            key = key,
+            welcomeJson = "",
+        )
+        fun encFrame(innerJson: String): E2eSession.Frame.Enc =
+            E2eSession.Frame.Enc(
+                session.sid,
+                nonce,
+                ChaCha20Poly1305.seal(key, nonce, innerJson.toByteArray(Charsets.UTF_8)),
+            )
+
+        val stdin = session.openInner(encFrame("{\"type\":\"stdin\",\"d\":\"aWQK\"}"))
+        assertTrue(stdin is E2eSession.Inner.Stdin)
+        assertArrayEquals("id\n".toByteArray(Charsets.UTF_8), (stdin as E2eSession.Inner.Stdin).d)
+        assertEquals(E2eSession.Inner.Close, session.openInner(encFrame("{\"type\":\"close\"}")))
+        // AEAD auth failure → null (the caller reaps the session — spec §2.4).
+        val tampered = encFrame("{\"type\":\"close\"}")
+        tampered.d[tampered.d.size - 1] = (tampered.d[tampered.d.size - 1] + 1).toByte()
+        assertNull(session.openInner(tampered))
+        // Frames carrying another sid parse as Other (relay broadcast §0).
+        val foreign = E2eSession.Frame.Enc(
+            ByteArray(16),
+            nonce,
+            ChaCha20Poly1305.seal(key, nonce, "{}".toByteArray(Charsets.UTF_8)),
+        )
+        assertEquals(E2eSession.Inner.Other, session.openInner(foreign))
+    }
+
+    @Test
+    fun `base64url challenge decode parity with proto rs b64d_any`() {
+        // The API's tunnel-auth challenge is base64URL — 0x00 0xFE 0xFE 0xFF
+        // exercises both remapped characters (- → +, _ → /), unpadded.
+        assertArrayEquals(
+            byteArrayOf(0x00, 0xFE.toByte(), 0xFE.toByte(), 0xFF.toByte()),
+            E2eSession.decodeAnyB64("AP7-_w"),
+        )
+        assertArrayEquals(
+            byteArrayOf(0x00, 0xFE.toByte(), 0xFE.toByte(), 0xFF.toByte()),
+            E2eSession.decodeAnyB64("AP7+/w=="),
+        )
+        // A lone leftover sextet stays rejected (B64 canonical-length rule).
+        assertNull(E2eSession.decodeAnyB64("A"))
     }
 
     // --- independent vectors --------------------------------------------------

@@ -41,8 +41,10 @@ import kotlin.concurrent.thread
  * the binder API for third-party apps (our own namespace, HANDOFF §13
  * addendum) are later milestones.
  *
- * The daemon is started OUTSIDE the app for now (adb push for shell tier,
- * Magisk module for root tier — see apps/rootzd/README.md).
+ * rootzd is still started OUTSIDE the app (adb push for shell tier,
+ * Magisk module for root tier — see apps/rootzd/README.md); the
+ * SHELL-tier RELAY daemon runs IN the app (RelayDaemon.kt — owner
+ * ruling 2026-11-11: the APK is the daemon on non-rooted phones).
  *
  * Protocol: one fresh TCP connection per command — write the command plus
  * "exit", then read until EOF (each connection gets its own piped sh in
@@ -58,17 +60,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var input: TextInputEditText
     private lateinit var pairStatus: TextView
     private lateinit var pairInput: TextInputEditText
+    private lateinit var relayStatus: TextView
+    private lateinit var relayDevice: TextView
+    private lateinit var relayAccount: TextInputEditText
     private lateinit var sendButton: MaterialButton
     private lateinit var outputScroll: ScrollView
     private val adbWifi by lazy { AdbWifiDiscovery(this) }
     private val guard by lazy { CommandGuard(this) }
     private val bookmarks by lazy { Bookmarks(this) }
+    private var relayIdentity: RelayIdentity? = null
+    private var relayDaemon: RelayDaemon? = null
 
     // Relay roles (owner ruling 2026-11-11): the Rootz APK is the relay
-    // DAEMON on non-rooted phones (device lane; implementation lands next —
-    // E2eSession.kt carries the shared crypto core). The relay CLIENTS are
-    // the web /terminal page, the Root My Android android/ios apps, and the
-    // Desktop app — never this APK.
+    // DAEMON on non-rooted phones (the device lane — RelayDaemon.kt,
+    // wired below). The relay CLIENTS are the web /terminal page, the
+    // Root My Android android/ios apps, and the Desktop app — never this
+    // APK.
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
@@ -174,6 +181,23 @@ class MainActivity : AppCompatActivity() {
         val armButton = gradientButton("Arm pairing notification (same-device)")
         val pairCard = sectionCard(pairStatus, pairLayout, pairButton, armButton)
 
+        // Relay-daemon card (the APK's primary role — owner ruling
+        // 2026-11-11): device id for pairing + the account number that
+        // starts the lane.
+        relayStatus = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
+        relayDevice = TextView(this).apply {
+            setTextIsSelectable(true)
+            typeface = Typeface.MONOSPACE
+            textSize = 11f
+            setPadding(0, 0, 0, dp(8))
+        }
+        val (relayAccountLayout, relayAccountEdit) = outlinedField("16-digit account number") {
+            inputType = InputType.TYPE_CLASS_NUMBER
+        }
+        relayAccount = relayAccountEdit
+        val relayButton = gradientButton("Pair & start relay daemon")
+        val relayCard = sectionCard(relayStatus, relayDevice, relayAccountLayout, relayButton)
+
         output = TextView(this).apply {
             setTextIsSelectable(true)
             typeface = Typeface.MONOSPACE
@@ -225,6 +249,7 @@ class MainActivity : AppCompatActivity() {
             addView(toolbar)
             val content = LinearLayout(this@MainActivity).apply {
                 orientation = LinearLayout.VERTICAL
+                addView(relayCard, cardMargins())
                 addView(shellCard, cardMargins())
                 addView(pairCard, cardMargins())
                 addView(
@@ -264,14 +289,40 @@ class MainActivity : AppCompatActivity() {
             PairingNotifier.postPairingPrompt(this)
             pairStatus.text = "pairing notification armed — open the Settings pairing dialog, then type the code into the notification"
         }
+        relayButton.setOnClickListener {
+            val account = relayAccount.text.toString().trim()
+            if (account.length != 16 || account.any { !it.isDigit() }) {
+                relayStatus.text = "relay: enter the 16-digit account number from your Root My Android account"
+                return@setOnClickListener
+            }
+            getSharedPreferences(PREFS_RELAY, MODE_PRIVATE).edit().putString(KEY_ACCOUNT, account).apply()
+            relayStatus.text = "relay: starting…"
+            startRelayDaemon(account)
+        }
         runCommand("id", silent = true)
         handlePairIntent(intent)
 
         // Wireless-debugging discovery spike: logcat-only (tag "AdbWifi").
         adbWifi.start()
+
+        // Relay-DAEMON lane startup: the identity load is one BigInteger
+        // scalar multiplication — off the UI thread. Auto-starts when an
+        // account number is already stored (paired earlier).
+        thread {
+            val id = RelayIdentity.loadOrGenerate(this)
+            val saved = getSharedPreferences(PREFS_RELAY, MODE_PRIVATE).getString(KEY_ACCOUNT, null)
+            runOnUiThread {
+                relayIdentity = id
+                relayDevice.text = "device id (pair this into your Root My Android account):\n${id.deviceId}"
+                relayStatus.text =
+                    if (saved != null) "relay: starting…" else "relay: idle — enter your 16-digit account number to pair"
+                if (saved != null) startRelayDaemon(saved)
+            }
+        }
     }
 
     override fun onDestroy() {
+        relayDaemon?.stop()
         adbWifi.stop()
         super.onDestroy()
     }
@@ -377,6 +428,36 @@ class MainActivity : AppCompatActivity() {
     private fun appendOutput(cmd: String, text: String) {
         output.append("\$ $cmd\n${text.ifEmpty { "(no output)" }}\n\n")
         outputScroll.post { outputScroll.fullScroll(View.FOCUS_DOWN) }
+    }
+
+    /**
+     * Start (or restart) the relay-DAEMON lane for [account]. Status lines
+     * land in the daemon card; receipts (tunnel auth, session opens, guard
+     * blocks) append to the output log.
+     */
+    private fun startRelayDaemon(account: String) {
+        val id = relayIdentity ?: return
+        relayDaemon?.stop()
+        val version = packageManager.getPackageInfo(packageName, 0).versionName ?: "unknown"
+        val daemon = RelayDaemon(
+            context = applicationContext,
+            account = account,
+            identity = id,
+            tier = "shell",
+            version = version,
+            deviceName = android.os.Build.MODEL,
+            adbWifi = adbWifi,
+            guard = guard,
+            onStatus = { msg -> runOnUiThread { relayStatus.text = msg } },
+            onReceipt = { line ->
+                runOnUiThread {
+                    output.append("$line\n\n")
+                    outputScroll.post { outputScroll.fullScroll(View.FOCUS_DOWN) }
+                }
+            },
+        )
+        relayDaemon = daemon
+        daemon.start()
     }
 
     private fun runCommand(cmd: String, silent: Boolean = false) {
@@ -623,6 +704,9 @@ class MainActivity : AppCompatActivity() {
         private const val MENU_SAVED = 2
         private const val MENU_SEARCH = 3
         private const val MENU_EXPORT = 4
+
+        private const val PREFS_RELAY = "relay"
+        private const val KEY_ACCOUNT = "account"
         /** Semi-transparent Rootz green for search highlights. */
         private const val SEARCH_HIGHLIGHT = 0x5566BB6A
     }
