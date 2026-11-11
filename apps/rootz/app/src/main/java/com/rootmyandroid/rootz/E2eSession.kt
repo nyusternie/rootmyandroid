@@ -198,6 +198,11 @@ internal object E2eSession {
         /** Session key — set once [processWelcome] verifies the daemon. */
         var key: ByteArray? = null
             private set
+
+        /** Called by [E2eSession.processWelcome] after BOTH verifications pass. */
+        internal fun completeHandshake(sessionKey: ByteArray) {
+            key = sessionKey
+        }
     }
 
     private fun randomBytes(n: Int): ByteArray = ByteArray(n).also { random.nextBytes(it) }
@@ -218,7 +223,7 @@ internal object E2eSession {
             throw E2eException("bad transcript signature")
         }
         val shared = X25519.sharedSecret(session.ephSecret, welcome.eph)
-        session.key = deriveKey(shared, session.ephPub, welcome.eph)
+        session.completeHandshake(deriveKey(shared, session.ephPub, welcome.eph))
     }
 
     fun sealInner(session: ClientSession, innerJson: ByteArray): String {
