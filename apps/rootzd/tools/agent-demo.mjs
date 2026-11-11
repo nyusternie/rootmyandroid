@@ -156,12 +156,27 @@ function thermal() {
 
 // ---------------------------------------------------------------- loop
 
+// 2026-11-11 iteration 2 (owner-approved): the free-form goal let the
+// model drift into unrequested getprop trivia, never recover from an
+// empty result, and repeat turn 2's command (measured in
+// results/agent-demo-202611112331.log). Now a numbered checklist with
+// order / no-repeat / empty-result rules and a done-gate on the items.
 const GOAL = `You are an on-device agent driving an Android shell over ADB, one action per turn.
 Reply with EXACTLY one JSON object per turn, nothing else:
   {"tool": "shell", "cmd": "<one read-only command>"}
   {"done": "<concise findings summary>"}
 A command guard REFUSES anything not read-only (no rm, pm clear/uninstall, su, setprop, settings put, reboot, dd, mount, kill...). Refusals come back as the tool result — pick a different read-only command.
-GOAL: audit this device and report: device model, Android version, SELinux state, whether root is present, and what provides it.`
+RULES:
+1. Work the CHECKLIST in order — each turn must target the first item not yet answered.
+2. NEVER repeat a command you already ran.
+3. Empty stdout means the command was wrong — try the canonical alternative (e.g. getenforce for SELinux state, which su for a su binary).
+4. Use done ONLY when every checklist item is answered.
+CHECKLIST:
+[1] device model
+[2] Android version
+[3] SELinux state
+[4] is root present?
+[5] what provides root?`
 
 function buildPrompt(transcript) {
   const body = GOAL + '\n\n' + transcript.map(e =>
