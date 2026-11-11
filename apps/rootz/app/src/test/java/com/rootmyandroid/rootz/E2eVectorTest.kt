@@ -177,17 +177,4 @@ class E2eVectorTest {
         assertNull(E2eSession.B64.decode("not!base64!!"))
     }
 
-    // TEMPORARY DEBUG (2026-11-11, CI tag-mismatch hunt) — prints Poly1305
-    // internals into the JUnit XML system-out (dumped by rootz.yml). REMOVE
-    // once the tag mismatch is fixed.
-    @Test
-    fun `zz debug poly1305 internals`() {
-        val key = ByteArray(32) { it.toByte() }
-        val nonce = hex("000102030405060708090a0b")
-        val pt = "Rootz relay client interop check".toByteArray(Charsets.UTF_8)
-        val sealed = ChaCha20Poly1305.seal(key, nonce, pt)
-        println("DEBUG sealed_b64=${E2eSession.B64.encode(sealed)}")
-        println("DEBUG sealed_hex=${hexOf(sealed)}")
-        println("DEBUG ${ChaCha20Poly1305.debugTag(key, nonce, sealed.copyOfRange(0, sealed.size - 16))}")
-    }
 }
