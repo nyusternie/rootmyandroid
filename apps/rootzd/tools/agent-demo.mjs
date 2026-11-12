@@ -245,7 +245,7 @@ const log = []
 const say = s => { log.push(s); console.log(s) }
 
 async function main() {
-  say(`[agent-demo ${new Date().toISOString()}] Lane-B harness demo — serial=${SERIAL} server=${SERVER} turns<=${MAX_TURNS}`)
+  say(`[agent-demo ${new Date().toISOString()}] Lane-B harness demo — serial=${SERIAL} server=${SERVER} turns<=${MAX_TURNS} temp=${TEMP} mode=${MODE}`)
   const th = thermal()
   say(`[agent-demo] preflight thermal: status=${th.status} cpu=${th.cpu}C`)
   say('[agent-demo] thermal caps REMOVED per owner ruling 2026-11-11 (test device) — proceeding regardless of status')

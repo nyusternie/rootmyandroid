@@ -514,7 +514,7 @@ loopguard|orchestrate|prune`. Every run writes a transcript to
 `apps/rootzd/tools/results/agent-demo-<stamp>.log` from a `finally`
 block; logs are force-added over the `results/` ignore.
 
-Seven logged runs (all committed, profile page carries the table):
+Seven logged runs (all committed; the profile page carries the table):
 greedy decoding CANNOT be rescued by any tested driver-side mechanism
 — checklist prompt (made it worse: rigid 3-cycle), repeat-refusal
 guard (4/4 refused, loop persisted), orchestrate mode (7 nudges,
