@@ -46,6 +46,17 @@ const SERIAL = opt('serial', '0C151FDD400648')
 const MAX_TURNS = parseInt(opt('turns', '8'), 10)
 const SERVER = opt('url', 'http://127.0.0.1:8399')
 const TEMP = parseFloat(opt('temp', '0'))
+// Stuck-recovery policy, compared head-to-head at temp 0 (greedy is
+// the production decode for agents, so the question was: can a DRIVER
+// strategy rescue it without sampling?). Measured 2026-11-12 on redfin:
+//   loopguard  (default) : repeat refused, error fed back — device
+//                          safe, model still stuck (4/4 repeats, abort)
+//   orchestrate          : + synthetic driver nudge after each refusal
+//                          — still stuck, greedy re-picks the repeat
+//   prune                : drop the offending action+result from the
+//                          transcript so the attractor loses its
+//                          evidence — UNSTUCK greedy decoding (measured)
+const MODE = opt('mode', 'loopguard')
 
 // ---------------------------------------------------------------- guard
 // MIRRORED from CommandGuard.kt — keep 1:1.
@@ -284,6 +295,13 @@ async function main() {
       result = JSON.stringify({ guard: 'REFUSED', risk: Object.keys(Risk)[verdict.risk], pattern: worst.key, reason: worst.reason })
     } else if (executed.has(action.cmd.trim().replace(/\s+/g, ' '))) {
       result = JSON.stringify({ guard: 'LOOP', error: 'you already ran this exact command — pick a DIFFERENT command that targets the first unanswered checklist item' })
+      if (MODE === 'prune') {
+        // Remove the repeat AND its feedback: next completion sees no
+        // evidence of the failed action, so greedy continuation changes.
+        transcript.splice(-2, 2)
+      } else if (MODE === 'orchestrate') {
+        transcript.push({ role: 'user', text: 'DRIVER: you are repeating an already-executed command. Pick a DIFFERENT command that targets an unanswered checklist item, or call done with what you have.' })
+      }
     } else {
       executed.add(action.cmd.trim().replace(/\s+/g, ' '))
       const ex = adb(action.cmd, 15000)

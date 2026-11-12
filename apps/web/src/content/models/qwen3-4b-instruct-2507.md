@@ -218,6 +218,42 @@ benchmarks:
       never ran `which su` or checked /product/bin. Deployment rule:
       treat every unsupported negative from an on-device agent as
       "unknown", or pin the search space in the harness.
+  - date: 2026-11-12
+    device: Pixel 5 (redfin), Android 14, 8 GB RAM
+    toolchain: llama-server v0.9.0 (commit cd959ba) via agent-demo.mjs (orchestrate mode, temp 0)
+    log: https://github.com/nyusternie/rootmyandroid/blob/master/apps/rootzd/tools/results/agent-demo-202611121845.log
+    cells:
+      - name: audit-t0-orchestrate
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: per-turn generation (mean of 11 turns), tps: 1.31, err: 0.54 }
+    notes: >-
+      Orchestrate mode (driver appends an explicit "pick something
+      else" nudge after every LOOP refusal) at temp 0: still
+      greedy-locked. The 3-cycle (selinux.status / version.release /
+      product.model) persisted through 7 nudges; at turn 11 the model
+      declared SELinux undeterminable and root Unknown on a
+      Magisk-rooted device, then stopped. Nudges are not a substitute
+      for sampling temperature.
+  - date: 2026-11-12
+    device: Pixel 5 (redfin), Android 14, 8 GB RAM
+    toolchain: llama-server v0.9.0 (commit cd959ba) via agent-demo.mjs (prune mode, temp 0)
+    log: https://github.com/nyusternie/rootmyandroid/blob/master/apps/rootzd/tools/results/agent-demo-202611121851.log
+    cells:
+      - name: audit-t0-prune
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: per-turn generation (mean of 12 turns), tps: 1.05, err: 0.21 }
+    notes: >-
+      Prune mode (repeated action + its result are spliced out of the
+      transcript before the next completion) at temp 0: DID break the
+      rigid 3-cycle — the model explored sys.root, security_patch,
+      manufacturer, brand, codename — but never ran getenforce or
+      which su and burned the 12-turn cap with root still unanswered.
+      Pruning loosens the attractor; it does not replace decoding
+      temperature.
 
 ---
 
