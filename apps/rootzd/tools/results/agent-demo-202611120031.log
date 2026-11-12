@@ -1,0 +1,28 @@
+[agent-demo 2026-11-12T00:27:22.774Z] Lane-B harness demo — serial=0C151FDD400648 server=http://127.0.0.1:8399 turns<=12
+[agent-demo] preflight thermal: status=1 cpu=46.500004C
+[agent-demo] thermal caps REMOVED per owner ruling 2026-11-11 (test device) — proceeding regardless of status
+[agent-demo] llama-server healthy. Guard: MIRRORED CommandGuard.kt, empty approval stores (fail closed).
+--- transcript ---
+turn 1 | assistant: {"tool":"shell","cmd":"getprop ro.product.model"} (8121ms, gen 2.40 t/s, th 1/46.500004C)
+turn 1 | result: {"rc":0,"stdout":"Pixel 5","stderr":""}
+turn 2 | assistant: {"tool":"shell","cmd":"getprop ro.build.version.release"} (16981ms, gen 2.38 t/s, th 1/46.500004C)
+turn 2 | result: {"rc":0,"stdout":"14","stderr":""}
+turn 3 | assistant: {"tool":"shell","cmd":"getenforce"} (14044ms, gen 2.66 t/s, th 1/46.500004C)
+turn 3 | result: {"rc":0,"stdout":"Enforcing","stderr":""}
+turn 4 | assistant: {"tool":"shell","cmd":"grep 'root' /system/etc/manifests/* 2>/dev/null || ls /system/xbin/ | grep -E '\\b(su|su\\-|setprop)\\b'"} (42154ms, gen 1.59 t/s, th 1/46.500004C)
+turn 4 | result: {"rc":2,"stdout":"","stderr":"grep: bad regex '\\b(su|su\\-|setprop)\\b': trailing backslash (\\)\nls: /system/xbin/: No such file or directory"}
+turn 5 | assistant: {"tool":"shell","cmd":"find /system/xbin /system/bin -type f -executable 2>/dev/null | grep -E '\\bsu\\b|setprop\\b'"} (45125ms, gen 2.33 t/s, th 1/46.500004C)
+turn 5 | result: {"rc":2,"stdout":"","stderr":"grep: bad regex '\\bsu\\b|setprop\\b': trailing backslash (\\)"}
+turn 6 | assistant: {"tool":"shell","cmd":"find /system/xbin /system/bin -type f -executable 2>/dev/null | grep -E 'su|setprop'"} (34509ms, gen 2.33 t/s, th 1/46.500004C)
+turn 6 | result: {"rc":1,"stdout":"","stderr":""}
+turn 7 | assistant: {"tool":"shell","cmd":"ls /system/xbin/ 2>/dev/null | grep -E 'su|setprop'"} (26760ms, gen 2.33 t/s, th 1/46.500004C)
+turn 7 | result: {"rc":1,"stdout":"","stderr":""}
+turn 8 | assistant: {"tool":"shell","cmd":"ls /system/bin/ 2>/dev/null | grep -E 'su|setprop'"} (31941ms, gen 1.46 t/s, th 1/46.500004C)
+turn 8 | result: {"rc":0,"stdout":"cksum\nlsusb\nmd5sum\nsetprop\nsha1sum\nsha224sum\nsha256sum\nsha384sum\nsha512sum\nsurfaceflinger\nvold_prepare_subdirs","stderr":""}
+turn 9 | assistant: {"done":"[1] device model: Pixel 5\n[2] Android version: 14\n[3] SELinux state: Enforcing\n[4] is root present? : No\n[5] what provides root? : Root not present"} (47607ms, gen 2.21 t/s, th 1/46.500004C)
+turn 9 | DONE — model's findings: [1] device model: Pixel 5
+[2] Android version: 14
+[3] SELinux state: Enforcing
+[4] is root present? : No
+[5] what provides root? : Root not present
+--- end transcript ---

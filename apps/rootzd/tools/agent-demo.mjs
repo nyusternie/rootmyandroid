@@ -20,9 +20,16 @@
 //    cpu temp field is mTemp= under load, mValue= when idle; toybox
 //    grep has no \| alternation (all parsed here in JS, not in grep).
 //
+// 2026-11-11 (owner ruling, same-day supersession): ALL thermal abort
+// caps REMOVED at the owner's explicit direction ("THIS IS A TEST
+// DEVICE — IF IT GETS DAMAGED WE WILL JUST REPLACE IT"). Measurement is
+// RETAINED: thermal status + cpu temp are logged on every turn. Scope:
+// this file only — the completed bench harnesses (bench-phase0/1/2/3,
+// bench-soak) keep their owner-ruled gates; they already delivered.
+//
 // Usage:
 //   node apps/rootzd/tools/agent-demo.mjs [--serial 0C151FDD400648]
-//        [--turns 8] [--url http://127.0.0.1:8399]
+//        [--turns 8] [--url http://127.0.0.1:8399] [--temp 0.6]
 
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -38,6 +45,7 @@ const opt = (name, dflt) => {
 const SERIAL = opt('serial', '0C151FDD400648')
 const MAX_TURNS = parseInt(opt('turns', '8'), 10)
 const SERVER = opt('url', 'http://127.0.0.1:8399')
+const TEMP = parseFloat(opt('temp', '0'))
 
 // ---------------------------------------------------------------- guard
 // MIRRORED from CommandGuard.kt — keep 1:1.
@@ -213,7 +221,7 @@ async function complete(prompt) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      prompt, temperature: 0, n_predict: 128, cache_prompt: true,
+      prompt, temperature: TEMP, n_predict: 128, cache_prompt: true,
       stop: ['<|im_end|>', '\nuser:', '\nassistant:', '\nU:', '\nA:'],
     }),
     signal: AbortSignal.timeout(300000),
@@ -229,7 +237,7 @@ async function main() {
   say(`[agent-demo ${new Date().toISOString()}] Lane-B harness demo — serial=${SERIAL} server=${SERVER} turns<=${MAX_TURNS}`)
   const th = thermal()
   say(`[agent-demo] preflight thermal: status=${th.status} cpu=${th.cpu}C`)
-  if (th.status >= 2) { say('[agent-demo] ABORT: thermal status >= 2 (owner policy)'); return 2 }
+  say('[agent-demo] thermal caps REMOVED per owner ruling 2026-11-11 (test device) — proceeding regardless of status')
   const health = await fetch(SERVER + '/health', { signal: AbortSignal.timeout(10000) }).catch(() => null)
   if (!health || health.status !== 200) { say('[agent-demo] ABORT: llama-server not healthy on ' + SERVER); return 2 }
   say('[agent-demo] llama-server healthy. Guard: MIRRORED CommandGuard.kt, empty approval stores (fail closed).')
@@ -243,9 +251,9 @@ async function main() {
   // ALREADY-EXECUTED command is refused to execute and nudged back.
   const executed = new Set()
   let parseFails = 0
+  try {
   for (let turn = 1; turn <= MAX_TURNS; turn++) {
     const t = thermal()
-    if (th.status >= 2 || t.status >= 2) { say(`[agent-demo] ABORT at turn ${turn}: thermal status=${t.status}`); break }
     const r = await complete(buildPrompt(transcript))
     const action = extractJson(r.text)
     const tps = r.timings.predicted_per_second ? r.timings.predicted_per_second.toFixed(2) : '?'
@@ -259,7 +267,7 @@ async function main() {
     }
     parseFails = 0
     const actionJson = JSON.stringify(action)
-    say(`turn ${turn} | assistant: ${actionJson} (${r.ms}ms, gen ${tps} t/s)`)
+    say(`turn ${turn} | assistant: ${actionJson} (${r.ms}ms, gen ${tps} t/s, th ${t.status}/${t.cpu}C)`)
     transcript.push({ role: 'assistant', text: actionJson })
     if (typeof action.done === 'string') {
       say(`turn ${turn} | DONE — model's findings: ${action.done}`)
@@ -284,13 +292,14 @@ async function main() {
     say(`turn ${turn} | result: ${result}`)
     transcript.push({ role: 'user', text: result })
   }
-
+  } finally {
   say('--- end transcript ---')
   mkdirSync(join(HERE, 'results'), { recursive: true })
   const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 12)
   const logPath = join(HERE, 'results', `agent-demo-${stamp}.log`)
   writeFileSync(logPath, log.join('\n') + '\n')
   say(`[agent-demo] log written: ${logPath}`)
+  }
   return 0
 }
 

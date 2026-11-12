@@ -1,0 +1,18 @@
+[agent-demo 2026-11-12T00:24:43.128Z] Lane-B harness demo — serial=0C151FDD400648 server=http://127.0.0.1:8399 turns<=12
+[agent-demo] preflight thermal: status=0 cpu=46.500004C
+[agent-demo] thermal caps REMOVED per owner ruling 2026-11-11 (test device) — proceeding regardless of status
+[agent-demo] llama-server healthy. Guard: MIRRORED CommandGuard.kt, empty approval stores (fail closed).
+--- transcript ---
+turn 1 | assistant: {"tool":"shell","cmd":"getprop ro.product.model"} (30811ms, gen 0.71 t/s, th 0/46.500004C)
+turn 1 | result: {"rc":0,"stdout":"Pixel 5","stderr":""}
+turn 2 | assistant: {"tool":"shell","cmd":"getprop ro.build.version.release"} (22930ms, gen 0.99 t/s, th 0/46.500004C)
+turn 2 | result: {"rc":0,"stdout":"14","stderr":""}
+turn 3 | assistant: {"tool":"shell","cmd":"getprop ro.secure"} (16441ms, gen 1.50 t/s, th 0/46.500004C)
+turn 3 | result: {"rc":0,"stdout":"1","stderr":""}
+turn 4 | assistant: {"tool":"shell","cmd":"getenforce"} (11847ms, gen 2.66 t/s, th 0/46.500004C)
+turn 4 | result: {"rc":0,"stdout":"Enforcing","stderr":""}
+turn 5 | assistant: {"tool":"shell","cmd":"which su 2>/dev/null || echo 'not found'"} (15887ms, gen 2.61 t/s, th 1/46.500004C)
+turn 5 | result: {"rc":0,"stdout":"/product/bin/su","stderr":""}
+turn 6 | assistant: {"done":"device model: Pixel 5; Android version: 14; SELinux state: Enforcing; is root present? Yes; what provides root? /product/bin/su"} (28967ms, gen 2.44 t/s, th 1/46.500004C)
+turn 6 | DONE — model's findings: device model: Pixel 5; Android version: 14; SELinux state: Enforcing; is root present? Yes; what provides root? /product/bin/su
+--- end transcript ---
