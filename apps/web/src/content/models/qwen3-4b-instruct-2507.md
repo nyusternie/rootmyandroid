@@ -21,7 +21,7 @@ ggufFile: Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf
 ggufBytes: 2497280736
 tier: 2–3 GiB
 verified: 2026-11-11
-updated: 2026-11-11
+updated: 2026-11-12
 benchmarks:
   - date: 2026-11-11
     device: Pixel 5 (redfin), Android 14, 8 GB RAM
@@ -129,6 +129,95 @@ benchmarks:
       measured"). Generation t/s here is not comparable to the
       llama-bench fit numbers — llama-cli adds chat-template/sampling
       scaffolding and these cells ran back-to-back.
+  - date: 2026-11-11
+    device: Pixel 5 (redfin), Android 14, 8 GB RAM
+    toolchain: llama-server v0.9.0 (commit cd959ba) via agent-demo.mjs (JSON action loop, CommandGuard mirror, empty approval stores)
+    log: https://github.com/nyusternie/rootmyandroid/blob/master/apps/rootzd/tools/results/agent-demo-202611112331.log
+    cells:
+      - name: audit-t0-freeform
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: per-turn generation (mean of 8 turns), tps: 1.79, err: 0.35 }
+    notes: >-
+      Open-ended 5-point device audit at greedy decoding (temp 0). The
+      model never repeated a command but drifted off-goal from turn 4
+      (unrequested patch level, codename, SDK) and exhausted the 8-turn
+      cap without answering the last three checklist items.
+  - date: 2026-11-11
+    device: Pixel 5 (redfin), Android 14, 8 GB RAM
+    toolchain: llama-server v0.9.0 (commit cd959ba) via agent-demo.mjs (same loop, checklist prompt)
+    log: https://github.com/nyusternie/rootmyandroid/blob/master/apps/rootzd/tools/results/agent-demo-202611112337.log
+    cells:
+      - name: audit-t0-checklist
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: per-turn generation (mean of 9 turns), tps: 0.92, err: 0.10 }
+    notes: >-
+      Same audit with a numbered-checklist prompt (order, no-repeat,
+      empty-result rules) at temp 0: WORSE — a rigid 3-command cycle
+      (turns 1/6/9, 2/4/7, 3/5/8 identical), all four stated rules
+      ignored. The owner-policy thermal abort (Thermal Status 2) ended
+      the run at turn 10. A stalled sub-goal (empty selinux.status
+      output) is a deterministic attractor under greedy decoding that
+      prompt text cannot break.
+  - date: 2026-11-11
+    device: Pixel 5 (redfin), Android 14, 8 GB RAM
+    toolchain: llama-server v0.9.0 (commit cd959ba) via agent-demo.mjs (driver-side loop-guard added)
+    log: https://github.com/nyusternie/rootmyandroid/blob/master/apps/rootzd/tools/results/agent-demo-202611112342.log
+    cells:
+      - name: audit-t0-loopguard
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: per-turn generation (mean of 7 turns), tps: 1.40, err: 0.44 }
+    notes: >-
+      Driver-side repeated-action detection: an exact repeat of an
+      already-EXECUTED command is refused (nothing ran twice, 4/4
+      caught) and fed back as "pick a DIFFERENT command". The guard
+      fully protected the device but the model did not change behavior
+      on the feedback at temp 0; thermal abort at turn 8. Detection
+      protects the device — it cannot unstick greedy decoding.
+  - date: 2026-11-12
+    device: Pixel 5 (redfin), Android 14, 8 GB RAM
+    toolchain: llama-server v0.9.0 (commit cd959ba) via agent-demo.mjs (loop-guard, temp 0.6, thermal caps removed by owner ruling)
+    log: https://github.com/nyusternie/rootmyandroid/blob/master/apps/rootzd/tools/results/agent-demo-202611120026.log
+    cells:
+      - name: audit-t06-loopguard
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: per-turn generation (mean of 6 turns), tps: 1.82, err: 0.79 }
+    notes: >-
+      Sampling at temp 0.6 (everything else identical) broke the
+      attractor: audit COMPLETE in 6 turns. The model recovered from an
+      empty `getprop selinux.status` on its own, ran `getenforce`
+      (Enforcing), then `which su 2>/dev/null || echo not found` (the
+      guard mirror correctly split the `||` pipeline; both halves
+      SAFE), and reported Pixel 5 / Android 14 / Enforcing / root
+      present at /product/bin/su — CORRECT (Magisk, SELinux context
+      u:r:magisk:s0 verified 2026-11-10).
+  - date: 2026-11-12
+    device: Pixel 5 (redfin), Android 14, 8 GB RAM
+    toolchain: llama-server v0.9.0 (commit cd959ba) via agent-demo.mjs (loop-guard, temp 0.6, replication)
+    log: https://github.com/nyusternie/rootmyandroid/blob/master/apps/rootzd/tools/results/agent-demo-202611120031.log
+    cells:
+      - name: audit-t06-loopguard-repl
+        mask: 'ff'
+        threads: 8
+        tests:
+          - { name: per-turn generation (mean of 9 turns), tps: 2.19, err: 0.37 }
+    notes: >-
+      Replication at temp 0.6: completed in 9 turns but concluded
+      "root NOT present" — a FALSE NEGATIVE on the same rooted device.
+      Measured causes: toybox `grep -E` rejects GNU \b word-boundaries
+      (rc=2, tried twice — the stderr did not teach it), toybox `find`
+      exits rc=1 without searching further when its first path operand
+      is missing (/system/xbin absent on this device), and the model
+      never ran `which su` or checked /product/bin. Deployment rule:
+      treat every unsupported negative from an on-device agent as
+      "unknown", or pin the search space in the harness.
 
 ---
 
@@ -177,6 +266,16 @@ smoke below — including the only pass at reacting to a tool result
 instead of re-issuing the same command. The reason to pick
 the 2507 over its sibling is instruction-following quality and the
 context headroom, not speed.
+
+**Agent duty, measured end-to-end (2026-11-12, five runs in the last
+benchmark entries above):** at greedy decoding this model cannot run an
+open-ended audit loop — it drifts off-goal, then locks into a
+deterministic 3-command cycle that neither a checklist prompt nor
+driver-side refusals-with-feedback can break. At temp 0.6 with a
+driver-side repeat guard it completed a 5-point device audit in 6–9
+turns at ~1.8–2.2 t/s, correctly identifying a Magisk root in one run
+and falsely denying it in the next. Ship it at temp ≥ 0.5, behind a
+repeat guard, and verify every negative it reports.
 
 ## Reproduce these numbers
 
