@@ -503,3 +503,31 @@ tests auto-run on every push, the full pipeline — incl. Android SDK setup
   header); the daemon silently drops undecodable inner frames — a one-line
   diagnostic log is PROPOSED, awaiting owner ruling (do not add unruled);
   a real PTY (forkpty) replaces the piped sh in a later release.
+
+## On-device LLM agent harness (Lane B — demo stage, 2026-11-12)
+
+`apps/rootzd/tools/agent-demo.mjs` drives llama-server on-device
+(redfin, port-forwarded 127.0.0.1:8399) through a guard MIRRORED 1:1
+from the Rootz app's `CommandGuard.kt` (fail-closed: SAFE-only with
+empty approval stores). Flags: `--serial --url --turns --temp --mode
+loopguard|orchestrate|prune`. Every run writes a transcript to
+`apps/rootzd/tools/results/agent-demo-<stamp>.log` from a `finally`
+block; logs are force-added over the `results/` ignore.
+
+Seven logged runs (all committed, profile page carries the table):
+greedy decoding CANNOT be rescued by any tested driver-side mechanism
+— checklist prompt (made it worse: rigid 3-cycle), repeat-refusal
+guard (4/4 refused, loop persisted), orchestrate mode (7 nudges,
+cycle survived), prune mode (cycle broke, wandered, never finished).
+Only sampling worked: temp 0.6 + repeat guard completed the audit in
+6–9 turns at ~1.8–2.2 t/s, but with real variance (one run reported
+"no root" on this Magisk device — a false negative is ON RECORD).
+Deployment rule: temp ≥ 0.5, repeat guard on, verify every negative
+the agent reports (treat "not found" as "unknown" — toybox traps
+measured: `grep -E` rejects GNU `\b`; `find` rc=1 on missing first
+path; `/system/xbin` absent on redfin).
+
+Thermal aborts were removed from THIS harness only (owner ruling
+2026-11-11: test device); bench-phase*/bench-soak keep their thermal
+caps — their published numbers depend on them. Full handoff:
+`docs/HANDOFF-2026-11-12-on-device-agent-harness.md`.
