@@ -53,6 +53,11 @@ import {
 // Vector icons (react-native-svg): SU-robot brand glyph + web-footer
 // stroke family, shared theme colors.
 import { BrandIcon, NavIcon, UserIcon, type NavIconName } from './icons';
+// Lottie wire-up demo (owner request 2026-11-13 — first of many
+// animations): scan-reticle sweep on the main screen; brand-authored
+// asset, not a stock file. Speeds up while a scan runs.
+import LottieView from 'lottie-react-native';
+import scanSweep from './assets/scan-sweep.json';
 
 /** Mock Guru Balance until billing is wired to the API — owner
  * ruling 2026-11-13: billing is now inference-based, displayed unit-less
@@ -419,6 +424,15 @@ function ScanScreen() {
       <Text className="mb-4 text-sm leading-5 text-muted">
         Analyze this device to plan a root or upgrade. Scanning is free.
       </Text>
+      {/* Lottie wire-up demo (owner 2026-11-13): ambient scan sweep that
+          runs 2x speed while a scan is in flight. */}
+      <LottieView
+        source={scanSweep}
+        autoPlay
+        loop
+        speed={scanning ? 2 : 1}
+        style={{ width: 120, height: 120, alignSelf: 'center' }}
+      />
       <Panel title="Device">
         <Row label="Model" value={result?.model ?? '—'} />
         <Row label="Android" value={result?.android ?? '—'} />
