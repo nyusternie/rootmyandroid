@@ -7,10 +7,12 @@
  * key before upload; the API only ever sees ciphertext.
  *
  * Account lives behind the top-right header button (modal), not a tab.
- * The header also carries the plan-time bar: plans are dollar top-up
- * subscriptions (Mullvad-style — add time anytime, no auto-renewal).
- * Plan time, device scan, Devices, and Tools data is mocked for now; real
- * probing and API wiring come from native modules and the /v1 API.
+ * The header carries the inference-billing balance chip (mock value until
+ * billing is wired to the API — owner ruling 2026-11-13: billing is now
+ * inference-based; display contract pending the API team).
+ * The device scan and backup audit run for real via the native modules
+ * (ScanModule + AuditModule) and the scan.ts rules engine; Devices and
+ * Tools data is mocked for now; further API wiring comes from the /v1 API.
  *
  * Styled with NativeWind (tailwind.config.js ↔ rootzColors in
  * packages/shared/src/theme.ts).
@@ -38,9 +40,21 @@ type Tab = 'scan' | 'devices' | 'backups' | 'tools';
 // source of truth for app + web colors (dynamic props only; static styling
 // lives in NativeWind classes).
 import { rootzColors as colors } from 'rootmyandroid-shared';
+// Scan rules engine (scan.ts): same rules as the web /scan
+// (apps/web/src/lib/scan-report.ts), fixture-tested in jest.
+import {
+  analyzeScan,
+  bootloaderLabel,
+  bootloaderTone,
+  integrityTone,
+  parseGetprop,
+  type ScanResult,
+} from './scan';
 
-/** Mock plan-time level (0–100) until billing is wired to the API. */
-const MOCK_PLAN_LEVEL = 62;
+/** Mock inference-billing balance (USD) until billing is wired to the API —
+ * owner ruling 2026-11-13: billing is now inference-based. The site's
+ * balance vocabulary is USD (balanceUsd). */
+const MOCK_INFERENCE_BALANCE_USD = '$12.40';
 
 /**
  * Mock plan tiers (owner ruling 2026-11-05) until checkout is wired to the
@@ -90,7 +104,7 @@ function App() {
       <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
         <View className="flex-row items-center justify-between border-b border-border px-5 pb-3 pt-5">
           <Text className="text-xl font-bold text-text">Root My Android</Text>
-          <PlanBar level={MOCK_PLAN_LEVEL} onPress={() => setAccountOpen(true)} />
+          <BillingChip balance={MOCK_INFERENCE_BALANCE_USD} onPress={() => setAccountOpen(true)} />
           <TouchableOpacity
             className="rounded-lg border border-accent px-3 py-1.5"
             onPress={() => setAccountOpen(true)}
@@ -138,15 +152,11 @@ function App() {
   );
 }
 
-function PlanBar({ level, onPress }: { level: number; onPress: () => void }) {
-  const fillColor = level <= 20 ? colors.warn : colors.accent;
+function BillingChip({ balance, onPress }: { balance: string; onPress: () => void }) {
   return (
-    <TouchableOpacity className="mx-3.5 flex-1 flex-row items-center" onPress={onPress}>
-      <Text className="mr-2 text-[10px] font-bold tracking-[1px] text-faint">Time</Text>
-      <View className="h-1.5 flex-1 overflow-hidden rounded-[3px] bg-border">
-        <View className="h-1.5 rounded-[3px]" style={{ width: `${level}%`, backgroundColor: fillColor }} />
-      </View>
-      <Text className="ml-2 min-w-[22px] text-right text-[13px] font-bold" style={{ color: fillColor }}>{level}</Text>
+    <TouchableOpacity className="mx-3.5 flex-1 flex-row items-center justify-center" onPress={onPress}>
+      <Text className="mr-2 text-[10px] font-bold tracking-[1px] text-faint">Inference</Text>
+      <Text className="text-[13px] font-bold text-accent">{balance}</Text>
     </TouchableOpacity>
   );
 }
@@ -209,17 +219,6 @@ function Badge({ label, pro }: { label: string; pro?: boolean }) {
   );
 }
 
-type ScanResult = {
-  model: string;
-  android: string;
-  build: string;
-  bootloader: string;
-  rooted: string;
-  rootedTone?: 'good' | 'warn';
-  integrity: string;
-  integrityTone?: 'good' | 'warn';
-};
-
 type AuditPackageEntry = {
   package: string;
   label: string;
@@ -255,10 +254,21 @@ const AuditModule = NativeModules.AuditModule as {
   getDeviceName(): Promise<string>;
 };
 
+// Native module (android/app/.../ScanModule.kt): raw device facts for the
+// scan.ts rules engine. Undefined under jest.
+const ScanModule = NativeModules.ScanModule as {
+  collectScan(): Promise<{
+    getpropText: string;
+    suPath: string | null;
+    rootPackages: string[];
+  }>;
+};
+
 const API_BASE = 'https://rootmyandroid.com/v1';
 
 function ScanScreen() {
   const [scanning, setScanning] = useState(false);
+  const [scanError, setScanError] = useState('');
   const [result, setResult] = useState<ScanResult | null>(null);
   const [auditing, setAuditing] = useState(false);
   const [audit, setAudit] = useState<AuditSummary | null>(null);
@@ -269,23 +279,27 @@ function ScanScreen() {
   const [syncOk, setSyncOk] = useState(false);
   const auditSnapshot = useRef<AuditSnapshot | null>(null);
 
-  const runScan = () => {
+  // Real scan: raw device facts from the native ScanModule, mapped through
+  // the scan.ts rules engine (same rules as the web /scan; absent values
+  // render "unknown" — never a guess). READ-ONLY on the device.
+  const runScan = async () => {
     if (scanning) return;
     setScanning(true);
-    // Mock scan — real probing will come from native modules.
-    setTimeout(() => {
-      setResult({
-        model: 'Pixel 5 (redfin)',
-        android: '14 (SDK 34)',
-        build: 'UP1A.231005.007',
-        bootloader: 'Unlocked',
-        rooted: 'No',
-        rootedTone: 'warn',
-        integrity: 'Failing (unlocked bootloader)',
-        integrityTone: 'warn',
-      });
+    setScanError('');
+    try {
+      const raw = await ScanModule.collectScan();
+      setResult(
+        analyzeScan({
+          getprop: parseGetprop(raw.getpropText ?? ''),
+          suPath: raw.suPath ?? null,
+          rootPackages: raw.rootPackages ?? [],
+        }),
+      );
+    } catch (e: any) {
+      setScanError(e?.message || 'Scan failed on this device.');
+    } finally {
       setScanning(false);
-    }, 1200);
+    }
   };
 
   // Real scan: backup participation of every installed app, read from the OS.
@@ -374,16 +388,47 @@ function ScanScreen() {
         <Row label="Model" value={result?.model ?? '—'} />
         <Row label="Android" value={result?.android ?? '—'} />
         <Row label="Build" value={result?.build ?? '—'} />
-        <Row label="Bootloader" value={result?.bootloader ?? '—'} tone={result ? 'warn' : undefined} />
+        <Row
+          label="Bootloader"
+          value={result ? bootloaderLabel(result.bootloader) : '—'}
+          tone={result ? bootloaderTone(result.bootloader) : undefined}
+        />
+        {result ? (
+          <Text className="mt-1.5 text-xs leading-[17px] text-faint">
+            verifiedbootstate={result.verifiedBootState}
+            {result.oemUnlockAllowed === null
+              ? ''
+              : ` · oem_unlock_allowed=${result.oemUnlockAllowed ? 1 : 0}`}
+            {'\n'}
+            {result.bootloaderEvidence.join(' · ') || 'no bootloader props exposed'}
+          </Text>
+        ) : null}
       </Panel>
       <Panel title="Root status">
-        <Row label="Rooted" value={result?.rooted ?? '—'} tone={result?.rootedTone} />
-        <Row label="Integrity" value={result?.integrity ?? '—'} tone={result?.integrityTone} />
+        <Row
+          label="Rooted"
+          value={result ? (result.rooted ? 'Yes' : 'No') : '—'}
+          tone={result ? (result.rooted ? 'good' : 'warn') : undefined}
+        />
+        <Row
+          label="Integrity"
+          value={result?.integrity ?? '—'}
+          tone={result ? integrityTone(result.integrity) : undefined}
+        />
+        {result && result.rootedEvidence.length > 0 ? (
+          <Text className="mt-1.5 text-xs leading-[17px] text-faint">{result.rootedEvidence.join('\n')}</Text>
+        ) : null}
+        {result ? (
+          <Text className="mt-1.5 text-xs leading-[17px] text-faint">
+            Integrity is derived from bootloader state on-device — not a Play Integrity verdict.
+          </Text>
+        ) : null}
       </Panel>
       <PrimaryButton label={scanning ? 'Scanning…' : 'Run scan'} onPress={runScan} />
       <Text className="mt-3.5 text-xs leading-[17px] text-faint">
         Scanning runs on-device. Nothing is sent until you choose to back up.
       </Text>
+      {scanError ? <Text className="mt-2 text-xs leading-[17px]" style={{ color: colors.warn }}>{scanError}</Text> : null}
       <Panel title="Backup audit">
         <Text className="mb-4 text-sm leading-5 text-muted">
           Which installed apps are covered by Android backup, and which opted
