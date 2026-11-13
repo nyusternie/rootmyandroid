@@ -67,7 +67,7 @@ export const OG_LOCALES: Record<Locale, string> = {
 
 // Default-locale paths ('/' = homepage; no trailing slash) that exist in
 // ALL locales. EMPTY until a page's translations actually ship.
-export const LOCALIZED_ROUTES: readonly string[] = ['/', '/pricing', '/guardian-angel', '/rootz', '/download']
+export const LOCALIZED_ROUTES: readonly string[] = ['/', '/pricing', '/guardian-angel', '/rootz', '/downloads']
 
 const DICTS = {
   en: { common: enCommon, home: enHome, pricing: enPricing, guardian: enGuardian, rootz: enRootz, download: enDownload },

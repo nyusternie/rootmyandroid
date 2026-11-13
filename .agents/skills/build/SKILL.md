@@ -49,7 +49,7 @@ Consequences:
   `apps/android` release APKs for on-device UI/UX iteration signed with the
   **public debug key**: the runner-written gradle.properties points
   `ROOTMYANDROID_UPLOAD_*` at the committed `debug.keystore`. Linked from
-  /download with an explicit iteration-only disclosure (session goal:
+  /downloads with an explicit iteration-only disclosure (session goal:
   builds downloadable from rootmyandroid.com/downloads); never a production
   release; they cannot upgrade-in-place over an upload-signed install
   (signature mismatch → uninstall first).

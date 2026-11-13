@@ -3,11 +3,12 @@
 // no USB device). Spec: HANDOFF.md §10.3/§10.4.
 //
 // RULE-SOURCE POLICY (AGENTS.md rule 3 — no guessing): every detection rule
-// carries a SOURCE comment. As of 2026-10-29 NO real-device fixture has been
-// captured (fixtures land in src/lib/fixtures/scan/ per HANDOFF §10.3), so
-// all value-semantics rules are marked UNVERIFIED and must be re-checked
-// against the first fixture per OEM. An absent key ALWAYS renders as
-// "unknown" (HANDOFF §10.4) — that behavior is spec, not a device claim.
+// carries a SOURCE comment. First real-device fixture landed 2026-11-13
+// (src/lib/fixtures/scan/redfin-2026-11-13.json — Google Pixel 5, Android
+// 14, captured over USB adb): the bootloader getprop rules and the getprop
+// output format are CONFIRMED there; rules still marked UNVERIFIED must be
+// re-checked against the first fixture per OEM. An absent key ALWAYS renders
+// as "unknown" (HANDOFF §10.4) — that behavior is spec, not a device claim.
 
 /** Raw, JSON-serializable facts collected from the device by scan.ts. */
 export interface RawDeviceFacts {
@@ -53,7 +54,8 @@ const UNKNOWN = 'unknown'
 // Known root-app package IDs. Heuristic ONLY — an installed app does not
 // prove an active su daemon; HANDOFF §10.4 requires the UI to label this
 // heuristic. SOURCE: package ID named in HANDOFF.md §10.4 (2026-10-27);
-// not yet fixture-verified.
+// CONFIRMED on redfin 2026-11-13 (fixture: com.topjohnwu.magisk installed,
+// su resolves to /product/bin/su).
 const KNOWN_ROOT_PACKAGES: readonly string[] = ['com.topjohnwu.magisk']
 
 // next_steps may link ONLY to content that exists in this repo
@@ -68,9 +70,9 @@ const ROM_CATALOG = '/roms'
 /**
  * Parse `adb shell getprop` output into a key→value map.
  * Line format: `[ro.product.brand]: [google]`.
- * SOURCE for the format: toybox getprop prints "[%s]: [%s]" — UNVERIFIED
- * against a captured fixture in this repo (2026-10-29); re-check when the
- * first fixture lands. Non-matching lines are skipped; a trailing \r is
+ * SOURCE for the format: toybox getprop prints "[%s]: [%s]" — CONFIRMED
+ * against the redfin fixture (2026-11-13, captured from the live device).
+ * Non-matching lines are skipped; a trailing \r is
  * tolerated; an empty value (`[key]: []`) maps to ''.
  */
 export function parseGetprop(text: string): Record<string, string> {
@@ -133,8 +135,9 @@ export function analyzeDevice(raw: RawDeviceFacts, opts: AnalyzeOptions = {}): S
   // --- Bootloader / unlock state -------------------------------------------
   const evidence: string[] = []
   let state: BootloaderState = 'unknown'
-  // SOURCE: UNVERIFIED (no fixture yet, 2026-10-29) — semantics per Android
-  // bootloader convention: ro.boot.flash.locked "1" = locked, "0" = unlocked.
+  // SOURCE: CONFIRMED on redfin 2026-11-13 (fixture: flash.locked=0 on a
+  // device with a known-unlocked bootloader) — ro.boot.flash.locked
+  // "1" = locked, "0" = unlocked.
   const flashLocked = get('ro.boot.flash.locked')
   if (flashLocked === '1') {
     state = 'locked'
@@ -143,8 +146,9 @@ export function analyzeDevice(raw: RawDeviceFacts, opts: AnalyzeOptions = {}): S
     state = 'unlocked'
     evidence.push('ro.boot.flash.locked=0')
   }
-  // SOURCE: UNVERIFIED (no fixture yet, 2026-10-29) — ro.boot.vbmeta.device_state
-  // carries the literal strings "locked" / "unlocked".
+  // SOURCE: CONFIRMED on redfin 2026-11-13 (fixture: the literal string
+  // "unlocked" observed) — ro.boot.vbmeta.device_state carries the literal
+  // strings "locked" / "unlocked".
   const vbmeta = get('ro.boot.vbmeta.device_state')
   if (vbmeta === 'locked' || vbmeta === 'unlocked') {
     evidence.push(`ro.boot.vbmeta.device_state=${vbmeta}`)
@@ -160,13 +164,14 @@ export function analyzeDevice(raw: RawDeviceFacts, opts: AnalyzeOptions = {}): S
 
   // sys.oem_unlock_allowed: the Developer-options TOGGLE state only. It does
   // NOT indicate the current lock state — kept as a separate field for that
-  // reason. SOURCE: UNVERIFIED (no fixture yet, 2026-10-29); "1"/"0".
+  // reason. SOURCE: "1"/"0"; value 1 observed on redfin 2026-11-13 (fixture).
   const oem = get('sys.oem_unlock_allowed')
   const oemUnlockAllowed = oem === '1' ? true : oem === '0' ? false : null
 
   // ro.boot.verifiedbootstate: reported raw. Known value set per AOSP AVB
-  // (green/orange/yellow/red) — SOURCE: UNVERIFIED (no fixture yet,
-  // 2026-10-29); the raw string is surfaced either way.
+  // (green/orange/yellow/red) — SOURCE: "orange" observed on redfin
+  // 2026-11-13 (fixture, unlocked bootloader); the raw string is surfaced
+  // either way.
   const verifiedBootState = get('ro.boot.verifiedbootstate') ?? UNKNOWN
 
   // --- Root indicators (heuristic — HANDOFF §10.4) --------------------------

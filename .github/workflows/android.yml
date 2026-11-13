@@ -9,9 +9,9 @@ name: Android app build
 # runner-written gradle.properties points ROOTMYANDROID_UPLOAD_* at the
 # committed debug.keystore) — iteration builds only, never a production
 # release; they cannot upgrade-in-place over an upload-signed install
-# (signature mismatch). Linked from /download with an explicit iteration-only
-# disclosure (owner ruling 2026-11-13: session goal is a build downloadable
-# from rootmyandroid.com/downloads).
+# (signature mismatch). Linked from /downloads with an explicit iteration-
+# only disclosure (owner ruling 2026-11-13: session goal is a build
+# downloadable from rootmyandroid.com/downloads).
 # Install with: adb install -r rootmyandroid-release.apk
 
 on:

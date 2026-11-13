@@ -22,10 +22,11 @@
 /device  /devices  301
 /device/  /devices/  301
 
-# Download-page plural alias (owner request 2026-11-13): /downloads ->
-# /download. One-way only (never add the reverse rule — pairs loop).
-/downloads  /download  301
-/downloads/  /download  301
+# Canonical flip (owner ruling 2026-11-13): the download page lives at
+# /downloads; /download is the one-way legacy redirect (never add the
+# reverse rule — pairs loop).
+/download  /downloads  301
+/download/  /downloads/  301
 
 # Profile-page case aliases (owner ruling 2026-11-05): the brand-cased path is
 # CANONICAL (real page file, sitemap, canonical link, internal links); lowercase
