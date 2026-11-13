@@ -50,6 +50,9 @@ import {
   parseGetprop,
   type ScanResult,
 } from './scan';
+// Vector icons (react-native-svg): SU-robot brand glyph + web-footer
+// stroke family, shared theme colors.
+import { BrandIcon, NavIcon, UserIcon, type NavIconName } from './icons';
 
 /** Mock Guru Balance until billing is wired to the API — owner
  * ruling 2026-11-13: billing is now inference-based, displayed unit-less
@@ -105,13 +108,17 @@ function App() {
       <StatusBar barStyle="light-content" {...({ backgroundColor: colors.bg } as object)} />
       <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
         <View className="flex-row items-center justify-between border-b border-border px-5 pb-3 pt-5">
-          <Text className="text-xl font-bold text-text">Root My Android</Text>
+          {/* Owner ruling 2026-11-13: the header shows the SU-robot brand
+              icon instead of the wordmark. */}
+          <BrandIcon size={26} />
           <BillingChip balance={MOCK_GURU_BALANCE_USD} onPress={() => setAccountOpen(true)} />
+          {/* Owner ruling 2026-11-13: the Account button is an icon. */}
           <TouchableOpacity
-            className="rounded-lg border border-accent px-3 py-1.5"
+            className="rounded-lg border border-accent p-2"
             onPress={() => setAccountOpen(true)}
+            accessibilityLabel="Account"
           >
-            <Text className="text-sm font-semibold text-accent">Account</Text>
+            <UserIcon color={colors.accent} size={20} />
           </TouchableOpacity>
         </View>
 
@@ -123,10 +130,10 @@ function App() {
         </ScrollView>
 
         <View className="flex-row border-t border-border bg-panel">
-          <TabButton label="Scan" icon={TAB_ICONS.scan} active={tab === 'scan'} onPress={() => setTab('scan')} />
-          <TabButton label="Devices" icon={TAB_ICONS.devices} active={tab === 'devices'} onPress={() => setTab('devices')} />
-          <TabButton label="Backups" icon={TAB_ICONS.backups} active={tab === 'backups'} onPress={() => setTab('backups')} />
-          <TabButton label="Tools" icon={TAB_ICONS.tools} active={tab === 'tools'} onPress={() => setTab('tools')} />
+          <TabButton label="Scan" icon="scan" active={tab === 'scan'} onPress={() => setTab('scan')} />
+          <TabButton label="Devices" icon="devices" active={tab === 'devices'} onPress={() => setTab('devices')} />
+          <TabButton label="Backups" icon="backups" active={tab === 'backups'} onPress={() => setTab('backups')} />
+          <TabButton label="Tools" icon="tools" active={tab === 'tools'} onPress={() => setTab('tools')} />
         </View>
 
         <Modal
@@ -155,39 +162,34 @@ function App() {
 }
 
 function BillingChip({ balance, onPress }: { balance: string; onPress: () => void }) {
-  // Owner ruling 2026-11-13: 6 decimals, last 4 superscript. RN has no
-  // baseline-shift style — a smaller nested Text sharing the baseline is
-  // the standard approximation.
+  // Owner ruling 2026-11-13: 6 decimals, last 4 superscript AND RAISED —
+  // nested Text sits on the shared baseline (bottom-aligned), so the pair
+  // renders as a row View with items-start: both tops flush = the small
+  // digits ride at the top of the number.
   const main = balance.slice(0, -4);
   const sup = balance.slice(-4);
   return (
     <TouchableOpacity className="mx-3.5 flex-1 flex-row items-center justify-center" onPress={onPress}>
       <Text className="mr-2 text-[10px] font-bold tracking-[1px] text-faint">Guru⚡</Text>
-      <Text className="text-[13px] font-bold text-accent">
-        {main}
-        <Text className="text-[8px]">{sup}</Text>
-      </Text>
+      <View className="flex-row items-start">
+        <Text className="text-[13px] font-bold text-accent">{main}</Text>
+        <Text className="mt-[1px] text-[8px] font-bold text-accent">{sup}</Text>
+      </View>
     </TouchableOpacity>
   );
 }
 
 // Bottom-nav icons (owner request 2026-11-13: the text-only tabs were too
-// flat and hard to tap — an icon line gives each tab height and a bigger
-// touch target; emoji keeps the app zero-dependency, matching Guru⚡).
-const TAB_ICONS: Record<Tab, string> = {
-  scan: '🔍',
-  devices: '📱',
-  backups: '☁️',
-  tools: '🛠️',
-};
-
-function TabButton({ label, icon, active, onPress }: { label: string; icon: string; active: boolean; onPress: () => void }) {
+// flat and hard to tap — vector SVG icons give each tab height and a
+// bigger touch target; owner follow-up: SVG icons, NOT emoji, all in the
+// shared theme colors).
+function TabButton({ label, icon, active, onPress }: { label: string; icon: NavIconName; active: boolean; onPress: () => void }) {
   return (
     <TouchableOpacity
       className={`flex-1 items-center py-2 ${active ? 'border-t-2 border-accent' : ''}`}
       onPress={onPress}
     >
-      <Text className="text-[18px] leading-[24px]">{icon}</Text>
+      <NavIcon name={icon} color={active ? colors.accent : colors.muted} size={22} />
       <Text className={`mt-0.5 text-[11px] font-medium ${active ? 'text-text' : 'text-muted'}`}>{label}</Text>
     </TouchableOpacity>
   );
@@ -202,8 +204,20 @@ function Panel({ title, children }: { title?: string; children: React.ReactNode 
   );
 }
 
-function Row({ label, value, tone }: { label: string; value: string; tone?: 'good' | 'warn' }) {
+function Row({ label, value, tone, wide }: { label: string; value: string; tone?: 'good' | 'warn'; wide?: boolean }) {
   const valueColor = tone === 'good' ? colors.good : tone === 'warn' ? colors.warn : colors.text;
+  // wide: full-width stacked label + value — for long values (fingerprints)
+  // that would wrap into a squeezed flex-row sliver.
+  if (wide) {
+    return (
+      <View className="py-1.5">
+        <Text className="text-sm text-muted">{label}</Text>
+        <Text className="mt-0.5 text-sm font-medium" style={{ color: valueColor }} selectable>
+          {value.replace(/([:/])/g, '$1\u200b')}
+        </Text>
+      </View>
+    );
+  }
   return (
     <View className="flex-row justify-between py-1.5">
       <Text className="text-sm text-muted">{label}</Text>
@@ -461,7 +475,7 @@ function ScanScreen() {
                 : 'unknown'
             }
           />
-          <Row label="Fingerprint" value={result.fingerprint} />
+          <Row label="Fingerprint" value={result.fingerprint} wide />
         </Panel>
       ) : null}
       <PrimaryButton label={scanning ? 'Scanning…' : 'Run scan'} onPress={runScan} />
@@ -471,19 +485,25 @@ function ScanScreen() {
       {scanError ? <Text className="mt-2 text-xs leading-[17px]" style={{ color: colors.warn }}>{scanError}</Text> : null}
       {result ? (
         <Panel title={`Device properties (${Object.keys(result.props).length})`}>
-          {/* Fixed height so the log can't be squeezed away by sibling
-              content (the Rootz app's measured layout lesson, 2026-11-09). */}
+          {/* Fixed height so the list can't be squeezed away by sibling
+              content (the Rootz app's measured layout lesson, 2026-11-09).
+              nestedScrollEnabled: this ScrollView sits inside the tab's
+              outer ScrollView — without it Android swallows the scroll
+              gestures (owner report: the list was not scrollable).
+              One row per property, alternating backgrounds. */}
           <ScrollView
-            className="rounded-lg border border-border bg-inset"
-            contentContainerStyle={{ padding: 8 }}
+            className="border border-border bg-inset"
+            nestedScrollEnabled
             style={{ height: 280 }}
           >
             {Object.keys(result.props)
               .sort()
-              .map((k) => (
-                <Text key={k} className="font-mono text-[10px] leading-[14px] text-muted">
-                  {k} = {result.props[k]}
-                </Text>
+              .map((k, i) => (
+                <View key={k} className={`px-2 py-[3px] ${i % 2 === 1 ? 'bg-panel' : ''}`}>
+                  <Text className="font-mono text-[10px] leading-[14px] text-muted" selectable>
+                    {k} = {result.props[k]}
+                  </Text>
+                </View>
               ))}
           </ScrollView>
           <Text className="mt-2 text-xs leading-[17px] text-faint">
