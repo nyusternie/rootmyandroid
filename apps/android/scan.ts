@@ -29,9 +29,20 @@ export type BootloaderState = 'locked' | 'unlocked' | 'unknown'
 export const KNOWN_ROOT_PACKAGES: readonly string[] = ['com.topjohnwu.magisk']
 
 export interface ScanResult {
+  brand: string
+  manufacturer: string
   model: string
+  codename: string
+  hardware: string
+  abi: string
+  fingerprint: string
   android: string
+  sdk: number | null
+  securityPatch: string | null
+  /** Whole days between securityPatch and `now`; null when patch unknown. */
+  patchAgeDays: number | null
   build: string
+  buildTags: string
   bootloader: BootloaderState
   bootloaderEvidence: string[]
   verifiedBootState: string
@@ -40,6 +51,18 @@ export interface ScanResult {
   rooted: boolean
   rootedEvidence: string[]
   integrity: string
+  /** The full parsed getprop map — rendered verbatim in the properties list. */
+  props: Record<string, string>
+}
+
+/** Whole days between a YYYY-MM-DD patch string and `now`; null if unusable. */
+function daysSincePatch(patch: string | undefined, now: Date): number | null {
+  if (!patch || !/^\d{4}-\d{2}-\d{2}$/.test(patch)) return null
+  const ms = Date.parse(`${patch}T00:00:00Z`)
+  if (Number.isNaN(ms)) return null
+  // Clamp at 0: a patch date in the future indicates clock skew somewhere —
+  // report 0 rather than a negative age.
+  return Math.max(0, Math.floor((now.getTime() - ms) / 86_400_000))
 }
 
 /**
@@ -60,13 +83,19 @@ export function parseGetprop(text: string): Record<string, string> {
   return out
 }
 
+/** Reference time for patch-age math; inject in tests for determinism. */
+export interface AnalyzeOptions {
+  now?: Date
+}
+
 /**
  * The rules engine: raw device facts → ScanResult. Ported 1:1 from
  * apps/web/src/lib/scan-report.ts analyzeDevice() — that file carries the
  * full SOURCE comments per rule. Absent keys NEVER produce an assumption —
  * they produce 'unknown'.
  */
-export function analyzeScan(raw: RawScanFacts): ScanResult {
+export function analyzeScan(raw: RawScanFacts, opts: AnalyzeOptions = {}): ScanResult {
+  const now = opts.now ?? new Date()
   const p = raw.getprop
   const get = (k: string): string | undefined => {
     const v: string | undefined = p[k]
@@ -129,6 +158,7 @@ export function analyzeScan(raw: RawScanFacts): ScanResult {
   const android =
     sdk === null ? `${val('ro.build.version.release')} (SDK unknown)` : `${val('ro.build.version.release')} (SDK ${sdk})`
   const build = get('ro.build.display.id') ?? val('ro.build.fingerprint')
+  const securityPatch = get('ro.build.version.security_patch') ?? null
 
   // --- Integrity -------------------------------------------------------------
   // Derived locally from the bootloader state ONLY. The real Play Integrity
@@ -137,9 +167,19 @@ export function analyzeScan(raw: RawScanFacts): ScanResult {
   const integrity = state === 'unlocked' ? 'Failing (unlocked bootloader)' : 'Unknown'
 
   return {
+    brand: val('ro.product.brand'),
+    manufacturer: val('ro.product.manufacturer'),
     model,
+    codename: val('ro.product.device'),
+    hardware: val('ro.hardware'),
+    abi: val('ro.product.cpu.abi'),
+    fingerprint: val('ro.build.fingerprint'),
     android,
+    sdk,
+    securityPatch,
+    patchAgeDays: daysSincePatch(securityPatch ?? undefined, now),
     build,
+    buildTags: val('ro.build.tags'),
     bootloader: state,
     bootloaderEvidence: evidence,
     verifiedBootState,
@@ -147,6 +187,7 @@ export function analyzeScan(raw: RawScanFacts): ScanResult {
     rooted: suPresent || raw.rootPackages.length > 0,
     rootedEvidence,
     integrity,
+    props: p,
   }
 }
 

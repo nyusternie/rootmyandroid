@@ -53,10 +53,10 @@ import {
 
 /** Mock Guru Balance until billing is wired to the API — owner
  * ruling 2026-11-13: billing is now inference-based, displayed unit-less
- * with 4 decimals (value PEGGED TO USD). "Guru⚡" matches the site's
- * established "Guru Balance" vocabulary (balanceUsd, pay-per-use with the
- * price shown before each request). */
-const MOCK_GURU_BALANCE_USD = '12.4000';
+ * with 6 decimals, last 4 superscript (value PEGGED TO USD). "Guru⚡"
+ * matches the site's established "Guru Balance" vocabulary (balanceUsd,
+ * pay-per-use with the price shown before each request). */
+const MOCK_GURU_BALANCE_USD = '12.400000';
 
 /**
  * Mock plan tiers (owner ruling 2026-11-05) until checkout is wired to the
@@ -123,10 +123,10 @@ function App() {
         </ScrollView>
 
         <View className="flex-row border-t border-border bg-panel">
-          <TabButton label="Scan" active={tab === 'scan'} onPress={() => setTab('scan')} />
-          <TabButton label="Devices" active={tab === 'devices'} onPress={() => setTab('devices')} />
-          <TabButton label="Backups" active={tab === 'backups'} onPress={() => setTab('backups')} />
-          <TabButton label="Tools" active={tab === 'tools'} onPress={() => setTab('tools')} />
+          <TabButton label="Scan" icon={TAB_ICONS.scan} active={tab === 'scan'} onPress={() => setTab('scan')} />
+          <TabButton label="Devices" icon={TAB_ICONS.devices} active={tab === 'devices'} onPress={() => setTab('devices')} />
+          <TabButton label="Backups" icon={TAB_ICONS.backups} active={tab === 'backups'} onPress={() => setTab('backups')} />
+          <TabButton label="Tools" icon={TAB_ICONS.tools} active={tab === 'tools'} onPress={() => setTab('tools')} />
         </View>
 
         <Modal
@@ -155,21 +155,40 @@ function App() {
 }
 
 function BillingChip({ balance, onPress }: { balance: string; onPress: () => void }) {
+  // Owner ruling 2026-11-13: 6 decimals, last 4 superscript. RN has no
+  // baseline-shift style — a smaller nested Text sharing the baseline is
+  // the standard approximation.
+  const main = balance.slice(0, -4);
+  const sup = balance.slice(-4);
   return (
     <TouchableOpacity className="mx-3.5 flex-1 flex-row items-center justify-center" onPress={onPress}>
       <Text className="mr-2 text-[10px] font-bold tracking-[1px] text-faint">Guru⚡</Text>
-      <Text className="text-[13px] font-bold text-accent">{balance}</Text>
+      <Text className="text-[13px] font-bold text-accent">
+        {main}
+        <Text className="text-[8px]">{sup}</Text>
+      </Text>
     </TouchableOpacity>
   );
 }
 
-function TabButton({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+// Bottom-nav icons (owner request 2026-11-13: the text-only tabs were too
+// flat and hard to tap — an icon line gives each tab height and a bigger
+// touch target; emoji keeps the app zero-dependency, matching Guru⚡).
+const TAB_ICONS: Record<Tab, string> = {
+  scan: '🔍',
+  devices: '📱',
+  backups: '☁️',
+  tools: '🛠️',
+};
+
+function TabButton({ label, icon, active, onPress }: { label: string; icon: string; active: boolean; onPress: () => void }) {
   return (
     <TouchableOpacity
-      className={`flex-1 items-center py-3.5 ${active ? 'border-t-2 border-accent' : ''}`}
+      className={`flex-1 items-center py-2 ${active ? 'border-t-2 border-accent' : ''}`}
       onPress={onPress}
     >
-      <Text className={`text-sm font-medium ${active ? 'text-text' : 'text-muted'}`}>{label}</Text>
+      <Text className="text-[18px] leading-[24px]">{icon}</Text>
+      <Text className={`mt-0.5 text-[11px] font-medium ${active ? 'text-text' : 'text-muted'}`}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -426,11 +445,52 @@ function ScanScreen() {
           </Text>
         ) : null}
       </Panel>
+      {result ? (
+        <Panel title="Build details">
+          <Row label="Manufacturer" value={result.manufacturer} />
+          <Row label="Codename" value={result.codename} />
+          <Row label="Brand" value={result.brand} />
+          <Row label="Hardware" value={result.hardware} />
+          <Row label="ABI" value={result.abi} />
+          <Row label="Build tags" value={result.buildTags} />
+          <Row
+            label="Security patch"
+            value={
+              result.securityPatch
+                ? `${result.securityPatch} (${result.patchAgeDays === null ? 'age unknown' : `${result.patchAgeDays} days old`})`
+                : 'unknown'
+            }
+          />
+          <Row label="Fingerprint" value={result.fingerprint} />
+        </Panel>
+      ) : null}
       <PrimaryButton label={scanning ? 'Scanning…' : 'Run scan'} onPress={runScan} />
       <Text className="mt-3.5 text-xs leading-[17px] text-faint">
         Scanning runs on-device. Nothing is sent until you choose to back up.
       </Text>
       {scanError ? <Text className="mt-2 text-xs leading-[17px]" style={{ color: colors.warn }}>{scanError}</Text> : null}
+      {result ? (
+        <Panel title={`Device properties (${Object.keys(result.props).length})`}>
+          {/* Fixed height so the log can't be squeezed away by sibling
+              content (the Rootz app's measured layout lesson, 2026-11-09). */}
+          <ScrollView
+            className="rounded-lg border border-border bg-inset"
+            contentContainerStyle={{ padding: 8 }}
+            style={{ height: 280 }}
+          >
+            {Object.keys(result.props)
+              .sort()
+              .map((k) => (
+                <Text key={k} className="font-mono text-[10px] leading-[14px] text-muted">
+                  {k} = {result.props[k]}
+                </Text>
+              ))}
+          </ScrollView>
+          <Text className="mt-2 text-xs leading-[17px] text-faint">
+            Full getprop dump, read-only from the device. Nothing here leaves the phone.
+          </Text>
+        </Panel>
+      ) : null}
       <Panel title="Backup audit">
         <Text className="mb-4 text-sm leading-5 text-muted">
           Which installed apps are covered by Android backup, and which opted
