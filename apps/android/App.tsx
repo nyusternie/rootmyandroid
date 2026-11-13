@@ -21,8 +21,9 @@
  */
 
 import './global.css';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  DeviceEventEmitter,
   Modal,
   NativeModules,
   ScrollView,
@@ -52,7 +53,8 @@ import {
 } from './scan';
 // Vector icons (react-native-svg): SU-robot brand glyph + web-footer
 // stroke family, shared theme colors.
-import { BrandIcon, NavIcon, UserIcon, type NavIconName } from './icons';
+import { BrandIcon, NavIcon, QrIcon, UserIcon, type NavIconName } from './icons';
+import { RQrScanView } from './qr-scan-view';
 // Lottie wire-up demo (owner request 2026-11-13 — first of many
 // animations): subtle brand-authored micro-animations beside each tab
 // screen's title (owner follow-up: animations MUST BE subtle — small,
@@ -124,6 +126,33 @@ const MOCK_PLANS = [
 function App() {
   const [tab, setTab] = useState<Tab>('scan');
   const [accountOpen, setAccountOpen] = useState(false);
+  // QR scanner (owner request 2026-11-13 — "wire-up qr scanning; we will
+  // use this to SYNC WITH WEB (ALT CLIENTS)"): camera permission first,
+  // then a full-screen modal hosting the native QrScanView. Decoded
+  // values arrive as onQrResult DeviceEvents and are shown in the modal
+  // footer; the actual pairing protocol ships next.
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrResult, setQrResult] = useState('');
+
+  const openQrScan = async () => {
+    try {
+      const granted = await NativeModules.QrScan?.requestCameraPermission?.();
+      if (granted) {
+        setQrResult('');
+        setQrOpen(true);
+      }
+    } catch {
+      // Permission flow unavailable/denied — nothing to open.
+    }
+  };
+
+  useEffect(() => {
+    if (!qrOpen) return;
+    const subscription = DeviceEventEmitter.addListener('onQrResult', (e: { value?: string }) => {
+      if (e?.value) setQrResult(e.value);
+    });
+    return () => subscription.remove();
+  }, [qrOpen]);
 
   return (
     <SafeAreaProvider>
@@ -134,15 +163,27 @@ function App() {
           {/* Owner ruling 2026-11-13: the header shows the SU-robot brand
               icon instead of the wordmark — LARGER per owner follow-up. */}
           <BrandIcon size={36} />
-          <BillingChip balance={MOCK_GURU_BALANCE_USD} onPress={() => setAccountOpen(true)} />
-          {/* Owner ruling 2026-11-13: the Account button is an icon. */}
-          <TouchableOpacity
-            className="rounded-lg border border-accent p-2"
-            onPress={() => setAccountOpen(true)}
-            accessibilityLabel="Account"
-          >
-            <UserIcon color={colors.accent} size={20} />
-          </TouchableOpacity>
+          {/* Owner rulings 2026-11-13: the Guru⚡ chip sits top-right (left
+              of the profile button); the QR scanner button sits DIRECTLY
+              left of the profile button; the profile button loses its
+              border. */}
+          <View className="flex-row items-center gap-2">
+            <BillingChip balance={MOCK_GURU_BALANCE_USD} onPress={() => setAccountOpen(true)} />
+            <TouchableOpacity
+              className="p-2"
+              onPress={openQrScan}
+              accessibilityLabel="Scan QR to sync with web"
+            >
+              <QrIcon color={colors.accent} size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="p-2"
+              onPress={() => setAccountOpen(true)}
+              accessibilityLabel="Account"
+            >
+              <UserIcon color={colors.accent} size={20} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, paddingBottom: 32 }}>
@@ -178,6 +219,40 @@ function App() {
               <AccountScreen />
             </ScrollView>
           </SafeAreaView>
+        </Modal>
+
+        {/* QR scanner modal — camera preview + decoded value footer. The
+            native view starts the camera on attach and stops on detach. */}
+        <Modal visible={qrOpen} animationType="fade" onRequestClose={() => setQrOpen(false)}>
+          <View className="flex-1 bg-bg">
+            <View className="flex-row items-center justify-between border-b border-border px-5 pb-3 pt-5">
+              <Text className="text-xl font-bold text-text">Scan to sync with web</Text>
+              <TouchableOpacity className="px-3 py-1.5" onPress={() => setQrOpen(false)}>
+                <Text className="text-sm font-semibold text-accent">Close</Text>
+              </TouchableOpacity>
+            </View>
+            <View className="flex-1">
+              <RQrScanView style={{ flex: 1 }} />
+            </View>
+            <View className="border-t border-border bg-panel p-5">
+              {qrResult ? (
+                <>
+                  <Text className="text-xs uppercase tracking-[0.14em] text-faint">Scanned</Text>
+                  <Text className="mt-1 font-mono text-sm text-text" selectable>
+                    {qrResult}
+                  </Text>
+                  <Text className="mt-2 text-xs leading-[17px] text-muted">
+                    Pairing with web (alt clients) ships next — the scan result stays on this
+                    device for now.
+                  </Text>
+                </>
+              ) : (
+                <Text className="text-sm leading-5 text-muted">
+                  Point the camera at the QR code shown by the web client.
+                </Text>
+              )}
+            </View>
+          </View>
         </Modal>
       </SafeAreaView>
     </SafeAreaProvider>

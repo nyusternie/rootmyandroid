@@ -75,6 +75,27 @@ export function NavIcon({ name, color, size = 22 }: { name: NavIconName; color: 
   );
 }
 
+/** QR glyph — viewfinder corners + inner finder squares, same stroke
+ * language as the nav icons (owner request 2026-11-13: the header QR
+ * button opens the camera scanner; pairs the app with web clients). */
+export function QrIcon({ color, size = 20 }: { color: string; size?: number }) {
+  const stroke = {
+    stroke: color,
+    strokeWidth: 2,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+  };
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M4 8V5a1 1 0 0 1 1-1h3M20 8V5a1 1 0 0 0-1-1h-3M4 16v3a1 1 0 0 0 1 1h3M20 16v3a1 1 0 0 1-1 1h-3" {...stroke} />
+      <Rect x={8.5} y={8.5} width={3} height={3} rx={0.5} {...stroke} />
+      <Rect x={13} y={8.5} width={3} height={3} rx={0.5} {...stroke} />
+      <Rect x={8.5} y={13} width={3} height={3} rx={0.5} {...stroke} />
+      <Path d="M14.5 16h1M16 14.5h1.5M16 16h1.5" {...stroke} />
+    </Svg>
+  );
+}
+
 /** Account glyph — head + shoulders, same stroke language as the nav icons
  * (owner request 2026-11-13: the header Account button becomes an icon). */
 export function UserIcon({ color, size = 20 }: { color: string; size?: number }) {
