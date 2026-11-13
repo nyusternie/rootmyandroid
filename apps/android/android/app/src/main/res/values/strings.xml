@@ -4,7 +4,8 @@
     <!-- Launcher-icon label only (MainActivity label overrides the app
          label on the home screen / app drawer). "Root My Android" is 15
          chars and ellipsizes to "Root My …" on Pixel launchers. Owner
-         pick (2026-11-13): "Root My A" — 9 chars fits without ellipsis
-         and keeps the brand rhythm; one string to swap if it changes. -->
-    <string name="app_name_short">Root My A</string>
+         pick (2026-11-13): "Root MyA" — the fused second word is the
+         stylization the owner likes; 8 chars fits without ellipsis.
+         One string to swap if it changes. -->
+    <string name="app_name_short">Root MyA</string>
 </resources>
