@@ -14,7 +14,12 @@ const download: typeof en = {
   rootzLink: 'Скачать rooted-release.apk',
   guardianH2: 'Guardian Angel',
   guardianDescAfter: ' — приложение сопровождающего мониторинга.',
-  guardianLink: 'Скачать guardian-angel-release.apk',
+  guardianLink: 'Скачать guardian-release.apk',
+  androidH2: 'Root My Android (Android-редакция)',
+  androidDescAfter: ' — сканирование устройства, сопряжённые устройства Guardian, зашифрованные резервные копии и инструменты.',
+  androidLink: 'Скачать rootmyandroid-release.apk',
+  androidNote:
+    'Скользящая итерационная сборка UI/UX из master (скользящий тег android-apk), подписанная ПУБЛИЧНЫМ отладочным ключом — только для обзора, не для продакшена; не обновляется поверх установки, подписанной ключом загрузки (сначала удалите её).',
   installH2: 'Установка',
   installStep1: 'Скачайте APK на ваше Android-устройство.',
   installStep2Before: 'Откройте его и разрешите ',
@@ -23,7 +28,7 @@ const download: typeof en = {
   installStep3Before: 'Нажмите ',
   installStep3Strong: 'Установить',
   installStep3After: '.',
-  requiresBefore: 'Требуется Android 7.0 (API 24) или новее. Оба APK подписаны нашим ключом загрузки; вы можете проверить подписи и контрольные суммы по ',
+  requiresBefore: 'Требуется Android 7.0 (API 24) или новее. APK Rootz и Guardian Angel подписаны нашим ключом загрузки; вы можете проверить подписи и контрольные суммы по ',
   requiresLink: 'заметкам о релизе',
   requiresAfter: '.',
   previewNote:
