@@ -43,7 +43,7 @@ The site is fully static. All dynamic/backend functionality lives in a public RE
 - [Home](https://rootmyandroid.com): free in-browser root scan, the Rootz power-user toolkit, and Guardian Angel parental controls
 - [Scan](https://rootmyandroid.com/scan): connect any Android device over USB and scan it in the browser — no installs, no account, nothing leaves the browser
 - [Pricing](https://rootmyandroid.com/pricing): Guardian Angel Lite $5/mo, Guardian Angel Pro $15/mo, Rootz Pro $15/yr; top-up subscriptions with no auto-renew and no stored card; 15% off when paying with crypto
-- [Download](https://rootmyandroid.com/download): direct APK downloads of the Rootz and Guardian Angel Android apps
+- [Download](https://rootmyandroid.com/downloads): direct APK downloads of the Rootz and Guardian Angel Android apps
 - [Rootz](https://rootmyandroid.com/rootz): the power-user toolkit for Android — free toolbox plus Pro ($15/365 days); client-side encrypted, AI assistance in development
 - [Guardian Angel](https://rootmyandroid.com/guardian-angel): parental device management — free tier, Lite $5/30 days, Pro $15/30 days; client-side encrypted, AI summaries in development
 - [Gurus](https://rootmyandroid.com/gurus): the AI assistants — advisors that explain and guide but never act on a device by themselves; pay-per-use from a prepaid Guru Balance, all currently PLANNED
