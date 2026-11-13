@@ -46,13 +46,20 @@ Consequences:
   keystore + its gradle.properties passwords stay where they are on dev
   machines (do not delete or relocate them).
 - `.github/workflows/android.yml` (owner ruling 2026-11-13) builds
-  `apps/android` release APKs for on-device UI/UX iteration signed with the
-  **public debug key**: the runner-written gradle.properties points
-  `ROOTMYANDROID_UPLOAD_*` at the committed `debug.keystore`. Linked from
-  /downloads with an explicit iteration-only disclosure (session goal:
-  builds downloadable from rootmyandroid.com/downloads); never a production
-  release; they cannot upgrade-in-place over an upload-signed install
-  (signature mismatch → uninstall first).
+  `apps/android` release APKs for on-device UI/UX iteration, linked from
+  /downloads (session goal: builds downloadable from
+  rootmyandroid.com/downloads). Signing (owner ruling 2026-11-13): the
+  v1.0.0 upload key (`CN=RootMyAndroid Upload`, cert SHA-256 `0f3d92ee…`)
+  could not be located on any sanctioned credential store (searched this
+  workstation's keystores + gradle.properties and blackhost — only debug
+  keystores there; never tracked in git), so a NEW upload keystore is
+  generated ONE-TIME inside the CI run into `/home/gh-runner/secrets/` on
+  blackhost (repo rule 11 — credentials live ONLY there; the random
+  password is written to the runner-local properties file and never leaves
+  the runner); foreign runners fall back to the public debug key. The
+  v1.0.0 legacy installs and any earlier debug-signed install cannot
+  upgrade-in-place over the new key (uninstall first). BACK UP
+  `/home/gh-runner/secrets/` — losing it means a new key identity.
 - `reactNativeArchitectures` for preview builds: `armeabi-v7a,arm64-v8a`
   (physical phones; no emulator ABIs — keeps runner builds shorter).
 

@@ -16,7 +16,7 @@ const download: typeof en = {
   featuredStatus: 'master의 롤링 빌드 — CI 실행마다 새로운 APK',
   featuredLink: 'rootmyandroid-release.apk 다운로드',
   featuredNote:
-    'master의 롤링 UI/UX 반복 빌드(롤링 태그 android-apk)로, 공개 디버그 키로 서명되었습니다 — 검토 전용 빌드이며 프로덕션이 아닙니다. 업로드 키로 서명된 설치 위에 업데이트할 수 없습니다(먼저 제거하세요).',
+    'master의 롤링 UI/UX 반복 빌드(롤링 태그 android-apk)로, 저희 업로드 키로 서명되었습니다. v1.0.0 프리뷰 릴리스 또는 이전 디버그 서명 빌드에서 설치한 경우 업데이트 전에 한 번 제거해야 합니다.',
   featuredArtAlt:
     'Root My Android SU 슈퍼히어로 — 빨간 망토와 노란 SU 가슴 방패를 두른 초록 안드로이드 로봇',
   appStoreName: 'Apple App Store',
@@ -40,7 +40,7 @@ const download: typeof en = {
   installStep3Strong: '설치',
   installStep3After: '를 탭하세요.',
   requiresBefore:
-    'Android 7.0(API 24) 이상이 필요합니다. Rootz 및 Guardian Angel APK는 저희 업로드 키로 서명되어 있습니다; ',
+    'Android 7.0(API 24) 이상이 필요합니다. 세 개의 APK 모두 저희 업로드 키로 서명되어 있습니다; ',
   requiresLink: '릴리스 노트',
   requiresAfter: '에서 서명과 체크섬을 확인할 수 있습니다.',
   previewNote:

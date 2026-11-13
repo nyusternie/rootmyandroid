@@ -5,13 +5,17 @@ name: Android app build
 # com.rootmyandroid) as a RELEASE APK for on-device UI/UX iteration on the
 # USB-attached Pixel 5 (owner ruling 2026-11-13: the physical-device deploy
 # target follows the active workstream — see .agents/skills/build/SKILL.md).
-# Manual dispatch only. The APK is signed with the public debug key (the
-# runner-written gradle.properties points ROOTMYANDROID_UPLOAD_* at the
-# committed debug.keystore) — iteration builds only, never a production
-# release; they cannot upgrade-in-place over an upload-signed install
-# (signature mismatch). Linked from /downloads with an explicit iteration-
-# only disclosure (owner ruling 2026-11-13: session goal is a build
-# downloadable from rootmyandroid.com/downloads).
+# Manual dispatch only. Signed with the upload keystore that is generated
+# ONE-TIME inside the CI run into /home/gh-runner/secrets/ on blackhost
+# (owner ruling 2026-11-13 — the v1.0.0 upload key, CN=RootMyAndroid Upload,
+# cert SHA-256 0f3d92ee…, could not be located on any sanctioned credential
+# store; repo rule 11: credentials live ONLY on blackhost, so the new key +
+# its random password live in the runner-local secrets file and never leave
+# the runner). Foreign runners fall back to the public debug key.
+# Iteration builds only, never a production release; linked from /downloads
+# with an explicit iteration-only disclosure. Installs from the v1.0.0
+# preview or earlier debug-signed builds need a ONE-TIME uninstall before
+# updating (different key = signature mismatch).
 # Install with: adb install -r rootmyandroid-release.apk
 
 on:
@@ -76,12 +80,36 @@ jobs:
       - name: Run tests (all workspace packages)
         run: pnpm -r test
 
+      # Upload keystore: lives ONLY on blackhost (repo rule 11 — owner
+      # ruling 2026-11-13; the v1.0.0 key could not be located on any
+      # sanctioned store). Generated one-time into the runner's home; the
+      # random password is written to the runner-local properties file and
+      # never leaves the runner or the transcript. setup-java above put
+      # keytool on PATH.
+      - name: Ensure upload keystore (blackhost-local, one-time)
+        run: |
+          set -e
+          SECRETS=/home/gh-runner/secrets
+          KS="$SECRETS/rootmyandroid-upload.keystore"
+          PROPS="$SECRETS/rootmyandroid-upload.properties"
+          if [ ! -f "$KS" ]; then
+            mkdir -p "$SECRETS"
+            PW=$(openssl rand -hex 24)
+            keytool -genkeypair -keystore "$KS" -alias rootmyandroid-upload \
+              -keyalg RSA -keysize 4096 -validity 10000 -storetype PKCS12 \
+              -dname "CN=Root My Android Upload, OU=Engineering, O=Root My Android" \
+              -storepass "$PW" -keypass "$PW"
+            printf 'ROOTMYANDROID_UPLOAD_STORE_FILE=%s\nROOTMYANDROID_UPLOAD_KEY_ALIAS=rootmyandroid-upload\nROOTMYANDROID_UPLOAD_STORE_PASSWORD=%s\nROOTMYANDROID_UPLOAD_KEY_PASSWORD=%s\n' "$KS" "$PW" "$PW" > "$PROPS"
+            chmod 700 "$SECRETS"
+            chmod 600 "$KS" "$PROPS"
+          fi
+
       # gradle.properties is gitignored (it can carry local, machine-specific
       # and secret values), so the runner writes a deterministic one. The
-      # ROOTMYANDROID_UPLOAD_* properties are pointed at the committed,
-      # PUBLIC debug.keystore (the same credentials the build.gradle debug
-      # block already carries in plaintext) — iteration builds only, never
-      # publish; the real upload keystore stays out of CI (repo rule 3a).
+      # ROOTMYANDROID_UPLOAD_* properties come from the blackhost-local
+      # secrets file when present; otherwise the committed, PUBLIC
+      # debug.keystore is used (the same credentials the build.gradle debug
+      # block already carries in plaintext) — iteration fallback only.
       - name: Write gradle.properties
         run: |
           cat > apps/android/android/gradle.properties <<'EOF'
@@ -93,11 +121,17 @@ jobs:
           edgeToEdgeEnabled=true
           android.builtInKotlin=false
           android.newDsl=false
+          EOF
+          if [ -r /home/gh-runner/secrets/rootmyandroid-upload.properties ]; then
+            cat /home/gh-runner/secrets/rootmyandroid-upload.properties >> apps/android/android/gradle.properties
+          else
+            cat >> apps/android/android/gradle.properties <<'EOF'
           ROOTMYANDROID_UPLOAD_STORE_FILE=debug.keystore
           ROOTMYANDROID_UPLOAD_STORE_PASSWORD=android
           ROOTMYANDROID_UPLOAD_KEY_ALIAS=androiddebugkey
           ROOTMYANDROID_UPLOAD_KEY_PASSWORD=android
           EOF
+          fi
 
       # RN tooling hardcodes app-local node_modules paths; materialize the
       # symlink farm (untracked local state on dev machines) on the runner.
@@ -110,8 +144,8 @@ jobs:
       # Published as a rolling prerelease asset instead of an Actions
       # artifact: the account's Actions artifact-storage quota is exhausted
       # (recalculated every 6-12h) and release assets don't count against
-      # it. The repo is public; the APK is a debug-signed iteration build —
-      # linked publicly from /download with an explicit iteration-only
+      # it. The repo is public; the APK is an upload-signed iteration build —
+      # linked publicly from /downloads with an explicit iteration-only
       # disclosure, never as a production release.
       # blackhost has no gh CLI; this action bundles its own client and
       # replaces same-named assets on re-run (rolling prerelease).
@@ -126,6 +160,6 @@ jobs:
         with:
           tag_name: android-apk
           name: Root My Android (Android edition) APK (rolling)
-          body: 'Rolling debug-signed iteration build of the Android edition (package `com.rootmyandroid`), built from master@${{ github.sha }} on blackhost. Debug-signed — review builds only, never a production release. Install with `adb install -r rootmyandroid-release.apk`.'
+          body: 'Rolling iteration build of the Android edition (package `com.rootmyandroid`), built from master@${{ github.sha }} on blackhost, signed with our upload key. Review builds — features are rolling out. Install with `adb install -r rootmyandroid-release.apk`.'
           prerelease: true
           files: rootmyandroid-release.apk

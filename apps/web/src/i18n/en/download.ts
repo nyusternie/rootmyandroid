@@ -14,7 +14,7 @@ const download = {
   featuredStatus: 'Rolling build from master — a fresh APK on every CI run',
   featuredLink: 'Download rootmyandroid-release.apk',
   featuredNote:
-    'Rolling UI/UX iteration build from master (rolling tag android-apk), signed with the PUBLIC debug key — review builds only, never production; it cannot update over an upload-signed install (uninstall first).',
+    'Rolling UI/UX iteration build from master (rolling tag android-apk), signed with our upload key. Installs from the v1.0.0 preview release or earlier debug-signed builds must be uninstalled once before updating.',
   featuredArtAlt:
     'The Root My Android SU superhero — a green Android robot with a red cape and a yellow SU chest shield',
   appStoreName: 'Apple App Store',
@@ -37,7 +37,7 @@ const download = {
   installStep3Before: 'Tap ',
   installStep3Strong: 'Install',
   installStep3After: '.',
-  requiresBefore: 'Requires Android 7.0 (API 24) or later. The Rootz and Guardian Angel APKs are signed with our upload key; you can verify signatures and checksums against the ',
+  requiresBefore: 'Requires Android 7.0 (API 24) or later. All three APKs are signed with our upload key; you can verify signatures and checksums against the ',
   requiresLink: 'release notes',
   requiresAfter: '.',
   previewNote:

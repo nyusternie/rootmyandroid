@@ -14,7 +14,7 @@ const download: typeof en = {
   featuredStatus: '来自 master 的滚动构建——每次 CI 运行都会生成新的 APK',
   featuredLink: '下载 rootmyandroid-release.apk',
   featuredNote:
-    '来自 master 的滚动 UI/UX 迭代构建（滚动标签 android-apk），使用公开调试密钥签名——仅供评审，非生产用途；无法覆盖更新上传密钥签名的安装（需先卸载）。',
+    '来自 master 的滚动 UI/UX 迭代构建（滚动标签 android-apk），使用我们的上传密钥签名。从 v1.0.0 预览版或更早的调试签名构建安装的版本，更新前需先卸载一次。',
   featuredArtAlt: 'Root My Android 超级英雄——绿色 Android 机器人，红色披风，胸前黄色 SU 盾牌',
   appStoreName: 'Apple App Store',
   playStoreName: 'Google Play',
@@ -36,7 +36,7 @@ const download: typeof en = {
   installStep3Before: '点击',
   installStep3Strong: '安装',
   installStep3After: '。',
-  requiresBefore: '需要 Android 7.0（API 24）或更高版本。Rootz 和 Guardian Angel APK 均使用我们的上传密钥签名；你可以对照',
+  requiresBefore: '需要 Android 7.0（API 24）或更高版本。三个 APK 均使用我们的上传密钥签名；你可以对照',
   requiresLink: '发布说明',
   requiresAfter: '核验签名和校验和。',
   previewNote: '这些是预览构建——产品功能正在陆续推出。免费版涵盖基础扫描和文档。',
