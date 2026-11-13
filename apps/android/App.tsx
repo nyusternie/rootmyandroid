@@ -7,9 +7,9 @@
  * key before upload; the API only ever sees ciphertext.
  *
  * Account lives behind the top-right header button (modal), not a tab.
- * The header carries the inference-billing balance chip (mock value until
- * billing is wired to the API — owner ruling 2026-11-13: billing is now
- * inference-based; display contract pending the API team).
+ * The header carries the Guru⚡ balance chip (mock value until billing is
+ * wired to the API — owner ruling 2026-11-13: billing is now inference-
+ * based; the site brands the AI-usage balance "Guru Balance", USD).
  * The device scan and backup audit run for real via the native modules
  * (ScanModule + AuditModule) and the scan.ts rules engine; Devices and
  * Tools data is mocked for now; further API wiring comes from the /v1 API.
@@ -51,10 +51,12 @@ import {
   type ScanResult,
 } from './scan';
 
-/** Mock inference-billing balance (USD) until billing is wired to the API —
- * owner ruling 2026-11-13: billing is now inference-based. The site's
- * balance vocabulary is USD (balanceUsd). */
-const MOCK_INFERENCE_BALANCE_USD = '$12.40';
+/** Mock Guru Balance until billing is wired to the API — owner
+ * ruling 2026-11-13: billing is now inference-based, displayed unit-less
+ * with 4 decimals (value PEGGED TO USD). "Guru⚡" matches the site's
+ * established "Guru Balance" vocabulary (balanceUsd, pay-per-use with the
+ * price shown before each request). */
+const MOCK_GURU_BALANCE_USD = '12.4000';
 
 /**
  * Mock plan tiers (owner ruling 2026-11-05) until checkout is wired to the
@@ -104,7 +106,7 @@ function App() {
       <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
         <View className="flex-row items-center justify-between border-b border-border px-5 pb-3 pt-5">
           <Text className="text-xl font-bold text-text">Root My Android</Text>
-          <BillingChip balance={MOCK_INFERENCE_BALANCE_USD} onPress={() => setAccountOpen(true)} />
+          <BillingChip balance={MOCK_GURU_BALANCE_USD} onPress={() => setAccountOpen(true)} />
           <TouchableOpacity
             className="rounded-lg border border-accent px-3 py-1.5"
             onPress={() => setAccountOpen(true)}
@@ -155,7 +157,7 @@ function App() {
 function BillingChip({ balance, onPress }: { balance: string; onPress: () => void }) {
   return (
     <TouchableOpacity className="mx-3.5 flex-1 flex-row items-center justify-center" onPress={onPress}>
-      <Text className="mr-2 text-[10px] font-bold tracking-[1px] text-faint">Inference</Text>
+      <Text className="mr-2 text-[10px] font-bold tracking-[1px] text-faint">Guru⚡</Text>
       <Text className="text-[13px] font-bold text-accent">{balance}</Text>
     </TouchableOpacity>
   );
