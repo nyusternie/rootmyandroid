@@ -54,10 +54,28 @@ import {
 // stroke family, shared theme colors.
 import { BrandIcon, NavIcon, UserIcon, type NavIconName } from './icons';
 // Lottie wire-up demo (owner request 2026-11-13 — first of many
-// animations): scan-reticle sweep on the main screen; brand-authored
-// asset, not a stock file. Speeds up while a scan runs.
+// animations): subtle brand-authored micro-animations beside each tab
+// screen's title (owner follow-up: animations MUST BE subtle — small,
+// slow; the big centered sweep was removed). Each asset is drawn to its
+// tab: reticle sweep (scan), sync dots (devices), breathing shield
+// (backups), blinking terminal cursor (tools).
 import LottieView from 'lottie-react-native';
 import scanSweep from './assets/scan-sweep.json';
+import devicesTitle from './assets/devices-title.json';
+import backupsTitle from './assets/backups-title.json';
+import toolsTitle from './assets/tools-title.json';
+
+/** Screen title with its subtle companion animation. The JSON import's
+ * inferred object type matches Lottie's AnimationObject shape; the cast
+ * keeps tsc happy without pulling the lib's internal types. */
+function ScreenTitle({ title, animation }: { title: string; animation: object }) {
+  return (
+    <View className="mb-1.5 flex-row items-center gap-2">
+      <Text className="text-2xl font-bold text-text">{title}</Text>
+      <LottieView source={animation as never} autoPlay loop speed={0.6} style={{ width: 20, height: 20 }} />
+    </View>
+  );
+}
 
 /** Mock Guru Balance until billing is wired to the API — owner
  * ruling 2026-11-13: billing is now inference-based, displayed unit-less
@@ -114,8 +132,8 @@ function App() {
       <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
         <View className="flex-row items-center justify-between border-b border-border px-5 pb-3 pt-5">
           {/* Owner ruling 2026-11-13: the header shows the SU-robot brand
-              icon instead of the wordmark. */}
-          <BrandIcon size={26} />
+              icon instead of the wordmark — LARGER per owner follow-up. */}
+          <BrandIcon size={36} />
           <BillingChip balance={MOCK_GURU_BALANCE_USD} onPress={() => setAccountOpen(true)} />
           {/* Owner ruling 2026-11-13: the Account button is an icon. */}
           <TouchableOpacity
@@ -317,6 +335,10 @@ function ScanScreen() {
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState('');
   const [syncOk, setSyncOk] = useState(false);
+  // Device-properties filter (owner request 2026-11-13: the properties
+  // list needs its own search — case-insensitive substring over key AND
+  // value).
+  const [propQuery, setPropQuery] = useState('');
   const auditSnapshot = useRef<AuditSnapshot | null>(null);
 
   // Real scan: raw device facts from the native ScanModule, mapped through
@@ -418,21 +440,22 @@ function ScanScreen() {
     }
   };
 
+  const propKeys = result
+    ? Object.keys(result.props)
+        .filter((k) => {
+          if (!propQuery.trim()) return true;
+          const q = propQuery.toLowerCase();
+          return k.toLowerCase().includes(q) || result.props[k].toLowerCase().includes(q);
+        })
+        .sort()
+    : [];
+
   return (
     <View>
-      <Text className="mb-1.5 text-2xl font-bold text-text">Device scan</Text>
+      <ScreenTitle title="Device scan" animation={scanSweep} />
       <Text className="mb-4 text-sm leading-5 text-muted">
         Analyze this device to plan a root or upgrade. Scanning is free.
       </Text>
-      {/* Lottie wire-up demo (owner 2026-11-13): ambient scan sweep that
-          runs 2x speed while a scan is in flight. */}
-      <LottieView
-        source={scanSweep}
-        autoPlay
-        loop
-        speed={scanning ? 2 : 1}
-        style={{ width: 120, height: 120, alignSelf: 'center' }}
-      />
       <Panel title="Device">
         <Row label="Model" value={result?.model ?? '—'} />
         <Row label="Android" value={result?.android ?? '—'} />
@@ -498,27 +521,48 @@ function ScanScreen() {
       </Text>
       {scanError ? <Text className="mt-2 text-xs leading-[17px]" style={{ color: colors.warn }}>{scanError}</Text> : null}
       {result ? (
-        <Panel title={`Device properties (${Object.keys(result.props).length})`}>
+        <Panel
+          title={
+            propQuery.trim()
+              ? `Device properties (${propKeys.length} of ${Object.keys(result.props).length})`
+              : `Device properties (${Object.keys(result.props).length})`
+          }
+        >
+          {/* Owner request 2026-11-13: the properties list gets its own
+              search + a formatting facelift — key left, value right-aligned,
+              alternating row backgrounds. */}
+          <TextInput
+            className="mb-2 rounded-lg border border-border px-3 py-2.5 font-mono text-[13px] text-text"
+            placeholder="Filter properties…"
+            placeholderTextColor={colors.faint}
+            autoCapitalize="none"
+            autoCorrect={false}
+            value={propQuery}
+            onChangeText={setPropQuery}
+          />
           {/* Fixed height so the list can't be squeezed away by sibling
               content (the Rootz app's measured layout lesson, 2026-11-09).
               nestedScrollEnabled: this ScrollView sits inside the tab's
               outer ScrollView — without it Android swallows the scroll
-              gestures (owner report: the list was not scrollable).
-              One row per property, alternating backgrounds. */}
+              gestures. */}
           <ScrollView
             className="border border-border bg-inset"
             nestedScrollEnabled
             style={{ height: 280 }}
           >
-            {Object.keys(result.props)
-              .sort()
-              .map((k, i) => (
-                <View key={k} className={`px-2 py-[3px] ${i % 2 === 1 ? 'bg-panel' : ''}`}>
-                  <Text className="font-mono text-[10px] leading-[14px] text-muted" selectable>
-                    {k} = {result.props[k]}
-                  </Text>
-                </View>
-              ))}
+            {propKeys.map((k, i) => (
+              <View key={k} className={`flex-row items-start px-2 py-[4px] ${i % 2 === 1 ? 'bg-panel' : ''}`}>
+                <Text className="w-[45%] font-mono text-[10px] leading-[14px] text-faint" numberOfLines={1} selectable>
+                  {k}
+                </Text>
+                <Text className="flex-1 text-right font-mono text-[10px] leading-[14px] text-muted" selectable>
+                  {result.props[k]}
+                </Text>
+              </View>
+            ))}
+            {propKeys.length === 0 ? (
+              <Text className="px-2 py-2 font-mono text-[10px] text-faint">No matching properties.</Text>
+            ) : null}
           </ScrollView>
           <Text className="mt-2 text-xs leading-[17px] text-faint">
             Full getprop dump, read-only from the device. Nothing here leaves the phone.
@@ -575,7 +619,7 @@ const mockDevices = [
 function DevicesScreen() {
   return (
     <View>
-      <Text className="mb-1.5 text-2xl font-bold text-text">Devices</Text>
+      <ScreenTitle title="Devices" animation={devicesTitle} />
       <Text className="mb-4 text-sm leading-5 text-muted">
         Guardian devices synced to this account. Pairing is done from the
         Guardian app on the managed device.
@@ -635,7 +679,7 @@ function AccountScreen() {
 function BackupsScreen() {
   return (
     <View>
-      <Text className="mb-1.5 text-2xl font-bold text-text">Backups</Text>
+      <ScreenTitle title="Backups" animation={backupsTitle} />
       <Text className="mb-4 text-sm leading-5 text-muted">
         Encrypted on this device with a key only you hold. We can't read or
         recover them.
@@ -675,7 +719,7 @@ function ToolRow({ name, desc, pro }: { name: string; desc: string; pro?: boolea
 function ToolsScreen() {
   return (
     <View>
-      <Text className="mb-1.5 text-2xl font-bold text-text">Tools</Text>
+      <ScreenTitle title="Tools" animation={toolsTitle} />
       <Text className="mb-4 text-sm leading-5 text-muted">
         Advanced features. PRO tools require time credit on your account.
       </Text>
