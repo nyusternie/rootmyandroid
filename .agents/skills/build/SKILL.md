@@ -42,12 +42,16 @@ Consequences:
   passwords are PRIVATE: never commit them, never echo them into CI logs,
   workflow files, or artifacts (repo rule 3a). `gradle.properties` is
   gitignored for this reason — runners write their own (see the preview
-  workflow).
+  workflow). Owner ruling 2026-11-13: the gitignored local copies of the
+  keystore + its gradle.properties passwords stay where they are on dev
+  machines (do not delete or relocate them).
 - `.github/workflows/android.yml` (owner ruling 2026-11-13) builds
   `apps/android` release APKs for on-device UI/UX iteration signed with the
   **public debug key**: the runner-written gradle.properties points
-  `ROOTMYANDROID_UPLOAD_*` at the committed `debug.keystore`. Never publish
-  such APKs; they cannot upgrade-in-place over an upload-signed install
+  `ROOTMYANDROID_UPLOAD_*` at the committed `debug.keystore`. Linked from
+  /download with an explicit iteration-only disclosure (session goal:
+  builds downloadable from rootmyandroid.com/downloads); never a production
+  release; they cannot upgrade-in-place over an upload-signed install
   (signature mismatch → uninstall first).
 - `reactNativeArchitectures` for preview builds: `armeabi-v7a,arm64-v8a`
   (physical phones; no emulator ABIs — keeps runner builds shorter).

@@ -77,6 +77,18 @@
       transform: scale(1.55);
     }
   }
+
+  /* downloads-page featured-art float (used with motion-reduce:animate-none) */
+  --animate-float: float 6s ease-in-out infinite;
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-0.6rem);
+    }
+  }
 }
 
 /* Base elements. Preflight strips browser defaults, so the UA styles the old
