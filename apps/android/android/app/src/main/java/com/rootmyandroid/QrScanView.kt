@@ -1,11 +1,13 @@
 package com.rootmyandroid
 
 import android.content.Context
+import android.widget.FrameLayout
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.facebook.react.bridge.Arguments
@@ -27,8 +29,15 @@ import java.util.concurrent.Executors
  * are suppressed so the JS side doesn't flood. The camera binds to the
  * PROCESS lifecycle (a RN child view has no LifecycleOwner of its own)
  * and unbinds on detach.
+ *
+ * Note: CameraX 1.4's PreviewView is final, so this container is a
+ * FrameLayout wrapping a full-size PreviewView child.
  */
-class QrScanView(context: Context) : PreviewView(context) {
+class QrScanView(context: Context) : FrameLayout(context) {
+
+  private val previewView = PreviewView(context).also {
+    addView(it, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+  }
 
   private val analysisExecutor = Executors.newSingleThreadExecutor()
   private val scanner =
@@ -49,7 +58,7 @@ class QrScanView(context: Context) : PreviewView(context) {
       try {
         val provider = providerFuture.get()
         cameraProvider = provider
-        val preview = Preview.Builder().build().also { it.surfaceProvider = surfaceProvider }
+        val preview = Preview.Builder().build().also { it.surfaceProvider = previewView.surfaceProvider }
         val analysis =
           ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
