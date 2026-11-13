@@ -74,6 +74,28 @@ const siteSchema = {
   name: 'Root My Android',
   url: Astro.site,
 }
+
+// Footer nav icons (owner request 2026-11-13): simple hand-drawn stroke
+// glyphs, currentColor so each inherits its link's text-faint →
+// hover:text-ink transition. Decorative (aria-hidden) — the link text
+// carries the meaning.
+const footerIcons: Record<string, string> = {
+  scan: '<path d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>',
+  rootz: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M12.5 15H17"/>',
+  guardian: '<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/>',
+  gurus: '<path d="M4 5h16v11H9l-5 4z"/>',
+  parents: '<path d="M12 20s-7-4.5-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.5-7 9-7 9z"/>',
+  agents: '<rect x="5" y="8" width="14" height="10" rx="2.5"/><path d="M12 8V5M9 5h6"/><circle cx="9.5" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="14.5" cy="13" r="1" fill="currentColor" stroke="none"/>',
+  mcp: '<path d="M9 6 4 12l5 6M15 6l5 6-5 6"/>',
+  models: '<path d="M12 3 4 7.5l8 4.5 8-4.5zM4 12l8 4.5 8-4.5M4 16.5 12 21l8-4.5"/>',
+  guides: '<path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2zM18 16H7a2 2 0 0 0-2 2"/>',
+  why: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5A3.5 3.5 0 0 0 9 10.5c0 1.5 1 2 3 2.5"/>',
+  roms: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/>',
+  devices: '<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/>',
+  terms: '<path d="M6 3h8l4 4v14H6zM14 3v4h4M9 11h6M9 15h6"/>',
+  privacy: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  refunds: '<path d="M4 12a8 8 0 1 0 2.3-5.7M6 3v4h4"/>',
+}
 ---
 
 <!doctype html>
@@ -255,27 +277,27 @@ const siteSchema = {
         </div>
         <nav class="footer-col" aria-label={d.common.footerProduct}>
           <h2>{d.common.footerProduct}</h2>
-          <a href={lp(locale, '/scan')}>{d.common.footerScan}</a>
-          <a href={lp(locale, '/rootz')}>{d.common.footerRootz}</a>
-          <a href={lp(locale, '/guardian-angel')}>{d.common.footerGa}</a>
-          <a href={lp(locale, '/gurus')}>{d.common.footerGurus}</a>
-          <a href={lp(locale, '/parents')}>{d.common.footerParents}</a>
-          <a href={lp(locale, '/agents')}>{d.common.footerAgents}</a>
-          <a href={lp(locale, '/mcp')}>{d.common.footerMcp}</a>
+          <a href={lp(locale, '/scan')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.scan} />{d.common.footerScan}</a>
+          <a href={lp(locale, '/rootz')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.rootz} />{d.common.footerRootz}</a>
+          <a href={lp(locale, '/guardian-angel')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.guardian} />{d.common.footerGa}</a>
+          <a href={lp(locale, '/gurus')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.gurus} />{d.common.footerGurus}</a>
+          <a href={lp(locale, '/parents')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.parents} />{d.common.footerParents}</a>
+          <a href={lp(locale, '/agents')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.agents} />{d.common.footerAgents}</a>
+          <a href={lp(locale, '/mcp')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.mcp} />{d.common.footerMcp}</a>
         </nav>
         <nav class="footer-col" aria-label={d.common.footerResources}>
           <h2>{d.common.footerResources}</h2>
-          <a href={lp(locale, '/models')}>{d.common.footerModels}</a>
-          <a href={lp(locale, '/guides')}>{d.common.footerGuides}</a>
-          <a href={lp(locale, '/why')}>{d.common.footerWhy}</a>
-          <a href={lp(locale, '/roms')}>{d.common.footerRoms}</a>
-          <a href={lp(locale, '/devices')}>{d.common.footerDevices}</a>
+          <a href={lp(locale, '/models')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.models} />{d.common.footerModels}</a>
+          <a href={lp(locale, '/guides')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.guides} />{d.common.footerGuides}</a>
+          <a href={lp(locale, '/why')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.why} />{d.common.footerWhy}</a>
+          <a href={lp(locale, '/roms')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.roms} />{d.common.footerRoms}</a>
+          <a href={lp(locale, '/devices')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.devices} />{d.common.footerDevices}</a>
         </nav>
         <nav class="footer-col" aria-label={d.common.footerLegal}>
           <h2>{d.common.footerLegal}</h2>
-          <a href={lp(locale, '/terms')}>{d.common.footerTerms}</a>
-          <a href={lp(locale, '/privacy')}>{d.common.footerPrivacy}</a>
-          <a href={lp(locale, '/refunds')}>{d.common.footerRefunds}</a>
+          <a href={lp(locale, '/terms')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.terms} />{d.common.footerTerms}</a>
+          <a href={lp(locale, '/privacy')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.privacy} />{d.common.footerPrivacy}</a>
+          <a href={lp(locale, '/refunds')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={footerIcons.refunds} />{d.common.footerRefunds}</a>
         </nav>
       </div>
       <div class="container footer-bottom">

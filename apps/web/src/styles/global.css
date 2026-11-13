@@ -615,8 +615,10 @@
   .footer-col h2 {
     @apply mb-[0.6rem] mt-0 text-[0.8rem] uppercase tracking-[0.08em] text-dim;
   }
+  /* footer nav links are icon+label flex rows (icons inherit the
+     text-faint -> hover:text-ink transition via currentColor) */
   .footer-col a {
-    @apply block py-[0.2rem] text-faint hover:text-ink hover:no-underline;
+    @apply flex items-center gap-[0.5rem] py-[0.2rem] text-faint hover:text-ink hover:no-underline;
   }
   .footer-bottom {
     @apply mt-[2.25rem] flex flex-wrap items-center justify-between gap-[0.75rem] border-t border-line pt-[1.25rem];
