@@ -40,6 +40,14 @@ const download: typeof en = {
   requiresLink: '发布说明',
   requiresAfter: '核验签名和校验和。',
   previewNote: '这些是预览构建——产品功能正在陆续推出。免费版涵盖基础扫描和文档。',
+  sideloadTitle: '旁加载前请阅读',
+  sideloadStep1: '点按“继续下载”——APK 会保存到你的“下载”文件夹。',
+  sideloadStep2: 'Android 会询问未知应用：允许你的浏览器安装应用（只需一次）。',
+  sideloadStep3: '从通知或“下载”应用中打开 APK，点按“安装”。',
+  sideloadNote:
+    '所有三个 APK 均使用我们的上传密钥签名。如果你在 2026-11-13 之前安装过本应用，请先卸载——Android 会拒绝签名变更。',
+  sideloadContinue: '继续下载',
+  sideloadCancel: '取消',
 }
 
 export default download

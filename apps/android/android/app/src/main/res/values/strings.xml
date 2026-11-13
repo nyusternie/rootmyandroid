@@ -1,3 +1,9 @@
 <resources>
+    <!-- Full name: Settings → Apps, Play listing, everywhere official. -->
     <string name="app_name">Root My Android</string>
+    <!-- Launcher-icon label only (MainActivity label overrides the app
+         label on the home screen / app drawer). "Root My Android" is 15
+         chars and ellipsizes to "Root My …" on Pixel launchers; this is
+         the owner-approved short form. One string to swap if it changes. -->
+    <string name="app_name_short">Root My</string>
 </resources>

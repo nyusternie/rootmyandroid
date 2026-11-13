@@ -45,6 +45,14 @@ const download: typeof en = {
   requiresAfter: '에서 서명과 체크섬을 확인할 수 있습니다.',
   previewNote:
     '이것은 프리뷰 빌드입니다 — 제품 기능이 출시되고 있습니다. 무료 버전은 기본 스캔 및 문서를 포함합니다.',
+  sideloadTitle: '사이드로드하기 전에',
+  sideloadStep1: '‘계속해서 다운로드’를 누르세요 — APK가 다운로드 폴더에 저장됩니다.',
+  sideloadStep2: 'Android에서 출처 불명 앱을 묻습니다: 브라우저의 설치를 허용하세요(1회만).',
+  sideloadStep3: '알림이나 다운로드 앱에서 APK를 열고 ‘설치’를 누르세요.',
+  sideloadNote:
+    '세 개의 APK 모두 당사 업로드 키로 서명되었습니다. 2026-11-13 이전에 앱을 설치했다면 먼저 제거하세요 — Android는 서명 변경을 거부합니다.',
+  sideloadContinue: '계속해서 다운로드',
+  sideloadCancel: '취소',
 }
 
 export default download

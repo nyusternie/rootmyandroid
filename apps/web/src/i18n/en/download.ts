@@ -42,6 +42,14 @@ const download = {
   requiresAfter: '.',
   previewNote:
     'These are preview builds — product features are rolling out. The free tier covers basic scanning and documentation.',
+  sideloadTitle: 'Before you sideload',
+  sideloadStep1: 'Tap “Continue to download” — the APK lands in your Downloads folder.',
+  sideloadStep2: 'Android asks about unknown apps: allow installs for your browser (one-time).',
+  sideloadStep3: 'Open the APK from the notification or your Downloads app and tap “Install”.',
+  sideloadNote:
+    'All three APKs are signed with our upload key. If you installed the app before 2026-11-13, uninstall it first — Android refuses signature changes.',
+  sideloadContinue: 'Continue to download',
+  sideloadCancel: 'Cancel',
 }
 
 export default download

@@ -1,8 +1,10 @@
 ---
 // src/components/pages/Download.astro — download-page markup, shared by
 // every locale (route wrappers in src/pages/download.astro and
-// src/pages/<locale>/). Static content page, zero JS. Copy comes from
-// src/i18n/<locale>/download.ts.
+// src/pages/<locale>/). Static content page; owner instruction
+// 2026-11-13 adds ONE interactive element: the sideloading modal that
+// intercepts every APK download button (src/scripts/downloads.ts). Copy
+// comes from src/i18n/<locale>/download.ts.
 //
 // Store chips: icon paths vendored from simple-icons v13 (CC0). The Apple
 // and Google Play logos remain trademarks of their respective owners,
@@ -42,6 +44,7 @@ const d = dictFor(Astro.currentLocale)
           <a
             class="btn btn-primary mt-5 block px-8 py-5 text-center text-[1.2rem]"
             href="https://github.com/nyusternie/rootmyandroid/releases/download/android-apk/rootmyandroid-release.apk"
+            data-apk-link
             >{d.download.featuredLink}</a
           >
           <p class="faint mt-3 text-[0.85rem]">{d.download.featuredNote}</p>
@@ -102,6 +105,7 @@ const d = dictFor(Astro.currentLocale)
         <a
           class="btn"
           href="https://github.com/nyusternie/rootmyandroid/releases/latest/download/rooted-release.apk"
+          data-apk-link
           >{d.download.rootzLink}</a
         >
       </div>
@@ -125,6 +129,7 @@ const d = dictFor(Astro.currentLocale)
         <a
           class="btn"
           href="https://github.com/nyusternie/rootmyandroid/releases/latest/download/guardian-release.apk"
+          data-apk-link
           >{d.download.guardianLink}</a
         >
       </div>
@@ -145,4 +150,48 @@ const d = dictFor(Astro.currentLocale)
       {d.download.previewNote}
     </p>
   </section>
+
+  <!-- Sideloading modal (owner instruction 2026-11-13): intercepts every
+       data-apk-link click and walks through the steps before the
+       download starts. Hidden by default; src/scripts/downloads.ts
+       toggles it. The Continue anchor carries the clicked link's href so
+       the analytics auto-tracker still records the outbound download. -->
+  <div
+    id="sideload-modal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-bg/80 p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="sideload-modal-title"
+  >
+    <div
+      class="panel w-full max-w-[26rem] p-6 shadow-2xl"
+      role="document"
+    >
+      <h3 id="sideload-modal-title" class="mb-3 mt-0 text-[1.25rem]">{d.download.sideloadTitle}</h3>
+      <ol class="mb-4 list-decimal space-y-2 pl-5 text-[0.92rem] leading-[1.5]">
+        <li>{d.download.sideloadStep1}</li>
+        <li>{d.download.sideloadStep2}</li>
+        <li>{d.download.sideloadStep3}</li>
+      </ol>
+      <p class="faint mb-5 text-[0.82rem]">{d.download.sideloadNote}</p>
+      <div class="row items-center justify-end gap-3">
+        <button
+          id="sideload-cancel"
+          class="btn"
+          type="button">{d.download.sideloadCancel}</button
+        >
+        <a
+          id="sideload-continue"
+          class="btn btn-primary"
+          href="https://github.com/nyusternie/rootmyandroid/releases/download/android-apk/rootmyandroid-release.apk"
+          >{d.download.sideloadContinue}</a
+        >
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import '../../scripts/analytics.ts'
+    import '../../scripts/downloads.ts'
+  </script>
 </Base>
