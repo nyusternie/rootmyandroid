@@ -1,0 +1,131 @@
+# .github/workflows/android.yml
+name: Android app build
+
+# Builds the Root My Android Android edition (apps/android, package
+# com.rootmyandroid) as a RELEASE APK for on-device UI/UX iteration on the
+# USB-attached Pixel 5 (owner ruling 2026-11-13: the physical-device deploy
+# target follows the active workstream — see .agents/skills/build/SKILL.md).
+# Manual dispatch only. The APK is signed with the public debug key (the
+# runner-written gradle.properties points ROOTMYANDROID_UPLOAD_* at the
+# committed debug.keystore) — iteration builds only, never a production
+# release; they cannot upgrade-in-place over an upload-signed install
+# (signature mismatch). Linked from /download with an explicit iteration-only
+# disclosure (owner ruling 2026-11-13: session goal is a build downloadable
+# from rootmyandroid.com/downloads).
+# Install with: adb install -r rootmyandroid-release.apk
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write # rolling prerelease asset upload
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Test & build release APK
+    runs-on: [self-hosted, blackhost]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.21.0
+
+      # setup-node caches the path printed by `pnpm store path`; pinning
+      # store-dir keeps that path real (otherwise the post-job cache save
+      # fails the job with "Path Validation Error").
+      - name: Pin pnpm store path
+        run: pnpm config set store-dir /home/gh-runner/pnpm-store/mobile
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # blackhost is a minimal image: setup-android shells out to `unzip`,
+      # which is not preinstalled there.
+      - name: Ensure unzip
+        run: command -v unzip || (sudo apt-get update && sudo apt-get install -y unzip)
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          # Default "tools platform-tools" fails: the legacy `tools` package
+          # no longer exists in current SDK repositories.
+          packages: platform-tools
+
+      - name: Install SDK packages
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          # Platform 37's package id carries the dotted minor (verified
+          # against the known-good local SDK): platforms;android-37.0
+          sdkmanager "platform-tools" "platforms;android-37.0" "build-tools;37.0.0" "ndk;27.1.12297006"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --store-dir /home/gh-runner/pnpm-store/mobile
+
+      - name: Run tests (all workspace packages)
+        run: pnpm -r test
+
+      # gradle.properties is gitignored (it can carry local, machine-specific
+      # and secret values), so the runner writes a deterministic one. The
+      # ROOTMYANDROID_UPLOAD_* properties are pointed at the committed,
+      # PUBLIC debug.keystore (the same credentials the build.gradle debug
+      # block already carries in plaintext) — iteration builds only, never
+      # publish; the real upload keystore stays out of CI (repo rule 3a).
+      - name: Write gradle.properties
+        run: |
+          cat > apps/android/android/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m
+          android.useAndroidX=true
+          reactNativeArchitectures=armeabi-v7a,arm64-v8a
+          newArchEnabled=true
+          hermesEnabled=true
+          edgeToEdgeEnabled=true
+          android.builtInKotlin=false
+          android.newDsl=false
+          ROOTMYANDROID_UPLOAD_STORE_FILE=debug.keystore
+          ROOTMYANDROID_UPLOAD_STORE_PASSWORD=android
+          ROOTMYANDROID_UPLOAD_KEY_ALIAS=androiddebugkey
+          ROOTMYANDROID_UPLOAD_KEY_PASSWORD=android
+          EOF
+
+      # RN tooling hardcodes app-local node_modules paths; materialize the
+      # symlink farm (untracked local state on dev machines) on the runner.
+      - name: Materialize RN node_modules farm
+        run: .agents/skills/build/scripts/materialize-rn-farm.sh apps/android
+
+      - name: Build release APK
+        run: cd apps/android/android && ./gradlew assembleRelease --no-daemon
+
+      # Published as a rolling prerelease asset instead of an Actions
+      # artifact: the account's Actions artifact-storage quota is exhausted
+      # (recalculated every 6-12h) and release assets don't count against
+      # it. The repo is public; the APK is a debug-signed iteration build —
+      # linked publicly from /download with an explicit iteration-only
+      # disclosure, never as a production release.
+      # blackhost has no gh CLI; this action bundles its own client and
+      # replaces same-named assets on re-run (rolling prerelease).
+      # The asset name follows the release-asset family (rooted-release.apk /
+      # guardian-release.apk on android-v1.0.0) so /download links a stable,
+      # meaningful URL.
+      - name: Stage APK under its public asset name
+        run: cp apps/android/android/app/build/outputs/apk/release/app-release.apk rootmyandroid-release.apk
+
+      - name: Publish APK as rolling prerelease
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: android-apk
+          name: Root My Android (Android edition) APK (rolling)
+          body: 'Rolling debug-signed iteration build of the Android edition (package `com.rootmyandroid`), built from master@${{ github.sha }} on blackhost. Debug-signed — review builds only, never a production release. Install with `adb install -r rootmyandroid-release.apk`.'
+          prerelease: true
+          files: rootmyandroid-release.apk

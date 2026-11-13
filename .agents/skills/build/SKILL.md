@@ -43,6 +43,12 @@ Consequences:
   workflow files, or artifacts (repo rule 3a). `gradle.properties` is
   gitignored for this reason — runners write their own (see the preview
   workflow).
+- `.github/workflows/android.yml` (owner ruling 2026-11-13) builds
+  `apps/android` release APKs for on-device UI/UX iteration signed with the
+  **public debug key**: the runner-written gradle.properties points
+  `ROOTMYANDROID_UPLOAD_*` at the committed `debug.keystore`. Never publish
+  such APKs; they cannot upgrade-in-place over an upload-signed install
+  (signature mismatch → uninstall first).
 - `reactNativeArchitectures` for preview builds: `armeabi-v7a,arm64-v8a`
   (physical phones; no emulator ABIs — keeps runner builds shorter).
 
@@ -62,10 +68,14 @@ gh run download <run-id> -n rootmyandroid-preview-apk
 adb install -r app-release.apk
 ```
 
-`adb install` is deployment, not a build — allowed on the host. Deploy ONLY
-the iOS-edition preview (`com.rootmyandroid.preview`) to the physical
-device — do NOT install Root My Android or Guardian builds on it (owner rule,
-2026-10-30). Never run data-destroying adb commands on third-party
+`adb install` is deployment, not a build — allowed on the host. The
+physical-device deploy target follows the active workstream (owner ruling
+2026-11-13, superseding the 2026-10-30 preview-only rule): the
+Rootz/Android workstream deploys the Android edition (`apps/android`,
+applicationId `com.rootmyandroid`); the Guardian Angel/iOS workstream
+deploys the iOS-edition preview shell (`com.rootmyandroid.preview`).
+Guardian builds (`com.rootmyandroid.guardian_angel`) remain CI-verified
+only. Never run data-destroying adb commands on third-party
 packages (repo AGENTS.md rule 6).
 Our package ids: `com.rootmyandroid` (Root My Android, Android), `com.rootmyandroid`
 (RootMyAndroid, iOS bundle id), `com.rootmyandroid.preview` (Android preview
@@ -88,10 +98,16 @@ deploy with failing tests.
 
 ## Physical device
 
-Deploy ONLY the iOS-edition preview (`com.rootmyandroid.preview`) to the
-owner's physical device. Do NOT install Root My Android (`com.rootmyandroid`)
-or Guardian builds on it — those are CI-verified only (owner rule,
-2026-10-30).
+The deploy target follows the active workstream (owner ruling 2026-11-13,
+superseding the 2026-10-30 preview-only rule): the Rootz/Android workstream
+deploys the Android edition (`apps/android`, applicationId
+`com.rootmyandroid` — debug-signed CI builds from `android.yml`) to the
+owner's physical device; the Guardian Angel/iOS workstream deploys the
+iOS-edition preview shell (`com.rootmyandroid.preview`). Both production
+apps share the name `com.rootmyandroid` (iOS bundle id / Android
+applicationId); the `.preview` suffix exists so the preview shell never
+clobbers a production install. Guardian builds
+(`com.rootmyandroid.guardian_angel`) remain CI-verified only.
 
 ## Styling: NativeWind
 
