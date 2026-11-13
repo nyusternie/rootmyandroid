@@ -24,7 +24,9 @@ class QrScanModule(private val reactContext: ReactApplicationContext) :
 
   @ReactMethod
   fun requestCameraPermission(promise: Promise) {
-    val activity = currentActivity
+    // currentActivity lives on ReactContext (getCurrentActivity); the
+    // base-class property is not resolvable from Kotlin in RN 0.88.
+    val activity = reactContext.currentActivity
     if (activity == null) {
       promise.reject("E_NO_ACTIVITY", "No foreground activity to host the permission dialog.")
       return
@@ -46,7 +48,7 @@ class QrScanModule(private val reactContext: ReactApplicationContext) :
 
   @ReactMethod
   fun isCameraPermissionGranted(promise: Promise) {
-    val activity = currentActivity
+    val activity = reactContext.currentActivity
     if (activity == null) {
       promise.resolve(false)
       return
@@ -57,9 +59,10 @@ class QrScanModule(private val reactContext: ReactApplicationContext) :
     )
   }
 
+  // RN 0.88's PermissionListener uses non-covariant Array<String>.
   override fun onRequestPermissionsResult(
     requestCode: Int,
-    permissions: Array<out String>,
+    permissions: Array<String>,
     grantResults: IntArray,
   ): Boolean {
     if (requestCode != PERMISSION_REQUEST_CODE) return false
