@@ -1,6 +1,7 @@
 package com.rootmyandroid
 
 import android.content.Context
+import android.util.Log
 import android.widget.FrameLayout
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -42,6 +43,10 @@ import java.util.concurrent.Executors
  */
 class QrScanView(context: Context) : FrameLayout(context) {
 
+  companion object {
+    private const val TAG = "QrScanView"
+  }
+
   private val previewView = PreviewView(context).also {
     addView(it, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
   }
@@ -56,6 +61,7 @@ class QrScanView(context: Context) : FrameLayout(context) {
   private var cameraProvider: ProcessCameraProvider? = null
   private var started = false
   private var lastEmitted: String? = null
+  private var frameCount = 0L
 
   fun start() {
     if (started) return
@@ -71,6 +77,10 @@ class QrScanView(context: Context) : FrameLayout(context) {
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
         analysis.setAnalyzer(analysisExecutor) { proxy ->
+          frameCount++
+          if (frameCount % 30L == 0L) {
+            Log.d(TAG, "frames=$frameCount ${proxy.width}x${proxy.height} lastDecoded=$lastEmitted")
+          }
           try {
             // Y plane of YUV_420_888; rows are typically padded
             // (rowStride >= width), so copy row by row into a tightly
@@ -99,13 +109,16 @@ class QrScanView(context: Context) : FrameLayout(context) {
               }
             result?.text?.let { value ->
               if (value != lastEmitted) {
+                Log.d(TAG, "decoded: $value")
                 lastEmitted = value
                 emitResult(value)
               }
             }
-          } catch (_: Exception) {
+          } catch (e: Exception) {
             // Frame errors (format surprises, buffer races) never crash
-            // the app; the next frame tries again.
+            // the app; the next frame tries again. Logged so the scan
+            // path stays debuggable over adb.
+            Log.w(TAG, "analyzer frame error", e)
           } finally {
             proxy.close()
           }
@@ -117,9 +130,11 @@ class QrScanView(context: Context) : FrameLayout(context) {
           preview,
           analysis,
         )
+        Log.d(TAG, "camera bound (back, preview+analysis)")
       } catch (e: Exception) {
         // Camera init can fail (no camera, device policy). The JS side
         // stays in its instruction state; nothing crashes the app.
+        Log.w(TAG, "camera bind failed", e)
         started = false
       }
     }, ContextCompat.getMainExecutor(context))
