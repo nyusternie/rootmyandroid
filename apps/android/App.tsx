@@ -232,9 +232,14 @@ function App() {
         </Modal>
 
         {/* QR scanner modal — camera preview + decoded value footer. The
-            native view starts the camera on attach and stops on detach. */}
+            native view starts the camera on attach and stops on detach.
+            SafeAreaView: like the Account modal, the scanner is its own
+            full-screen window (edge-to-edge builds draw under the system
+            bars) — without it the camera bleeds into the status bar
+            (owner report 2026-11-15: "top of the camera screen is bleeding
+            into the system's UI"). */}
         <Modal visible={qrOpen} animationType="fade" onRequestClose={() => setQrOpen(false)}>
-          <View className="flex-1 bg-bg">
+          <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
             <View className="flex-row items-center justify-between border-b border-border px-5 pb-3 pt-5">
               <Text className="text-xl font-bold text-text">Scan to sync with web</Text>
               <TouchableOpacity className="px-3 py-1.5" onPress={() => setQrOpen(false)}>
@@ -262,7 +267,7 @@ function App() {
                 </Text>
               )}
             </View>
-          </View>
+          </SafeAreaView>
         </Modal>
       </SafeAreaView>
     </SafeAreaProvider>
