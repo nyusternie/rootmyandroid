@@ -47,7 +47,15 @@ class QrScanView(context: Context) : FrameLayout(context) {
     private const val TAG = "QrScanView"
   }
 
+  // COMPATIBLE (TextureView) is REQUIRED here: default PERFORMANCE mode
+  // (SurfaceView) never delivered a usable surface inside this React Native
+  // view hierarchy — the camera device opened (onOpened) but session
+  // configuration hung exactly 5000 ms, every time (CameraX's watchdog:
+  // "ListFuture ... is not done within 5000 ms" → "Resetting Capture
+  // Session" loop, measured on redfin 2026-11-15). TextureView inside the
+  // normal view tree gives CameraX a valid surface immediately.
   private val previewView = PreviewView(context).also {
+    it.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
     addView(it, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
   }
 
