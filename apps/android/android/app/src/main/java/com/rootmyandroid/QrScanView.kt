@@ -45,6 +45,7 @@ class QrScanView(context: Context) : FrameLayout(context) {
 
   companion object {
     private const val TAG = "QrScanView"
+    private const val WATCHDOG_MS = 6000L
   }
 
   // COMPATIBLE (TextureView) is REQUIRED here: default PERFORMANCE mode
@@ -70,12 +71,44 @@ class QrScanView(context: Context) : FrameLayout(context) {
   private var started = false
   private var lastEmitted: String? = null
   private var frameCount = 0L
+  private var rebindingWithoutPreview = false
+  private var bindGeneration = 0L
 
   fun start() {
     if (started) return
     started = true
+    // Bind on the FIRST layout pass (post{}), not from onAttachedToWindow:
+    // at attach time the view has zero size and the preview surface does not
+    // exist yet — measured on redfin 2026-11-15, binding from attach left the
+    // session-configure future hanging (CameraX 5 s watchdog → "Resetting
+    // Capture Session" loop, with BOTH SurfaceView and TextureView modes).
+    post { bindCamera() }
+    // Self-healing watchdog: decode is the contract; the preview image is
+    // cosmetic. If no frames arrive within 6 s (preview-surface stalls
+    // inside RN's view tree), rebind with ImageAnalysis only — that path has
+    // no external surface dependency and configures reliably.
+    postDelayed({
+      if (started && frameCount == 0L) {
+        Log.w(TAG, "no frames 6s after bind — rebinding without preview")
+        rebindingWithoutPreview = true
+        try {
+          cameraProvider?.unbindAll()
+        } catch (_: Exception) {
+          // best-effort
+        }
+        bindCamera()
+      }
+    }, WATCHDOG_MS)
+  }
+
+  private fun bindCamera() {
+    if (!started) return
+    // Each bind bumps the generation; a stale getInstance() listener that
+    // resolves after a newer bind (watchdog rebind) must not run.
+    val generation = ++bindGeneration
     val providerFuture = ProcessCameraProvider.getInstance(context)
     providerFuture.addListener({
+      if (generation != bindGeneration) return@addListener
       try {
         val provider = providerFuture.get()
         cameraProvider = provider
@@ -132,13 +165,22 @@ class QrScanView(context: Context) : FrameLayout(context) {
           }
         }
         provider.unbindAll()
-        provider.bindToLifecycle(
-          ProcessLifecycleOwner.get() as LifecycleOwner,
-          CameraSelector.DEFAULT_BACK_CAMERA,
-          preview,
-          analysis,
-        )
-        Log.d(TAG, "camera bound (back, preview+analysis)")
+        if (rebindingWithoutPreview) {
+          provider.bindToLifecycle(
+            ProcessLifecycleOwner.get() as LifecycleOwner,
+            CameraSelector.DEFAULT_BACK_CAMERA,
+            analysis,
+          )
+          Log.d(TAG, "camera bound (back, analysis-only fallback)")
+        } else {
+          provider.bindToLifecycle(
+            ProcessLifecycleOwner.get() as LifecycleOwner,
+            CameraSelector.DEFAULT_BACK_CAMERA,
+            preview,
+            analysis,
+          )
+          Log.d(TAG, "camera bound (back, preview+analysis)")
+        }
       } catch (e: Exception) {
         // Camera init can fail (no camera, device policy). The JS side
         // stays in its instruction state; nothing crashes the app.
@@ -151,12 +193,15 @@ class QrScanView(context: Context) : FrameLayout(context) {
   fun stop() {
     if (!started) return
     started = false
+    removeCallbacks(null)
     try {
       cameraProvider?.unbindAll()
     } catch (_: Exception) {
       // unbind is best-effort during teardown.
     }
     lastEmitted = null
+    rebindingWithoutPreview = false
+    frameCount = 0L
   }
 
   private fun emitResult(value: String) {
