@@ -49,7 +49,7 @@ react {
     //   The hermes compiler command to run. By default it is 'hermesc'
     // hermesCommand = "$rootDir/my-custom-hermesc/bin/hermesc"
     //
-    //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
+    //   The list of flags to pass to the Hermes compiler. By default it is "-O", "-output-source-map"
     // hermesFlags = ["-O", "-output-source-map"]
 
     /* Autolinking */
@@ -111,21 +111,77 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
+
+    // F-Droid policy (docs/FDROID-SUBMISSION-PLAN.md, owner rulings
+    // 2026-11-13): the `fdroid` flavor ships FOSS-only UI — no billing
+    // chip, no PRO upsell, everything free — and is the flavor F-Droid
+    // builds and byte-compares against our hosted APK. `appstore` is the
+    // store/sideload build (the same binary family headed to Google Play;
+    // the name is store-neutral per the sidecoin precedent).
+    flavorDimensions "distribution"
+    productFlavors {
+        fdroid {
+            dimension "distribution"
+        }
+        appstore {
+            dimension "distribution"
+        }
+    }
+
+    // AGP 7+ writes a "Dependency metadata" (0x504b4453) signing block that
+    // is read only by Play Console tooling; fdroidserver's `check apk`
+    // rejects it outright (sidecoin finding, commit 362709c).
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
+    // Deflate bundled .so files. AGP's default stores them uncompressed so
+    // the loader can mmap them (better install size/startup), but the
+    // download balloons; F-Droid ships a single universal APK per version,
+    // so download size wins (sidecoin: 74,521,086 -> 35,187,266 bytes).
+    // Use the DSL flag, not the manifest attribute: AGP writes
+    // extractNativeLibs=false after manifest merge and can override a
+    // hand-written attribute.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+}
+
+// Reproducibility (docs/FDROID-SUBMISSION-PLAN.md §2): the React Native
+// Gradle plugin bakes the BUILD MACHINE's first non-loopback IPv4 into the
+// react_native_dev_server_ip resource (AgpConfiguratorUtils.getHostIpAddress),
+// so two builders produce different resources.arsc for the same commit — the
+// exact failure that broke sidecoin's byte-compare (fixed in their 7aa639f).
+// Pinning it to localhost makes the release resource constant. The resValue
+// must be set from a finalizeDsl callback: ReactPlugin sets it from its own
+// finalizeDsl callback, and later callbacks win. Nothing in the release
+// bundle path reads the value (its only consumer is the dev-only
+// ChangeBundleLocationDialog).
+androidComponents {
+    finalizeDsl { ext ->
+        ext.defaultConfig.resValue("string", "react_native_dev_server_ip", "localhost")
+    }
 }
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
-    // QR scanner (owner request 2026-11-13): CameraX preview + analysis
-    // and ML Kit's BUNDLED barcode scanner (QR only; model ships in the
-    // APK, works offline). Pinned exact per the repo's dependency rule.
+    // QR scanner (owner request 2026-11-13): CameraX preview + analysis.
+    // The decoder is ZXing core (Apache-2.0, built from source) — ML Kit's
+    // barcode-scanning AAR is a CLOSED-SOURCE Google binary and would be
+    // rejected by F-Droid (sidecoin removed vision-camera/MLKit for exactly
+    // this reason). QR-only use keeps ZXing coverage sufficient. Pinned
+    // exact per the repo's dependency rule.
     implementation("androidx.camera:camera-core:1.4.1")
     implementation("androidx.camera:camera-camera2:1.4.1")
     implementation("androidx.camera:camera-lifecycle:1.4.1")
     implementation("androidx.camera:camera-view:1.4.1")
     implementation("androidx.lifecycle:lifecycle-process:2.8.7")
-    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+    implementation("com.google.zxing:core:3.5.3")
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

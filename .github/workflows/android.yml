@@ -138,8 +138,12 @@ jobs:
       - name: Materialize RN node_modules farm
         run: .agents/skills/build/scripts/materialize-rn-farm.sh apps/android
 
-      - name: Build release APK
-        run: cd apps/android/android && ./gradlew assembleRelease --no-daemon
+      # Two flavors (F-Droid submission, docs/FDROID-SUBMISSION-PLAN.md):
+      # appstore = the rolling sideload/Play build (billing UI present);
+      # fdroid = the FOSS build (no billing chip, no PRO copy, everything
+      # free) — the flavor F-Droid builds and byte-compares.
+      - name: Build release APKs (appstore + fdroid flavors)
+        run: cd apps/android/android && ./gradlew assembleAppstoreRelease assembleFdroidRelease --no-daemon
 
       # Published as a rolling prerelease asset instead of an Actions
       # artifact: the account's Actions artifact-storage quota is exhausted
@@ -152,8 +156,10 @@ jobs:
       # The asset name follows the release-asset family (rooted-release.apk /
       # guardian-release.apk on android-v1.0.0) so /download links a stable,
       # meaningful URL.
-      - name: Stage APK under its public asset name
-        run: cp apps/android/android/app/build/outputs/apk/release/app-release.apk rootmyandroid-release.apk
+      - name: Stage APKs under their public asset names
+        run: |
+          cp apps/android/android/app/build/outputs/apk/appstore/release/app-appstore-release.apk rootmyandroid-release.apk
+          cp apps/android/android/app/build/outputs/apk/fdroid/release/app-fdroid-release.apk rootmyandroid-fdroid-release.apk
 
       - name: Publish APK as rolling prerelease
         uses: softprops/action-gh-release@v3
@@ -162,4 +168,6 @@ jobs:
           name: Root My Android (Android edition) APK (rolling)
           body: 'Rolling iteration build of the Android edition (package `com.rootmyandroid`), built from master@${{ github.sha }} on blackhost, signed with our upload key. Review builds — features are rolling out. Install with `adb install -r rootmyandroid-release.apk`.'
           prerelease: true
-          files: rootmyandroid-release.apk
+          files: |
+            rootmyandroid-release.apk
+            rootmyandroid-fdroid-release.apk

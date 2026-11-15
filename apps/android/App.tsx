@@ -55,6 +55,11 @@ import {
 // stroke family, shared theme colors.
 import { BrandIcon, NavIcon, QrIcon, UserIcon, type NavIconName } from './icons';
 import { RQrScanView } from './qr-scan-view';
+// Build-flavor flag (owner ruling 2026-11-13 — F-Droid policy): the fdroid
+// flavor resolves this to IS_FDROID_BUILD=true via metro.config.js and the
+// billing/PRO surface below disappears (everything free). Appstore/sideload
+// builds keep the base module (false).
+import { IS_FDROID_BUILD } from './build-flavor';
 // Lottie wire-up demo (owner request 2026-11-13 — first of many
 // animations): subtle brand-authored micro-animations beside each tab
 // screen's title (owner follow-up: animations MUST BE subtle — small,
@@ -168,7 +173,12 @@ function App() {
               left of the profile button; the profile button loses its
               border. */}
           <View className="flex-row items-center gap-2">
-            <BillingChip balance={MOCK_GURU_BALANCE_USD} onPress={() => setAccountOpen(true)} />
+            {/* fdroid flavor: no billing chip — a mock balance display is a
+                fake-payment surface; F-Droid builds show everything free
+                (owner ruling 2026-11-13). */}
+            {!IS_FDROID_BUILD && (
+              <BillingChip balance={MOCK_GURU_BALANCE_USD} onPress={() => setAccountOpen(true)} />
+            )}
             <TouchableOpacity
               className="p-2"
               onPress={openQrScan}
@@ -706,7 +716,7 @@ function DevicesScreen() {
               <Text className="text-[15px] font-semibold text-text">{d.name}</Text>
               <Text className="mt-0.5 text-[13px] text-muted">{d.detail}</Text>
             </View>
-            <Badge label={d.pro ? 'PRO' : 'FREE'} pro={d.pro} />
+            <Badge label={d.pro && !IS_FDROID_BUILD ? 'PRO' : 'FREE'} pro={d.pro && !IS_FDROID_BUILD} />
           </View>
         ))}
       </Panel>
@@ -729,24 +739,35 @@ function AccountScreen() {
         <Row label="Account number" value="1327 3076 2982 9434" />
         <Row label="Storage used" value="1.2 GB of 5 GB" />
       </Panel>
-      <Panel title="Plan time">
-        <Row label="Balance" value="34 days" />
-        <Row label="Renewal" value="None — top up anytime" />
-      </Panel>
-      {MOCK_PLANS.map((plan) => (
-        <Panel key={plan.id} title={`${plan.label} — ${plan.price} / ${plan.period}`}>
-          {plan.features.map((feature) => (
-            <Row key={feature} label="•" value={feature} />
+      {/* fdroid flavor: no billing surface at all — account facts only
+          (owner ruling 2026-11-13: everything free on the F-Droid build). */}
+      {IS_FDROID_BUILD ? (
+        <Text className="mt-3.5 text-xs leading-[17px] text-faint">
+          Everything is free on this build — no billing, no upsell (F-Droid
+          edition).
+        </Text>
+      ) : (
+        <>
+          <Panel title="Plan time">
+            <Row label="Balance" value="34 days" />
+            <Row label="Renewal" value="None — top up anytime" />
+          </Panel>
+          {MOCK_PLANS.map((plan) => (
+            <Panel key={plan.id} title={`${plan.label} — ${plan.price} / ${plan.period}`}>
+              {plan.features.map((feature) => (
+                <Row key={feature} label="•" value={feature} />
+              ))}
+            </Panel>
           ))}
-        </Panel>
-      ))}
-      <PrimaryButton label="Top up — from $5" />
-      <GhostButton label="Create new account" />
-      <Text className="mt-3.5 text-xs leading-[17px] text-faint">
-        Plans are top-up subscriptions: add time whenever you like — no
-        auto-renewal, no stored card. Your account number is the only
-        credential. Keep it safe — it cannot be recovered.
-      </Text>
+          <PrimaryButton label="Top up — from $5" />
+          <GhostButton label="Create new account" />
+          <Text className="mt-3.5 text-xs leading-[17px] text-faint">
+            Plans are top-up subscriptions: add time whenever you like — no
+            auto-renewal, no stored card. Your account number is the only
+            credential. Keep it safe — it cannot be recovered.
+          </Text>
+        </>
+      )}
     </View>
   );
 }
@@ -782,7 +803,7 @@ function ToolRow({ name, desc, pro }: { name: string; desc: string; pro?: boolea
       <View className="flex-1">
         <View className="flex-row items-center gap-2">
           <Text className="text-[15px] font-semibold text-text">{name}</Text>
-          {pro ? <Badge label="PRO" pro /> : null}
+          {pro && !IS_FDROID_BUILD ? <Badge label="PRO" pro /> : null}
         </View>
         <Text className="mt-0.5 text-[13px] leading-[18px] text-muted">{desc}</Text>
       </View>
@@ -796,7 +817,9 @@ function ToolsScreen() {
     <View>
       <ScreenTitle title="Tools" animation={toolsTitle} />
       <Text className="mb-4 text-sm leading-5 text-muted">
-        Advanced features. PRO tools require time credit on your account.
+        {IS_FDROID_BUILD
+          ? 'Advanced features. Everything is free on this build.'
+          : 'Advanced features. PRO tools require time credit on your account.'}
       </Text>
       <Panel title="Root & ROM">
         <ToolRow

@@ -13,22 +13,29 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.common.InputImage
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.DecodeHintType
+import com.google.zxing.MultiFormatReader
+import com.google.zxing.NotFoundException
+import com.google.zxing.PlanarYUVLuminanceSource
+import com.google.zxing.common.HybridBinarizer
 import java.util.concurrent.Executors
 
 /**
  * Camera preview + QR decode view (owner request 2026-11-13 — "wire-up
  * qr scanning; we will use this to SYNC WITH WEB (ALT CLIENTS)").
  *
- * CameraX Preview feeds an ImageAnalysis stream through ML Kit's bundled
- * barcode scanner (QR format only). Decoded values are emitted to JS as
- * `onQrResult` DeviceEvents ({value: string}); repeats of the same value
- * are suppressed so the JS side doesn't flood. The camera binds to the
- * PROCESS lifecycle (a RN child view has no LifecycleOwner of its own)
- * and unbinds on detach.
+ * CameraX Preview feeds an ImageAnalysis stream (YUV_420_888) through a
+ * ZXing MultiFormatReader restricted to QR codes. ZXing core is Apache-2.0
+ * and builds from source; the original ML Kit choice was a closed-source
+ * Google AAR and would have failed F-Droid review (owner ruling
+ * 2026-11-13: swap to ZXing; sidecoin removed vision-camera/MLKit for the
+ * same reason). Decoded values are emitted to JS as `onQrResult`
+ * DeviceEvents ({value: string}); repeats of the same value are suppressed
+ * so the JS side doesn't flood. The camera binds to the PROCESS lifecycle
+ * (a RN child view has no LifecycleOwner of its own) and unbinds on
+ * detach.
  *
  * Note: CameraX 1.4's PreviewView is final, so this container is a
  * FrameLayout wrapping a full-size PreviewView child.
@@ -40,11 +47,11 @@ class QrScanView(context: Context) : FrameLayout(context) {
   }
 
   private val analysisExecutor = Executors.newSingleThreadExecutor()
-  private val scanner =
-    BarcodeScanning.getClient(
-      BarcodeScannerOptions.Builder()
-        .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-        .build(),
+  private val reader = MultiFormatReader()
+  private val hints =
+    mapOf(
+      DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE),
+      DecodeHintType.TRY_HARDER to java.lang.Boolean.TRUE,
     )
   private var cameraProvider: ProcessCameraProvider? = null
   private var started = false
@@ -64,23 +71,44 @@ class QrScanView(context: Context) : FrameLayout(context) {
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
         analysis.setAnalyzer(analysisExecutor) { proxy ->
-          val image = proxy.image
-          if (image == null) {
-            proxy.close()
-            return@setAnalyzer
-          }
-          val input = InputImage.fromMediaImage(image, proxy.imageInfo.rotationDegrees)
-          scanner
-            .process(input)
-            .addOnCompleteListener { result ->
-              proxy.close()
-              result.result.firstOrNull()?.rawValue?.let { value ->
-                if (value != lastEmitted) {
-                  lastEmitted = value
-                  emitResult(value)
-                }
+          try {
+            // Y plane of YUV_420_888; rows are typically padded
+            // (rowStride >= width), so copy row by row into a tightly
+            // packed luminance array for ZXing.
+            val plane = proxy.planes[0]
+            val buffer = plane.buffer
+            val width = proxy.width
+            val height = proxy.height
+            val rowStride = plane.rowStride
+            val yBytes = ByteArray(width * height)
+            for (row in 0 until height) {
+              buffer.position(row * rowStride)
+              buffer.get(yBytes, row * width, width)
+            }
+            val source = PlanarYUVLuminanceSource(yBytes, width, height, 0, 0, width, height, false)
+            val result =
+              try {
+                // decode() sets hints then decodes; reset() per frame per
+                // MultiFormatReader's decodeWithState contract.
+                reader.decode(BinaryBitmap(HybridBinarizer(source)), hints)
+              } catch (_: NotFoundException) {
+                // No QR code in this frame — normal.
+                null
+              } finally {
+                reader.reset()
+              }
+            result?.text?.let { value ->
+              if (value != lastEmitted) {
+                lastEmitted = value
+                emitResult(value)
               }
             }
+          } catch (_: Exception) {
+            // Frame errors (format surprises, buffer races) never crash
+            // the app; the next frame tries again.
+          } finally {
+            proxy.close()
+          }
         }
         provider.unbindAll()
         provider.bindToLifecycle(
