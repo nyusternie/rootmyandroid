@@ -5,17 +5,20 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 
 // Android build-flavor detection (F-Droid FOSS guarantee — see
 // docs/FDROID-SUBMISSION-PLAN.md and the sidecoin fdroiddata!50457
-// precedent). Metro is invoked by Gradle's per-variant bundle task
-// `createBundle<Flavor><BuildType>JsAndAssets`, so the flavor is visible
-// in process.argv as the task name — RN exposes it no other way (no env
-// var, no runtime flag; verified in the sidecoin submission). Only the
-// fdroid flavor redirects the build-flavor flag to its `true` variant.
+// precedent). Metro is invoked by Gradle's per-variant bundle task and RN
+// exposes the flavor no other way (no env var, no runtime flag). MEASURED
+// on RN 0.88 (CI run 43759473809): the CLI's --bundle-output path is
+// `build/generated/assets/react/<flavor><BuildType>/index.android.bundle`
+// — `fdroidRelease` — NOT the task name (the sidecoin argv-shape predates
+// this). Match both the RN 0.88 path form and the task name as a
+// fallback. Only the fdroid flavor redirects the build-flavor flag to its
+// `true` variant.
 function detectAndroidFlavor(argv) {
   const commandLine = argv.join(' ');
-  if (/createBundleAppstore[A-Za-z]*JsAndAssets/.test(commandLine)) {
+  if (/appstoreRelease|createBundleAppstore[A-Za-z]*JsAndAssets/.test(commandLine)) {
     return 'appstore';
   }
-  if (/createBundleFdroid[A-Za-z]*JsAndAssets/.test(commandLine)) {
+  if (/fdroidRelease|createBundleFdroid[A-Za-z]*JsAndAssets/.test(commandLine)) {
     return 'fdroid';
   }
   return null;
