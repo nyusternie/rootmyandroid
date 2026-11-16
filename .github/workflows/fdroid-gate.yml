@@ -55,7 +55,12 @@ jobs:
           pathlib.Path("/tmp/recipe-parsed-before.json").write_text(
               __import__("json").dumps(parsed, sort_keys=True, default=str))
           EOF
+          # cd into the fdroiddata dir: fdroidserver resolves the metadata
+          # tree relative to the working directory (verified 2026-11-16 —
+          # with cwd outside, rewritemeta fails with "No such package").
+          cd "$DATA"
           FDROIDDATA="$DATA" /tmp/fdroid-gate-venv/bin/fdroid rewritemeta com.rootmyandroid
+          cd - >/dev/null
           /tmp/fdroid-gate-venv/bin/python - <<'EOF'
           import json, yaml, pathlib, sys
           before = json.loads(pathlib.Path("/tmp/recipe-parsed-before.json").read_text())
