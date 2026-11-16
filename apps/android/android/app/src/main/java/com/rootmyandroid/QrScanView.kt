@@ -82,6 +82,29 @@ class QrScanView(context: Context) : FrameLayout(context) {
     }
   }
 
+  // Surface listener declared BEFORE textureView — Kotlin initializes
+  // properties in declaration order and the TextureView initializer
+  // consumes the listener (first CI attempt failed: 'textureListener'
+  // must be initialized).
+  private val textureListener = object : TextureView.SurfaceTextureListener {
+    override fun onSurfaceTextureAvailable(st: SurfaceTexture, width: Int, height: Int) {
+      Log.d(TAG, "surface texture available ${width}x$height")
+      deliverSurface()
+    }
+
+    override fun onSurfaceTextureSizeChanged(st: SurfaceTexture, width: Int, height: Int) {}
+
+    override fun onSurfaceTextureDestroyed(st: SurfaceTexture): Boolean {
+      Log.d(TAG, "surface texture destroyed")
+      previewSurface?.release()
+      previewSurface = null
+      previewRequest = null
+      return true
+    }
+
+    override fun onSurfaceTextureUpdated(st: SurfaceTexture) {}
+  }
+
   // COMPATIBLE (TextureView) rendering; the surface hand-off is manual
   // (see class doc).
   private val textureView = TextureView(context).also {
@@ -106,25 +129,6 @@ class QrScanView(context: Context) : FrameLayout(context) {
   // Manual preview surface plumbing.
   private var previewRequest: SurfaceRequest? = null
   private var previewSurface: Surface? = null
-
-  private val textureListener = object : TextureView.SurfaceTextureListener {
-    override fun onSurfaceTextureAvailable(st: SurfaceTexture, width: Int, height: Int) {
-      Log.d(TAG, "surface texture available ${width}x$height")
-      deliverSurface()
-    }
-
-    override fun onSurfaceTextureSizeChanged(st: SurfaceTexture, width: Int, height: Int) {}
-
-    override fun onSurfaceTextureDestroyed(st: SurfaceTexture): Boolean {
-      Log.d(TAG, "surface texture destroyed")
-      previewSurface?.release()
-      previewSurface = null
-      previewRequest = null
-      return true
-    }
-
-    override fun onSurfaceTextureUpdated(st: SurfaceTexture) {}
-  }
 
   init {
     // Kick CameraX from the first layout pass — binding from
