@@ -14,6 +14,31 @@ failure was diagnosed ~5 hours too late.
 > PASS (raw 480x640 frame decodes host-side to the real pairing URL);
 > appstore build restored as the daily driver (sha256 e6880a38… match).
 > §8 Phases 2–4 are the open work — see FDROID-SUBMISSION-PLAN.md.
+>
+> **UPDATE 2026-11-16 (evening): F-Droid Phase 2 COMPLETE.** Commits
+> 179791d (conditional release-signing), 9ed4c0c (committed base
+> gradle.properties — clean checkouts crashed on AGP built-in-Kotlin
+> collision without it), 94b38da (reproducibility flags: -ffile-prefix-map
+> + --build-id=none on every CMake target). Two-path proof at 94b38da:
+> 460/460 payloads byte-identical across different absolute paths,
+> `apksigcopier compare --unsigned` exit 0, and the CI asset
+> (sha256 a5e65a4f…c0, run 43883122607) equals the from-source build
+> byte-for-byte. Cert sha256 extracted:
+> 1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886bceca (keytool
+> on blackhost; matches the recipe's AllowedAPKSigningKeys). Maintainer
+> recipe draft committed: apps/android/metadata/com.rootmyandroid.yml.
+> Remaining: Phase 3 leftovers (listings + screenshots — screenshots need
+> the Pixel 5), Phase 4 (release + fdroiddata MR).
+>
+> **blackhost operational lessons (2026-11-16):** (1) 3.9 GB RAM — NEVER
+> run two gradle builds concurrently, and never concurrently with a CI
+> job: measured OOM-kill killed the runner service mid-job (restart with
+> `systemctl restart actions.runner.nyusternie-rootmyandroid.blackhost-web.service`);
+> queued runs never start while it is failed. (2) Disk ~40G runs ~92-97%
+> full — a single RN build needs ~2 GB; ENOSPC failed one CI run (disk was
+> 100%). Clean stale _work dirs + /tmp clones between experiments; ONE
+> build at a time, always. (3) ssh sessions from the host stay flaky under
+> load — detach everything with nohup and poll in bursts.
 
 ## 0. THE NETWORK TRAP — read before ANY transfer on this host
 

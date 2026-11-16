@@ -391,6 +391,29 @@ and `appstore`); release APKs land as assets on tag `android-apk`.
   (decode survives, preview stays black). Test-QR discipline: black-on-
   white PNG only (`qrcode` lib) — terminal ASCII QR renders INVERTED on
   dark terminals and the Java ZXing port cannot decode it.
+- **F-Droid Phase 2 COMPLETE (2026-11-16, commits 179791d + 9ed4c0c +
+  94b38da):** byte-reproducibility proven on blackhost. (1) Conditional
+  release-signing — a props-less clean checkout now yields
+  `app-fdroid-release-unsigned.apk` instead of a config crash. (2) Base
+  `gradle.properties` is COMMITTED (apps/android/android/gradle.properties):
+  without it AGP's built-in Kotlin registers the `kotlin` extension and the
+  standalone kotlin.android plugin fails evaluation ("Cannot add extension
+  with name 'kotlin'") — the F-Droid from-source build would have crashed;
+  caught by the two-path build. Secrets still append via CI only. (3)
+  Reproducibility flags: `-ffile-prefix-map` (android root, repo root,
+  gradle user home) on every CMake target via root `subprojects` + `:app`
+  `androidComponents.finalizeDsl`, plus `-Wl,--build-id=none` linker args —
+  measured two-path byte-diff was in libappmodules.so +
+  libreact_codegen_rnsvg.so + libreact_codegen_safeareacontext.so (both
+  ABIs). Proof at 94b38da: two different absolute paths → 460/460 zip
+  payloads byte-identical, `apksigcopier compare --unsigned` → exit 0,
+  signature implant verifies with cert
+  1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886bceca, and the
+  CI-published asset's sha256 equals the /tmp two-path build byte-for-byte
+  (a5e65a4f…5740c0). RN 0.88 scanignore: ONLY
+  ReactAndroid/publish.gradle carries local maven urls; sdks/ has NO
+  hermesc binary (bundle task needs none from node_modules). Maintainer
+  recipe draft: apps/android/metadata/com.rootmyandroid.yml.
 - **F-Droid Phase 1 COMPLETE (commits 54f0cd3…0ddbe5e, all CI-green):**
   product flavors `fdroid`/`appstore`, dependenciesInfo off, legacy
   packaging, localhost dev-IP pin, ML Kit → ZXing 3.5.3 (TRY_HARDER,
