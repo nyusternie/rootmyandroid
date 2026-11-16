@@ -190,6 +190,11 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    enter git history). (Owner ruling 2026-11-10: "I DO NOT WANT ANY
    CREDENTIALS STORED HERE — EVERYTHING SHOULD STAY ON blackhost"; first
    application: docs/HANDOFF-2026-11-10-bootimg-agent-token-storage.md.)
+12. **Every command timeout ≤ 60 s; poll in tight bursts; never block on
+   long waits; check whether a thing already completed before re-running
+   it.** Sustained transfers through this host are broken (docs/HANDOFF.md
+   §0) — do not retry them; use the healthy legs (blackhost, the phone's
+   own HTTPS). (Owner ruling 2026-11-15/16, re-enforced 2026-11-16.)
 
 ## Web SEO (live)
 
@@ -362,6 +367,56 @@ binding rules are:
 - Device scanning, bootloader/unlock detection, and root-method selection are
   the free core; advanced features (automated flashing, backups, fleet
   management) are candidates for the paid tier — still to be defined.
+
+## Android app (live) — QR scanner + F-Droid
+
+`apps/android` (`com.rootmyandroid`, RN 0.88) — the phone app. CI:
+`.github/workflows/android.yml` — two flavors since 2026-11-15 (`fdroid`
+and `appstore`); release APKs land as assets on tag `android-apk`.
+
+- **QR scanner VERIFIED on redfin (Pixel 5, 2026-11-16), fdroid build
+  0ddbe5e:** the manual TextureView surface hand-off (commit 5389c36)
+  ends the CameraX 5000 ms session-configure stall inside the RN Modal —
+  logcat tag `QrScanView`: `surface texture available` → `camera bound
+  (back, preview+analysis, manual surface)` → `preview surface delivered
+  1600x1200` → `frames=N` ticking ~15 fps, zero stalls. Live decode ×2:
+  a real pairing URL (account digits redacted per rule 3a) and a
+  synthetic test QR (`https://rootmyandroid.com/qr-test`). PGM
+  forensics: the analyzer dumps the latest ANALYZED luminance array to
+  `/sdcard/Android/data/com.rootmyandroid/files/qr-frame.pgm` every ~300
+  frames (~20 s); the pulled frame (480x640) decodes host-side (PIL +
+  zxing-cpp) to the same real pairing URL — the camera→analysis-buffer
+  →ZXing pipeline is proven at pixel level. Fallback preserved: the 6 s
+  watchdog still rebinds analysis-only if the texture never arrives
+  (decode survives, preview stays black). Test-QR discipline: black-on-
+  white PNG only (`qrcode` lib) — terminal ASCII QR renders INVERTED on
+  dark terminals and the Java ZXing port cannot decode it.
+- **F-Droid Phase 1 COMPLETE (commits 54f0cd3…0ddbe5e, all CI-green):**
+  product flavors `fdroid`/`appstore`, dependenciesInfo off, legacy
+  packaging, localhost dev-IP pin, ML Kit → ZXing 3.5.3 (TRY_HARDER,
+  POSSIBLE_FORMATS QR-only, decode+reset per frame on a single-thread
+  executor), `IS_FDROID_BUILD` from `./build-flavor` + metro redirect to
+  `./build-flavor.fdroid.ts` (RN 0.88 argv carries the flavor in the
+  bundle-output PATH, not the task name — commit 1214c1d). fdroid UI
+  gating dump-verified on device (0 Guru chips, everything-free copy, no
+  billing). fdroid asset sha256 7aa3a1d2…beaf4d02; appstore asset sha256
+  e6880a38…d4184cf (both verified on-device). Kotlin gotcha (CI failure
+  43790441412): properties initialize in declaration order — a listener
+  consumed by a `val view = X().also{}` must be declared BEFORE it.
+- **APK transfer traps (measured 2026-11-16):** the host's wifi eats
+  sustained transfers (docs/HANDOFF.md §0) — do NOT move release APKs
+  through it (a 17 MB download there is a half-day trap; measured
+  streams die or trickle). Plain TCP phone→VPS is filtered by the
+  phone's network (nc to :48519 cut at exactly 16 KB; plaintext :443 at
+  0 KB), but real TLS to GitHub from the PHONE is fast (17 MB in
+  seconds). Working path: `adb shell am start -a
+  android.intent.action.VIEW -d <release-asset-URL>` → Chrome downloads
+  → on-device `sha256sum` must match the release → `cp` to a paren-free
+  path (the device shell chokes on unquoted parens) → `pm install -r`.
+  Chrome's APK safety dialog appeared on the first download and
+  auto-continued on the immediate retry. Both flavors share the same
+  applicationId + signature — `pm install -r` swaps either over the
+  other (verified both directions 2026-11-16).
 
 ## Rootz app (live)
 
