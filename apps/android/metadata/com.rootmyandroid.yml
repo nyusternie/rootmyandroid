@@ -89,7 +89,7 @@ Builds:
     # FULL 40-char hash, not the tag. This commit's build must be
     # CI-verified byte-identical to the hosted reference binary (Phase 2
     # two-path proof on blackhost, docs/HANDOFF.md §8).
-    commit: <<FILL-AT-RELEASE: full 40-hex commit hash>>
+    commit: FILL-AT-RELEASE-full-40-hex-commit-hash
     # `subdir` is the MODULE directory (…/android/app), not the Gradle
     # project root: fdroidserver roots its default APK glob at
     # `<root_dir>/build/outputs/apk/<flavor>/release`, which is exactly

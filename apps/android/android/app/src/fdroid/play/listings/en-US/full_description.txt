@@ -1,0 +1,23 @@
+Root My Android scans your phone and tells you exactly what stands between you and root — read-only, right on the device, no flashing, no scripts, no account required for the scan itself.
+
+WHAT IT DOES
+
+■ Device scan
+One tap collects your device's real properties (build fingerprint, bootloader and verification state, SELinux mode and more, read from the system) and the root-side facts that matter: where `su` exists on the device and which root-management packages are installed. The rules engine turns those facts into a concrete rooting and upgrade plan for YOUR device. Values your device does not report are shown as "unknown" — the app never guesses.
+
+■ Backup audit
+A second, equally read-only audit reads, from the operating system itself, whether each installed app allows its data to be included in Android's auto-backup — and summarizes how much of your backup set is actually participating, with the excluded apps listed. Backup clouds silently skipping your messenger or your authenticator is the classic data-loss surprise; this audit makes it visible before you need the backup.
+
+■ Pair with the web
+Scan a QR code from the website to pair the app with your rootmyandroid.com account. Scanning is native (CameraX) and decoding runs locally with the Apache-licensed ZXing library — the QR content never leaves the device unprocessed.
+
+■ Account sync, your terms
+Accounts are a number and nothing else — no email, no name, no tracking identity. When you choose to save a scan report, it syncs to that account number; device analysis itself works fully offline.
+
+DESIGNED FOR SAFETY
+
+The scanner is strictly read-only: it never flashes, never writes, never requests root for itself, and never touches other apps' data.
+
+Free and open source (MIT). The F-Droid build contains no billing UI — every feature listed here is free.
+
+Anti-feature note (NonFreeNet): the app talks to https://rootmyandroid.com/v1 for account and report sync, and relay.rootmyandroid.com for remote shell sessions. The service is not free software and cannot be self-hosted from within the app; the scanner and audit work without it.

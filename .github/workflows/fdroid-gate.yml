@@ -1,0 +1,74 @@
+# .github/workflows/fdroid-gate.yml
+#
+# F-Droid recipe gate (docs/FDROID-SUBMISSION-PLAN.md §2 item 8, sidecoin
+# gate 4): every change to the maintainer recipe must pass fdroidserver's
+# own `fdroid rewritemeta` — a schema-valid, canonical-form recipe — and
+# the parsed content must be UNCHANGED by the rewrite (comments are not
+# compared; they are for humans and fdroiddata strips them by design).
+#
+# This catches, before any submission round can cost one:
+#   - YAML syntax errors and unknown/misspelled metadata fields,
+#   - formatting drift that would make the fdroiddata copy diff against
+#     what we tested,
+#   - the placeholder fill state (a draft with an unfilled commit:
+#     still parses and rewrites — submission readiness is Phase 4's
+#     human gate, per docs/HANDOFF.md §8).
+#
+# fdroidserver is installed fresh into a throwaway venv per run (the
+# blackhost runner is a shared long-lived box; a global install would pin
+# the toolchain). Verified working 2026-11-16 (fdroidserver 2.4.5).
+
+name: F-Droid recipe gate
+
+on:
+  push:
+    paths:
+      - 'apps/android/metadata/**'
+  pull_request:
+    paths:
+      - 'apps/android/metadata/**'
+  workflow_dispatch: {}
+
+jobs:
+  rewritemeta:
+    runs-on: [self-hosted, blackhost]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install fdroidserver into a throwaway venv
+        run: |
+          python3 -m venv /tmp/fdroid-gate-venv
+          /tmp/fdroid-gate-venv/bin/pip install --quiet fdroidserver
+
+      - name: fdroid rewritemeta — must succeed and keep parsed content identical
+        run: |
+          set -e
+          DATA=/tmp/fdroiddata-gate
+          rm -rf "$DATA"
+          mkdir -p "$DATA/metadata"
+          cp apps/android/metadata/com.rootmyandroid.yml "$DATA/metadata/"
+          /tmp/fdroid-gate-venv/bin/python - <<'EOF'
+          import yaml, pathlib
+          p = pathlib.Path("apps/android/metadata/com.rootmyandroid.yml")
+          parsed = yaml.safe_load(p.read_text())
+          pathlib.Path("/tmp/recipe-parsed-before.json").write_text(
+              __import__("json").dumps(parsed, sort_keys=True, default=str))
+          EOF
+          FDROIDDATA="$DATA" /tmp/fdroid-gate-venv/bin/fdroid rewritemeta com.rootmyandroid
+          /tmp/fdroid-gate-venv/bin/python - <<'EOF'
+          import json, yaml, pathlib, sys
+          before = json.loads(pathlib.Path("/tmp/recipe-parsed-before.json").read_text())
+          after = yaml.safe_load(
+              pathlib.Path("/tmp/fdroiddata-gate/metadata/com.rootmyandroid.yml").read_text())
+          if before != after:
+              print("FAIL: fdroid rewritemeta changed the parsed recipe content")
+              print("before:", json.dumps(before, sort_keys=True, indent=1)[:2000])
+              print("after :", json.dumps(after, sort_keys=True, indent=1)[:2000])
+              sys.exit(1)
+          print("PASS: recipe is canonical and rewritemeta-stable")
+          EOF
+
+      - name: Clean up venv
+        if: always()
+        run: rm -rf /tmp/fdroid-gate-venv /tmp/fdroiddata-gate

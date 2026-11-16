@@ -5,7 +5,8 @@ name: Android app build
 # com.rootmyandroid) as a RELEASE APK for on-device UI/UX iteration on the
 # USB-attached Pixel 5 (owner ruling 2026-11-13: the physical-device deploy
 # target follows the active workstream — see .agents/skills/build/SKILL.md).
-# Manual dispatch only. Signed with the upload keystore that is generated
+# Manual dispatch + v-tag pushes (see `on:` below). Signed with the upload
+# keystore that is generated
 # ONE-TIME inside the CI run into /home/gh-runner/secrets/ on blackhost
 # (owner ruling 2026-11-13 — the v1.0.0 upload key, CN=RootMyAndroid Upload,
 # cert SHA-256 0f3d92ee…, could not be located on any sanctioned credential
@@ -18,8 +19,18 @@ name: Android app build
 # updating (different key = signature mismatch).
 # Install with: adb install -r rootmyandroid-release.apk
 
+# Two triggers (F-Droid Phase 4, docs/FDROID-SUBMISSION-PLAN.md):
+#   • workflow_dispatch — the rolling iteration build (android-apk prerelease)
+#   • v-tag push — the RELEASE build, published under the EXACT asset name
+#     `app-fdroid-release.apk` that the recipe's `Binaries:` resolves via
+#     %v (github release download URL). F-Droid's pipeline 404s without it
+#     (sidecoin lesson: recipe-before-release costs a full CI round), so the
+#     asset MUST exist before the fdroiddata MR is pushed.
 on:
   workflow_dispatch: {}
+  push:
+    tags:
+      - 'v[0-9]+.*'
 
 permissions:
   contents: write # rolling prerelease asset upload
@@ -164,6 +175,7 @@ jobs:
           cp apps/android/android/app/build/outputs/apk/fdroid/release/app-fdroid-release.apk rootmyandroid-fdroid-release.apk
 
       - name: Publish APK as rolling prerelease
+        if: github.ref_type == 'branch'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: android-apk
@@ -173,3 +185,19 @@ jobs:
           files: |
             rootmyandroid-release.apk
             rootmyandroid-fdroid-release.apk
+
+      # Tag runs publish the F-Droid release asset under its EXACT name
+      # (the recipe resolves Binaries: as
+      # releases/download/v%v/app-fdroid-release.apk — a different name or a
+      # `file#label` rename would 404 fdroidserver's pipeline). The store
+      # build ships alongside for sideload users.
+      - name: Publish release assets (v-tag)
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Root My Android (Android edition) ${{ github.ref_name }}
+          body: 'Release build of the Android edition (package `com.rootmyandroid`), built from ${{ github.sha }} on blackhost, signed with our upload key (cert sha256 1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886bceca). app-fdroid-release.apk is the byte-reproducible F-Droid reference binary (docs/FDROID-SUBMISSION-PLAN.md Phase 2).'
+          files: |
+            apps/android/android/app/build/outputs/apk/fdroid/release/app-fdroid-release.apk
+            apps/android/android/app/build/outputs/apk/appstore/release/app-appstore-release.apk
