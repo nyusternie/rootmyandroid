@@ -241,10 +241,15 @@ bin
 # Astro
 .astro
 
-# Android release signing material (never commit)
+# Android release signing material (never commit). NOTE:
+# apps/android/android/gradle.properties IS committed (F-Droid clean-checkout
+# builds need it — without it AGP's built-in Kotlin collides with the
+# standalone plugin and evaluation fails). It carries ONLY non-secret base
+# values; the ROOTMYANDROID_UPLOAD_* signing properties are appended by CI
+# from the blackhost-local secrets file (.github/workflows/android.yml) and
+# never enter the tree.
 .keystore/
 apps/*/android/app/release.keystore
-apps/*/android/gradle.properties
 
 # Vendored hermes-compiler tarball is intentional (slow registry workaround)
 !.vendor/*.tgz

@@ -104,12 +104,14 @@ jobs:
             chmod 600 "$KS" "$PROPS"
           fi
 
-      # gradle.properties is gitignored (it can carry local, machine-specific
-      # and secret values), so the runner writes a deterministic one. The
-      # ROOTMYANDROID_UPLOAD_* properties come from the blackhost-local
-      # secrets file when present; otherwise the committed, PUBLIC
-      # debug.keystore is used (the same credentials the build.gradle debug
-      # block already carries in plaintext) — iteration fallback only.
+      # The base gradle.properties is COMMITTED (F-Droid clean-checkout
+      # builds need it; see apps/android/android/gradle.properties). The
+      # runner still rewrites it with the identical base so local drift can
+      # never leak into CI, then appends the ROOTMYANDROID_UPLOAD_* signing
+      # properties from the blackhost-local secrets file when present;
+      # otherwise the committed, PUBLIC debug.keystore is used (the same
+      # credentials the build.gradle debug block already carries in
+      # plaintext) — iteration fallback only.
       - name: Write gradle.properties
         run: |
           cat > apps/android/android/gradle.properties <<'EOF'
