@@ -46,6 +46,28 @@ class QrScanView(context: Context) : FrameLayout(context) {
   companion object {
     private const val TAG = "QrScanView"
     private const val WATCHDOG_MS = 6000L
+
+    /** Pure luminance-array rotation, 90° clockwise. Top-level so it is
+     *  unit-testable without Android classes. */
+    fun rotate90(src: ByteArray, width: Int, height: Int): ByteArray {
+      val dst = ByteArray(src.size)
+      for (row in 0 until height) {
+        for (col in 0 until width) {
+          dst[col * height + (height - 1 - row)] = src[row * width + col]
+        }
+      }
+      return dst
+    }
+
+    /** Pure luminance-array rotation, 180°. */
+    fun rotate180(src: ByteArray, width: Int, height: Int): ByteArray {
+      val dst = ByteArray(src.size)
+      val n = src.size
+      for (i in 0 until n) {
+        dst[i] = src[n - 1 - i]
+      }
+      return dst
+    }
   }
 
   // COMPATIBLE (TextureView) is REQUIRED here: default PERFORMANCE mode
@@ -136,7 +158,20 @@ class QrScanView(context: Context) : FrameLayout(context) {
               buffer.position(row * rowStride)
               buffer.get(yBytes, row * width, width)
             }
-            val source = PlanarYUVLuminanceSource(yBytes, width, height, 0, 0, width, height, false)
+            // ImageAnalysis buffers arrive in SENSOR orientation; CameraX
+            // rotates the PREVIEW stream for display but does NOT rotate
+            // analysis buffers. Without this compensation a portrait-held
+            // phone (redfin: rotationDegrees=90) feeds ZXing a sideways
+            // QR that it can never decode (measured 2026-11-15: frames
+            // streamed, zero decodes, no exceptions).
+            val rotation = proxy.imageInfo.rotationDegrees
+            val (rotated, rw, rh) = when (rotation) {
+              90 -> Triple(rotate90(yBytes, width, height), height, width)
+              180 -> Triple(rotate180(yBytes, width, height), width, height)
+              270 -> Triple(rotate90(rotate180(yBytes, width, height), width, height), height, width)
+              else -> Triple(yBytes, width, height)
+            }
+            val source = PlanarYUVLuminanceSource(rotated, rw, rh, 0, 0, rw, rh, false)
             val result =
               try {
                 // decode() sets hints then decodes; reset() per frame per
