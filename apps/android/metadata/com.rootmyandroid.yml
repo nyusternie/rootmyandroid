@@ -1,0 +1,208 @@
+# apps/android/metadata/com.rootmyandroid.yml
+#
+# F-Droid metadata draft for the Root My Android phone app.
+#
+# STATUS: DRAFT — not yet submitted. Kept in-repo so the recipe stays in sync
+# with the actual build (versionCode, flavor, and the FOSS-only guarantee),
+# exactly like the sidecoin precedent this file is modeled on
+# (sidecoin: apps/mobile/metadata/app.sidecoin.yml, MR fdroiddata!50457).
+#
+# WHY NOT `fdroid/fdroiddata` YET:
+#   Phase 2 of docs/FDROID-SUBMISSION-PLAN.md must first prove the build is
+#   byte-reproducible from a clean checkout (two-path build + apksigcopier
+#   compare + zip-entry diff). The `fdroid` flavor's FOSS purity is already
+#   verified: ML Kit was replaced with ZXing core (Apache-2.0) in
+#   commit 54f0cd3 — QR scanning is our own CameraX + ZXing implementation —
+#   and the flavor's UI carries no billing chip, no PRO upsell, everything
+#   free (dump-verified on a Pixel 5, 2026-11-16).
+#
+# Before submitting, confirm:
+#   1. `pnpm install` is up to date and pnpm-lock.yaml is committed.
+#   2. `./gradlew :app:assembleFdroidRelease` succeeds from a clean checkout
+#      WITHOUT signing properties (commit 179791d made the release signing
+#      conditional — a props-less checkout yields an UNSIGNED APK instead of
+#      a configuration crash).
+#   3. The `commit:` below is a FULL 40-char hash (Build_Metadata_Reference:
+#      "Don't use branch name or tag name. The full commit hash should be
+#      used.").
+#   4. apps/android/android/app/src/fdroid/play/listings/en-US/graphics/icon/
+#      icon.png exists (512x512). F-Droid reads store metadata from the
+#      Triple-T layout at src/<flavor>/play/ in the app module
+#      (update.py copy_triple_t_store_metadata), not from fastlane/metadata/.
+#
+# SIGNING — whose key ends up on the shipped APK (route (a), upstream-signed):
+#   The main F-Droid repo re-signs with its own per-app key, but that is NOT
+#   mandatory. F-Droid can publish an APK carrying the UPSTREAM developer's
+#   signature: with `Binaries:` + `AllowedAPKSigningKeys:`, publish.py
+#   compares F-Droid's own build against our hosted binary and, only on a
+#   byte match, ships OUR apk. If verification ever fails, publish is
+#   SKIPPED, not silently re-signed — an upstream mismatch can never ship a
+#   wrong APK.
+#   Our upload key lives ONLY on blackhost
+#   (/home/gh-runner/secrets/rootmyandroid-upload.keystore — repo rule 11).
+#
+# VERSIONING — versionCode is 9-digit YYYYMMDD (2026-11-16 -> 20261116).
+#   Date scheme is monotonically increasing (sidecoin's proven scheme);
+#   versionCode must INCREASE with every release — never ship twice in one
+#   day without a suffix, and keep the build.gradle defaultConfig in sync
+#   with the single Builds block below. (Repo rule 10: date-based
+#   versioning, universal — vYY.M.D versionName + YYYYMMDD versionCode.)
+
+Categories:
+  - Security
+  - System
+
+License: MIT
+
+AuthorName: Root My Android contributors
+
+SourceCode: https://github.com/nyusternie/rootmyandroid
+
+IssueTracker: https://github.com/nyusternie/rootmyandroid/issues
+
+AutoName: Root My Android
+
+# The app is a pnpm workspace member. F-Droid builds from the repo root so
+# the workspace symlinks (rootmyandroid-shared) resolve.
+RepoType: git
+Repo: https://github.com/nyusternie/rootmyandroid.git
+
+# Hosted reference binary: the APK we signed with our own release key, from
+# the SAME commit as the build below, so publish.py (route (a)) can verify
+# F-Droid's source build byte-for-byte against it and then SHIP OURS. %v
+# resolves to versionName, matching the v<YY.M.D> tag/release. GitHub
+# returns a 302 redirect to the asset; fdroidserver's net.download_file
+# follows it. Every tagged release must upload the APK with the EXACT
+# filename app-fdroid-release.apk (gh release upload, not `file#label`).
+# The rolling CI asset (tag android-apk, name rootmyandroid-fdroid-release.apk)
+# is NOT the F-Droid asset — do not point Binaries at it.
+Binaries:
+  https://github.com/nyusternie/rootmyandroid/releases/download/v%v/app-fdroid-release.apk
+
+Builds:
+  # versionCode / versionName MUST match apps/android/android/app/build.gradle.
+  # If this drifts, F-Droid will build a different APK than the one tested.
+  # Keep ONLY the latest block: F-Droid builds and publishes every entry
+  # (sidecoin's stale-second-block lesson, MR fdroiddata!50457).
+  - versionName: 26.11.16
+    versionCode: 20261116
+    # FULL 40-char hash, not the tag. This commit's build must be
+    # CI-verified byte-identical to the hosted reference binary (Phase 2
+    # two-path proof on blackhost, docs/HANDOFF.md §8).
+    commit: <<FILL-AT-RELEASE: full 40-hex commit hash>>
+    # `subdir` is the MODULE directory (…/android/app), not the Gradle
+    # project root: fdroidserver roots its default APK glob at
+    # `<root_dir>/build/outputs/apk/<flavor>/release`, which is exactly
+    # where the RN app module writes — no `output:` line needed (sidecoin
+    # lesson: a project-root subdir with an explicit output glob failed
+    # with "Failed to find any output apks").
+    subdir: apps/android/android/app
+    # `fdroid` is the FOSS flavor (IS_FDROID_BUILD=true via ./build-flavor;
+    # metro bundles ./build-flavor.fdroid.ts — no billing chip, no PRO
+    # copy, everything free; verified on device 2026-11-16).
+    gradle:
+      - fdroid
+    # The buildserver VM runs Debian trixie, which no longer ships a JDK 17.
+    # Gradle needs one: the React Native Gradle plugin forks a JVM with
+    # `languageVersion=17`. Pull it from bookworm — the approach the merged
+    # React Native recipe dev.djara.wafrn_rn takes on the same buildserver.
+    #
+    # Three things are provisioned here:
+    # 1. JDK 17 from bookworm, selected via update-java-alternatives.
+    # 2. Node + npm from Debian forky (testing) — the buildserver has no
+    #    node/npm of its own; forky nodejs (>= 24) satisfies the repo's
+    #    engines.node (>= 18.17). No version pin: forky tracks testing.
+    # 3. pnpm — pinned to the EXACT version in the repo's root
+    #    `packageManager` (pnpm@11.21.0), installed with `npm install -g`.
+    #    `corepack enable` does NOT work: fdroidserver runs `init:` as an
+    #    unprivileged user and corepack tries to write shims to /usr/bin
+    #    (EACCES). Same approach as de.volksverpetzer.app.yml.
+    #
+    # The install runs in `init:`, which fdroidserver executes in
+    # prepare_source() immediately after checkout — BEFORE rm:/prebuild:
+    # and before the source scanner. That ordering is what makes
+    # `scandelete: node_modules` safe.
+    #
+    # `init:` runs with cwd = root_dir = build_dir/subdir (inside
+    # apps/android/android/app), so its `cd` targets are shifted one level
+    # deeper than the gradle project root: `cd ../../../..` climbs
+    # app -> android -> android -> apps -> repo root, and the last line
+    # returns to the module dir where gradle is invoked.
+    #
+    # No CI=true guard is needed: the workspace declares NO postinstall
+    # scripts (verified 2026-11-16 across package.json + all workspace
+    # members). The repo pins every dependency EXACT (repo rule 8), so the
+    # frozen lockfile resolves deterministically.
+    sudo:
+      - apt-get update
+      - echo "deb https://deb.debian.org/debian forky main" > /etc/apt/sources.list.d/forky.list
+      - apt-get update
+      - apt-get install -y -t forky nodejs npm
+      - npm install -g pnpm@11.21.0
+      - echo "deb https://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/bookworm.list
+      - apt-get update
+      - apt-get install -y -t bookworm openjdk-17-jdk-headless
+      - update-java-alternatives -s java-1.17.0-openjdk-amd64
+    init:
+      - cd ../../../..
+      - pnpm install --frozen-lockfile
+      - cd apps/android/android/app
+    ndk: 27.1.12297006
+    # node_modules is created by the `init:` pnpm install, so it cannot be
+    # named in `rm:` — fdroidserver applies `rm:` AFTER `init:` and
+    # hard-fails on a glob that matches nothing (common.py getpaths_map).
+    # The checkout's `git clean -dffx` already yields a pristine tree;
+    # scandelete covers the nonfree-source scan of the installed modules.
+    scandelete:
+      - node_modules
+    # Some React Native modules declare a LOCAL maven repo with a Gradle
+    # expression (url "$rootDir/../node_modules/...android"). fdroidserver's
+    # scanner treats any maven url matching MAVEN_URL_REGEX that is not a
+    # known remote as an "unknown maven repo", and because
+    # `scandelete: node_modules` also matches these paths it DELETES the
+    # whole build.gradle — autolinking then fails at settings.gradle.
+    # `scanignore` is checked BEFORE scandelete in handleproblem, so these
+    # entries keep the files in the tree. NOTE: this repo sets
+    # `nodeLinker: hoisted` in pnpm-workspace.yaml (RN tooling cannot
+    # traverse pnpm's symlinked layout), so unlike sidecoin these are
+    # PLAIN node_modules/… paths — no `.pnpm/<hash>` globs needed.
+    # List verified against the real install (2026-11-16).
+    # Verified against the real 9ed4c0c install tree (blackhost two-path
+    # build, 2026-11-16): ONLY react-native's ReactAndroid/publish.gradle
+    # carries local maven-url expressions (`url
+    # "$rootDir/../node_modules/react-native/android"`, lines 125+134).
+    # react-native-safe-area-context and react-native-svg are CLEAN (no url
+    # lines). RN 0.88 ships NO hermesc binary in node_modules (sdks/ has
+    # only hermes-engine metadata; the bundle task needs no hermesc from
+    # node_modules) — no hermesc scanignore entry required, unlike
+    # sidecoin's RN 0.7x tree. Final confirmation happens at the first
+    # fdroid CI build (Phase 4): any further flagged path gets added here.
+    # Path is relative to the checkout root (build_dir), per fdroidserver's
+    # scanner; the workspace hoists react-native at the root and the app
+    # module's node_modules entries are links into it.
+    scanignore:
+      - apps/android/node_modules/react-native/ReactAndroid/publish.gradle
+
+# The ONLY signer allowed to have produced the shipped APK. If an APK in the
+# repo carries any other signature, fdroid update drops it. This is our
+# release key's X.509 SHA-256 (apksigner verify --print-certs
+# app-fdroid-release.apk; cert subject CN=Root My Android Upload,
+# OU=Engineering, O=Root My Android, RSA 4096). Field must match
+# ^[a-fA-F0-9]{64}$, lowercase (metadata.py FieldValidator).
+AllowedAPKSigningKeys:
+  1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886bceca
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: 26.11.10
+CurrentVersionCode: 20261110
+
+# NonFreeNet: the app talks to hosted services that are not free software
+# and cannot be self-hosted from within the app:
+#   • https://rootmyandroid.com/v1   (account / audit / pairing API)
+#   • wss://relay.rootmyandroid.com  (relay tunnel for wireless ADB)
+# This is an anti-feature, not a blocker. The reason is carried in the
+# localized-string form below (linsui's "Add the reasons." standard).
+AntiFeatures:
+  NonFreeNet:
+    en-US: Talks to hosted rootmyandroid.com and relay.rootmyandroid.com services
