@@ -172,6 +172,19 @@ class QrScanView(context: Context) : FrameLayout(context) {
               else -> Triple(yBytes, width, height)
             }
             val source = PlanarYUVLuminanceSource(rotated, rw, rh, 0, 0, rw, rh, false)
+            // Frame forensics (over adb): overwrite the latest ANALYZED
+            // luminance array as a PGM so the host can decode what the
+            // camera actually delivered. External files dir → pull with:
+            // adb pull /sdcard/Android/data/com.rootmyandroid/files/qr-frame.pgm
+            if (frameCount % 300L == 0L) {
+              try {
+                java.io.File(context.getExternalFilesDir(null), "qr-frame.pgm").writeBytes(
+                  "P5\n$rw $rh\n255\n".toByteArray() + rotated,
+                )
+              } catch (_: Exception) {
+                // diagnostics only — never break the scan loop
+              }
+            }
             val result =
               try {
                 // decode() sets hints then decodes; reset() per frame per
