@@ -18,4 +18,69 @@ buildscript {
     }
 }
 
+// ─── Reproducibility flags (docs/FDROID-SUBMISSION-PLAN.md §2, Phase 2) ────
+// Measured 2026-11-16: building the same commit from two different absolute
+// paths produced byte-different libappmodules.so, libreact_codegen_rnsvg.so
+// and libreact_codegen_safeareacontext.so (both ABIs) — CMake-compiled
+// objects embed absolute source paths through __FILE__, and the linker's
+// content-derived ELF build-id then differs too. That breaks F-Droid's
+// byte-compare against our hosted binary (route (a) publishing).
+//
+// F-Droid's own guide (docs/Reproducible_Builds) prescribes
+// -ffile-prefix-map for exactly this. It must reach every Android
+// subproject, not just :app — but plain cppFlags on :app are DISCARDED:
+// ReactPlugin registers its own finalizeDsl callback to configure the
+// new-architecture native build and AGP runs finalizeDsl callbacks after
+// the android {} block is evaluated, so only callbacks registered later
+// win. Therefore:
+//   • library subprojects: flags via plugins.withId("com.android.library")
+//     (fires while the plugin is applied; the module's later
+//     cppFlags/cFlags calls APPEND, so both sets reach CMake), and
+//   • :app: flags from androidComponents.finalizeDsl in app/build.gradle,
+//     registered after the React plugin — verified working there by the
+//     react_native_dev_server_ip pin that already lives in the same
+//     callback.
+//
+// Two halves, both required (sidecoin precedent, their commits d9700ff +
+// 762805a):
+//   1. -ffile-prefix-map rewrites fixed leading prefixes (repo root,
+//      android root, gradle user home) so __FILE__-derived strings become
+//      path-independent.
+//   2. -ffile-prefix-map CANNOT reach the AGP-derived .cxx/<hash> directory
+//      (variable by checkout path) that lands in DWARF as DW_AT_comp_dir;
+//      that varying debug data feeds -Wl,--build-id=sha1 and
+//      .note.gnu.build-id survives stripping. -Wl,--build-id=none drops the
+//      content-derived note entirely.
+// ${gradle.gradleUserHomeDir} resolves at configure time, so the third map
+// is correct on any machine (F-Droid builds as a different user in a
+// different home). The flags are LINKER flags for the build-id half
+// (cmake.arguments → CMAKE_*_LINKER_FLAGS) and compile flags for the
+// prefix-map half (cppFlags/cFlags).
+def _reproRepoRoot = rootDir.parentFile?.parentFile?.parentFile
+ext.reproCmakeFlags = [
+    "-ffile-prefix-map=${rootDir}=.",
+    "-ffile-prefix-map=${_reproRepoRoot}=.",
+    "-ffile-prefix-map=${gradle.gradleUserHomeDir}=.gradle-home",
+]
+ext.reproCmakeArguments = [
+    "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--build-id=none",
+    "-DCMAKE_EXE_LINKER_FLAGS=-Wl,--build-id=none",
+    "-DCMAKE_MODULE_LINKER_FLAGS=-Wl,--build-id=none",
+]
+def _reproFlags = ext.reproCmakeFlags
+def _reproArgs = ext.reproCmakeArguments
+
+subprojects { sp ->
+    def applyReproFlags = {
+        def androidExt = sp.extensions.findByName("android")
+        if (androidExt != null) {
+            def cmake = androidExt.defaultConfig.externalNativeBuild.cmake
+            cmake.cppFlags(*_reproFlags)
+            cmake.cFlags(*_reproFlags)
+            cmake.arguments(*_reproArgs)
+        }
+    }
+    sp.plugins.withId("com.android.library") { applyReproFlags() }
+}
+
 apply plugin: "com.facebook.react.rootproject"

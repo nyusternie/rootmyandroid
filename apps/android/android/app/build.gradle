@@ -177,6 +177,18 @@ android {
 androidComponents {
     finalizeDsl { ext ->
         ext.defaultConfig.resValue("string", "react_native_dev_server_ip", "localhost")
+        // Reproducibility CMake flags (root build.gradle defines them once):
+        // :app compiles libappmodules.so plus the new-architecture codegen
+        // libraries (libreact_codegen_rnsvg.so,
+        // libreact_codegen_safeareacontext.so) — the measured two-path
+        // byte-diff on 2026-11-16. This callback runs AFTER ReactPlugin's
+        // own finalizeDsl (the React plugin is applied earlier in this
+        // file), so the flags survive — the same ordering the
+        // react_native_dev_server_ip pin above already relies on.
+        def cmake = ext.defaultConfig.externalNativeBuild.cmake
+        cmake.cppFlags(*rootProject.ext.reproCmakeFlags)
+        cmake.cFlags(*rootProject.ext.reproCmakeFlags)
+        cmake.arguments(*rootProject.ext.reproCmakeArguments)
     }
 }
 
