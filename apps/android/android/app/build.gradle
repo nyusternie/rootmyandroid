@@ -94,11 +94,22 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // Conditional release signing (docs/HANDOFF.md §8 — F-Droid
+        // reproducibility requirement): a clean checkout WITHOUT the
+        // ROOTMYANDROID_UPLOAD_* properties must still build, emitting an
+        // UNSIGNED release APK (the byte-compare baseline F-Droid
+        // reproducibility needs). The properties are injected by CI
+        // (.github/workflows/android.yml) from the blackhost-local secrets
+        // file — or the public debug fallback — so CI behavior is
+        // unchanged. Sidecoin precedent: their app-level build.gradle
+        // carries no release signing block at all (unsigned by default).
         release {
-            storeFile file(ROOTMYANDROID_UPLOAD_STORE_FILE)
-            storePassword ROOTMYANDROID_UPLOAD_STORE_PASSWORD
-            keyAlias ROOTMYANDROID_UPLOAD_KEY_ALIAS
-            keyPassword ROOTMYANDROID_UPLOAD_KEY_PASSWORD
+            if (project.hasProperty('ROOTMYANDROID_UPLOAD_STORE_FILE')) {
+                storeFile file(ROOTMYANDROID_UPLOAD_STORE_FILE)
+                storePassword ROOTMYANDROID_UPLOAD_STORE_PASSWORD
+                keyAlias ROOTMYANDROID_UPLOAD_KEY_ALIAS
+                keyPassword ROOTMYANDROID_UPLOAD_KEY_PASSWORD
+            }
         }
     }
     buildTypes {
@@ -106,7 +117,10 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            signingConfig signingConfigs.release
+            if (project.hasProperty('ROOTMYANDROID_UPLOAD_STORE_FILE')) {
+                signingConfig signingConfigs.release
+            }
+            // else: signingConfig stays null → unsigned APK
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
