@@ -62,6 +62,18 @@ downloads reset at ~8 MB; scp/rsync trickle at ~20-40 KB/s. This is why
 path), or avoid the host for file movement entirely. The phone and the
 runner are both healthy. Do NOT debug the code because a transfer failed.
 
+**OWNER RULING 2026-11-17: THE BROWSER-DOWNLOAD APK PATH IS RETIRED.**
+No more `am start -a VIEW` + Chrome-download installs ("we cannot rely on
+the very hacky browser download anymore"). The ADB path is:
+
+- `adb push <apk> /data/local/tmp/` (USB — does NOT cross the broken wifi),
+  then `pm install -r /data/local/tmp/<apk>`.
+- **pm CANNOT read /sdcard**: `pm install` from /sdcard fails with an AVC
+  denial — system_server has no read on `fuse` (measured 2026-11-17: "Use
+  a file under /data/local/tmp/"). ALWAYS stage under /data/local/tmp/.
+- On-device sha256 (`adb shell sha256sum`) gates the install, same as
+  before. Zero network involved end-to-end.
+
 ## 1. Where things stand
 
 Workstream: verify the Android app's QR scanner (ZXing swap, F-Droid
@@ -123,6 +135,36 @@ built by run `43792956330` (commit `0ddbe5e`), sha256
   (`app.evonext` etc. mean the owner is using it — do NOT fight it).
 
 ## 5. Remaining checklist (in order)
+
+**STATUS UPDATE 2026-11-17 (later session):** §5 items 1–2 are DONE and
+superseded — the fdroid APK was installed via adb (`/data/local/tmp/`
+staging; see §0 ruling) and the QR scanner + full walkthrough were
+verified LIVE on the device:
+
+- **Walkthrough of the fdroid listings (gate 5) PASSED on-device**:
+  real scan (Pixel 5 (redfin), SDK 34, UP1A.231105.001.B2, bootloader
+  Unlocked w/ raw props, Rooted Yes, `/product/bin/su` + Magisk reported
+  with honest "(heuristic)" labels, integrity derived on-device with its
+  disclaimer); **NO su dialog ever fired on this ROOTED device** (focus
+  stayed on MainActivity — read-only claim verified); backup audit REAL
+  (238 participating / 70 not covered, live from the OS); QR scanner
+  modal opens with live camera; Tools tab renders "Advanced features.
+  Everything is free on this build." and ZERO PRO strings in the whole
+  UI dump; account modal = 16-digit number only. 7 screenshots captured
+  (adb screencap → 9:16 crops → `apps/android/metadata/com.rootmyandroid/en-US/phoneScreenshots/`, commit 2051ee8).
+- **Launcher icon set shipped** (commit 2f5e8ad): derived from the
+  canonical SU hero render (full-body, brand-exact) via committed
+  PIL generator `apps/android/tools/gen-launcher-icons.py` — legacy
+  mipmaps + adaptive icons + 512 listing icons. (The nano-gpt
+  image pipeline is NOT locatable in sanctioned stores this session —
+  canon-derived per brand skill fallback doctrine; owner can swap in a
+  model-generated icon render later.)
+- **fdroid CI gate LIVE and green** (`.github/workflows/fdroid-gate.yml`,
+  run 43926670849): fdroid rewritemeta zero-diff enforced on every
+  recipe change. android.yml now publishes the EXACT asset
+  `app-fdroid-release.apk` on v-tag pushes (Phase 4 dependency).
+- 11-gate checklist ported to `docs/FDROID-CHECKLIST.md` (owner request).
+
 
 1. **Get the 0ddbe5e APK onto the phone.** Fastest paths, host-free:
    - On-device: open Chrome to
