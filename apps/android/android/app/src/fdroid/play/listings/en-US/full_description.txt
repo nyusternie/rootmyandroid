@@ -20,4 +20,4 @@ The scanner is strictly read-only: it never flashes, never writes, never request
 
 Free and open source (MIT). The F-Droid build contains no billing UI — every feature listed here is free.
 
-Anti-feature note (NonFreeNet): the app talks to https://rootmyandroid.com/v1 for account and report sync, and relay.rootmyandroid.com for remote shell sessions. The service is not free software and cannot be self-hosted from within the app; the scanner and audit work without it.
+Anti-feature note (NonFreeNet): the app talks to https://rootmyandroid.com/v1 for account and report sync. The service is not free software and cannot be self-hosted from within the app; the scanner and audit work without it.
