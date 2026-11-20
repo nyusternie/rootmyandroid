@@ -1010,7 +1010,16 @@ function AccountScreen({ accountNumber, onAccountChange }: { accountNumber: stri
   );
 }
 
-type BackupRow = { id: string; device_label?: string | null; kind?: string | null; size_bytes: number; created_at?: string };
+/** Row shape returned by POST /v1/backups/list (measured against the live
+ * API 2026-11-20: created_at, device_label, kind, r2_key, size_bytes — there
+ * is NO `id` field, so the R2 key is the list key). */
+type BackupRow = {
+  r2_key?: string;
+  device_label?: string | null;
+  kind?: string | null;
+  size_bytes: number;
+  created_at?: string;
+};
 
 /**
  * Backups: the payload (the backup-audit snapshot) is serialized and
@@ -1113,8 +1122,8 @@ function BackupsScreen({ accountNumber }: { accountNumber: string }) {
             snapshot and store it on your account.
           </Text>
         ) : (
-          backups.map((b) => (
-            <View key={b.id} className="flex-row items-center py-2">
+          backups.map((b, i) => (
+            <View key={b.r2_key || String(i)} className="flex-row items-center py-2">
               <View className="flex-1">
                 <Text className="text-[15px] font-semibold text-text">
                   {b.device_label || 'This device'}
