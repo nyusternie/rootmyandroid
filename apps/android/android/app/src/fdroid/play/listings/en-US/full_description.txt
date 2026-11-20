@@ -3,16 +3,16 @@ Root My Android scans your phone and tells you exactly what stands between you a
 WHAT IT DOES
 
 ■ Device scan
-One tap collects your device's real properties (build fingerprint, bootloader and verification state, SELinux mode and more, read from the system) and the root-side facts that matter: where `su` exists on the device and which root-management packages are installed. The rules engine turns those facts into a concrete rooting and upgrade plan for YOUR device. Values your device does not report are shown as "unknown" — the app never guesses.
+One tap collects your device's real properties (build fingerprint, bootloader and verification state, SELinux mode and more, read from the system) and the root-side facts that matter: where `su` exists on the device and which root-management packages are installed. The rules engine grades what it finds — bootloader state, root present or absent, integrity — and shows the raw evidence behind every line, so you can see exactly what a rooting decision rests on. Values your device does not report are shown as "unknown" — the app never guesses.
 
 ■ Backup audit
 A second, equally read-only audit reads, from the operating system itself, whether each installed app allows its data to be included in Android's auto-backup — and summarizes how much of your backup set is actually participating, with the excluded apps listed. Backup clouds silently skipping your messenger or your authenticator is the classic data-loss surprise; this audit makes it visible before you need the backup.
 
-■ Pair with the web
-Scan a QR code from the website to pair the app with your rootmyandroid.com account. Scanning is native (CameraX) and decoding runs locally with the Apache-licensed ZXing library — the QR content never leaves the device unprocessed.
+■ QR scanner
+Scan a QR code with the camera. Scanning is native (CameraX) and decoding runs locally with the Apache-licensed ZXing library — the decoded content never leaves the device. Web-to-app pairing is not wired yet: a decoded code is displayed on-device only.
 
 ■ Account sync, your terms
-Accounts are a number and nothing else — no email, no name, no tracking identity. When you choose to save a scan report, it syncs to that account number; device analysis itself works fully offline.
+Accounts are a number and nothing else — no email, no name, no tracking identity. After running the backup audit you can enter a 16-digit account number to sync that audit report to it; device analysis itself works fully offline and nothing is sent until you press sync.
 
 DESIGNED FOR SAFETY
 

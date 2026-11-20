@@ -197,12 +197,28 @@ UpdateCheckMode: Tags
 CurrentVersion: 26.11.10
 CurrentVersionCode: 20261110
 
-# NonFreeNet: the app talks to hosted services that are not free software
+# NonFreeNet: the app talks to ONE hosted service that is not free software
 # and cannot be self-hosted from within the app:
-#   • https://rootmyandroid.com/v1   (account / audit / pairing API)
-#   • wss://relay.rootmyandroid.com  (relay tunnel for wireless ADB)
+#   • https://rootmyandroid.com/v1   (account / audit sync)
+# The relay tunnel (wss://relay.rootmyandroid.com) belongs to the SEPARATE
+# Rootz app (com.rootmyandroid.rootz) — com.rootmyandroid never opens it.
 # This is an anti-feature, not a blocker. The reason is carried in the
 # localized-string form below (linsui's "Add the reasons." standard).
+# The scan and the backup audit run fully offline; a request is sent only
+# when the user presses "Sync audit to account" with a 16-digit number.
 AntiFeatures:
   NonFreeNet:
-    en-US: Talks to hosted rootmyandroid.com and relay.rootmyandroid.com services
+    en-US: Talks to the hosted rootmyandroid.com/v1 service for optional audit sync; scanning and the backup audit work offline
+
+# QUERY_ALL_PACKAGES — justification for reviewers (declared in
+# app/src/main/AndroidManifest.xml). The permission is REQUIRED by both
+# read-only audits and is never used to enumerate apps for profiling:
+#   • backup audit: reads every installed app's allow-backup flag
+#     (AuditModule.collectBackupAudit → PackageManager.getInstalledApplications)
+#     and counts participating vs excluded apps;
+#   • scan: detects installed root-management packages (Magisk/KernelSU/
+#     APatch/SuperSU) — ScanModule.collectScan → known-package lookup.
+# Both results stay on the device until the user explicitly syncs. No app
+# list is uploaded during a scan; the synced backup-audit snapshot carries
+# per-package allow-backup flags, which the user reviews before pressing
+# sync.

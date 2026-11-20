@@ -24,6 +24,7 @@ import './global.css';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   DeviceEventEmitter,
+  Linking,
   Modal,
   NativeModules,
   ScrollView,
@@ -339,19 +340,44 @@ function Row({ label, value, tone, wide }: { label: string; value: string; tone?
   );
 }
 
-function PrimaryButton({ label, onPress }: { label: string; onPress?: () => void }) {
+/**
+ * Filled action button. F-Droid gate 10 (mezinster's recurring finding, twice
+ * on sidecoin): a control that renders tappable but does nothing is a review
+ * finding. A button without a handler renders inert (muted, bordered,
+ * non-pressable) and carries a note saying why.
+ */
+function PrimaryButton({ label, onPress, note }: { label: string; onPress?: () => void; note?: string }) {
+  const inert = typeof onPress !== 'function';
   return (
-    <TouchableOpacity className="mt-1 items-center rounded-[10px] bg-accent py-3.5" onPress={onPress}>
-      <Text className="text-base font-semibold text-white">{label}</Text>
-    </TouchableOpacity>
+    <View>
+      <TouchableOpacity
+        className={`mt-1 items-center rounded-[10px] py-3.5 ${inert ? 'border border-border bg-panel' : 'bg-accent'}`}
+        onPress={onPress}
+        disabled={inert}
+        accessibilityState={{ disabled: inert }}
+      >
+        <Text className={`text-base font-semibold ${inert ? 'text-muted' : 'text-white'}`}>{label}</Text>
+      </TouchableOpacity>
+      {note ? <Text className="mt-2 text-xs leading-[17px] text-faint">{note}</Text> : null}
+    </View>
   );
 }
 
-function GhostButton({ label, onPress }: { label: string; onPress?: () => void }) {
+/** Outlined secondary action — same inert rule as PrimaryButton. */
+function GhostButton({ label, onPress, note }: { label: string; onPress?: () => void; note?: string }) {
+  const inert = typeof onPress !== 'function';
   return (
-    <TouchableOpacity className="mt-3 items-center rounded-[10px] border border-border py-3.5" onPress={onPress}>
-      <Text className="text-base font-semibold text-text">{label}</Text>
-    </TouchableOpacity>
+    <View>
+      <TouchableOpacity
+        className="mt-3 items-center rounded-[10px] border border-border py-3.5"
+        onPress={onPress}
+        disabled={inert}
+        accessibilityState={{ disabled: inert }}
+      >
+        <Text className={`text-base font-semibold ${inert ? 'text-muted' : 'text-text'}`}>{label}</Text>
+      </TouchableOpacity>
+      {note ? <Text className="mt-2 text-xs leading-[17px] text-faint">{note}</Text> : null}
+    </View>
   );
 }
 
@@ -400,7 +426,35 @@ const AuditModule = NativeModules.AuditModule as {
   collectBackupAudit(): Promise<AuditSnapshot>;
   getDeviceId(): Promise<string>;
   getDeviceName(): Promise<string>;
+  getStorage(): Promise<StorageInfo>;
 };
+
+type StorageInfo = { total_bytes: number; free_bytes: number; used_bytes: number };
+
+/** Byte count → short human string (GB with one decimal above 1 GB). */
+function fmtBytes(n: number): string {
+  return n >= 1024 ** 3 ? `${(n / 1024 ** 3).toFixed(1)} GB` : `${Math.round(n / 1024 ** 2)} MB`;
+}
+
+/** Real device storage (AuditModule.getStorage → StatFs). null until the
+ * first read lands; callers render "—", never a placeholder number. */
+function useStorage(): StorageInfo | null {
+  const [storage, setStorage] = useState<StorageInfo | null>(null);
+  useEffect(() => {
+    let alive = true;
+    Promise.resolve(AuditModule?.getStorage?.())
+      .then((s) => {
+        if (alive && s) setStorage(s);
+      })
+      .catch(() => {
+        // Unavailable (jest / older native module): panels stay at "—".
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return storage;
+}
 
 // Native module (android/app/.../ScanModule.kt): raw device facts for the
 // scan.ts rules engine. Undefined under jest.
@@ -701,11 +755,6 @@ function ScanScreen() {
   );
 }
 
-const mockDevices = [
-  { name: 'Pixel 5', detail: '•••• 9434 · synced 2 days ago', pro: true },
-  { name: 'Pixel 3', detail: '•••• 1027 · synced 3 weeks ago', pro: false },
-];
-
 function DevicesScreen() {
   return (
     <View>
@@ -715,19 +764,20 @@ function DevicesScreen() {
         Guardian app on the managed device.
       </Text>
       <Panel title="Paired devices">
-        {mockDevices.map((d) => (
-          <View key={d.name} className="flex-row items-center py-2">
-            <View className="flex-1">
-              <Text className="text-[15px] font-semibold text-text">{d.name}</Text>
-              <Text className="mt-0.5 text-[13px] text-muted">{d.detail}</Text>
-            </View>
-            <Badge label={d.pro && !IS_FDROID_BUILD ? 'PRO' : 'FREE'} pro={d.pro && !IS_FDROID_BUILD} />
-          </View>
-        ))}
+        {/* Honest empty state (F-Droid gates 5 + 9): the device list is not
+            wired to the API yet, so no device is rendered as if it were
+            real. Replace this block when the list endpoint lands. */}
+        <Text className="py-1 text-sm text-muted">
+          No devices paired yet. Device pairing is not available in this
+          build.
+        </Text>
       </Panel>
-      <PrimaryButton label="Pair a new device" />
+      <PrimaryButton
+        label="Pair a new device"
+        note="Pairing ships in a later build — no account is connected yet."
+      />
       <Text className="mt-3.5 text-xs leading-[17px] text-faint">
-        Open Guardian on the device you want to manage and enter this
+        Open Guardian on the device you want to manage and enter your
         account's 16-digit number.
       </Text>
     </View>
@@ -735,15 +785,23 @@ function DevicesScreen() {
 }
 
 function AccountScreen() {
+  const storage = useStorage();
   return (
     <View>
       <Text className="mb-4 text-sm leading-5 text-muted">
         Mullvad-style: a 16-digit account number, no email, no personal data.
       </Text>
       <Panel title="Your account">
-        <Row label="Account number" value="1327 3076 2982 9434" />
-        <Row label="Storage used" value="1.2 GB of 5 GB" />
+        {/* No account is connected in this build: render "—" rather than a
+            transplanted literal (F-Droid gates 5 + 9). The number is
+            entered on the Scan tab when an audit is synced. */}
+        <Row label="Account number" value="—" />
+        <Row label="Device storage used" value={storage ? fmtBytes(storage.used_bytes) : '—'} />
       </Panel>
+      <Text className="mb-3.5 mt-3.5 text-xs leading-[17px] text-faint">
+        No account connected yet. Enter your 16-digit number when syncing an
+        audit from the Scan tab.
+      </Text>
       {/* fdroid flavor: no billing surface at all — account facts only
           (owner ruling 2026-11-13: everything free on the F-Droid build). */}
       {IS_FDROID_BUILD ? (
@@ -754,7 +812,7 @@ function AccountScreen() {
       ) : (
         <>
           <Panel title="Plan time">
-            <Row label="Balance" value="34 days" />
+            <Row label="Balance" value="—" />
             <Row label="Renewal" value="None — top up anytime" />
           </Panel>
           {MOCK_PLANS.map((plan) => (
@@ -764,8 +822,8 @@ function AccountScreen() {
               ))}
             </Panel>
           ))}
-          <PrimaryButton label="Top up — from $5" />
-          <GhostButton label="Create new account" />
+          <PrimaryButton label="Top up — from $5" note="Checkout is not available in this build." />
+          <GhostButton label="Create new account" note="Account creation is not available in this build." />
           <Text className="mt-3.5 text-xs leading-[17px] text-faint">
             Plans are top-up subscriptions: add time whenever you like — no
             auto-renewal, no stored card. Your account number is the only
@@ -778,6 +836,7 @@ function AccountScreen() {
 }
 
 function BackupsScreen() {
+  const storage = useStorage();
   return (
     <View>
       <ScreenTitle title="Backups" animation={backupsTitle} />
@@ -785,39 +844,62 @@ function BackupsScreen() {
         Encrypted on this device with a key only you hold. We can't read or
         recover them.
       </Text>
-      <Panel title="Storage">
-        <Row label="Used" value="1.2 GB" />
-        <Row label="Included" value="5 GB" />
+      <Panel title="Device storage">
+        {/* Real StatFs figures (AuditModule.getStorage) — "—" until the
+            read lands, never a transplanted placeholder (gate 5). */}
+        <Row label="Used" value={storage ? fmtBytes(storage.used_bytes) : '—'} />
+        <Row label="Free" value={storage ? fmtBytes(storage.free_bytes) : '—'} />
+        <Row label="Total" value={storage ? fmtBytes(storage.total_bytes) : '—'} />
       </Panel>
       <Panel title="Backups">
-        <View className="flex-row items-center py-2">
-          <View className="flex-1">
-            <Text className="text-[15px] font-semibold text-text">Full backup</Text>
-            <Text className="mt-0.5 text-[13px] text-muted">Oct 15, 2026 · 1.2 GB · encrypted</Text>
-          </View>
-        </View>
+        {/* Honest empty state (gates 5 + 9): backup upload is not wired
+            yet, so no backup is rendered as if it existed. */}
+        <Text className="py-1 text-sm text-muted">
+          No backups yet. Encrypted backup upload is not available in this
+          build.
+        </Text>
       </Panel>
-      <PrimaryButton label="New backup" />
+      <PrimaryButton label="New backup" note="Backup upload ships in a later build." />
     </View>
   );
 }
 
-function ToolRow({ name, desc, pro }: { name: string; desc: string; pro?: boolean }) {
+/**
+ * Tool list row. F-Droid gate 10: a row without a handler renders disabled,
+ * loses its "›" chevron (which promises navigation) and carries a note.
+ */
+function ToolRow({ name, desc, pro, onPress, note }: { name: string; desc: string; pro?: boolean; onPress?: () => void; note?: string }) {
+  const enabled = typeof onPress === 'function';
   return (
-    <TouchableOpacity className="flex-row items-center py-2.5">
+    <TouchableOpacity
+      className="flex-row items-center py-2.5"
+      onPress={onPress}
+      disabled={!enabled}
+      accessibilityState={{ disabled: !enabled }}
+    >
       <View className="flex-1">
         <View className="flex-row items-center gap-2">
-          <Text className="text-[15px] font-semibold text-text">{name}</Text>
+          <Text className={`text-[15px] font-semibold ${enabled ? 'text-text' : 'text-muted'}`}>{name}</Text>
           {pro && !IS_FDROID_BUILD ? <Badge label="PRO" pro /> : null}
         </View>
         <Text className="mt-0.5 text-[13px] leading-[18px] text-muted">{desc}</Text>
+        {note ? <Text className="mt-0.5 text-[11px] leading-[15px] text-faint">{note}</Text> : null}
       </View>
-      <Text className="ml-3 text-[22px] text-faint">›</Text>
+      {enabled ? <Text className="ml-3 text-[22px] text-faint">›</Text> : null}
     </TouchableOpacity>
   );
 }
 
+/** Opens the public guides on rootmyandroid.com — the only Tools row with a
+ * working handler in this build (everything else is deferred). */
+const openRomCatalog = () => {
+  Linking.openURL('https://rootmyandroid.com/').catch(() => {
+    // No browser available — the row stays inert.
+  });
+};
+
 function ToolsScreen() {
+  const storage = useStorage();
   return (
     <View>
       <ScreenTitle title="Tools" animation={toolsTitle} />
@@ -831,24 +913,32 @@ function ToolsScreen() {
           name="OTA survival assistant"
           desc="Re-apply root and modules after an OTA update."
           pro
+          note="Not available in this build."
         />
         <ToolRow
           name="Integrity auditor"
           desc="Audit root, SELinux, and Play Integrity status."
+          note="Run the free device scan on the Scan tab for the integrity read-out."
         />
         <ToolRow
           name="ROM catalog"
-          desc="Browse ROMs for this device on rootmyandroid.com."
+          desc="Browse device guides and ROM notes on rootmyandroid.com."
+          onPress={openRomCatalog}
         />
       </Panel>
       <Panel title="Device health">
         <ToolRow
           name="Health monitor"
           desc="Battery, thermal, and storage health trends."
+          note="Not available in this build."
         />
         <ToolRow
           name="Storage manager"
-          desc="Analyze disk usage and reclaim space."
+          desc={
+            storage
+              ? `${fmtBytes(storage.used_bytes)} used of ${fmtBytes(storage.total_bytes)} on this device.`
+              : 'Reading device storage…'
+          }
         />
       </Panel>
     </View>

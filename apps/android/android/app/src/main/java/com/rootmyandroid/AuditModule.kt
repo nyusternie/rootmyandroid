@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.StatFs
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -55,6 +56,29 @@ class AuditModule(reactContext: ReactApplicationContext) :
   fun getDeviceName(promise: Promise) {
     try {
       promise.resolve("${Build.MANUFACTURER} ${Build.MODEL}".trim())
+    } catch (e: Exception) {
+      promise.reject("AUDIT_ERROR", e.message, e)
+    }
+  }
+
+  /**
+   * Real on-device storage figures for the data partition (StatFs on this
+   * app's filesDir). No permission required — StatFs reports the filesystem
+   * the app already lives on. Replaces the transplanted placeholder numbers
+   * the Storage panels used to render (F-Droid gate 5: no mock literals in
+   * a listing-facing screen).
+   */
+  @ReactMethod
+  fun getStorage(promise: Promise) {
+    try {
+      val stat = StatFs(reactApplicationContext.filesDir.absolutePath)
+      val total = stat.blockCountLong * stat.blockSizeLong
+      val free = stat.availableBlocksLong * stat.blockSizeLong
+      val map = Arguments.createMap()
+      map.putDouble("total_bytes", total.toDouble())
+      map.putDouble("free_bytes", free.toDouble())
+      map.putDouble("used_bytes", (total - free).toDouble())
+      promise.resolve(map)
     } catch (e: Exception) {
       promise.reject("AUDIT_ERROR", e.message, e)
     }
