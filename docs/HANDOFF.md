@@ -412,3 +412,49 @@ credential was created or stored (rule 11). The 63 MiB pack took ~10 min
 at 30–200 KiB/s (the §0 link trap), so the push ran detached with polling.
 NOTE: this repo is a mirror, NOT the F-Droid MR target — the MR goes to a
 fork of `gitlab.com/fdroid/fdroiddata` (plan Phase 4).
+
+## 13. v26.11.20 RELEASED + fdroiddata branch staged (2026-11-20, final)
+
+**Device verification COMPLETE** (Pixel 5, serial `0C151FDD400648`, appstore
+flavor installed for the account-creation UI):
+- **Account creation works end-to-end**: Account → Create new account →
+  the app POSTed `/v1/accounts` and rendered `2610 4953 9541 0159`;
+  `GET /v1/accounts/2610495395410159` → HTTP 200, `created_at
+  2026-11-20T21:52:44Z`. Survived a force-stop + relaunch (getPref).
+- **Backup works end-to-end**: New backup → audit snapshot → Keystore
+  AES-256-GCM → `POST /v1/backups` → the app showed "Backups (1)" with the
+  row `Google Pixel 5 · encrypted · 11/20/2026`; the server confirms 1 row,
+  **43122 bytes**, `created_at 2026-11-20T21:55:07Z`.
+- Cosmetic fix caught by that test: a 43 KB payload rendered as "0 MB" →
+  `fmtBytes` now shows KB below 1 MB.
+- NOT camera-verified: the pairing SAVE path (needs a second screen to show
+  a QR). Its decode path was verified live in an earlier session; its
+  persistence uses the same getPref/setPref proven by the account number.
+
+**Gate 1/2 violation found and fixed**: the recipe's `Builds:` claimed
+`26.11.16/20261116` while build.gradle + package.json + CurrentVersion said
+`26.11.10/20261110`. The release bump made all four agree on
+**26.11.20 / 20261120** (commit `9149030`, tag `v26.11.20`).
+
+**Release published and verified (gate 11 prerequisite):**
+- Tag CI run `44826709506` SUCCESS on blackhost.
+- `releases/download/v26.11.20/app-fdroid-release.apk` → `curl -sIL` HTTP
+  200, **17,993,300 bytes**, sha256
+  `c1330ba30ca7cd2b65c476470fb1c160fa1ef49d42b63558c92540a94b330b30`;
+  `aapt2 dump badging` → `versionCode='20261120' versionName='26.11.20'`
+  (matches the recipe exactly).
+- Daily driver on the phone = `app-appstore-release.apk` from the same tag
+  (`3ee7923c…`, versionCode 20261120 / versionName 26.11.20).
+
+**fdroiddata staging (MR NOT opened yet):**
+- Fork: `gitlab.com/nyusternie/fdroiddata` (project id **89251913**),
+  imported from fdroiddata master `aed9e850`.
+- Branch **`com.rootmyandroid`** = master + 2 commits, exactly ONE new file
+  `metadata/com.rootmyandroid.yml`; local↔remote sha256 MATCH
+  (`474e9104…`).
+- Recipe filled: `commit: 9149030147d94b7dd79976f885a65e6f9cd89af7` (the
+  tagged commit), measured asset facts in the comment (gate 3),
+  `CurrentVersion 26.11.20`, `WebSite` added. `rewritemeta` gate re-run
+  after every edit: parsed-equal, one Builds block.
+- The MR itself is deliberately NOT opened — that is the visible submission
+  (gate 11 sequencing complete, so it is one API call away).
