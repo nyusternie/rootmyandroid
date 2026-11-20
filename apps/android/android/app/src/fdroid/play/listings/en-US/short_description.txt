@@ -1,1 +1,1 @@
-On-device Android root and upgrade scan — read-only, no account needed
+See exactly what stands between you and root — read-only, on-device

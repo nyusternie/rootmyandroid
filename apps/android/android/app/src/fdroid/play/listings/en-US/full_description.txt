@@ -1,23 +1,31 @@
-Root My Android scans your phone and tells you exactly what stands between you and root — read-only, right on the device, no flashing, no scripts, no account required for the scan itself.
+Most Android "root checker" apps guess. This one shows you the evidence.
+
+Root My Android reads your device's real state — bootloader, verification, root-side facts — straight from the system, grades what it finds, and shows the raw properties behind every line. Nothing is sent anywhere unless you choose to sync. The scan is free and needs no account.
 
 WHAT IT DOES
 
 ■ Device scan
-One tap collects your device's real properties (build fingerprint, bootloader and verification state, SELinux mode and more, read from the system) and the root-side facts that matter: where `su` exists on the device and which root-management packages are installed. The rules engine grades what it finds — bootloader state, root present or absent, integrity — and shows the raw evidence behind every line, so you can see exactly what a rooting decision rests on. Values your device does not report are shown as "unknown" — the app never guesses.
+One tap collects your device's real properties (build fingerprint, bootloader and verification state, SELinux mode and more, read from the system) and the root-side facts that matter: where `su` exists on the device and which root-management packages are installed. The rules engine grades what it finds — bootloader state, root present or absent, integrity — and shows the raw evidence behind every line, so you can see exactly what a rooting decision rests on. Values your device does not report are shown as "unknown" — the app never guesses. Every property it reads is browsable in a searchable list.
 
 ■ Backup audit
 A second, equally read-only audit reads, from the operating system itself, whether each installed app allows its data to be included in Android's auto-backup — and summarizes how much of your backup set is actually participating, with the excluded apps listed. Backup clouds silently skipping your messenger or your authenticator is the classic data-loss surprise; this audit makes it visible before you need the backup.
 
-■ QR scanner
-Scan a QR code with the camera. Scanning is native (CameraX) and decoding runs locally with the Apache-licensed ZXing library — the decoded content never leaves the device. Web-to-app pairing is not wired yet: a decoded code is displayed on-device only.
+■ Encrypted backups
+Store a snapshot on your account, encrypted on the device first with an AES-256-GCM key that lives in the Android Keystore and never leaves it. The server only ever receives ciphertext. Lose the key and the backup is gone — we cannot read it, and we cannot recover it for you. Your backups and the account's storage usage are listed in the app.
 
-■ Account sync, your terms
-Accounts are a number and nothing else — no email, no name, no tracking identity. After running the backup audit you can enter a 16-digit account number to sync that audit report to it; device analysis itself works fully offline and nothing is sent until you press sync.
+■ Device pairing by QR
+Scan a pairing code with the camera; the code is stored on this phone and listed under Devices, where you can remove it again. Decoding runs locally with the Apache-licensed ZXing library — the camera image never leaves the device.
+
+■ Tools
+Quick reads you would otherwise need a terminal for: battery level, temperature and health; real storage used/free/total from the system; and direct links to the rooting, bootloader and logcat guides.
+
+■ Your account, your terms
+Accounts are a number and nothing else — no email, no name, no tracking identity. Create one at rootmyandroid.com, then enter its 16-digit number to sync an audit report or store a backup. Everything else works fully offline.
 
 DESIGNED FOR SAFETY
 
-The scanner is strictly read-only: it never flashes, never writes, never requests root for itself, and never touches other apps' data.
+The scanner is strictly read-only: it never flashes, never writes, never requests root for itself (the `su` check is a PATH lookup, not an execution), and never touches other apps' data. There is no analytics, no crash reporting, no advertising and no tracking SDK: the only network destination is rootmyandroid.com, and only when you press a sync or backup button.
 
-Free and open source (MIT). The F-Droid build contains no billing UI — every feature listed here is free.
+Free and open source (MIT). The F-Droid build contains no billing UI and no account-creation UI — every feature listed here is free, and no purchase surface exists in this build.
 
-Anti-feature note (NonFreeNet): the app talks to https://rootmyandroid.com/v1 for account and report sync. The service is not free software and cannot be self-hosted from within the app; the scanner and audit work without it.
+Anti-feature note (NonFreeNet): the app talks to https://rootmyandroid.com/v1 for optional account sync and backup storage. The service is not free software and cannot be self-hosted from within the app; the scan, the audit, pairing and the tools work without it.
