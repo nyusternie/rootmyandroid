@@ -201,7 +201,7 @@ function App() {
           {tab === 'scan' && <ScanScreen />}
           {tab === 'devices' && <DevicesScreen />}
           {tab === 'backups' && <BackupsScreen />}
-          {tab === 'tools' && <ToolsScreen />}
+          {tab === 'tools' && <ToolsScreen onOpenStorage={() => setTab('backups')} />}
         </ScrollView>
 
         <View className="flex-row border-t border-border bg-panel">
@@ -898,7 +898,7 @@ const openRomCatalog = () => {
   });
 };
 
-function ToolsScreen() {
+function ToolsScreen({ onOpenStorage }: { onOpenStorage: () => void }) {
   const storage = useStorage();
   return (
     <View>
@@ -939,6 +939,7 @@ function ToolsScreen() {
               ? `${fmtBytes(storage.used_bytes)} used of ${fmtBytes(storage.total_bytes)} on this device.`
               : 'Reading device storage…'
           }
+          onPress={onOpenStorage}
         />
       </Panel>
     </View>
