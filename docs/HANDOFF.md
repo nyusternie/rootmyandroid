@@ -296,3 +296,31 @@ everything free = YES; upstream-signed route = YES.
 - The scanner modal copy promises web pairing ("Pairing with web (alt
   clients) ships next") — after decode verification, build the web-side
   pairing protocol (see /terminal + relay work in AGENTS.md).
+
+## 10. Owner rulings 2026-11-17 (BINDING)
+
+- **NO direct Shizuku support.** "I DO NOT want to support Shizuku directly"
+  — no Shizuku SDK, no `moe.shizuku` dependency, no Shizuku permission
+  request, no pairing with the Shizuku app. Instead: "I want to copy/mimic
+  the BEST features that Shizuku enables/supports" — replicate the
+  CAPABILITIES through our own transports (wireless ADB in Rootz, rootzd
+  root tier, WebUSB on the web /scan). `apps/android` has zero Shizuku
+  references today (grep-verified) and stays that way.
+- **Browser-download APK installs are RETIRED** (see §0): adb push over USB
+  → `/data/local/tmp/` → `pm install -r`.
+
+### Shizuku-capability parity, measured at uid 2000 on redfin (Android 14)
+
+`adb shell` is uid 2000 — the SAME privilege Shizuku grants, so parity is
+directly testable. Measured 2026-11-17 on serial `0C151FDD400648`:
+
+| Capability (source app) | Shell command | Available |
+|---|---|---|
+| Shell exec + bookmarks (aShell You) | wireless-ADB shell, Rootz | YES — shipped + verified live 2026-11-09 |
+| Kill running apps (Shappky) | `am force-stop <pkg>`, `am kill` | YES — both in `am help` |
+| Install flags / downgrade (Install With Options) | `pm install [-rtfdg]` | YES — `-d` (downgrade), `-r`, `-f`, `-g`, `-t` |
+| Storage cleanup (SD Maid SE) | `dumpsys diskstats`, `cmd package trim-caches` | YES — `Data-Free: 83% free` measured live |
+| Hidden settings (Essentials) | `settings get/put` | YES — namespaces + get/put in `settings help` |
+| Uninstall bloatware (Canta) | `pm uninstall` | Command exists — **BLOCKED by AGENTS.md rule 6** (no data-destroying commands on other packages); needs an explicit owner ruling |
+| Per-app internet ban (ShizuWall) | `cmd netpolicy` | **NO** — Android 14 netpolicy exposes only restrict-background whitelist/blacklist + metered toggles, no per-UID internet block |
+| Theming / overlay / widget (ColorBlendr, Adaptive Theme, Smartspacer) | — | **NO** — needs system-level permissions, out of reach at uid 2000 |
