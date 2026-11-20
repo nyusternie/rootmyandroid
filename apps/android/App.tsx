@@ -547,9 +547,13 @@ function useHealth(): [HealthInfo | null, () => void] {
 
 type StorageInfo = { total_bytes: number; free_bytes: number; used_bytes: number };
 
-/** Byte count → short human string (GB with one decimal above 1 GB). */
+/** Byte count → short human string (GB with one decimal, MB, then KB —
+ * a 43 KB encrypted snapshot must not render as "0 MB"). */
 function fmtBytes(n: number): string {
-  return n >= 1024 ** 3 ? `${(n / 1024 ** 3).toFixed(1)} GB` : `${Math.round(n / 1024 ** 2)} MB`;
+  if (n >= 1024 ** 3) return `${(n / 1024 ** 3).toFixed(1)} GB`;
+  if (n >= 1024 ** 2) return `${(n / 1024 ** 2).toFixed(1)} MB`;
+  if (n >= 1024) return `${Math.round(n / 1024)} KB`;
+  return `${n} B`;
 }
 
 /** Real device storage (AuditModule.getStorage → StatFs). null until the
