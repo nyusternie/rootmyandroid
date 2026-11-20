@@ -458,3 +458,42 @@ flavor installed for the account-creation UI):
   after every edit: parsed-equal, one Builds block.
 - The MR itself is deliberately NOT opened — that is the visible submission
   (gate 11 sequencing complete, so it is one API call away).
+
+## 14. Store metadata — WHERE it comes from (verified in fdroidserver source)
+
+**Answer to "don't we need title/description":** the recipe YAML carries NO
+Summary/Description — fdroidserver reads them from store metadata, and I
+verified the exact code paths in `/tmp/fdsv/.../fdroidserver/update.py` on
+blackhost, then proved them by running the real functions against synthetic
+trees:
+
+| Reader | Scans | Result |
+|---|---|---|
+| `copy_triple_t_store_metadata` | `<repo>/<subdir>/src/<flavor>/play/listings/<locale>/` (flavor from `Builds[].gradle` — ours is `fdroid`) | text OK; **screenshots land in `phone-screenshots/` (hyphen) — a dir F-Droid does not serve** (the v2 branch keys on `segments[-4] == 'listings'`, which our path depth does not match — measured, not assumed) |
+| `insert_localized_app_metadata` | `metadata/<appid>/<locale>/` **in the fdroiddata repo**, plus fastlane dirs | **everything works**: `title.txt`→name, `short_description.txt`→summary, `full_description.txt`→description, `icon.png`→icon, `phoneScreenshots/*.png`→`phoneScreenshots` |
+
+So the listing was moved to the fdroiddata side, which ALSO means the
+metadata does not depend on the app commit (`commit: 9149030…` still
+builds the released APK).
+
+**Values shipped (all within F-Droid char limits):**
+- name (`title.txt`): `Root My Android` — 15/50
+- summary (`short_description.txt`): `On-device Android root and upgrade scan — read-only, no account needed` — 70/80
+- description (`full_description.txt`): 2257/4000, sections: Device scan / Backup audit / QR scanner / Account sync, plus DESIGNED FOR SAFETY, MIT + no-billing note, and the NonFreeNet explanation
+- icon: 512x512 PNG (full-body SU robot, brand canon)
+- 7 phone screenshots (device-captured, 9:16)
+
+**Recipe field validity confirmed against fdroiddata's own config:**
+`NonFreeNet` is defined in `config/antiFeatures.yml` (L29); `Security` (L269)
+and `System` (L296) are defined in `config/categories.yml`. The three
+"not valid" messages from a bare `fdroid lint` run were artifacts of my
+scratch dir lacking that `config/` tree.
+
+**fdroiddata branch `com.rootmyandroid` now contains** (project 89251913):
+`metadata/com.rootmyandroid.yml` + `metadata/com.rootmyandroid/en-US/`
+{title.txt, short_description.txt, full_description.txt, icon.png,
+phoneScreenshots/ ×7} — text sha256 MATCHes the app repo's Triple-T copy.
+
+**Known content gap (owner decision):** the description does not yet
+mention the features added in §12 (encrypted backup upload, QR pairing,
+Tools: guides/health/storage). It is accurate as written, just incomplete.
