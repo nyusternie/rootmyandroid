@@ -1,16 +1,26 @@
 package com.rootmyandroid
 
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.os.BatteryManager
 import android.os.Build
 import android.os.StatFs
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
+import android.util.Base64
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import java.security.KeyStore
 import java.util.UUID
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
 
 /**
  * Backup-audit collector + audit device identity.
@@ -56,6 +66,108 @@ class AuditModule(reactContext: ReactApplicationContext) :
   fun getDeviceName(promise: Promise) {
     try {
       promise.resolve("${Build.MANUFACTURER} ${Build.MODEL}".trim())
+    } catch (e: Exception) {
+      promise.reject("AUDIT_ERROR", e.message, e)
+    }
+  }
+
+  /** Small key/value store (app-private SharedPreferences) — holds the
+   * account number and the locally paired devices, so both survive a
+   * restart without pulling in AsyncStorage (no new dependency; F-Droid
+   * purity). */
+  @ReactMethod
+  fun getPref(key: String, promise: Promise) {
+    try {
+      promise.resolve(prefs.getString(key, null))
+    } catch (e: Exception) {
+      promise.reject("AUDIT_ERROR", e.message, e)
+    }
+  }
+
+  @ReactMethod
+  fun setPref(key: String, value: String, promise: Promise) {
+    try {
+      prefs.edit().putString(key, value).apply()
+      promise.resolve(true)
+    } catch (e: Exception) {
+      promise.reject("AUDIT_ERROR", e.message, e)
+    }
+  }
+
+  /**
+   * Battery health snapshot from the sticky ACTION_BATTERY_CHANGED broadcast
+   * + BatteryManager. No permission required. Feeds the Tools "Health
+   * monitor" row with real numbers instead of a promise of future trends.
+   */
+  @ReactMethod
+  fun getHealth(promise: Promise) {
+    try {
+      val bm = reactApplicationContext.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+      val level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+      val sticky = reactApplicationContext.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+      val tempTenths = sticky?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) ?: -1
+      val voltageMv = sticky?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1) ?: -1
+      val healthCode = sticky?.getIntExtra(BatteryManager.EXTRA_HEALTH, -1) ?: -1
+      val health = when (healthCode) {
+        BatteryManager.BATTERY_HEALTH_GOOD -> "good"
+        BatteryManager.BATTERY_HEALTH_OVERHEAT -> "overheating"
+        BatteryManager.BATTERY_HEALTH_DEAD -> "dead"
+        BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "over voltage"
+        BatteryManager.BATTERY_HEALTH_COLD -> "cold"
+        BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> "failure"
+        else -> "unknown"
+      }
+      val map = Arguments.createMap()
+      map.putInt("level_percent", level)
+      map.putDouble("temperature_c", if (tempTenths >= 0) tempTenths / 10.0 else -1.0)
+      map.putInt("voltage_mv", voltageMv)
+      map.putString("health", health)
+      promise.resolve(map)
+    } catch (e: Exception) {
+      promise.reject("AUDIT_ERROR", e.message, e)
+    }
+  }
+
+  /**
+   * Encrypt a backup payload with an AES-256-GCM key held in the Android
+   * Keystore (hardware-backed where the device provides it; the key is
+   * non-exportable and never leaves the keystore). Output is
+   * iv || ciphertext, base64-encoded, which is exactly what the API stores
+   * in R2 — the server only ever sees ciphertext. Losing the keystore (app
+   * uninstall, factory reset) makes the backup unrecoverable, which is what
+   * the Backups copy states.
+   */
+  @ReactMethod
+  fun encryptBackup(plaintext: String, promise: Promise) {
+    try {
+      val ks = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+      val key: SecretKey = if (ks.containsAlias(KEY_ALIAS)) {
+        (ks.getEntry(KEY_ALIAS, null) as KeyStore.SecretKeyEntry).secretKey
+      } else {
+        val gen = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
+        gen.init(
+          KeyGenParameterSpec.Builder(
+            KEY_ALIAS,
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
+          )
+            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            .setKeySize(256)
+            .build(),
+        )
+        gen.generateKey()
+      }
+      val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+      cipher.init(Cipher.ENCRYPT_MODE, key)
+      val ct = cipher.doFinal(plaintext.toByteArray(Charsets.UTF_8))
+      val iv = cipher.iv
+      val out = ByteArray(iv.size + ct.size)
+      System.arraycopy(iv, 0, out, 0, iv.size)
+      System.arraycopy(ct, 0, out, iv.size, ct.size)
+      val map = Arguments.createMap()
+      map.putString("data_b64", Base64.encodeToString(out, Base64.NO_WRAP))
+      map.putInt("size_bytes", out.size)
+      promise.resolve(map)
     } catch (e: Exception) {
       promise.reject("AUDIT_ERROR", e.message, e)
     }
@@ -171,5 +283,6 @@ class AuditModule(reactContext: ReactApplicationContext) :
   companion object {
     private const val PREFS_NAME = "rooted_audit"
     private const val KEY_DEVICE_ID = "audit_device_id"
+    private const val KEY_ALIAS = "rma_backup_key"
   }
 }

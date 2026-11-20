@@ -139,12 +139,50 @@ function App() {
   // footer; the actual pairing protocol ships next.
   const [qrOpen, setQrOpen] = useState(false);
   const [qrResult, setQrResult] = useState('');
+  // Pairing mode: the same scanner either shows the decoded value (header
+  // button) or saves it as a paired device (Devices → Pair a new device).
+  const [qrPairing, setQrPairing] = useState(false);
 
-  const openQrScan = async () => {
+  // Account number (raw digits) — the only credential. Persisted in
+  // app-private prefs so a restart does not lose it.
+  const [accountNumber, setAccountNumber] = useState('');
+  // Devices paired on THIS phone (scanned pairing code → stored locally).
+  const [pairedDevices, setPairedDevices] = useState<PairedDevice[]>([]);
+
+  useEffect(() => {
+    AuditModule?.getPref?.(PREF_ACCOUNT)
+      .then((v) => {
+        if (v) setAccountNumber(v);
+      })
+      .catch(() => {});
+    AuditModule?.getPref?.(PREF_DEVICES)
+      .then((v) => {
+        if (!v) return;
+        const parsed = JSON.parse(v);
+        if (Array.isArray(parsed)) setPairedDevices(parsed);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Stored form is DIGITS ONLY (the API normalizes too); display formatting
+  // is applied by formatAccount at render time.
+  const persistAccount = (raw: string) => {
+    const digits = raw.replace(/\D/g, '').slice(0, 16);
+    setAccountNumber(digits);
+    AuditModule?.setPref?.(PREF_ACCOUNT, digits).catch(() => {});
+  };
+
+  const persistDevices = (next: PairedDevice[]) => {
+    setPairedDevices(next);
+    AuditModule?.setPref?.(PREF_DEVICES, JSON.stringify(next)).catch(() => {});
+  };
+
+  const openQrScan = async (pairing = false) => {
     try {
       const granted = await NativeModules.QrScan?.requestCameraPermission?.();
       if (granted) {
         setQrResult('');
+        setQrPairing(pairing);
         setQrOpen(true);
       }
     } catch {
@@ -159,6 +197,28 @@ function App() {
     });
     return () => subscription.remove();
   }, [qrOpen]);
+
+  // Pairing: a decoded code becomes a device entry on this phone. The label
+  // is derived from the code (URL host when it is a URL, else the code
+  // itself); duplicates are ignored.
+  const pairDevice = () => {
+    if (!qrResult) return;
+    const label = (() => {
+      try {
+        return new URL(qrResult).host || qrResult.slice(0, 32);
+      } catch {
+        return qrResult.slice(0, 32);
+      }
+    })();
+    if (pairedDevices.some((d) => d.id === qrResult)) return;
+    persistDevices([
+      ...pairedDevices,
+      { id: qrResult, label, paired_at: new Date().toISOString() },
+    ]);
+    setQrOpen(false);
+  };
+
+  const removeDevice = (id: string) => persistDevices(pairedDevices.filter((d) => d.id !== id));
 
   return (
     <SafeAreaProvider>
@@ -198,10 +258,21 @@ function App() {
         </View>
 
         <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, paddingBottom: 32 }}>
-          {tab === 'scan' && <ScanScreen />}
-          {tab === 'devices' && <DevicesScreen />}
-          {tab === 'backups' && <BackupsScreen />}
-          {tab === 'tools' && <ToolsScreen onOpenStorage={() => setTab('backups')} />}
+          {tab === 'scan' && <ScanScreen accountNumber={accountNumber} onAccountChange={persistAccount} />}
+          {tab === 'devices' && (
+            <DevicesScreen
+              devices={pairedDevices}
+              onPair={() => openQrScan(true)}
+              onRemove={removeDevice}
+            />
+          )}
+          {tab === 'backups' && <BackupsScreen accountNumber={accountNumber} />}
+          {tab === 'tools' && (
+            <ToolsScreen
+              onOpenStorage={() => setTab('backups')}
+              onOpenScan={() => setTab('scan')}
+            />
+          )}
         </ScrollView>
 
         <View className="flex-row border-t border-border bg-panel">
@@ -227,7 +298,7 @@ function App() {
               </TouchableOpacity>
             </View>
             <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, paddingBottom: 32 }}>
-              <AccountScreen />
+              <AccountScreen accountNumber={accountNumber} onAccountChange={persistAccount} />
             </ScrollView>
           </SafeAreaView>
         </Modal>
@@ -242,7 +313,9 @@ function App() {
         <Modal visible={qrOpen} animationType="fade" onRequestClose={() => setQrOpen(false)}>
           <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
             <View className="flex-row items-center justify-between border-b border-border px-5 pb-3 pt-5">
-              <Text className="text-xl font-bold text-text">Scan to sync with web</Text>
+              <Text className="text-xl font-bold text-text">
+                {qrPairing ? 'Pair a device' : 'Scan to sync with web'}
+              </Text>
               <TouchableOpacity className="px-3 py-1.5" onPress={() => setQrOpen(false)}>
                 <Text className="text-sm font-semibold text-accent">Close</Text>
               </TouchableOpacity>
@@ -257,10 +330,19 @@ function App() {
                   <Text className="mt-1 font-mono text-sm text-text" selectable>
                     {qrResult}
                   </Text>
-                  <Text className="mt-2 text-xs leading-[17px] text-muted">
-                    Pairing with web (alt clients) ships next — the scan result stays on this
-                    device for now.
-                  </Text>
+                  {qrPairing ? (
+                    <>
+                      <PrimaryButton label="Save as paired device" onPress={pairDevice} />
+                      <Text className="mt-2 text-xs leading-[17px] text-muted">
+                        The device is stored on this phone. Nothing is uploaded.
+                      </Text>
+                    </>
+                  ) : (
+                    <Text className="mt-2 text-xs leading-[17px] text-muted">
+                      Decoded on-device. Use Devices → Pair a new device to save a code as a
+                      paired device.
+                    </Text>
+                  )}
                 </>
               ) : (
                 <Text className="text-sm leading-5 text-muted">
@@ -427,7 +509,41 @@ const AuditModule = NativeModules.AuditModule as {
   getDeviceId(): Promise<string>;
   getDeviceName(): Promise<string>;
   getStorage(): Promise<StorageInfo>;
+  getHealth(): Promise<HealthInfo>;
+  encryptBackup(plaintext: string): Promise<{ data_b64: string; size_bytes: number }>;
+  getPref(key: string): Promise<string | null>;
+  setPref(key: string, value: string): Promise<boolean>;
 };
+
+type HealthInfo = { level_percent: number; temperature_c: number; voltage_mv: number; health: string };
+
+/** Preference keys (AuditModule SharedPreferences). */
+const PREF_ACCOUNT = 'account_number';
+const PREF_DEVICES = 'paired_devices';
+
+type PairedDevice = { id: string; label: string; paired_at: string };
+
+/** "1327 3076 2982 9434" for display; the raw digits are what we store. */
+function formatAccount(raw: string): string {
+  return raw.replace(/\s/g, '').replace(/(\d{4})(?=\d)/g, '$1 ');
+}
+
+/** Real battery snapshot for the Tools health row + a refresh action (the
+ * row is tappable and re-reads the sticky battery broadcast). */
+function useHealth(): [HealthInfo | null, () => void] {
+  const [health, setHealth] = useState<HealthInfo | null>(null);
+  const read = () => {
+    Promise.resolve(AuditModule?.getHealth?.())
+      .then((h) => {
+        if (h) setHealth(h);
+      })
+      .catch(() => {});
+  };
+  useEffect(() => {
+    read();
+  }, []);
+  return [health, read];
+}
 
 type StorageInfo = { total_bytes: number; free_bytes: number; used_bytes: number };
 
@@ -468,14 +584,17 @@ const ScanModule = NativeModules.ScanModule as {
 
 const API_BASE = 'https://rootmyandroid.com/v1';
 
-function ScanScreen() {
+function ScanScreen({ accountNumber, onAccountChange }: { accountNumber: string; onAccountChange: (raw: string) => void }) {
   const [scanning, setScanning] = useState(false);
   const [scanError, setScanError] = useState('');
   const [result, setResult] = useState<ScanResult | null>(null);
   const [auditing, setAuditing] = useState(false);
   const [audit, setAudit] = useState<AuditSummary | null>(null);
   const [auditError, setAuditError] = useState('');
-  const [auditAccount, setAuditAccount] = useState('');
+  // The sync field edits the SHARED account number (persisted in prefs), so
+  // an account created in the Account modal prefills here.
+  const auditAccount = accountNumber ? formatAccount(accountNumber) : '';
+  const setAuditAccount = onAccountChange;
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState('');
   const [syncOk, setSyncOk] = useState(false);
@@ -537,7 +656,6 @@ function ScanScreen() {
   // Sync the collected snapshot to the account as audit_type "backup".
   const syncAudit = async () => {
     if (syncing || !auditSnapshot.current) return;
-    const accountNumber = auditAccount.replace(/\s/g, '');
     if (!/^\d{16}$/.test(accountNumber)) {
       setSyncOk(false);
       setSyncMsg('Enter the 16-digit account number.');
@@ -755,53 +873,110 @@ function ScanScreen() {
   );
 }
 
-function DevicesScreen() {
+function DevicesScreen({ devices, onPair, onRemove }: { devices: PairedDevice[]; onPair: () => void; onRemove: (id: string) => void }) {
   return (
     <View>
       <ScreenTitle title="Devices" animation={devicesTitle} />
       <Text className="mb-4 text-sm leading-5 text-muted">
-        Guardian devices synced to this account. Pairing is done from the
-        Guardian app on the managed device.
+        Devices paired on this phone. A pairing code is scanned with the
+        camera and stored on the device — nothing is uploaded.
       </Text>
-      <Panel title="Paired devices">
-        {/* Honest empty state (F-Droid gates 5 + 9): the device list is not
-            wired to the API yet, so no device is rendered as if it were
-            real. Replace this block when the list endpoint lands. */}
-        <Text className="py-1 text-sm text-muted">
-          No devices paired yet. Device pairing is not available in this
-          build.
-        </Text>
+      <Panel title={`Paired devices (${devices.length})`}>
+        {devices.length === 0 ? (
+          <Text className="py-1 text-sm text-muted">
+            No devices paired yet. Tap “Pair a new device” and scan the code
+            shown by the device or web client.
+          </Text>
+        ) : (
+          devices.map((d) => (
+            <View key={d.id} className="flex-row items-center py-2">
+              <View className="flex-1">
+                <Text className="text-[15px] font-semibold text-text">{d.label}</Text>
+                <Text className="mt-0.5 text-[13px] text-muted">
+                  paired {new Date(d.paired_at).toLocaleDateString()}
+                </Text>
+              </View>
+              <TouchableOpacity className="px-2 py-1" onPress={() => onRemove(d.id)}>
+                <Text className="text-sm font-semibold" style={{ color: colors.warn }}>
+                  Remove
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ))
+        )}
       </Panel>
-      <PrimaryButton
-        label="Pair a new device"
-        note="Pairing ships in a later build — no account is connected yet."
-      />
+      <PrimaryButton label="Pair a new device" onPress={onPair} />
       <Text className="mt-3.5 text-xs leading-[17px] text-faint">
-        Open Guardian on the device you want to manage and enter your
-        account's 16-digit number.
+        Pairing stores the scanned code in this app only. Remove a device to
+        forget it.
       </Text>
     </View>
   );
 }
 
-function AccountScreen() {
+function AccountScreen({ accountNumber, onAccountChange }: { accountNumber: string; onAccountChange: (raw: string) => void }) {
   const storage = useStorage();
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [ok, setOk] = useState(false);
+
+  // Real account creation: POST /v1/accounts returns a fresh 16-digit
+  // number (no email, no personal data). The number is the only credential
+  // and cannot be recovered — it is stored on this device.
+  const createAccount = async () => {
+    if (busy) return;
+    setBusy(true);
+    setMsg('');
+    try {
+      const res = await fetch(`${API_BASE}/accounts`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: '{}',
+      });
+      const body = await res.json().catch(() => null);
+      if (res.ok && body?.account_number) {
+        onAccountChange(String(body.account_number).replace(/\s/g, ''));
+        setOk(true);
+        setMsg('Account created. Write the number down — it cannot be recovered.');
+      } else {
+        setOk(false);
+        setMsg(body?.error || 'Could not create an account. Try again.');
+      }
+    } catch {
+      setOk(false);
+      setMsg('Network error. Is the device online?');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Real payment surface: the site's /account page issues the invoices
+  // (crypto live). The app does not handle payment details.
+  const openTopUp = () => {
+    Linking.openURL('https://rootmyandroid.com/account').catch(() => {});
+  };
+
   return (
     <View>
       <Text className="mb-4 text-sm leading-5 text-muted">
         Mullvad-style: a 16-digit account number, no email, no personal data.
       </Text>
       <Panel title="Your account">
-        {/* No account is connected in this build: render "—" rather than a
-            transplanted literal (F-Droid gates 5 + 9). The number is
-            entered on the Scan tab when an audit is synced. */}
-        <Row label="Account number" value="—" />
+        {/* Real stored number (or "—" when none exists yet) — never a
+            transplanted literal (F-Droid gates 5 + 9). */}
+        <Row label="Account number" value={accountNumber ? formatAccount(accountNumber) : '—'} wide={Boolean(accountNumber)} />
         <Row label="Device storage used" value={storage ? fmtBytes(storage.used_bytes) : '—'} />
       </Panel>
       <Text className="mb-3.5 mt-3.5 text-xs leading-[17px] text-faint">
-        No account connected yet. Enter your 16-digit number when syncing an
-        audit from the Scan tab.
+        {accountNumber
+          ? 'This number is the only credential — it cannot be recovered. It stays on this device.'
+          : 'No account connected yet. Create one below, or enter your 16-digit number when syncing an audit from the Scan tab.'}
       </Text>
+      {msg ? (
+        <Text className="mb-3 text-xs leading-[17px]" style={{ color: ok ? colors.good : colors.warn }}>
+          {msg}
+        </Text>
+      ) : null}
       {/* fdroid flavor: no billing surface at all — account facts only
           (owner ruling 2026-11-13: everything free on the F-Droid build). */}
       {IS_FDROID_BUILD ? (
@@ -822,8 +997,8 @@ function AccountScreen() {
               ))}
             </Panel>
           ))}
-          <PrimaryButton label="Top up — from $5" note="Checkout is not available in this build." />
-          <GhostButton label="Create new account" note="Account creation is not available in this build." />
+          <PrimaryButton label="Top up — from $5" onPress={openTopUp} />
+          <GhostButton label={busy ? 'Creating…' : 'Create new account'} onPress={createAccount} />
           <Text className="mt-3.5 text-xs leading-[17px] text-faint">
             Plans are top-up subscriptions: add time whenever you like — no
             auto-renewal, no stored card. Your account number is the only
@@ -835,8 +1010,85 @@ function AccountScreen() {
   );
 }
 
-function BackupsScreen() {
+type BackupRow = { id: string; device_label?: string | null; kind?: string | null; size_bytes: number; created_at?: string };
+
+/**
+ * Backups: the payload (the backup-audit snapshot) is serialized and
+ * encrypted with the Keystore-held AES-256-GCM key (AuditModule
+ * .encryptBackup) BEFORE it leaves the app; the API stores only the
+ * ciphertext in R2 (POST /v1/backups). The list comes back from
+ * POST /v1/backups/list.
+ */
+function BackupsScreen({ accountNumber }: { accountNumber: string }) {
   const storage = useStorage();
+  const [backups, setBackups] = useState<BackupRow[]>([]);
+  const [used, setUsed] = useState<number | null>(null);
+  const [limit, setLimit] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [ok, setOk] = useState(false);
+
+  const refresh = async (account: string) => {
+    const res = await fetch(`${API_BASE}/backups/list`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ account_number: account }),
+    });
+    const body = await res.json().catch(() => null);
+    if (res.ok && body?.ok) {
+      setBackups(Array.isArray(body.backups) ? body.backups : []);
+      setUsed(typeof body.used_bytes === 'number' ? body.used_bytes : null);
+      setLimit(typeof body.limit_bytes === 'number' ? body.limit_bytes : null);
+    }
+  };
+
+  useEffect(() => {
+    if (!/^\d{16}$/.test(accountNumber)) return;
+    refresh(accountNumber).catch(() => {});
+  }, [accountNumber]);
+
+  const runBackup = async () => {
+    if (busy) return;
+    const account = accountNumber.replace(/\s/g, '');
+    if (!/^\d{16}$/.test(account)) {
+      setOk(false);
+      setMsg('Create or enter an account number first (Account → Create new account).');
+      return;
+    }
+    setBusy(true);
+    setMsg('');
+    try {
+      const snapshot = await AuditModule.collectBackupAudit();
+      const plaintext = JSON.stringify({ kind: 'backup', captured_at: new Date().toISOString(), snapshot });
+      const enc = await AuditModule.encryptBackup(plaintext);
+      const res = await fetch(`${API_BASE}/backups`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          account_number: account,
+          device_label: await AuditModule.getDeviceName(),
+          kind: 'backup',
+          size_bytes: enc.size_bytes,
+          data: enc.data_b64,
+        }),
+      });
+      const body = await res.json().catch(() => null);
+      if (res.ok) {
+        setOk(true);
+        setMsg('Backup stored — encrypted on this device before upload.');
+        await refresh(account);
+      } else {
+        setOk(false);
+        setMsg(body?.error === 'storage_limit' ? 'Storage limit reached for this account.' : body?.error || 'Backup upload failed.');
+      }
+    } catch (e: any) {
+      setOk(false);
+      setMsg(e?.message || 'Backup failed on this device.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <View>
       <ScreenTitle title="Backups" animation={backupsTitle} />
@@ -851,15 +1103,37 @@ function BackupsScreen() {
         <Row label="Free" value={storage ? fmtBytes(storage.free_bytes) : '—'} />
         <Row label="Total" value={storage ? fmtBytes(storage.total_bytes) : '—'} />
       </Panel>
-      <Panel title="Backups">
-        {/* Honest empty state (gates 5 + 9): backup upload is not wired
-            yet, so no backup is rendered as if it existed. */}
-        <Text className="py-1 text-sm text-muted">
-          No backups yet. Encrypted backup upload is not available in this
-          build.
-        </Text>
+      <Panel title={`Backups (${backups.length})`}>
+        {used !== null ? (
+          <Row label="Account storage" value={`${fmtBytes(used)}${limit ? ` of ${fmtBytes(limit)}` : ''}`} />
+        ) : null}
+        {backups.length === 0 ? (
+          <Text className="py-1 text-sm text-muted">
+            No backups yet. Tap “New backup” to encrypt this device's audit
+            snapshot and store it on your account.
+          </Text>
+        ) : (
+          backups.map((b) => (
+            <View key={b.id} className="flex-row items-center py-2">
+              <View className="flex-1">
+                <Text className="text-[15px] font-semibold text-text">
+                  {b.device_label || 'This device'}
+                </Text>
+                <Text className="mt-0.5 text-[13px] text-muted">
+                  {fmtBytes(b.size_bytes)} · encrypted
+                  {b.created_at ? ` · ${new Date(b.created_at).toLocaleDateString()}` : ''}
+                </Text>
+              </View>
+            </View>
+          ))
+        )}
       </Panel>
-      <PrimaryButton label="New backup" note="Backup upload ships in a later build." />
+      <PrimaryButton label={busy ? 'Encrypting…' : 'New backup'} onPress={runBackup} />
+      {msg ? (
+        <Text className="mt-3.5 text-xs leading-[17px]" style={{ color: ok ? colors.good : colors.warn }}>
+          {msg}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -890,16 +1164,17 @@ function ToolRow({ name, desc, pro, onPress, note }: { name: string; desc: strin
   );
 }
 
-/** Opens the public guides on rootmyandroid.com — the only Tools row with a
- * working handler in this build (everything else is deferred). */
-const openRomCatalog = () => {
-  Linking.openURL('https://rootmyandroid.com/').catch(() => {
+/** Opens a public page on rootmyandroid.com (guides are real pages in
+ * apps/web/src/content/guides). */
+const openSite = (path: string) => () => {
+  Linking.openURL(`https://rootmyandroid.com${path}`).catch(() => {
     // No browser available — the row stays inert.
   });
 };
 
-function ToolsScreen({ onOpenStorage }: { onOpenStorage: () => void }) {
+function ToolsScreen({ onOpenStorage, onOpenScan }: { onOpenStorage: () => void; onOpenScan: () => void }) {
   const storage = useStorage();
+  const [health, refreshHealth] = useHealth();
   return (
     <View>
       <ScreenTitle title="Tools" animation={toolsTitle} />
@@ -910,27 +1185,37 @@ function ToolsScreen({ onOpenStorage }: { onOpenStorage: () => void }) {
       </Text>
       <Panel title="Root & ROM">
         <ToolRow
-          name="OTA survival assistant"
-          desc="Re-apply root and modules after an OTA update."
-          pro
-          note="Not available in this build."
-        />
-        <ToolRow
           name="Integrity auditor"
-          desc="Audit root, SELinux, and Play Integrity status."
-          note="Run the free device scan on the Scan tab for the integrity read-out."
+          desc="Audit bootloader state, root presence, and the derived integrity grade."
+          onPress={onOpenScan}
         />
         <ToolRow
-          name="ROM catalog"
-          desc="Browse device guides and ROM notes on rootmyandroid.com."
-          onPress={openRomCatalog}
+          name="Rooting guide"
+          desc="What rooting does, and what it costs you."
+          onPress={openSite('/guides/what-is-rooting')}
+        />
+        <ToolRow
+          name="Bootloader guide"
+          desc="How to read your device's bootloader status."
+          onPress={openSite('/guides/check-bootloader-status')}
+        />
+        <ToolRow
+          name="Logcat guide"
+          desc="What logcat is and when to read it."
+          onPress={openSite('/guides/what-is-logcat')}
         />
       </Panel>
       <Panel title="Device health">
         <ToolRow
           name="Health monitor"
-          desc="Battery, thermal, and storage health trends."
-          note="Not available in this build."
+          desc={
+            health
+              ? `Battery ${health.level_percent}%${
+                  health.temperature_c >= 0 ? ` · ${health.temperature_c.toFixed(1)}°C` : ''
+                } · ${health.health}`
+              : 'Reading battery state…'
+          }
+          onPress={refreshHealth}
         />
         <ToolRow
           name="Storage manager"
