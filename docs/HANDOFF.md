@@ -369,3 +369,46 @@ re-run on blackhost: `rewritemeta` parsed-equal, 1 Builds block.
 **Still open before the MR:** nothing in-repo. Remaining = Phase 4
 (version bump + tag + asset verify + recipe fill) and the owner's GitLab
 account for the fdroiddata push.
+
+## 12. Gap closure + GitLab staging (2026-11-20, later)
+
+**Every "note" is gone — replaced by a working implementation** (commit
+`96f1588`, contract-fix `03895e8`). Gate 10 is satisfied by real controls,
+not by inert rows: checker reports 24 controls / 0 dead / 0 `note=`
+attributes.
+
+| Gap | Now |
+|---|---|
+| `ToolRow` chevron, no handler | Tools = Integrity auditor → Scan tab; Rooting / Bootloader / Logcat guides → the three real `/guides` pages; Health monitor → live battery (level/temp/health from the sticky battery broadcast, tap re-reads); Storage manager → Backups storage panel. The unimplementable "OTA survival assistant" row was REMOVED rather than annotated. |
+| "Pair a new device" | Opens the native QR scanner in PAIRING mode; the decoded code is saved locally as a paired device (label = URL host) and listed with a working Remove. Nothing is uploaded. Deliberately NOT `guardian/sync` — that charges Halo for a new device. |
+| "New backup" | Collects the backup-audit snapshot → AES-256-GCM encrypt with an Android Keystore key (`AuditModule.encryptBackup`, non-exportable) → `POST /v1/backups`; list read back from `POST /v1/backups/list`. |
+| "Top up" | Opens `rootmyandroid.com/account` (the real invoice surface). |
+| "Create new account" | `POST /v1/accounts` → 16-digit number persisted in app-private prefs, shared with the Scan-tab sync field. |
+
+Contract facts measured against the live API (2026-11-20, host-side curl
+with the exact app bodies): `POST /v1/backups` → 201; `POST
+/v1/backups/list` → 200 with `{created_at, device_label, kind, r2_key,
+size_bytes}` — **no `id` field**, so the list keys rows by `r2_key`
+(commit `03895e8` fixed a real bug caught this way). `POST /v1/accounts`
+→ 201.
+
+**F-Droid flavor note:** account creation + top-up live inside the
+`!IS_FDROID_BUILD` branch, so the F-Droid build still ships NO billing and
+NO account-creation UI (owner ruling 2026-11-13). F-Droid users create an
+account on the website and enter the number in the Scan tab.
+
+**Device verification (partial — the owner took the phone):** Tools screen
+verified live on the fdroid build (`Battery 100% · 28.1°C · good`,
+`18.2 GB used of 109.1 GB`, all guide rows tappable), Devices pairing modal
+opens with the "Pair a device" title, Backups/Account render the real
+StatFs values. NOT yet device-verified: the full backup upload from the
+app, and account creation from the appstore build (both blocked on the
+device being free; the API halves are proven).
+
+**GitLab staged:** `gitlab.com/nyusternie/rootmyandroid` (public, default
+branch `main`) now mirrors master at `03895e8`. Push used the EXISTING
+`glab` keyring session + the pre-registered `id_rsa` on this host — no new
+credential was created or stored (rule 11). The 63 MiB pack took ~10 min
+at 30–200 KiB/s (the §0 link trap), so the push ran detached with polling.
+NOTE: this repo is a mirror, NOT the F-Droid MR target — the MR goes to a
+fork of `gitlab.com/fdroid/fdroiddata` (plan Phase 4).
