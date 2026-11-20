@@ -60,6 +60,8 @@ SourceCode: https://github.com/nyusternie/rootmyandroid
 
 IssueTracker: https://github.com/nyusternie/rootmyandroid/issues
 
+WebSite: https://rootmyandroid.com
+
 AutoName: Root My Android
 
 # The app is a pnpm workspace member. F-Droid builds from the repo root so
