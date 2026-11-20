@@ -86,10 +86,14 @@ Builds:
   # (sidecoin's stale-second-block lesson, MR fdroiddata!50457).
   - versionName: 26.11.20
     versionCode: 20261120
-    # FULL 40-char hash, not the tag. This commit's build must be
-    # CI-verified byte-identical to the hosted reference binary (Phase 2
-    # two-path proof on blackhost, docs/HANDOFF.md §8).
-    commit: FILL-AT-RELEASE-full-40-hex-commit-hash
+    # FULL 40-char hash, not the tag (Build_Metadata_Reference). This is the
+    # commit the v26.11.20 tag points at; its CI build is the hosted
+    # reference binary below (Phase 2 reproducibility proof: docs/HANDOFF.md
+    # §8). Hosted asset at v26.11.20: app-fdroid-release.apk,
+    # 17993300 bytes, sha256
+    # c1330ba30ca7cd2b65c476470fb1c160fa1ef49d42b63558c92540a94b330b30
+    # (curl -sIL -> HTTP 200 + content-length, 2026-11-20).
+    commit: 9149030147d94b7dd79976f885a65e6f9cd89af7
     # `subdir` is the MODULE directory (…/android/app), not the Gradle
     # project root: fdroidserver roots its default APK glob at
     # `<root_dir>/build/outputs/apk/<flavor>/release`, which is exactly
