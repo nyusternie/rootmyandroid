@@ -324,3 +324,48 @@ directly testable. Measured 2026-11-17 on serial `0C151FDD400648`:
 | Uninstall bloatware (Canta) | `pm uninstall` | Command exists — **BLOCKED by AGENTS.md rule 6** (no data-destroying commands on other packages); needs an explicit owner ruling |
 | Per-app internet ban (ShizuWall) | `cmd netpolicy` | **NO** — Android 14 netpolicy exposes only restrict-background whitelist/blacklist + metered toggles, no per-UID internet block |
 | Theming / overlay / widget (ColorBlendr, Adaptive Theme, Smartspacer) | — | **NO** — needs system-level permissions, out of reach at uid 2000 |
+
+## 11. F-Droid pre-submission sweep (2026-11-20) — gate 10 + gate 5 closed
+
+Reviewer-friction audit before the Phase-4 release. Two gates were tripped
+in-tree; both are now closed and device-verified.
+
+**Gate 10 — dead controls (mezinster's recurring finding, twice on
+sidecoin).** Four instances found: `ToolRow` rendered a `›` chevron with no
+handler, and three `PrimaryButton`s ("Pair a new device", "New backup",
+"Top up — from $5") were tappable no-ops because `onPress` is optional in
+the wrapper signature. Fix (commit `64e2726`): wrappers render INERT
+(muted, bordered, non-pressable) when no handler is passed and carry a
+note saying why; `ToolRow` drops the chevron. Repeatable check:
+`node apps/android/tools/check-dead-controls.mjs` → 21 controls, 0 dead
+(commit `55bb5f8`; negative-tested — removing a handler exits 1).
+
+**Gate 5 — the listing claimed three things the app does not do.** All
+three corrected in `full_description.txt` (commit `64e2726`):
+- "turns those facts into a concrete rooting and upgrade plan" — `scan.ts`
+  contains ZERO plan logic (`grep -i "plan\|recommend\|nextStep"` → no
+  hits). The scan GRADES bootloader/root/integrity and shows evidence.
+- "Pair with the web … pair the app with your account" — pairing is not
+  wired; the QR modal itself says so. Now "QR scanner", on-device only.
+- "save a scan report" — the sync posts the BACKUP AUDIT, not a scan
+  report. Wording corrected.
+
+**Honest surfaces (gates 5 + 9).** `mockDevices`, the fake
+"Oct 15, 2026 · 1.2 GB" backup row and the hardcoded account number
+`1327 3076 2982 9434` were removed; Devices/Backups/Account now render
+explicit empty states. Storage figures are REAL: new
+`AuditModule.getStorage()` (StatFs, no permission) → device-verified on
+redfin "18.2 GB used of 109.1 GB", "Free 90.9 GB". All seven listing
+screenshots re-captured (commit `93e0235`) — the old set showed the mock
+surfaces and would have contradicted the shipped app.
+
+**Recipe corrections.** NonFreeNet reason no longer names
+`relay.rootmyandroid.com` (that socket belongs to the Rootz app;
+`com.rootmyandroid` never opens it) and now states the offline behavior.
+`QUERY_ALL_PACKAGES` justification documented in-file for reviewers (backup
+audit + root-package detection; nothing uploaded during a scan). Gate 4
+re-run on blackhost: `rewritemeta` parsed-equal, 1 Builds block.
+
+**Still open before the MR:** nothing in-repo. Remaining = Phase 4
+(version bump + tag + asset verify + recipe fill) and the owner's GitLab
+account for the fdroiddata push.
