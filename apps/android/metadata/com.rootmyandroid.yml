@@ -86,8 +86,8 @@ Builds:
   # If this drifts, F-Droid will build a different APK than the one tested.
   # Keep ONLY the latest block: F-Droid builds and publishes every entry
   # (sidecoin's stale-second-block lesson, MR fdroiddata!50457).
-  - versionName: 26.11.22
-    versionCode: 20261122
+  - versionName: 26.11.23
+    versionCode: 20261123
     # FULL 40-char hash, not the tag (Build_Metadata_Reference). This is the
     # commit the v26.11.20 tag points at; its CI build is the hosted
     # reference binary below (Phase 2 reproducibility proof: docs/HANDOFF.md
@@ -209,6 +209,21 @@ Builds:
       - .vendor
       - apps/desktop
       - node_modules/react-native/ReactAndroid/publish.gradle
+      # MEASURED on fdroiddata pipeline 3096663138 (job 18241120761): the
+      # autolink CLI failed with "No package name found ... at
+      # node_modules/lottie-react-native/android/src/main/AndroidManifest.xml".
+      # Cause: these three library build.gradle files declare a LOCAL maven
+      # repo (`url "$projectDir|$rootDir/../node_modules/react-native/android"`),
+      # the scanner flags them as unknown maven repos, and `scandelete:
+      # node_modules` deletes them — taking their `namespace = ...` line with
+      # them, so autolinking cannot resolve the package. Same failure mode the
+      # react-native publish.gradle entry above already documents. Enumerated
+      # by grep over the real install tree, not from memory:
+      #   grep -rl 'url "$projectDir|$rootDir|node_modules/react-native/android'
+      #     node_modules/*/android/build.gradle node_modules/@*/*/android/build.gradle
+      - node_modules/lottie-react-native/android/build.gradle
+      - node_modules/react-native-safe-area-context/android/build.gradle
+      - node_modules/react-native-svg/android/build.gradle
 
 # The ONLY signer allowed to have produced the shipped APK. If an APK in the
 # repo carries any other signature, fdroid update drops it. This is our
@@ -221,8 +236,8 @@ AllowedAPKSigningKeys:
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 26.11.22
-CurrentVersionCode: 20261122
+CurrentVersion: 26.11.23
+CurrentVersionCode: 20261123
 
 # NonFreeNet: the app talks to ONE hosted service that is not free software
 # and cannot be self-hosted from within the app:
