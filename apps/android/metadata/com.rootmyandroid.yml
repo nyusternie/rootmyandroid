@@ -92,10 +92,10 @@ Builds:
     # commit the v26.11.20 tag points at; its CI build is the hosted
     # reference binary below (Phase 2 reproducibility proof: docs/HANDOFF.md
     # §8). Hosted asset at v26.11.20: app-fdroid-release.apk,
-    # 17993300 bytes, sha256
-    # c1330ba30ca7cd2b65c476470fb1c160fa1ef49d42b63558c92540a94b330b30
+    # 17993304 bytes, sha256
+    # f6c10003dd195909f66480efa632afe31e453fbc4f8351bd67e32b1c64137f01
     # (curl -sIL -> HTTP 200 + content-length, 2026-11-20).
-    commit: 9149030147d94b7dd79976f885a65e6f9cd89af7
+    commit: 55035499d3bcde59dde73a1b4b3383725caada9b
     # `subdir` is the MODULE directory (…/android/app), not the Gradle
     # project root: fdroidserver roots its default APK glob at
     # `<root_dir>/build/outputs/apk/<flavor>/release`, which is exactly
