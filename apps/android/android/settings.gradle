@@ -11,7 +11,19 @@ pluginManagement {
     includeBuild(file(appLocal).exists() ? appLocal : workspaceRoot)
 }
 plugins { id("com.facebook.react.settings") }
-extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+// Autolinking command: run the React Native CLI with the NODE BINARY and an
+// explicit path instead of the default `npx @react-native-community/cli
+// config`. On the F-Droid build VM (fdroiddata pipeline 3096488646, job
+// 18239957997) `npx` exited 1 at this line: with no TTY and no network it
+// cannot resolve the package, and the build dies at settings evaluation.
+// `node <cli>/build/bin.js config` needs no resolution and no network.
+// Path resolution mirrors the pluginManagement block above: app-local first
+// (machines where pnpm materialized it), workspace root otherwise (fresh
+// checkouts with nodeLinker: hoisted).
+def rnCliAppLocal = file("../node_modules/@react-native-community/cli/build/bin.js")
+def rnCliWorkspace = file("../../../node_modules/@react-native-community/cli/build/bin.js")
+def rnCli = rnCliAppLocal.exists() ? rnCliAppLocal : rnCliWorkspace
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand(["node", rnCli.absolutePath, "config"]) }
 rootProject.name = 'com.rootmyandroid'
 include ':app'
 def rnGradlePlugin = file("../node_modules/@react-native/gradle-plugin")

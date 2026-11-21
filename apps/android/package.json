@@ -1,6 +1,6 @@
 {
   "name": "rootmyandroid-android",
-  "version": "26.11.20",
+  "version": "26.11.21",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
