@@ -96,8 +96,8 @@ android {
         applicationId "com.rootmyandroid"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 20261124
-        versionName "26.11.24"
+        versionCode 20261125
+        versionName "26.11.25"
     }
     signingConfigs {
         debug {
