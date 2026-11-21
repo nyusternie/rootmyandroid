@@ -1,0 +1,7 @@
+Maintenance release — no functional changes.
+
+Rebuilt with the JDK 21 toolchain F-Droid's buildserver uses, so the
+published APK stays byte-identical to F-Droid's own source build.
+
+Device scan, backup audit, encrypted backups, QR pairing and Tools are
+unchanged.

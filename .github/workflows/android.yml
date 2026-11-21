@@ -155,6 +155,24 @@ jobs:
       - name: Materialize RN node_modules farm
         run: .agents/skills/build/scripts/materialize-rn-farm.sh apps/android
 
+      # The reference APK must come out of the SAME transformation F-Droid
+      # applies. The recipe's `init:` runs templates/build-react-native.yml's
+      # "Build with JDK 21" sed, which recompiles @react-native/gradle-plugin
+      # at 21. That changes the Gradle artifact-transform cache key, and the
+      # key is baked into libappmodules.so's .rodata as
+      # .gradle-home/caches/<gradle>/transforms/<hash>/transformed/react-android-…
+      # Measured 2026-11-21 (pipeline 3098197098): without this step the
+      # reference carried transforms/23ffe694… while F-Droid's build produced
+      # transforms/7db65e98…, and `fdroid build` failed the byte comparison on
+      # classes2.dex + three .so files per ABI (kotlin-tooling-metadata.json:
+      # reference 17 vs F-Droid 21). Keep this command IDENTICAL to the
+      # recipe's — apps/android/metadata/fdroiddata-submission/com.rootmyandroid.yml.
+      - name: Align RN Gradle plugin to JDK 21 (mirror of the recipe's sed)
+        run: |
+          sed -i '/jvmToolchain\|JavaVersion/s/17/21/' \
+            node_modules/@react-native/gradle-plugin/*/build.gradle.kts \
+            node_modules/@react-native/gradle-plugin/react-native-gradle-plugin/src/main/kotlin/com/facebook/react/utils/JdkConfiguratorUtils.kt
+
       # Two flavors (F-Droid submission, docs/FDROID-SUBMISSION-PLAN.md):
       # appstore = the rolling sideload/Play build (billing UI present);
       # fdroid = the FOSS build (no billing chip, no PRO copy, everything
