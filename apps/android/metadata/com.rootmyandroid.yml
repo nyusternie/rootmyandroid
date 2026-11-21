@@ -86,8 +86,8 @@ Builds:
   # If this drifts, F-Droid will build a different APK than the one tested.
   # Keep ONLY the latest block: F-Droid builds and publishes every entry
   # (sidecoin's stale-second-block lesson, MR fdroiddata!50457).
-  - versionName: 26.11.21
-    versionCode: 20261121
+  - versionName: 26.11.22
+    versionCode: 20261122
     # FULL 40-char hash, not the tag (Build_Metadata_Reference). This is the
     # commit the v26.11.20 tag points at; its CI build is the hosted
     # reference binary below (Phase 2 reproducibility proof: docs/HANDOFF.md
@@ -221,8 +221,8 @@ AllowedAPKSigningKeys:
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 26.11.21
-CurrentVersionCode: 20261121
+CurrentVersion: 26.11.22
+CurrentVersionCode: 20261122
 
 # NonFreeNet: the app talks to ONE hosted service that is not free software
 # and cannot be self-hosted from within the app:

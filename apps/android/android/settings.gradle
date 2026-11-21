@@ -23,6 +23,19 @@ plugins { id("com.facebook.react.settings") }
 def rnCliAppLocal = file("../node_modules/@react-native-community/cli/build/bin.js")
 def rnCliWorkspace = file("../../../node_modules/@react-native-community/cli/build/bin.js")
 def rnCli = rnCliAppLocal.exists() ? rnCliAppLocal : rnCliWorkspace
+// DIAGNOSTIC (temporary, 26.11.22): the F-Droid build VM fails this command
+// with exit 1 while the same command succeeds in `init:` on the same tree,
+// so print the real stderr + the node that Gradle resolves before Gradle
+// runs it. Remove once the cause is known.
+try {
+    def probe = ["bash", "-lc", "which -a node; node --version; node ${rnCli.absolutePath} config >/dev/null"].execute(null, file("."))
+    probe.waitFor()
+    println "AUTOLINK PROBE exit=${probe.exitValue()}"
+    println "AUTOLINK PROBE stdout=" + probe.in.text
+    println "AUTOLINK PROBE stderr=" + probe.err.text
+} catch (Exception e) {
+    println "AUTOLINK PROBE exception=" + e
+}
 extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand(["node", rnCli.absolutePath, "config"]) }
 rootProject.name = 'com.rootmyandroid'
 include ':app'
