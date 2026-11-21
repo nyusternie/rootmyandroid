@@ -33,20 +33,20 @@ audit or store a backup.
 
 Screenshots (all captured from the F-Droid build on a Pixel 5, Android 14).
 All eight are committed upstream in
-[`fastlane/metadata/android/en-US/phoneScreenshots/`](https://github.com/nyusternie/rootmyandroid/tree/v26.11.26/fastlane/metadata/android/en-US/phoneScreenshots)
+[`fastlane/metadata/android/en-US/phoneScreenshots/`](https://github.com/nyusternie/rootmyandroid/tree/v26.11.28/fastlane/metadata/android/en-US/phoneScreenshots)
 — the same files F-Droid imports for the listing:
 
 **Scan results — real device facts, graded root status**
-![Scan results](https://github.com/nyusternie/rootmyandroid/raw/v26.11.26/fastlane/metadata/android/en-US/phoneScreenshots/01-scan-results.png)
+![Scan results](https://github.com/nyusternie/rootmyandroid/raw/v26.11.28/fastlane/metadata/android/en-US/phoneScreenshots/01-scan-results.png)
 
 **Backup audit — live participation counts**
-![Backup audit](https://github.com/nyusternie/rootmyandroid/raw/v26.11.26/fastlane/metadata/android/en-US/phoneScreenshots/02-backup-audit.png)
+![Backup audit](https://github.com/nyusternie/rootmyandroid/raw/v26.11.28/fastlane/metadata/android/en-US/phoneScreenshots/02-backup-audit.png)
 
 **Tools — live battery, real StatFS storage, guide links**
-![Tools](https://github.com/nyusternie/rootmyandroid/raw/v26.11.26/fastlane/metadata/android/en-US/phoneScreenshots/07-tools-fdroid.png)
+![Tools](https://github.com/nyusternie/rootmyandroid/raw/v26.11.28/fastlane/metadata/android/en-US/phoneScreenshots/07-tools-fdroid.png)
 
 **Account — number-only, no email**
-![Account](https://github.com/nyusternie/rootmyandroid/raw/v26.11.26/fastlane/metadata/android/en-US/phoneScreenshots/08-account.png)
+![Account](https://github.com/nyusternie/rootmyandroid/raw/v26.11.28/fastlane/metadata/android/en-US/phoneScreenshots/08-account.png)
 
 ### Please elaborate why you wrote this app. Please highlight the unique functions it provides over other similar apps in F-Droid.
 
@@ -79,7 +79,7 @@ What is unique here:
 
 * [x] The app complies with the [inclusion policy](https://f-droid.org/docs/Inclusion_Policy). _Pay special attention to Quality point 6._
   * Unique value (Quality point 6): the evidence-first root scan and the per-app backup audit described above are not offered by comparable F-Droid apps. Not a rebrand or a fork.
-  * The project has been under active development since 2022-12 (366 commits at this commit); the Android edition ships regular tagged releases (current: `v26.11.26`).
+  * The project has been under active development since 2022-12 (370 commits at this commit); the Android edition ships regular tagged releases (current: `v26.11.28`).
 * [x] The original app author has been notified (and does not oppose the inclusion). If you are not the author, please paste the link of the reply from the author.
   * I am the author and copyright holder (MIT).
 * [x] The upstream app source code repo contains the app metadata in a [Fastlane](https://gitlab.com/snippets/1895688) or [Triple-T](https://gitlab.com/snippets/1901490) folder structure. The summary and description must be included and images, icon, and changelog should also be provided for better user experience. The `en-US` locale must be included.
@@ -123,9 +123,9 @@ What is unique here:
 * [x] Enable [Reproducible Builds](https://f-droid.org/docs/Reproducible_Builds). We'll use your signature for improved security/reliability, also allowing users to switch between different channels. Do note that if you don't enable reproducible build then the apk will be signed with our key so you can't enable it later. If you can't enable this, please add the reasons here.
   * Enabled, upstream-signed: `Binaries:` + `AllowedAPKSigningKeys:` (our upload key, cert SHA-256 `1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886bceca`). The `fdroid build` job rebuilds the app from source and then runs `fdroid publish --error-on-failed`, which compares the result byte-for-byte against the hosted reference binary and ships our APK only on a match. The same recipe — identical apart from the version fields — passed that comparison in the previous MR's pipeline (`compared built binary to supplied reference binary successfully`; `supplied reference binary has allowed signer 1c59c433…`).
 * [x] Setup abi split if the APK is large and the splitted ones can be much smaller.
-  * Not needed: the APK is 17,993,300 bytes (~18 MB) with `arm64-v8a` + `armeabi-v7a` only (`reactNativeArchitectures` limits the build; the x86 emulator images are not packaged).
+  * Not needed: the APK is 17,993,664 bytes (~18 MB) with `arm64-v8a` + `armeabi-v7a` only (`reactNativeArchitectures` limits the build; the x86 emulator images are not packaged).
 * [x] Only the latest versions should be kept in the metadata before it's merged. If you update the metadata, please replace the old versions with the new ones.
-  * A single `Builds:` entry: 26.11.26 / 20261126.
+  * A single `Builds:` entry: 26.11.28 / 20261128.
 * [x] Don't add any disabled versions in the metadata.
 * [x] The `commit` field should be the full hash. Please don't use tag or branch in commit.
   * `commit: 0d30c05f37d0e9139b78724802b174471227858b`

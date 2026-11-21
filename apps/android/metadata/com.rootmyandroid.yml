@@ -86,20 +86,24 @@ Builds:
   # If this drifts, F-Droid will build a different APK than the one tested.
   # Keep ONLY the latest block: F-Droid builds and publishes every entry
   # (sidecoin's stale-second-block lesson, MR fdroiddata!50457).
-  - versionName: 26.11.26
-    versionCode: 20261126
+  - versionName: 26.11.28
+    versionCode: 20261128
     # FULL 40-char hash, not the tag (Build_Metadata_Reference). This is the
-    # commit the v26.11.26 tag points at; its CI build (android.yml on
+    # commit the v26.11.28 tag points at; its CI build (android.yml on
     # blackhost) is the hosted reference binary below (Phase 2 reproducibility
-    # proof: docs/HANDOFF.md §8). Hosted asset at v26.11.26:
-    # app-fdroid-release.apk, 17993300 bytes, sha256
-    # 8e09aca68caf9444c3aca96275bee943db799f2890a45026c0e0fd0418ec5da8
+    # proof: docs/HANDOFF.md §8). Hosted asset at v26.11.28:
+    # app-fdroid-release.apk, 17993664 bytes, sha256
+    # 954447cd79cd8c12b2d26a850d40a680ce8c0767799cc0d324e26c84f70c478e
     # (GitHub asset digest + sha256sum on blackhost, 2026-11-21). Signed with
     # the upload key: build.gradle only engages release signing when the
     # ROOTMYANDROID_UPLOAD_* properties are present, and the signed (not
-    # -unsigned) filename in the release proves they were. Badging read from
-    # the asset: versionCode 20261126, versionName 26.11.26.
-    commit: 0d30c05f37d0e9139b78724802b174471227858b
+    # -unsigned) filename in the release proves they were.
+    # This release exists ONLY to rebuild the reference APK through the same
+    # JDK 21 transformation this recipe applies (`init:` sed). Proven on
+    # blackhost against F-Droid's own build of 6eab155: with the sed, the
+    # three codegen/app .so and the embedded Gradle transform key
+    # (transforms/7db65e98…) are byte-identical; without it they differ.
+    commit: 13c3f958ff7a228acab958dc6d82b4bb5c32cded
     # `subdir` is the MODULE directory (…/android/app), not the Gradle
     # project root: fdroidserver roots its default APK glob at
     # `<root_dir>/build/outputs/apk/<flavor>/release`, which is exactly
@@ -263,8 +267,8 @@ AllowedAPKSigningKeys:
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 26.11.26
-CurrentVersionCode: 20261126
+CurrentVersion: 26.11.28
+CurrentVersionCode: 20261128
 
 # NonFreeNet: the app talks to ONE hosted service that is not free software
 # and cannot be self-hosted from within the app:

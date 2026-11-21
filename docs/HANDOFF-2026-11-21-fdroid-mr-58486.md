@@ -114,3 +114,59 @@ All seven are explained in the MR description's Pipeline section.
 description is a no-op for us — GitLab returns 200 and ignores it). A
 maintainer applies it during triage; the template line is present, which
 is what the checklist asks for.
+
+## 8. JDK 21 round (2026-11-21 evening) — reviewer request, and what it cost
+
+@linsui, 19:21Z on !58486: *"Can you use jdk 21? See the template at
+templates/build-react-native.yml"*. The recipe had installed
+`openjdk-17-jdk-headless` from **bookworm** (copied from
+`dev.djara.wafrn_rn`) because the RN Gradle plugin pins
+`jvmToolchain(17)`. That works, but it DOWNGRADES the buildserver image
+(Debian trixie ships openjdk-21) and contradicts the template, which
+added the `jvmToolchain`/`JavaVersion` 17→21 sed on 2026-05-10
+(commit 5230360a). Lesson: derive a recipe from `templates/build-*.yml`,
+never from another app's merged recipe — a merged recipe is a snapshot of
+someone else's workaround.
+
+Three releases were burned finding the second half of the problem:
+
+- **26.11.27** (`6eab155`) — recipe switched to the template sed. Pipeline
+  3098197098 `fdroid build` FAILED the byte comparison.
+- **26.11.28** (`13c3f95`) — the missing half: **our CI must apply the
+  same sed**. Pipeline 3098300035 green, `compared built binary to
+  supplied reference binary successfully`.
+
+Why the second half was needed (measured, not assumed): the sed
+recompiles `@react-native/gradle-plugin` at 21, which changes the Gradle
+artifact-transform cache key. That key is compiled into
+`libappmodules.so`'s `.rodata` as
+`.gradle-home/caches/9.4.1/transforms/<hash>/transformed/react-android-0.88.0-release/prefab/…/propsConversions.h`
+(184 chars; only the 32-char hash differs). Reference carried
+`23ffe694…`, buildserver `7db65e98…`; the string shift cascaded into
+1,736/5,201/1,478 differing bytes in the three `.so`. The JDK version
+alone does NOT move the key (26.11.26 JDK 17 and 26.11.27 JDK 21 on
+blackhost both produced `23ffe694…`).
+
+Proof method that avoided a fourth release: build
+`assembleFdroidRelease` on blackhost **with the sed**, then compare the
+`.so`/`.dex` byte-for-byte against F-Droid's own built APK from the
+failed job's artifact. With the sed all three `.so` and the transform
+key matched exactly; `classes2.dex` differed only because the version
+bump changes `BuildConfig`.
+
+Rules that follow:
+1. Never change two inputs of a byte-reproducibility chain at once.
+2. When a comparison fails, the failing artifact is usually still
+   downloadable — prove the fix against it before tagging anything.
+3. The CI build and the recipe must run the SAME transformation; the
+   workflow step and the recipe `init:` sed are intentionally identical.
+
+## 9. CI incident (2026-11-21)
+
+- Run 44944675442 first attempt died on `No space left on device`
+  (runner could not write its own log) — blackhost was at 96 % with
+  1.6 G free. Freed 2.05 G of `_work/_update` + `pnpm store prune`
+  (364 MB) → 4.2 G.
+- First rerun failed on a load-dependent jest timeout in
+  `apps/android/__tests__/App.test.tsx` (default 5 s, measured 18.4 s).
+  Test now carries an explicit 30 s timeout; the assertion is unchanged.
