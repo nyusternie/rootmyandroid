@@ -85,10 +85,32 @@ pipeline is not acceptance.
 - `glab api --input` needs `-H "Content-Type: application/json"`.
 - `glab api` on this version has **no** `--jq`; pipe to `jq`.
 
-## 6. If the pipeline fails
+## 6. Pipeline — ALL 9 JOBS GREEN (2026-11-21 18:57 UTC)
 
-`fdroid build` is the only job with real uncertainty: it rebuilds from
-`0d30c05` and `fdroid publish` byte-compares against the hosted asset.
-Everything else (`rewritemeta`, `lint`, `checkupdates`, `schema
-validation`, `git redirect`, `check source code`) is already green on this
-exact commit.
+Pipeline `3098009132` on `6449ae66`, `status: success`:
+`checkupdates`, `git redirect`, `fdroid lint`, `fdroid rewritemeta`,
+`schema validation`, `tools check scripts`, `check source code`,
+`fdroid build` (611 s), `check apk`.
+
+The two lines that matter, from job 18248983596 (`fdroid build`):
+
+```
+INFO: compared built binary to supplied reference binary successfully
+INFO: supplied reference binary has allowed signer 1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886bceca
+```
+
+`check apk` (job 18248983594) reported, all `info`/`minor`:
+`APK ABI and size: arm64-v8a (12M) armeabi-v7a (11M), 18M` ·
+`APK has no R8 Marker, R8 is not used` · `Permission INTERNET` ·
+`Permission QUERY_ALL_PACKAGES` · `Permission CAMERA` ·
+`Permission com.rootmyandroid.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` ·
+`Signing Key: CN=Root My Android Upload, OU=Engineering, O=Root My Android`.
+All seven are explained in the MR description's Pipeline section.
+
+## 7. Open item
+
+`labels: []` on the MR: a non-member cannot set labels on
+`fdroid/fdroiddata` (the `/label ~"New App"` quick action in the
+description is a no-op for us — GitLab returns 200 and ignores it). A
+maintainer applies it during triage; the template line is present, which
+is what the checklist asks for.

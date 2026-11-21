@@ -134,11 +134,13 @@ What is unique here:
 
 * [x] All pipelines should pass.
 * [x] All warnings and errors in the Reports tab should be fixed or explained.
-  * The codequality report carries four `info`/`minor` entries, all expected and by design:
+  * The codequality report is entirely `info`/`minor`, and every entry is expected:
     * `Permission android.permission.INTERNET` — optional audit sync and encrypted backup upload to `https://rootmyandroid.com/v1` (see the NonFreeNet anti-feature). Nothing is sent during a scan.
     * `Permission android.permission.QUERY_ALL_PACKAGES` — the read-only backup audit reads every installed app's `FLAG_ALLOW_BACKUP`, and the scan detects installed root-management packages. No package data leaves the device.
     * `Permission android.permission.CAMERA` — QR pairing only; decoding is local (ZXing), frames never leave the device.
+    * `Permission com.rootmyandroid.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` — React Native's own signature-level permission for non-exported broadcast receivers (comes with the RN template); it grants nothing to other apps.
     * `APK has no R8 Marker` — R8 is not used: the React Native release build sets `enableProguardInReleaseBuilds = false` and ships JS as Hermes bytecode.
+    * `APK ABI and size: arm64-v8a (12M) armeabi-v7a (11M), 18M` and `Signing Key: CN=Root My Android Upload` — informational: the two packaged ABIs, and the upload key that `AllowedAPKSigningKeys` pins.
 * [x] F-Droid CI runners are under GitLab's FOSS program, so there's no need for you to pay for any CI time. If Gitlab starts asking for phone numbers or credit cards don't submit anything, just leave a note in the MR so we know we need to trigger the CI.
 
 Supersedes !58356, which was closed because the MR template was not followed.
