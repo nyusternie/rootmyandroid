@@ -86,16 +86,20 @@ Builds:
   # If this drifts, F-Droid will build a different APK than the one tested.
   # Keep ONLY the latest block: F-Droid builds and publishes every entry
   # (sidecoin's stale-second-block lesson, MR fdroiddata!50457).
-  - versionName: 26.11.25
-    versionCode: 20261125
+  - versionName: 26.11.26
+    versionCode: 20261126
     # FULL 40-char hash, not the tag (Build_Metadata_Reference). This is the
-    # commit the v26.11.20 tag points at; its CI build is the hosted
-    # reference binary below (Phase 2 reproducibility proof: docs/HANDOFF.md
-    # §8). Hosted asset at v26.11.20: app-fdroid-release.apk,
-    # 17993304 bytes, sha256
-    # f6c10003dd195909f66480efa632afe31e453fbc4f8351bd67e32b1c64137f01
-    # (curl -sIL -> HTTP 200 + content-length, 2026-11-20).
-    commit: 55035499d3bcde59dde73a1b4b3383725caada9b
+    # commit the v26.11.26 tag points at; its CI build (android.yml on
+    # blackhost) is the hosted reference binary below (Phase 2 reproducibility
+    # proof: docs/HANDOFF.md §8). Hosted asset at v26.11.26:
+    # app-fdroid-release.apk, 17993300 bytes, sha256
+    # 8e09aca68caf9444c3aca96275bee943db799f2890a45026c0e0fd0418ec5da8
+    # (GitHub asset digest + sha256sum on blackhost, 2026-11-21). Signed with
+    # the upload key: build.gradle only engages release signing when the
+    # ROOTMYANDROID_UPLOAD_* properties are present, and the signed (not
+    # -unsigned) filename in the release proves they were. Badging read from
+    # the asset: versionCode 20261126, versionName 26.11.26.
+    commit: 0d30c05f37d0e9139b78724802b174471227858b
     # `subdir` is the MODULE directory (…/android/app), not the Gradle
     # project root: fdroidserver roots its default APK glob at
     # `<root_dir>/build/outputs/apk/<flavor>/release`, which is exactly
@@ -152,6 +156,15 @@ Builds:
     init:
       - cd ../../../..
       - pnpm install --frozen-lockfile
+      # React Native resolves react-native, codegen and the Hermes compiler
+      # from the APP-local node_modules, which a fresh hoisted install does
+      # not create. Measured failures (fdroiddata job 18241120761 and
+      # 3096688213): 'ReactAndroid/gradle.properties (No such file or
+      # directory)' and 'Couldn't determine Hermesc location'.
+      - mkdir -p apps/android/node_modules/@react-native
+      - ln -sfn ../../../node_modules/react-native apps/android/node_modules/react-native
+      - ln -sfn ../../../../node_modules/@react-native/codegen apps/android/node_modules/@react-native/codegen
+      - ln -sfn ../../../node_modules/hermes-compiler apps/android/node_modules/hermes-compiler
       - cd apps/android/android/app
     ndk: 27.1.12297006
     # node_modules is created by the `init:` pnpm install, so it cannot be
@@ -209,6 +222,12 @@ Builds:
       - .vendor
       - apps/desktop
       - node_modules/react-native/ReactAndroid/publish.gradle
+      # The Hermes compiler is a prebuilt toolchain binary the JS bundle
+      # step requires; the scanner deletes it and the build then dies with
+      # "Couldn't determine Hermesc location" (measured). RN 0.88 ships it
+      # in the hermes-compiler package; precedent: merged recipe
+      # dev.djara.wafrn_rn scanignores the same binary.
+      - node_modules/hermes-compiler/hermesc/linux64-bin/hermesc
       # MEASURED on fdroiddata pipeline 3096663138 (job 18241120761): the
       # autolink CLI failed with "No package name found ... at
       # node_modules/lottie-react-native/android/src/main/AndroidManifest.xml".
@@ -236,8 +255,8 @@ AllowedAPKSigningKeys:
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 26.11.25
-CurrentVersionCode: 20261125
+CurrentVersion: 26.11.26
+CurrentVersionCode: 20261126
 
 # NonFreeNet: the app talks to ONE hosted service that is not free software
 # and cannot be self-hosted from within the app:
