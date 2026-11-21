@@ -526,3 +526,14 @@ all succeeded; the ONLY remaining error was
 **Ops note:** blackhost disk hit 97% and the v26.11.24 runner job HUNG
 (no gradle process, job "in_progress" for 50 min). Cancelled it, freed
 /tmp, restarted the runner service, re-ran. Check disk before long builds.
+
+## 16. SESSION END 2026-11-21 — MR !58356 open, pipeline GREEN
+
+**Read `docs/HANDOFF-2026-11-21-fdroid-mr.md` FIRST next session.** It is
+the complete handoff: MR state, the nine measured pipeline failures and
+their fixes, the release recipe (gate-11 sequencing), device state, and
+the final listing copy.
+
+One-line status: F-Droid rebuilt `com.rootmyandroid` from source on their
+buildserver, byte-compared it against our `v26.11.24` binary, and it
+matched — all 9 jobs green. The MR now waits on reviewers/testers.

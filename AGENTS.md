@@ -440,6 +440,82 @@ and `appstore`); release APKs land as assets on tag `android-apk`.
   auto-continued on the immediate retry. Both flavors share the same
   applicationId + signature — `pm install -r` swaps either over the
   other (verified both directions 2026-11-16).
+  **SUPERSEDED 2026-11-17 (owner ruling): the browser-download path is
+  RETIRED.** Install with `adb push <apk> /data/local/tmp/` then
+  `pm install -r /data/local/tmp/<apk>`. `pm` CANNOT read `/sdcard`
+  (system_server has no read on `fuse` — measured AVC denial), so the
+  file MUST be staged under `/data/local/tmp/`.
+
+### F-Droid submission — MR OPEN, PIPELINE GREEN (2026-11-21)
+
+**MR !58356** — https://gitlab.com/fdroid/fdroiddata/-/merge_requests/58356
+(fork `gitlab.com/nyusternie/fdroiddata`, project **89251913**, branch
+`com.rootmyandroid`). All 9 pipeline jobs pass, including `fdroid build`
+and `check apk` (F-Droid's source build byte-compared against our hosted
+binary and matched). The MR now sits in the review queue; expect 2–3
+tester rounds (sidecoin took ~7 weeks from first MR to merge).
+
+- **Release it points at:** `v26.11.24` — commit
+  `4d9231092907465b8aa6327992338b2ff47a09f9`, asset
+  `app-fdroid-release.apk` 17,993,304 bytes.
+- **Signing:** our upload key only —
+  `/home/gh-runner/secrets/rootmyandroid-upload.keystore` (blackhost),
+  alias `rootmyandroid-upload`, cert SHA-256
+  `1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886bceca`,
+  pinned as `AllowedAPKSigningKeys` in both recipe copies. NOTE: with
+  Play App Signing, Play re-signs with Google's key, so Play builds and
+  sideload/F-Droid builds carry DIFFERENT signatures (same appId, so no
+  cross-update without uninstall — expected for upstream-signed apps).
+- **Store metadata lives in the fdroiddata repo**, not the app repo:
+  `metadata/com.rootmyandroid/en-US/{name,summary,description}.txt` +
+  `icon.png` + `phoneScreenshots/` (8 shots). fdroiddata's
+  `tools/check-localized-metadata.py` REQUIRES those filenames (the
+  Triple-T names `title/short_description/full_description` are
+  rejected), and `tools/check-exif-in-images.sh` rejects any PNG carrying
+  EXIF/ICC — strip with `convert -strip`.
+- **The fdroiddata copy must be the `rewritemeta` OUTPUT**: that CI job
+  compares TEXT, so every comment must be gone, `Binaries:` is a block
+  list, and `Binaries:` carries a TRAILING SPACE. Our local fdroidserver
+  2.4.5 formats differently from the CI's pinned version — the CI diff is
+  the authority.
+- **Recipe `init:` must materialize the app-local node_modules links.**
+  RN resolves `react-native`, `@react-native/codegen` and
+  `hermes-compiler` from the APP-local path regardless of `react {}`;
+  with `nodeLinker: hoisted` a fresh checkout only has them at the
+  workspace root. The recipe symlinks all three into
+  `apps/android/node_modules/`.
+- **`scanignore` entries that are load-bearing** (each one was a red
+  pipeline): `.vendor` (gzip tarball), `apps/desktop` (Cargo.toml without
+  a lock), `node_modules/hermes-compiler/hermesc/linux64-bin/hermesc`
+  (bundle step needs it; precedent: merged recipe `dev.djara.wafrn_rn`),
+  and the four library `build.gradle` files that declare a LOCAL maven
+  repo — `react-native/ReactAndroid/publish.gradle`,
+  `lottie-react-native`, `react-native-safe-area-context`,
+  `react-native-svg`. fdroidserver deletes those files (scandelete
+  covers node_modules) and the libraries then lose their `namespace`, so
+  autolinking dies with "No package name found". Enumerate with
+  `grep -rl 'url "$projectDir|$rootDir|node_modules/react-native/android'`
+  over `node_modules/*/android/build.gradle`, never from memory.
+- **Autolinking must not shell out to `npx`** on the build VM (offline,
+  no TTY): `settings.gradle` invokes the CLI as
+  `node <cli>/build/bin.js config` with an app-local → workspace-root
+  fallback.
+- **NO Shizuku, ever** (owner ruling 2026-11-17): no SDK, no dependency,
+  no pairing with the Shizuku app. Capabilities are replicated through
+  our own transports (wireless ADB in Rootz, rootzd, WebUSB /scan).
+  Measured parity table in docs/HANDOFF.md §10.
+
+### What the app actually ships (2026-11-20/21)
+
+Real: device scan (getprop, read-only, no su exec) · backup audit
+(PackageManager `allow_backup`) · QR scanner (ZXing) + local device
+pairing stored in prefs · encrypted backup upload (AES-256-GCM, key in
+the Android Keystore, `POST /v1/backups`, list from
+`/v1/backups/list`) · account creation (`POST /v1/accounts`, 16-digit
+number persisted) · Tools (live battery, real StatFs storage, links to
+the three real `/guides` pages) · audit sync (`POST /v1/device/audit`).
+Gate-10 checker: `node apps/android/tools/check-dead-controls.mjs`
+(24 controls, 0 dead) — run it after ANY UI change.
 
 ## Rootz app (live)
 
