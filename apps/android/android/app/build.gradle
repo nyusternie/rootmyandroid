@@ -8,16 +8,28 @@ apply plugin: "org.jetbrains.kotlin.android"
  */
 react {
     /* Folders */
-    // pnpm monorepo: the app's node_modules is a symlink farm into the hoisted
-    // workspace-root store, so the standard app-local paths resolve correctly.
+    // pnpm monorepo with `nodeLinker: hoisted`: on a machine where pnpm
+    // materialized the app-local farm, ../../node_modules exists; on a FRESH
+    // checkout (the F-Droid build VM) every dependency lives at the WORKSPACE
+    // ROOT only. Measured failure (fdroiddata job 18241120761 follow-up):
+    //   > /home/vagrant/build/com.rootmyandroid/apps/android/node_modules/
+    //     react-native/ReactAndroid/gradle.properties (No such file or directory)
+    // so each path is resolved with the same app-local → workspace-root
+    // fallback the settings.gradle plugin block uses.
     //   The root of your project, i.e. where "package.json" lives. Default is '../..'
     root = file("../../")
     //   The folder where the react-native NPM package is.
-    reactNativeDir = file("../../node_modules/react-native")
+    def rnDirAppLocal = file("../../node_modules/react-native")
+    def rnDirWorkspace = file("../../../../node_modules/react-native")
+    reactNativeDir = rnDirAppLocal.exists() ? rnDirAppLocal : rnDirWorkspace
     //   The folder where the react-native Codegen package is.
-    codegenDir = file("../../node_modules/@react-native/codegen")
+    def cgDirAppLocal = file("../../node_modules/@react-native/codegen")
+    def cgDirWorkspace = file("../../../../node_modules/@react-native/codegen")
+    codegenDir = cgDirAppLocal.exists() ? cgDirAppLocal : cgDirWorkspace
     //   The cli.js file which is the React Native CLI entrypoint.
-    cliFile = file("../../node_modules/react-native/cli.js")
+    def cliFileAppLocal = file("../../node_modules/react-native/cli.js")
+    def cliFileWorkspace = file("../../../../node_modules/react-native/cli.js")
+    cliFile = cliFileAppLocal.exists() ? cliFileAppLocal : cliFileWorkspace
 
     /* Variants */
     //   The list of variants to that are debuggable. For those we're going to
@@ -84,8 +96,8 @@ android {
         applicationId "com.rootmyandroid"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 20261123
-        versionName "26.11.23"
+        versionCode 20261124
+        versionName "26.11.24"
     }
     signingConfigs {
         debug {
