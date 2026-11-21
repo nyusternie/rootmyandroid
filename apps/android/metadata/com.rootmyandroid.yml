@@ -112,17 +112,22 @@ Builds:
     # copy, everything free; verified on device 2026-11-16).
     gradle:
       - fdroid
-    # The buildserver VM runs Debian trixie, which no longer ships a JDK 17.
-    # Gradle needs one: the React Native Gradle plugin forks a JVM with
-    # `languageVersion=17`. Pull it from bookworm — the approach the merged
-    # React Native recipe dev.djara.wafrn_rn takes on the same buildserver.
+    # JDK: the buildserver image is Debian trixie and ALREADY ships
+    # openjdk-21 as the default `java`. The React Native Gradle plugin pins
+    # its own toolchain to 17 (react-native-gradle-plugin/build.gradle.kts
+    # `jvmToolchain(17)`, JdkConfiguratorUtils.kt `JavaVersion.VERSION_17`),
+    # so the build is aligned to 21 with the sed that
+    # templates/build-react-native.yml prescribes ("Build with JDK 21") —
+    # see `init:` below. Installing a JDK 17 from bookworm (the
+    # dev.djara.wafrn_rn approach) also builds, but it DOWNGRADES the image
+    # JDK and contradicts the template: reviewer request on MR !58486,
+    # note 4292726192, 2026-11-21.
     #
-    # Three things are provisioned here:
-    # 1. JDK 17 from bookworm, selected via update-java-alternatives.
-    # 2. Node + npm from Debian forky (testing) — the buildserver has no
+    # Two things are provisioned here:
+    # 1. Node + npm from Debian forky (testing) — the buildserver has no
     #    node/npm of its own; forky nodejs (>= 24) satisfies the repo's
     #    engines.node (>= 18.17). No version pin: forky tracks testing.
-    # 3. pnpm — pinned to the EXACT version in the repo's root
+    # 2. pnpm — pinned to the EXACT version in the repo's root
     #    `packageManager` (pnpm@11.21.0), installed with `npm install -g`.
     #    `corepack enable` does NOT work: fdroidserver runs `init:` as an
     #    unprivileged user and corepack tries to write shims to /usr/bin
@@ -149,10 +154,6 @@ Builds:
       - apt-get update
       - apt-get install -y -t forky nodejs npm
       - npm install -g pnpm@11.21.0
-      - echo "deb https://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/bookworm.list
-      - apt-get update
-      - apt-get install -y -t bookworm openjdk-17-jdk-headless
-      - update-java-alternatives -s java-1.17.0-openjdk-amd64
     init:
       - cd ../../../..
       - pnpm install --frozen-lockfile
@@ -165,6 +166,13 @@ Builds:
       - ln -sfn ../../../node_modules/react-native apps/android/node_modules/react-native
       - ln -sfn ../../../../node_modules/@react-native/codegen apps/android/node_modules/@react-native/codegen
       - ln -sfn ../../../node_modules/hermes-compiler apps/android/node_modules/hermes-compiler
+      # templates/build-react-native.yml: "Build with JDK 21". Paths are this
+      # repo's hoisted layout — @react-native/gradle-plugin sits at the
+      # workspace root, and its react-native-gradle-plugin subproject is where
+      # `jvmToolchain(17)` lives; JdkConfiguratorUtils.kt pins
+      # JavaVersion.VERSION_17 on every module. Verified against the real
+      # 0.88 install: those are the only two files that carry 17.
+      - sed -i '/jvmToolchain\|JavaVersion/s/17/21/' node_modules/@react-native/gradle-plugin/*/build.gradle.kts node_modules/@react-native/gradle-plugin/react-native-gradle-plugin/src/main/kotlin/com/facebook/react/utils/JdkConfiguratorUtils.kt
       - cd apps/android/android/app
     ndk: 27.1.12297006
     # node_modules is created by the `init:` pnpm install, so it cannot be

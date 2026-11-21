@@ -61,10 +61,14 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      # JDK 21, not 17: the fdroiddata buildserver image is Debian trixie and
+      # ships openjdk-21, and templates/build-react-native.yml mandates
+      # "Build with JDK 21". The reference APK must be produced by the SAME
+      # JDK the F-Droid build uses, or `fdroid build`'s byte comparison fails.
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
       # blackhost is a minimal image: setup-android shells out to `unzip`,
       # which is not preinstalled there.

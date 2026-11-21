@@ -1,0 +1,8 @@
+Maintenance release — no functional changes.
+
+The Android build now compiles with JDK 21, the toolchain F-Droid's
+buildserver uses. That is what keeps our signed APK byte-identical to
+F-Droid's own source build, so F-Droid can keep publishing our binary.
+
+Device scan, backup audit, encrypted backups, QR pairing and Tools are
+unchanged.
