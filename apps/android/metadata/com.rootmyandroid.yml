@@ -187,7 +187,28 @@ Builds:
     # scanner; the workspace hoists react-native at the root and the app
     # module's node_modules entries are links into it.
     scanignore:
-      - apps/android/node_modules/react-native/ReactAndroid/publish.gradle
+      # fdroiddata pipeline 3096414983 (2026-11-21) rejected the first draft
+      # with three scanner errors; all three fixes are here and each one was
+      # measured, not guessed:
+      #
+      # 1. "Found gzip file archive at .vendor/hermes-compiler-*.tgz" — the
+      #    vendored Hermes compiler tarball (pnpm-workspace overrides) is a
+      #    binary blob the scanner refuses. Nothing in the Android build reads
+      #    it at scan time (pnpm extracts it during install).
+      # 2. "Found dependency file without lock at apps/desktop/src-tauri/
+      #    Cargo.toml" — the desktop Tauri scaffold is NOT part of the Android
+      #    build and carries no Cargo.lock.
+      # 3. "Non-exist scanignore path: apps/android/node_modules/react-native/
+      #    ReactAndroid/publish.gradle" — WRONG PATH. This repo sets
+      #    `nodeLinker: hoisted`, so pnpm installs every dependency at the
+      #    WORKSPACE ROOT. Measured 2026-11-21 with a minimal hoisted
+      #    workspace on blackhost: root node_modules/<dep> = YES,
+      #    apps/a/node_modules/<dep> = NO. The entry must be repo-root
+      #    relative (kept because `scandelete: node_modules` would otherwise
+      #    delete publish.gradle and autolinking fails at settings.gradle).
+      - .vendor
+      - apps/desktop
+      - node_modules/react-native/ReactAndroid/publish.gradle
 
 # The ONLY signer allowed to have produced the shipped APK. If an APK in the
 # repo carries any other signature, fdroid update drops it. This is our
