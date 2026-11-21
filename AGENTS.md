@@ -505,6 +505,40 @@ tester rounds (sidecoin took ~7 weeks from first MR to merge).
   our own transports (wireless ADB in Rootz, rootzd, WebUSB /scan).
   Measured parity table in docs/HANDOFF.md §10.
 
+### F-Droid MR SUBMISSION FORMAT — the rule that cost a rejection
+
+**MR !58356 was CLOSED by linsui on 2026-11-21 with exactly one reason:
+"Merge Request template is not followed."** The pipeline was fully green —
+`fdroid build` and `check apk` both passed — and it was still rejected.
+A green pipeline is NOT acceptance.
+
+Two things the template
+(`.gitlab/merge_request_templates/Default.md` in fdroiddata) requires that
+we got wrong:
+
+1. **The MR description MUST use the template structure**: Abstract (what
+   the app does + usage + screenshots), a second Abstract section
+   explaining WHY the app exists and its unique value over similar
+   F-Droid apps, then the Checklist with every box ticked and justified,
+   the title `New app: <name>`, and `/label ~"New App"`.
+2. **The MR must contain ONLY `metadata/<applicationId>.yml`.**
+   Verbatim from the template: *"Don't add summary/description/changelog/
+   images or anything that should be provided in upstream repo. Please
+   check the Changes tab to make sure there is no other unrelated files
+   added in the MR."* Store metadata (title/summary/description/icon/
+   screenshots) belongs in the UPSTREAM app repo — `fastlane/metadata/
+   android/<locale>/` or the Triple-T layout — never in the MR.
+
+**Before ANY future submission: read these three, in this order —
+`.gitlab/merge_request_templates/Default.md`, `CONTRIBUTING.md`, and
+`templates/general.yml` + `templates/build-react-native.yml`.** The
+pipeline gates (docs/FDROID-CHECKLIST.md) cover build failures only; the
+template covers acceptance.
+
+Prepared artifacts for the re-submission live in
+`apps/android/metadata/fdroiddata-submission/` (the exact recipe to push
+and the filled MR description).
+
 ### What the app actually ships (2026-11-20/21)
 
 Real: device scan (getprop, read-only, no su exec) · backup audit

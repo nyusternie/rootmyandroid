@@ -537,3 +537,31 @@ the final listing copy.
 One-line status: F-Droid rebuilt `com.rootmyandroid` from source on their
 buildserver, byte-compared it against our `v26.11.24` binary, and it
 matched — all 9 jobs green. The MR now waits on reviewers/testers.
+
+## 17. MR !58356 CLOSED (2026-11-21) — re-submission prepared
+
+linsui closed the MR with one reason: **"Merge Request template is not
+followed."** The pipeline was fully green (fdroid build + check apk both
+passed) — a green pipeline is not acceptance.
+
+**Two format failures:** (1) the description was free-form instead of the
+template's Abstract + "why/unique value" + Checklist + `/label ~"New App"`;
+(2) the MR carried 13 files — the template explicitly forbids shipping
+summary/description/images in the MR; store metadata belongs in the
+UPSTREAM repo.
+
+**Fixed and prepared (nothing submitted):**
+- `v26.11.25` published with `fastlane/metadata/android/en-US/` (title,
+  short + full description, `images/icon.png`, 8 `phoneScreenshots/`) —
+  the layout fdroidserver actually reads correctly.
+- Recipe for the MR: `apps/android/metadata/fdroiddata-submission/com.rootmyandroid.yml`
+  (comment-free, 26.11.25 / `9079ba2…`, `Binaries:` with trailing space).
+- MR description: `apps/android/metadata/fdroiddata-submission/mr-description.md`
+  (28 ticked checklist items, each justified).
+- Verified: asset 17,993,300 B, sha256 `3057d8f5…`, badging 20261125.
+
+**Next session:** `docs/HANDOFF-2026-11-22-fdroid-resubmit.md` — exact
+re-submission order (sync fork master, delete the 12 metadata files,
+replace the yml, verify the diff is ONE file, open the MR, attach
+screenshots, watch the pipeline) plus a checklist for reviewing other
+people's MRs.
