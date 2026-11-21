@@ -1,4 +1,6 @@
-Most Android "root checker" apps guess. This one shows you the evidence.
+Every Android deserves a cape — learn how to release its FULL power.
+
+Most Android "root checker" apps guess. This one shows you the evidence, teaches you what it means, and links the guides that take you the rest of the way.
 
 Root My Android reads your device's real state — bootloader, verification, root-side facts — straight from the system, grades what it finds, and shows the raw properties behind every line. Nothing is sent anywhere unless you choose to sync. The scan is free and needs no account.
 
