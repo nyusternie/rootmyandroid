@@ -497,3 +497,32 @@ phoneScreenshots/ ×7} — text sha256 MATCHes the app repo's Triple-T copy.
 **Known content gap (owner decision):** the description does not yet
 mention the features added in §12 (encrypted backup upload, QR pairing,
 Tools: guides/health/storage). It is accurate as written, just incomplete.
+
+## 15. MR 58356 — F-Droid build now passes (2026-11-21, overnight)
+
+**The F-Droid build server now builds our app end-to-end.** Measured at
+pipeline 3096739196: autolink → JS bundle → hermesc → Kotlin compile → APK
+all succeeded; the ONLY remaining error was
+`Unexpected versionCode in output; APK: '20261121', Expected: '20261124'`
+(a recipe/commit mismatch, since fixed to commit `4d92310` = v26.11.24).
+
+### The seven failures, each measured (not guessed)
+
+| # | Failure | Root cause | Fix |
+|---|---|---|---|
+| 1 | scanner: 4 errors | `.vendor` tarball, `apps/desktop` Cargo.toml, wrong node_modules path | recipe `scanignore` |
+| 2 | `rewritemeta` diff | fdroiddata compares TEXT; comments stripped | push rewritemeta output; `Binaries:` block form **with trailing space** |
+| 3 | `tools check scripts` | localized metadata filenames | `name.txt` / `summary.txt` / `description.txt` |
+| 4 | `check-exif-in-images.sh` | ICC/EXIF in PNGs | `convert -strip` on all 9 images |
+| 5 | `npx` exit 1 | offline, TTY-less VM | invoke CLI via `node` + explicit path |
+| 6 | `No package name found` (lottie) | fdroidserver deleted 3 libraries' `build.gradle` (local maven URLs) → namespace lost | `scanignore` all three |
+| 7 | `reactNativeDir` / `hermesc` | plugin uses APP-local node_modules, absent on a fresh hoisted install | recipe `init:` symlinks react-native, codegen, hermes-compiler into `apps/android/node_modules`; `scanignore` the hermesc binary (precedent: merged recipe `dev.djara.wafrn_rn`) |
+
+### Remaining (mechanical, no unknowns)
+1. Our CI must publish the `v26.11.24` asset — run `44866768418`, in progress.
+2. Re-run the fdroiddata pipeline (recipe already points at `4d92310`).
+3. `check apk` then byte-compares against the asset → publish gate.
+
+**Ops note:** blackhost disk hit 97% and the v26.11.24 runner job HUNG
+(no gradle process, job "in_progress" for 50 min). Cancelled it, freed
+/tmp, restarted the runner service, re-ran. Check disk before long builds.
