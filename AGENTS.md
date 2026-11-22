@@ -505,6 +505,22 @@ tester rounds (sidecoin took ~7 weeks from first MR to merge).
   our own transports (wireless ADB in Rootz, rootzd, WebUSB /scan).
   Measured parity table in docs/HANDOFF.md §10.
 
+### F-Droid COMMUNITY REVIEWS — use the official tester procedure
+
+Reviewing other people's MRs is a separate workflow with its own published
+rules: https://gitlab.com/fdroid/wiki/-/wikis/Tips-for-fdroiddata-contributors/Reviewing-new-apps
+Read it before every review. The operational version — hard rules, PCAPdroid
+capture procedure, report template — is
+`.agents/skills/fdroid-review/SKILL.md`.
+
+Three rules that are not negotiable:
+1. Pool is `review-requested` + **fewest notes**; "no outside review" means no
+   **non-maintainer** comment (check project membership, not just the count).
+2. `INTERNET` apps get a network capture (PCAPdroid) started **before** the app
+   is opened — `ss` samples and `strings` on the binary are not a network check.
+3. Reports use the official template (Basic Function / Policy Compliance /
+   Permissions / Network / Language / Security). No freeform prose.
+
 ### F-Droid MR SUBMISSION FORMAT — the rule that cost a rejection
 
 **MR !58356 was CLOSED by linsui on 2026-11-21 with exactly one reason:
