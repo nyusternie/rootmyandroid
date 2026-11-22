@@ -446,18 +446,29 @@ and `appstore`); release APKs land as assets on tag `android-apk`.
   (system_server has no read on `fuse` — measured AVC denial), so the
   file MUST be staged under `/data/local/tmp/`.
 
-### F-Droid submission — MR OPEN, PIPELINE GREEN (2026-11-21)
+### F-Droid submission — MR !58486 OPEN, PIPELINE GREEN (2026-11-21)
 
-**MR !58356** — https://gitlab.com/fdroid/fdroiddata/-/merge_requests/58356
+**MR !58486** — https://gitlab.com/fdroid/fdroiddata/-/merge_requests/58486
 (fork `gitlab.com/nyusternie/fdroiddata`, project **89251913**, branch
-`com.rootmyandroid`). All 9 pipeline jobs pass, including `fdroid build`
-and `check apk` (F-Droid's source build byte-compared against our hosted
-binary and matched). The MR now sits in the review queue; expect 2–3
-tester rounds (sidecoin took ~7 weeks from first MR to merge).
+`com.rootmyandroid` @ `bc957a32`). All 9 pipeline jobs pass, including
+`fdroid build` (*"compared built binary to supplied reference binary
+successfully"*, signer `1c59c433…`) and `check apk`. One file in the diff:
+`metadata/com.rootmyandroid.yml`. **!58356 was closed by linsui** on
+2026-11-21 ("Merge Request template is not followed") and is superseded.
 
-- **Release it points at:** `v26.11.24` — commit
-  `4d9231092907465b8aa6327992338b2ff47a09f9`, asset
-  `app-fdroid-release.apk` 17,993,304 bytes.
+- **Release it points at:** `v26.11.28` — commit
+  `13c3f958ff7a228acab958dc6d82b4bb5c32cded`, asset
+  `app-fdroid-release.apk` 17,993,664 bytes, sha256
+  `954447cd79cd8c12b2d26a850d40a680ce8c0767799cc0d324e26c84f70c478e`.
+- **JDK 21, not 17** (linsui, note 4292726192). The buildserver image is
+  Debian trixie with openjdk-21; the recipe must NOT install a JDK 17 from
+  bookworm. `templates/build-react-native.yml` prescribes a `prebuild` sed
+  (`jvmToolchain`/`JavaVersion` 17→21), and **our CI must run the identical
+  sed** — it recompiles `@react-native/gradle-plugin` at 21, which changes
+  the Gradle artifact-transform cache key baked into `libappmodules.so`
+  (`transforms/23ffe694…` vs F-Droid's `7db65e98…`), and that alone fails
+  the byte comparison. Measured 2026-11-21; see
+  `docs/HANDOFF-2026-11-21-fdroid-round2.md`.
 - **Signing:** our upload key only —
   `/home/gh-runner/secrets/rootmyandroid-upload.keystore` (blackhost),
   alias `rootmyandroid-upload`, cert SHA-256
@@ -466,7 +477,12 @@ tester rounds (sidecoin took ~7 weeks from first MR to merge).
   Play App Signing, Play re-signs with Google's key, so Play builds and
   sideload/F-Droid builds carry DIFFERENT signatures (same appId, so no
   cross-update without uninstall — expected for upstream-signed apps).
-- **Store metadata lives in the fdroiddata repo**, not the app repo:
+- **Store metadata lives in the APP repo**, not the MR (the fdroiddata MR
+  template forbids extra files; the 2026-11-21 resubmission carries exactly
+  one file). Layout: `fastlane/metadata/android/en-US/` at the repo root —
+  `title.txt`, `short_description.txt`, `full_description.txt`,
+  `changelogs/<versionCode>.txt`, `images/icon.png`, `images/phoneScreenshots/`.
+  Earlier note kept for history:
   `metadata/com.rootmyandroid/en-US/{name,summary,description}.txt` +
   `icon.png` + `phoneScreenshots/` (8 shots). fdroiddata's
   `tools/check-localized-metadata.py` REQUIRES those filenames (the
