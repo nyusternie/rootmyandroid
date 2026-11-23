@@ -488,27 +488,49 @@ and `appstore`); release APKs land as assets on tag `android-apk`.
   (system_server has no read on `fuse` — measured AVC denial), so the
   file MUST be staged under `/data/local/tmp/`.
 
-### F-Droid submission — MR !58486 OPEN (2026-11-21; HEAD RED 2026-11-23)
+### F-Droid submission — MR !58486 OPEN, PIPELINE GREEN @ 26.11.29 (2026-11-23)
 
-**2026-11-23 STATUS: head `9cacc16d` is RED** — pipeline 3101366239 failed
-at `fdroid build` after the agent deleted the `.vendor` / `apps/desktop`
-`scanignore` entries (rule 13). Revert to the last green commit `bc957a32`
-is the pending action; the description also carries three stale claims
-(commit hash line 131, changelog filename line 86, "previous MR's pipeline"
-line 124). Everything below describes the last GREEN run.
+**2026-11-23 END STATE:** the linsui scanignore suggestion (note 4294587955,
+delete `- .vendor` + `- apps/desktop`) was applied as written and FAILED
+(pipeline 3101366239: `Found gzip file archive at .vendor/…`, `Found
+dependency file without lock at apps/desktop/src-tauri/Cargo.toml` —
+`INFO: Ignoring …` is the scanignore MATCH being logged, not a built-in
+skip; reproduced locally with `fdroid scanner`, ERROR count 0 vs 2). The
+correct fix was UPSTREAM, shipped in release `v26.11.29`: the vendored
+hermes tarball was DELETED (npm registry copy is byte-identical — sha512
+in pnpm-lock.yaml == registry dist.integrity; the override only worked
+around THIS host's slow link) and `apps/desktop/src-tauri/Cargo.lock`
+was COMMITTED (the global Cargo.lock gitignore was swallowing it).
+Both entries left the recipe for good. Head is `b108c321` (recipe bytes
+sha256 `95a85d3b…`, preflighted: scanner 0 errors at the release commit,
+lint + rewritemeta clean, blackhost frozen-install 3m17s + hermesc sha256
+`44d76b1e…` == old vendored install). Pipeline 3103249177: 9/9 green incl.
+`fdroid build` ("compared built binary to supplied reference binary
+successfully", signer `1c59c433…`) and `checkupdates` — which now PASSES
+because the recipe matches the newest tag. The MR description is fully
+synced (commit hash, changelog file, pipeline 3098300035 reference,
+version pairs, v26.11.29 screenshot URLs, scanignore justification per
+BMR's "explain in the MR" rule, `/label ~"New App"` consumed — label
+applied). The linsui reply is drafted at `/tmp/linsui-reply-58486.md` for
+the OWNER to post manually (owner order 2026-11-23 — the agent never
+posts it).
 
 **MR !58486** — https://gitlab.com/fdroid/fdroiddata/-/merge_requests/58486
 (fork `gitlab.com/nyusternie/fdroiddata`, project **89251913**, branch
-`com.rootmyandroid` @ `bc957a32`). All 9 pipeline jobs pass, including
+`com.rootmyandroid` @ `b108c321`). All 9 pipeline jobs pass, including
 `fdroid build` (*"compared built binary to supplied reference binary
 successfully"*, signer `1c59c433…`) and `check apk`. One file in the diff:
 `metadata/com.rootmyandroid.yml`. **!58356 was closed by linsui** on
 2026-11-21 ("Merge Request template is not followed") and is superseded.
 
-- **Release it points at:** `v26.11.28` — commit
-  `13c3f958ff7a228acab958dc6d82b4bb5c32cded`, asset
+- **Release it points at:** `v26.11.29` — commit
+  `dee1357ea41af75a998a9b0eab28efd1ff7717ca`, asset
   `app-fdroid-release.apk` 17,993,664 bytes, sha256
-  `954447cd79cd8c12b2d26a850d40a680ce8c0767799cc0d324e26c84f70c478e`.
+  `869da59b3ac7f37343ba4c826e64e306da725a652db2af06cf2ac584439bfa75`
+  (HTTP 200 + content-length + blackhost sha256sum, 2026-11-23; same byte
+  size as v26.11.28 — expected, hermes bytes identical from registry).
+  Predecessor for history: `v26.11.28` @ `13c3f958ff7a228acab958dc6d82b4bb5c32cded`,
+  sha256 `954447cd79cd8c12b2d26a850d40a680ce8c0767799cc0d324e26c84f70c478e`.
 - **JDK 21, not 17** (linsui, note 4292726192). The buildserver image is
   Debian trixie with openjdk-21; the recipe must NOT install a JDK 17 from
   bookworm. `templates/build-react-native.yml` prescribes a `prebuild` sed

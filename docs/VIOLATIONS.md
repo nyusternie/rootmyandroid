@@ -51,3 +51,18 @@ violations of a gated class** — not zero mistakes overall. Rules live in
   is the gate because `$?` lies), 13b (no hand-made API commits), 13c
   (evidence token for claims of effect), 13d (`confirms` banned in plans),
   13e (revert-first on red).
+
+## 2026-11-23 — MR description PUT sent a literal @path string (fixed within 18 s)
+
+- **Claimed (acted as if):** `glab api -f description=@file` reads the file.
+- **True:** the `@file` expansion belongs to `-F/--field`; `-f/--raw-field`
+  sent the LITERAL string `@/Workspace/hos/.../mr-description.md` as the MR
+  description. The post-write verification grep caught it on the immediate
+  re-fetch; the correct `-F` PUT restored the full text 18 seconds later.
+  No pipeline, code, or recipe was affected; the MR was publicly wrong for
+  those 18 seconds.
+- **Gate that would have caught it:** the post-write verify did — read-back
+  after EVERY remote write, not just pushes. Keep that as standing practice.
+- **Gate added:** rule 13h (below) — remote writes are verified by read-back
+  in the same command block; `glab` field flags: `-F` reads `@file`,
+  `-f` does not.
