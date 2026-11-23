@@ -66,3 +66,18 @@ violations of a gated class** — not zero mistakes overall. Rules live in
 - **Gate added:** rule 13h (below) — remote writes are verified by read-back
   in the same command block; `glab` field flags: `-F` reads `@file`,
   `-f` does not.
+
+## 2026-11-23 — r8_marker warning unread through three green pipelines
+
+- **Claimed (acted as if):** green pipeline + template compliance = submission
+  done.
+- **True:** the check-apk codequality artifact had flagged
+  `APK has no R8 Marker, R8 is not used` (severity minor) since the first
+  green run; the tester wiki's Maintainer Review step — "Check if the Code
+  Quality section in the Reports tabs has any warnings" — was never applied
+  to our own MR. The reviewer had to raise it (note 4301728822).
+- **Gate that would have caught it:** reading the codequality artifact after
+  any green pipeline — a one-command fetch that was never part of the flow.
+- **Gate added:** Reports-tab review is now a standing release step
+  (AGENTS.md, F-Droid submission section). First application fixed it:
+  R8 enabled in v26.11.30, marker verified in the new pipeline's report.

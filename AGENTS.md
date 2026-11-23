@@ -523,13 +523,31 @@ successfully"*, signer `1c59c433…`) and `check apk`. One file in the diff:
 `metadata/com.rootmyandroid.yml`. **!58356 was closed by linsui** on
 2026-11-21 ("Merge Request template is not followed") and is superseded.
 
-- **Release it points at:** `v26.11.29` — commit
-  `dee1357ea41af75a998a9b0eab28efd1ff7717ca`, asset
-  `app-fdroid-release.apk` 17,993,664 bytes, sha256
-  `869da59b3ac7f37343ba4c826e64e306da725a652db2af06cf2ac584439bfa75`
-  (HTTP 200 + content-length + blackhost sha256sum, 2026-11-23; same byte
-  size as v26.11.28 — expected, hermes bytes identical from registry).
-  Predecessor for history: `v26.11.28` @ `13c3f958ff7a228acab958dc6d82b4bb5c32cded`,
+- **Release it points at:** `v26.11.30` — commit
+  `c48432615b46bfc123dd3f900468b0be09f42574`, asset
+  `app-fdroid-release.apk` 14,136,517 bytes, sha256
+  `89d3878c9d0a36f6566f36f12b241c09ec2e39bd9a20a67da989bcec20474f14`
+  (HTTP 200 + content-length, sha256sum on blackhost AND on-device at
+  /data/local/tmp before pm install — same hash both, 2026-11-23).
+  **R8 is enabled in this release** (linsui ask, note 4301728822): APK
+  −21% (18M→14M), codequality report now shows the R8 marker
+  (`r8-mode":"full"`, R8 9.2.14, pg-map-id `9267bed1…`); R8 forced memory
+  caps in the COMMITTED apps/android/android/gradle.properties (Kotlin
+  daemon -Xmx768m, workers.max=1, no parallel, SerialGC — the first
+  uncapped build OOM-killed the gradle daemon at 2.4GB RSS on the
+  2-core/4GB runner, kernel log 2026-11-23 14:59:24). Device smoke test
+  on redfin PASSED before the recipe push (scan, backup audit, tools, 0
+  crashes). Fastlane full_description.txt is HTML now (`<b>` survives
+  f-droid.org rendering, `<code>` does NOT — checked against live store
+  pages; the two backtick `su` spans became `<b>su</b>`); the Play-listing
+  copy stays byte-identical. Pipeline 3104134481: 9/9 green incl.
+  byte-compare + checkupdates. **Standing gate: read the Reports-tab
+  codequality artifact after every green pipeline — every warning gets
+  fixed or explicitly deferred with a reason (the r8_marker `minor` sat
+  unread through three green pipelines until the reviewer raised it).
+  2026-11-23.** Predecessors for history: `v26.11.29` @ `dee1357ea41af75a998a9b0eab28efd1ff7717ca`
+  sha256 `869da59b3ac7f37343ba4c826e64e306da725a652db2af06cf2ac584439bfa75`
+  (17,993,664 bytes); `v26.11.28` @ `13c3f958ff7a228acab958dc6d82b4bb5c32cded`,
   sha256 `954447cd79cd8c12b2d26a850d40a680ce8c0767799cc0d324e26c84f70c478e`.
 - **JDK 21, not 17** (linsui, note 4292726192). The buildserver image is
   Debian trixie with openjdk-21; the recipe must NOT install a JDK 17 from
