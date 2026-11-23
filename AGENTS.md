@@ -510,6 +510,26 @@ and `appstore`); release APKs land as assets on tag `android-apk`.
 
 ### F-Droid submission — MR !58486 OPEN, PIPELINE GREEN @ 26.11.29 (2026-11-23)
 
+**2026-11-23 EVENING STATE:** MR head `7a7fd02`, pipeline `3104134481`
+9/9 green, `mergeable`. linsui: "This MR is mostly ready. We'll test it
+later. If everything works well we'll merge it" (note 4304345948) — nothing
+further is owed until they test; update the MR only on a new release. A
+community tester (MinekPo1, note 4304612051) challenged the "active
+development since 2022-12" line (4 commits before 2026-10-01; the parked
+2025-07-13 crawl; the public review tooling). Replied with note 4305024046:
+first commit 2022-12-05, Wayback serving from 2022-12-07, 381/385 commits
+from 2026-10, RDAP re-registration 2026-10-13 (NameCheap), owner
+attestation of years of private development, and AI as ASSISTANCE only.
+The description was deliberately LEFT UNCHANGED (owner decision). Their
+follow-up claiming the Usuals review is AI-generated (note 4304860250 on
+!58329) is recorded and deliberately NOT answered (owner decision).
+
+Community reviews this day: !58329 (Usuals) review 4304038256 + cleartext
+answer 4305183725; !58328 (Spunto) review 4304039049 + cleartext answer
+4304914154; both VT-backfilled in place. Sensitive working docs (blackhost
+runbook, session notes) were moved to the PRIVATE `rootmyandroid-admin`
+repo (commit 169196f there) and deleted here — this repo is public.
+
 **2026-11-23 END STATE:** the linsui scanignore suggestion (note 4294587955,
 delete `- .vendor` + `- apps/desktop`) was applied as written and FAILED
 (pipeline 3101366239: `Found gzip file archive at .vendor/…`, `Found
