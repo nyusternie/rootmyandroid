@@ -130,7 +130,10 @@ jobs:
       - name: Write gradle.properties
         run: |
           cat > apps/android/android/gradle.properties <<'EOF'
-          org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m
+          org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m -XX:+UseSerialGC
+          kotlin.daemon.jvmargs=-Xmx768m
+          org.gradle.workers.max=1
+          org.gradle.parallel=false
           android.useAndroidX=true
           reactNativeArchitectures=armeabi-v7a,arm64-v8a
           newArchEnabled=true
