@@ -19,9 +19,9 @@ Binaries:
   https://github.com/nyusternie/rootmyandroid/releases/download/v%v/app-fdroid-release.apk
 
 Builds:
-  - versionName: 26.11.29
-    versionCode: 20261129
-    commit: dee1357ea41af75a998a9b0eab28efd1ff7717ca
+  - versionName: 26.11.30
+    versionCode: 20261130
+    commit: c48432615b46bfc123dd3f900468b0be09f42574
     subdir: apps/android/android/app
     sudo:
       - apt-get update
@@ -55,5 +55,5 @@ AllowedAPKSigningKeys: 1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d48
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 26.11.29
-CurrentVersionCode: 20261129
+CurrentVersion: 26.11.30
+CurrentVersionCode: 20261130

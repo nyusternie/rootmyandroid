@@ -88,33 +88,36 @@ Builds:
   # If this drifts, F-Droid will build a different APK than the one tested.
   # Keep ONLY the latest block: F-Droid builds and publishes every entry
   # (sidecoin's stale-second-block lesson, MR fdroiddata!50457).
-  - versionName: 26.11.29
-    versionCode: 20261129
+  - versionName: 26.11.30
+    versionCode: 20261130
     # FULL 40-char hash, not the tag (Build_Metadata_Reference). This is the
-    # commit the v26.11.29 tag points at; its CI build (android.yml on
+    # commit the v26.11.30 tag points at; its CI build (android.yml on
     # blackhost) is the hosted reference binary below (Phase 2 reproducibility
-    # proof: docs/HANDOFF.md §8). Hosted asset at v26.11.29:
-    # app-fdroid-release.apk, 17993664 bytes, sha256
-    # 869da59b3ac7f37343ba4c826e64e306da725a652db2af06cf2ac584439bfa75
-    # (HTTP 200 + content-length verified, sha256sum on blackhost, 2026-11-23;
-    # same byte size as v26.11.28 — expected, the hermes tarball bytes are
-    # identical from registry and vendored copy). Signed with the upload key:
+    # proof: docs/HANDOFF.md §8). Hosted asset at v26.11.30:
+    # app-fdroid-release.apk, 14136517 bytes, sha256
+    # 89d3878c9d0a36f6566f36f12b241c09ec2e39bd9a20a67da989bcec20474f14
+    # (HTTP 200 + content-length verified, sha256sum on blackhost, 2026-11-23).
+    # 3,857,147 bytes smaller than v26.11.29 — R8 is enabled in this release
+    # (reviewer request, MR !58486 note 4301728822; the codequality report
+    # had flagged "APK has no R8 Marker"). Signed with the upload key:
     # build.gradle only engages release signing when the ROOTMYANDROID_UPLOAD_*
     # properties are present, and the signed (not -unsigned) filename in the
     # release proves they were.
-    # This release ships the upstream fixes that let the .vendor/apps-desktop
-    # scanignore entries go: the vendored hermes tarball was DELETED (the npm
-    # registry copy is byte-identical — sha512 integrity in pnpm-lock.yaml ==
-    # registry dist.integrity; the override only worked around this host's
-    # slow link) and apps/desktop/src-tauri/Cargo.lock was COMMITTED
-    # (6fefbce, generated on blackhost). Frozen-install proof: pnpm 11.21.0
-    # --frozen-lockfile at this commit, Done in 3m17s, hermesc sha256
-    # 44d76b1e… == the old vendored install (blackhost, 2026-11-23).
-    # v26.11.28's own history: it existed to rebuild the reference APK
-    # through the same JDK 21 sed this recipe applies — proven on blackhost
-    # against F-Droid's own build of 6eab155 (transforms/7db65e98…
-    # byte-identical with the sed; differing without it).
-    commit: dee1357ea41af75a998a9b0eab28efd1ff7717ca
+    # The R8 build needed memory caps on the 2-core/4GB build runner (first
+    # attempt OOM-killed the gradle daemon at 2.4GB RSS, kernel log
+    # 2026-11-23 14:59:24): the COMMITTED apps/android/android/gradle.properties
+    # pins the Kotlin daemon to -Xmx768m, gradle workers.max=1, no
+    # cross-project parallelism, SerialGC — so the buildserver runs the
+    # identical caps (not runner-local tweaks). None of these are compile
+    # inputs; the pipeline byte-compare re-proves reproducibility.
+    # v26.11.29's history: it shipped the upstream fixes that retired the
+    # .vendor/apps-desktop scanignore entries (hermes tarball deleted, the
+    # npm registry copy byte-identical; apps/desktop/src-tauri/Cargo.lock
+    # committed at 6fefbce). v26.11.28 rebuilt the reference through the
+    # JDK 21 sed this recipe applies — proven on blackhost against F-Droid's
+    # own build of 6eab155 (transforms/7db65e98… byte-identical with the sed;
+    # differing without it).
+    commit: c48432615b46bfc123dd3f900468b0be09f42574
     # `subdir` is the MODULE directory (…/android/app), not the Gradle
     # project root: fdroidserver roots its default APK glob at
     # `<root_dir>/build/outputs/apk/<flavor>/release`, which is exactly
@@ -280,8 +283,8 @@ AllowedAPKSigningKeys:
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 26.11.29
-CurrentVersionCode: 20261129
+CurrentVersion: 26.11.30
+CurrentVersionCode: 20261130
 
 # NonFreeNet: the app talks to ONE hosted service that is not free software
 # and cannot be self-hosted from within the app:
