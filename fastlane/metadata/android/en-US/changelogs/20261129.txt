@@ -1,0 +1,4 @@
+Build-system release: the Hermes compiler package now resolves from
+the npm registry instead of a vendored copy (identical bytes), and
+the desktop scaffold has its dependency lockfile committed. No
+functional changes to the app.
