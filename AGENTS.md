@@ -195,6 +195,50 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    it.** Sustained transfers through this host are broken (docs/HANDOFF.md
    §0) — do not retry them; use the healthy legs (blackhost, the phone's
    own HTTPS). (Owner ruling 2026-11-15/16, re-enforced 2026-11-16.)
+13. **VERIFY BEFORE PUSHING — the gates below are mandatory.** Owner order
+   2026-11-23, verbatim: "IF YOU ARE NOT 100% SURE THEN FUCKING TEST".
+
+   The incident that produced this rule: the agent read
+   `INFO: Ignoring gzip file archive at .vendor/…` in a GREEN pipeline log
+   as proof that fdroidserver skips such files by itself, published that
+   reading as fact ("dead lines", "no-op"), and pushed a commit deleting
+   two `scanignore` entries. Pipeline 3101366239 failed:
+   `ERROR: Found gzip file archive at .vendor/hermes-compiler-260318099.0.4.tgz`
+   and `ERROR: Found dependency file without lock at apps/desktop/src-tauri/Cargo.toml`.
+   **The `INFO: Ignoring … at <path>` line IS the scanignore match being
+   logged** — it is not a built-in rule. Reproduced locally 2026-11-23:
+   with the two entries `ERROR:` count 0; without them `ERROR:` count 2.
+
+   **13a. Preflight gate, keyed to the bytes.** Before ANY commit to an
+   fdroiddata fork, copy the exact new recipe to
+   `<fdroiddata-checkout>/metadata/<appid>.yml` (local checkout:
+   `/Workspace/fdroiddata`, fdroidserver 2.4.4) and run:
+   `fdroid lint <appid>` then
+   `fdroid scanner <appid> -e > /tmp/scan.out 2>&1; grep -c 'ERROR:' /tmp/scan.out`.
+   The `ERROR:` count MUST be 0. Measured 2026-11-23: the exit code is 0
+   even with 2 ERROR lines, so the grep count is the gate — never `$?`.
+   The tested bytes are the committed bytes: sha256 the recipe and record
+   it with the scan output; any later edit invalidates the record.
+   The local fdroidserver is a PROXY for the CI's pinned version; when they
+   disagree, CI is the authority and the discrepancy goes in the incident log.
+   **13b. No hand-made API commits.** Every fork write goes through one
+   wrapper that refuses to POST content with no passing preflight record
+   for that exact sha256. A direct `POST /projects/…/repository/commits`
+   is itself a violation.
+   **13c. Claims of effect need an evidence token.** `no-op`, `safe`,
+   `harmless`, `identical`, `dead`, `does nothing` are banned unless
+   followed by `[evidence: path:line | command + output | job id]`.
+   **13d. `confirms` is banned in plans.** A plan step says *tests*. A step
+   written as confirmation has already skipped the test — that is exactly
+   the wording that preceded this incident.
+   **13e. Revert-first on red.** A push that turns the head red is reverted
+   to the last green commit BEFORE any diagnosis.
+   **13f. One semantic change per recipe commit.** Learned in the JDK-21
+   round (release 26.11.27, wasted); applied here too late.
+   **13g. Incident log.** `docs/VIOLATIONS.md`, one line per incident:
+   what was claimed, what was true, which gate would have caught it, which
+   gate was added. The metric is ZERO REPEAT violations of a gated class —
+   not zero mistakes overall.
 
 ## Web SEO (live)
 
@@ -446,7 +490,14 @@ and `appstore`); release APKs land as assets on tag `android-apk`.
   (system_server has no read on `fuse` — measured AVC denial), so the
   file MUST be staged under `/data/local/tmp/`.
 
-### F-Droid submission — MR !58486 OPEN, PIPELINE GREEN (2026-11-21)
+### F-Droid submission — MR !58486 OPEN (2026-11-21; HEAD RED 2026-11-23)
+
+**2026-11-23 STATUS: head `9cacc16d` is RED** — pipeline 3101366239 failed
+at `fdroid build` after the agent deleted the `.vendor` / `apps/desktop`
+`scanignore` entries (rule 13). Revert to the last green commit `bc957a32`
+is the pending action; the description also carries three stale claims
+(commit hash line 131, changelog filename line 86, "previous MR's pipeline"
+line 124). Everything below describes the last GREEN run.
 
 **MR !58486** — https://gitlab.com/fdroid/fdroiddata/-/merge_requests/58486
 (fork `gitlab.com/nyusternie/fdroiddata`, project **89251913**, branch
