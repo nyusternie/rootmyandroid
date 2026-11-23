@@ -119,3 +119,25 @@ Goal is to contribute as a reviewer, not only as a submitter.
   `/data/local/tmp/` then `pm install -r`.
 - **Install path:** browser downloads are RETIRED (owner ruling). Always
   `adb push <apk> /data/local/tmp/ && pm install -r /data/local/tmp/<apk>`.
+
+## 2026-11-23 — "active development" challenge (MinekPo1, !58486)
+
+A community tester questioned the description line *"under active development
+since 2022-12"*, citing 4 commits before 2026-10-01, the Wayback crawl of
+2025-07-13 (parked), and the public `.agents/skills/fdroid-review/` tooling.
+Replied with note 4305024046. Facts stated there, all verified:
+
+- Repo first commit **2022-12-05**; Wayback has the domain serving pages from
+  **2022-12-07** (status 200), through 2023-04-01, 2024-12-12, 2025-07-13.
+- **381 of 385 commits** at `v26.11.30` are from 2026-10 onward.
+- Verisign RDAP: the **current registration is 2026-10-13T22:32:12Z**
+  (NameCheap, expires 2027-10-13, NS Cloudflare, clientTransferProhibited) —
+  a re-registration, since a domain cannot be re-registered while active.
+- Owner attestation in the reply: **years of private-repository development**
+  between 2022-12 and 2026-10; public development resumed in 2026-10.
+  Nothing public can confirm private work — it stands as the owner's record.
+- Tooling disclosed as **"development is mine, with AI assistance"** (owner
+  wording; the agent assists, it does not author the project).
+
+The description line was deliberately **left unchanged** (owner decision):
+private development makes it defensible as written.
