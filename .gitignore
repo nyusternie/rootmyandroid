@@ -252,3 +252,7 @@ bin
 apps/*/android/app/release.keystore
 
 .drafts/
+# apps/desktop is also an executable (Tauri app scaffold) — tracked since
+# 2026-11-23: the F-Droid scanner errors on a Cargo.toml without a lock
+# ("dependency file without lock"), which forced a scanignore entry.
+!apps/desktop/src-tauri/Cargo.lock
