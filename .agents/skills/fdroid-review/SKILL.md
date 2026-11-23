@@ -1,93 +1,59 @@
-# F-Droid community review — the official tester procedure
+---
+name: fdroid-review
+description: F-Droid community review of other people's fdroiddata merge requests — pool selection, MR artifact verification, device testing with PCAPdroid, the official report template, and the policy rules that must never be asserted. Use for ANY "review an F-Droid MR" task.
+---
 
-Source of truth: **https://gitlab.com/fdroid/wiki/-/wikis/Tips-for-fdroiddata-contributors/Reviewing-new-apps**
-(fetch it before any review — it changes). This skill is a snapshot plus the
-hard rules learned the expensive way.
+# F-Droid community review — skill suite
 
-## Which MRs to review
+Source of truth, re-fetched every round:
+<https://gitlab.com/fdroid/wiki/-/wikis/Tips-for-fdroiddata-contributors/Reviewing-new-apps>
+(`glab api "projects/fdroid%2Fwiki/wikis/Tips-for-fdroiddata-contributors%2FReviewing-new-apps" | jq -r .content`)
 
-- Pool: `review-requested` (the label a maintainer adds *after* triage). It is
-  NOT `New App` — that one only means the MR exists.
-- Pick the ones with the **fewest notes**. "No outside review" means **no
-  non-maintainer comment**: check `projects/36528/members/all?query=<user>`;
-  a username that returns nothing is a community tester, and the app has
-  already been device-tested.
-- Pipeline must be green before you spend a device on it.
+This directory is the operational version of that page plus every rule we paid for.
+SKILL.md is the map; the rest is loaded on demand.
 
-## Hard rules (each one was a real failure)
-
-1. **Network monitoring is not optional.** If the app declares `INTERNET`, start
-   PCAPdroid (or equivalent) **before** opening the app. `ss -tn` samples and
-   `strings` on the binary are *not* a network check — they miss short-lived
-   connections. Report only what the capture shows.
-2. **Use the official report template.** Freeform prose is not a review. The
-   template's rows are: Basic Function / Policy Compliance / Permissions /
-   Network Connections / Language Support / Security Scan.
-3. **Every row gets answered.** Icon, terms, English support, in-app webview,
-   `MANAGE_EXTERNAL_STORAGE`, optional runtime permissions, update check.
-   "Not checked" is a gap, not a finding.
-4. **No meta-commentary.** A review discusses the app, never the reviewer's
-   process, never a previous version of the comment.
-5. **Ask, don't assert, on policy.** `NonFreeNet` is a judgement call: present
-   the evidence (hosts, code paths) and the label suggestion; the maintainer
-   decides.
-6. **No device wipes.** `adb uninstall` the test package only; restore any
-   system setting you toggled (accessibility, notification listeners).
-
-## Procedure
-
-```bash
-# 1. APK: the MR's own `fdroid build` artifact, never the upstream release
-jid=$(glab api "projects/<source_project>/pipelines/<id>/jobs?per_page=100" \
-      | jq -r '.[]|select(.name=="fdroid build")|.id')
-glab api "projects/<source_project>/jobs/$jid/artifacts" > /tmp/app.zip
-unzip -q /tmp/app.zip -d /tmp/appart && find /tmp/appart -name '*.apk'
-
-# 2. static pass on THAT apk
-aapt2 dump badging <apk> | head -5
-unzip -l <apk> | grep 'lib/.*\.so'          # per-ABI inventory
-unzip -p <apk> lib/arm64-v8a/libapp.so | strings | grep -oE 'https?://[a-z0-9.-]+' | sort -u
-#   Flutter: URLs live in libapp.so (Dart AOT), NOT in classes.dex
-cat classes*.dex | strings | grep -icE 'firebase|appsflyer|adjust|amplitude|mixpanel|onesignal|sentry|bugsnag|crashlytics'
-
-# 3. network capture BEFORE launch
-adb install -r <apk>
-adb shell monkey -p com.emanuelef.remote_capture -c android.intent.category.LAUNCHER 1
-#   tap Start (VPN consent once), then launch the app under test
-adb shell monkey -p <pkg> -c android.intent.category.LAUNCHER 1 && sleep 20
-#   read the CONNECTIONS tab with uiautomator (text nodes are readable)
-
-# 4. exercise it, then read logcat
-adb logcat -d --pid=$(adb shell pidof <pkg>) | grep -iE 'fatal|exception|anr'
-```
-
-PCAPdroid UI notes: the toolbar buttons are `content-desc`, not `text` —
-`Start`/`Stop` sit at ~`[683,147][837,279]` on a 1080×2340 screen; the
-Connections tab is at `[540,290][1080,422]`.
-
-Flutter apps expose no accessibility tree to `uiautomator` unless a screen
-reader is bound. Do not fake it with TalkBack (its training wall blocks the
-device); drive what you can, and state plainly which functions you could not
-reach.
-
-## Report template
-
-```md
-| Category | Checklist |
+| file | load when |
 |---|---|
-| **Basic Function** | ✅ starts and runs · ✅ <functions verified> · ✅ custom icon |
-| **Policy Compliance** | ✅ no Inclusion-Policy violation · ✅ `Categories:` · ✅ no extra terms |
-| **Permissions** | ✅ no `MANAGE_EXTERNAL_STORAGE` · ✅ optional runtime permissions are optional |
-| **Network** | ✅/⚠️ <what the capture showed, per host> |
-| **Language** | ✅ English |
-| **Security scan** | ⚠️ not run (VirusTotal) |
+| `procedure.md` | always — the phases, with exact commands |
+| `policy.md` | before writing Policy / Permissions rows, and before ANY anti-feature sentence |
+| `report-template.md` | when composing the comment (verbatim official HTML) |
+| `pitfalls.md` | before posting — the checklist of every mistake made so far |
+| `rounds/` | read the latest before starting; append one file per round |
+| `tools/vet.sh <iid>` | candidate vetting (pipeline, notes, membership) |
+| `tools/pool.sh` | ranking the `review-requested` pool |
+| `tools/codequality.sh <project> <pipeline>` | reading the Reports-tab codequality data |
+| `tools/mr-apk.sh <iid>` | getting the exact APK to install |
 
-<recipe findings, each with file:line>
-```
+## Non-negotiables
 
-## Posting
+1. Pool is `review-requested` + **fewest notes**. "No outside review" means no
+   **non-maintainer** comment — test membership, never the count alone.
+2. `INTERNET` ⇒ PCAPdroid started **before** the app opens. `ss` samples and
+   `strings` on the binary are not a network check.
+3. The official template, every row answered. Freeform prose is not a review.
+4. **No policy verdicts.** Present evidence (hosts, `file:line`) and leave the
+   label decision to the maintainer. linsui, note 4294629299: "TetheredNet
+   doesn't apply to self-host servers."
+5. No meta-commentary. The report discusses the app, never the reviewer.
+6. Nothing is claimed without a `file:line`, a capture entry, or a job-trace
+   line. Counts are computed, never eyeballed.
+7. Never edit the MR description, never touch labels, never merge.
+8. No device wipes; restore every setting you toggled (stop the capture,
+   `adb uninstall` only the test package if you uninstall at all).
 
-- One comment per MR. Update your own comment with `PUT
-  /projects/:id/merge_requests/:iid/notes/:note_id` rather than adding a second.
-- Never edit the MR description, never touch labels, never merge.
-- The author reads this: every claim needs a file, a line, or a capture entry.
+## Round protocol — what makes the suite improve
+
+- **Before:** read `rounds/` (latest file) and re-fetch the wiki.
+- **During:** follow `procedure.md`; when reality differs from the suite, write
+  the difference down instead of working around it silently.
+- **After:** append `rounds/YYYY-MM-DD.md` — pool snapshot, picks, findings,
+  maintainer verdicts, and **deltas** (what changed in this suite because of
+  the round). A dismissed claim becomes a `pitfalls.md` entry in the same
+  commit.
+
+## Status
+
+- v2 — 2026-11-23. Restructured from a single 93-line snapshot into this suite
+  after round 3 exposed four gaps (P5, P6, P10, P11 in `pitfalls.md`).
+- Rounds recorded: `2026-11-21` (3 reviews, rewritten in place), `2026-11-22`
+  (2 reviews + the TetheredNet ruling), `2026-11-23` (2 reviews drafted).

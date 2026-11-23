@@ -628,9 +628,13 @@ are a rule-12 violation anyway.
 
 Reviewing other people's MRs is a separate workflow with its own published
 rules: https://gitlab.com/fdroid/wiki/-/wikis/Tips-for-fdroiddata-contributors/Reviewing-new-apps
-Read it before every review. The operational version — hard rules, PCAPdroid
-capture procedure, report template — is
-`.agents/skills/fdroid-review/SKILL.md`.
+Read it before every review. The operational version is the
+`.agents/skills/fdroid-review/` suite: `SKILL.md` is the entry point, with
+`procedure.md` (phases + commands), `policy.md` (Inclusion Policy checklist +
+the no-verdict rule), `report-template.md` (verbatim official template),
+`pitfalls.md` (every mistake made so far) and `tools/` (pool, vet,
+codequality, mr-apk). Every round appends `rounds/YYYY-MM-DD.md`; a dismissed
+claim becomes a `pitfalls.md` entry in the same commit.
 
 Three rules that are not negotiable:
 1. Pool is `review-requested` + **fewest notes**; "no outside review" means no
