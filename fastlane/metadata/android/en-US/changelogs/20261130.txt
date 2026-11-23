@@ -1,0 +1,3 @@
+R8 minification is now enabled on release builds, so the APK is
+smaller and ships no unused bytecode. The F-Droid store listing
+uses HTML formatting instead of Markdown backticks.
