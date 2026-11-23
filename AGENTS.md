@@ -179,15 +179,30 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    Android `versionCode` integers keep incrementing independently. (Ruled
    2026-11-09 for Rootz/rootzd — HANDOFF.md; extended monorepo-wide
    2026-11-10.)
-11. **Operational credentials live ONLY on blackhost.** Never store API
-   tokens, Cloudflare/R2 credentials, infrastructure SSH keys, or any
-   other operational secret on the interactive workstation (no env files,
-   no dotfiles, no shell rc) — blackhost is the single credential store;
-   reach secrets there, use them there, leave them there. Complements
-   rule 9 (possession confers no authority) and rule 3a (secrets never
-   enter git history). (Owner ruling 2026-11-10: "I DO NOT WANT ANY
-   CREDENTIALS STORED HERE — EVERYTHING SHOULD STAY ON blackhost"; first
-   application: docs/HANDOFF-2026-11-10-bootimg-agent-token-storage.md.)
+11. **Credentials and critical data live on blackhost AND apecsdev — always
+   two copies, never only one.** Owner ruling 2026-11-23, superseding the
+   2026-11-10 "blackhost only" wording: blackhost is NOT our server, so a
+   single store is a single point of loss. Both hosts are PRIMARY stores
+   for sensitive data:
+   - `blackhost` — `/root/...` (dir `700`, file `600`)
+   - `apecsdev` — `/home/apecs/...` (dir `700`, file `600`); its existing
+     convention is `~/.config/<service>/api_token`
+   Every secret is written to BOTH hosts in the same task, a rotation
+   rewrites BOTH, and the two copies must be byte-identical
+   (`sha256sum` on each host). Adding a secret to one host only is a
+   violation, and so is deleting one copy "because it is a duplicate".
+   Critical data that cannot be regenerated (keystores, runner secrets,
+   tokens, state) follows the same rule: at least two independent copies.
+   Never store secrets on the interactive workstation outside those VMs
+   (no env files, no dotfiles, no shell rc), and never in git — this repo
+   is public (rule 3a). Read secrets where they live (`ssh blackhost …`,
+   `ssh apecsdev …`); do not copy them to the workstation to use them.
+   Verified pair at adoption: the VirusTotal review key at
+   `blackhost:/root/.virustotal/api-key` and
+   `apecsdev:~/.config/virustotal/api_key`. Complements rule 9
+   (possession confers no authority) and rule 3a. History: the 2026-11-10
+   wording ("EVERYTHING SHOULD STAY ON blackhost",
+   docs/HANDOFF-2026-11-10-bootimg-agent-token-storage.md) is superseded.
 12. **Every command timeout ≤ 60 s; poll in tight bursts; never block on
    long waits; check whether a thing already completed before re-running
    it.** Sustained transfers through this host are broken (docs/HANDOFF.md

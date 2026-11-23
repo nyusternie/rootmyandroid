@@ -54,7 +54,7 @@ Consequences:
   workstation's keystores + gradle.properties and blackhost — only debug
   keystores there; never tracked in git), so a NEW upload keystore is
   generated ONE-TIME inside the CI run into `/home/gh-runner/secrets/` on
-  blackhost (repo rule 11 — credentials live ONLY there; the random
+  blackhost (repo rule 11 — mirror it to apecsdev as well; the random
   password is written to the runner-local properties file and never leaves
   the runner); foreign runners fall back to the public debug key. The
   v1.0.0 legacy installs and any earlier debug-signed install cannot

@@ -79,8 +79,10 @@ Do not "re-fix" these; they are load-bearing.
 - **A temporary probe in `settings.gradle`** is what finally revealed the
   lottie/namespace failure — when Gradle hides a subprocess's stderr,
   print it yourself rather than guessing at causes.
-- **Secrets:** the keystore + properties live only on blackhost
+- **Secrets:** the keystore + properties live on blackhost
   (`/home/gh-runner/secrets/`, mode 0600). Never echo their values.
+  *Superseded 2026-11-23:* AGENTS rule 11 now requires a mirror copy on
+  `apecsdev` as well — blackhost alone is a single point of loss.
 
 ---
 
