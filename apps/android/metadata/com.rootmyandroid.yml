@@ -2,12 +2,14 @@
 #
 # F-Droid metadata draft for the Root My Android phone app.
 #
-# STATUS: DRAFT — not yet submitted. Kept in-repo so the recipe stays in sync
+# STATUS: SUBMITTED — fdroiddata MR !58486 (open; live pipeline). Kept
+# in-repo so the recipe stays in sync
 # with the actual build (versionCode, flavor, and the FOSS-only guarantee),
 # exactly like the sidecoin precedent this file is modeled on
 # (sidecoin: apps/mobile/metadata/app.sidecoin.yml, MR fdroiddata!50457).
 #
-# WHY NOT `fdroid/fdroiddata` YET:
+# WHY NOT `fdroid/fdroiddata` YET (HISTORICAL — superseded 2026-11-21,
+# when MR !58486 went live after the Phase 2 proof):
 #   Phase 2 of docs/FDROID-SUBMISSION-PLAN.md must first prove the build is
 #   byte-reproducible from a clean checkout (two-path build + apksigcopier
 #   compare + zip-entry diff). The `fdroid` flavor's FOSS purity is already
@@ -86,24 +88,33 @@ Builds:
   # If this drifts, F-Droid will build a different APK than the one tested.
   # Keep ONLY the latest block: F-Droid builds and publishes every entry
   # (sidecoin's stale-second-block lesson, MR fdroiddata!50457).
-  - versionName: 26.11.28
-    versionCode: 20261128
+  - versionName: 26.11.29
+    versionCode: 20261129
     # FULL 40-char hash, not the tag (Build_Metadata_Reference). This is the
-    # commit the v26.11.28 tag points at; its CI build (android.yml on
+    # commit the v26.11.29 tag points at; its CI build (android.yml on
     # blackhost) is the hosted reference binary below (Phase 2 reproducibility
-    # proof: docs/HANDOFF.md §8). Hosted asset at v26.11.28:
+    # proof: docs/HANDOFF.md §8). Hosted asset at v26.11.29:
     # app-fdroid-release.apk, 17993664 bytes, sha256
-    # 954447cd79cd8c12b2d26a850d40a680ce8c0767799cc0d324e26c84f70c478e
-    # (GitHub asset digest + sha256sum on blackhost, 2026-11-21). Signed with
-    # the upload key: build.gradle only engages release signing when the
-    # ROOTMYANDROID_UPLOAD_* properties are present, and the signed (not
-    # -unsigned) filename in the release proves they were.
-    # This release exists ONLY to rebuild the reference APK through the same
-    # JDK 21 transformation this recipe applies (`init:` sed). Proven on
-    # blackhost against F-Droid's own build of 6eab155: with the sed, the
-    # three codegen/app .so and the embedded Gradle transform key
-    # (transforms/7db65e98…) are byte-identical; without it they differ.
-    commit: 13c3f958ff7a228acab958dc6d82b4bb5c32cded
+    # 869da59b3ac7f37343ba4c826e64e306da725a652db2af06cf2ac584439bfa75
+    # (HTTP 200 + content-length verified, sha256sum on blackhost, 2026-11-23;
+    # same byte size as v26.11.28 — expected, the hermes tarball bytes are
+    # identical from registry and vendored copy). Signed with the upload key:
+    # build.gradle only engages release signing when the ROOTMYANDROID_UPLOAD_*
+    # properties are present, and the signed (not -unsigned) filename in the
+    # release proves they were.
+    # This release ships the upstream fixes that let the .vendor/apps-desktop
+    # scanignore entries go: the vendored hermes tarball was DELETED (the npm
+    # registry copy is byte-identical — sha512 integrity in pnpm-lock.yaml ==
+    # registry dist.integrity; the override only worked around this host's
+    # slow link) and apps/desktop/src-tauri/Cargo.lock was COMMITTED
+    # (6fefbce, generated on blackhost). Frozen-install proof: pnpm 11.21.0
+    # --frozen-lockfile at this commit, Done in 3m17s, hermesc sha256
+    # 44d76b1e… == the old vendored install (blackhost, 2026-11-23).
+    # v26.11.28's own history: it existed to rebuild the reference APK
+    # through the same JDK 21 sed this recipe applies — proven on blackhost
+    # against F-Droid's own build of 6eab155 (transforms/7db65e98…
+    # byte-identical with the sed; differing without it).
+    commit: dee1357ea41af75a998a9b0eab28efd1ff7717ca
     # `subdir` is the MODULE directory (…/android/app), not the Gradle
     # project root: fdroidserver roots its default APK glob at
     # `<root_dir>/build/outputs/apk/<flavor>/release`, which is exactly
@@ -213,16 +224,20 @@ Builds:
     # module's node_modules entries are links into it.
     scanignore:
       # fdroiddata pipeline 3096414983 (2026-11-21) rejected the first draft
-      # with three scanner errors; all three fixes are here and each one was
-      # measured, not guessed:
-      #
+      # with three scanner errors; each fix was measured, not guessed. Items
+      # 1 and 2 left the recipe 2026-11-23 (v26.11.29) because the underlying
+      # files left the REPO:
       # 1. "Found gzip file archive at .vendor/hermes-compiler-*.tgz" — the
-      #    vendored Hermes compiler tarball (pnpm-workspace overrides) is a
-      #    binary blob the scanner refuses. Nothing in the Android build reads
-      #    it at scan time (pnpm extracts it during install).
+      #    vendored Hermes compiler tarball. FIXED UPSTREAM: the tarball was
+      #    deleted and hermes-compiler resolves from the npm registry
+      #    (byte-identical bytes; pipeline 3098300035 green WITH the entry,
+      #    3101366239 failed without it — the `INFO: Ignoring …` log line is
+      #    the scanignore MATCH being logged, not a built-in skip).
       # 2. "Found dependency file without lock at apps/desktop/src-tauri/
-      #    Cargo.toml" — the desktop Tauri scaffold is NOT part of the Android
-      #    build and carries no Cargo.lock.
+      #    Cargo.toml" — the desktop Tauri scaffold. FIXED UPSTREAM:
+      #    src-tauri/Cargo.lock is committed (6fefbce; the global Cargo.lock
+      #    gitignore entry was swallowing it) and the scanner's lock walk now
+      #    passes on its own.
       # 3. "Non-exist scanignore path: apps/android/node_modules/react-native/
       #    ReactAndroid/publish.gradle" — WRONG PATH. This repo sets
       #    `nodeLinker: hoisted`, so pnpm installs every dependency at the
@@ -231,8 +246,6 @@ Builds:
       #    apps/a/node_modules/<dep> = NO. The entry must be repo-root
       #    relative (kept because `scandelete: node_modules` would otherwise
       #    delete publish.gradle and autolinking fails at settings.gradle).
-      - .vendor
-      - apps/desktop
       - node_modules/react-native/ReactAndroid/publish.gradle
       # The Hermes compiler is a prebuilt toolchain binary the JS bundle
       # step requires; the scanner deletes it and the build then dies with
@@ -267,8 +280,8 @@ AllowedAPKSigningKeys:
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 26.11.28
-CurrentVersionCode: 20261128
+CurrentVersion: 26.11.29
+CurrentVersionCode: 20261129
 
 # NonFreeNet: the app talks to ONE hosted service that is not free software
 # and cannot be self-hosted from within the app:

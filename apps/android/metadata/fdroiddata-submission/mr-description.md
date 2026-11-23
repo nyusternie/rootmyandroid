@@ -33,20 +33,20 @@ audit or store a backup.
 
 Screenshots (all captured from the F-Droid build on a Pixel 5, Android 14).
 All eight are committed upstream in
-[`fastlane/metadata/android/en-US/phoneScreenshots/`](https://github.com/nyusternie/rootmyandroid/tree/v26.11.28/fastlane/metadata/android/en-US/phoneScreenshots)
+[`fastlane/metadata/android/en-US/phoneScreenshots/`](https://github.com/nyusternie/rootmyandroid/tree/v26.11.29/fastlane/metadata/android/en-US/phoneScreenshots)
 — the same files F-Droid imports for the listing:
 
 **Scan results — real device facts, graded root status**
-![Scan results](https://github.com/nyusternie/rootmyandroid/raw/v26.11.28/fastlane/metadata/android/en-US/phoneScreenshots/01-scan-results.png)
+![Scan results](https://github.com/nyusternie/rootmyandroid/raw/v26.11.29/fastlane/metadata/android/en-US/phoneScreenshots/01-scan-results.png)
 
 **Backup audit — live participation counts**
-![Backup audit](https://github.com/nyusternie/rootmyandroid/raw/v26.11.28/fastlane/metadata/android/en-US/phoneScreenshots/02-backup-audit.png)
+![Backup audit](https://github.com/nyusternie/rootmyandroid/raw/v26.11.29/fastlane/metadata/android/en-US/phoneScreenshots/02-backup-audit.png)
 
 **Tools — live battery, real StatFS storage, guide links**
-![Tools](https://github.com/nyusternie/rootmyandroid/raw/v26.11.28/fastlane/metadata/android/en-US/phoneScreenshots/07-tools-fdroid.png)
+![Tools](https://github.com/nyusternie/rootmyandroid/raw/v26.11.29/fastlane/metadata/android/en-US/phoneScreenshots/07-tools-fdroid.png)
 
 **Account — number-only, no email**
-![Account](https://github.com/nyusternie/rootmyandroid/raw/v26.11.28/fastlane/metadata/android/en-US/phoneScreenshots/08-account.png)
+![Account](https://github.com/nyusternie/rootmyandroid/raw/v26.11.29/fastlane/metadata/android/en-US/phoneScreenshots/08-account.png)
 
 ### Please elaborate why you wrote this app. Please highlight the unique functions it provides over other similar apps in F-Droid.
 
@@ -79,11 +79,11 @@ What is unique here:
 
 * [x] The app complies with the [inclusion policy](https://f-droid.org/docs/Inclusion_Policy). _Pay special attention to Quality point 6._
   * Unique value (Quality point 6): the evidence-first root scan and the per-app backup audit described above are not offered by comparable F-Droid apps. Not a rebrand or a fork.
-  * The project has been under active development since 2022-12 (370 commits at this commit); the Android edition ships regular tagged releases (current: `v26.11.28`).
+  * The project has been under active development since 2022-12 (378 commits at this commit); the Android edition ships regular tagged releases (current: `v26.11.29`).
 * [x] The original app author has been notified (and does not oppose the inclusion). If you are not the author, please paste the link of the reply from the author.
   * I am the author and copyright holder (MIT).
 * [x] The upstream app source code repo contains the app metadata in a [Fastlane](https://gitlab.com/snippets/1895688) or [Triple-T](https://gitlab.com/snippets/1901490) folder structure. The summary and description must be included and images, icon, and changelog should also be provided for better user experience. The `en-US` locale must be included.
-  * Upstream: https://github.com/nyusternie/rootmyandroid — `fastlane/metadata/android/en-US/` with `title.txt`, `short_description.txt`, `full_description.txt`, `images/icon.png`, `phoneScreenshots/` (8 screenshots) and `changelogs/20261126.txt`. The same title/summary/description/icon also exist in the Triple-T layout at `apps/android/android/app/src/fdroid/play/listings/en-US/`.
+  * Upstream: https://github.com/nyusternie/rootmyandroid — `fastlane/metadata/android/en-US/` with `title.txt`, `short_description.txt`, `full_description.txt`, `images/icon.png`, `phoneScreenshots/` (8 screenshots) and `changelogs/20261129.txt`. The same title/summary/description/icon also exist in the Triple-T layout at `apps/android/android/app/src/fdroid/play/listings/en-US/`.
 
 ### Docs
 
@@ -121,14 +121,14 @@ What is unique here:
 * [x] External repos are added as git submodules instead of srclibs. You can update git submodules without opening an MR in this repo and the submodule is covered by our scanner.
   * No external repos; no srclibs.
 * [x] Enable [Reproducible Builds](https://f-droid.org/docs/Reproducible_Builds). We'll use your signature for improved security/reliability, also allowing users to switch between different channels. Do note that if you don't enable reproducible build then the apk will be signed with our key so you can't enable it later. If you can't enable this, please add the reasons here.
-  * Enabled, upstream-signed: `Binaries:` + `AllowedAPKSigningKeys:` (our upload key, cert SHA-256 `1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886bceca`). The `fdroid build` job rebuilds the app from source and then runs `fdroid publish --error-on-failed`, which compares the result byte-for-byte against the hosted reference binary and ships our APK only on a match. The same recipe — identical apart from the version fields — passed that comparison in the previous MR's pipeline (`compared built binary to supplied reference binary successfully`; `supplied reference binary has allowed signer 1c59c433…`).
+  * Enabled, upstream-signed: `Binaries:` + `AllowedAPKSigningKeys:` (our upload key, cert SHA-256 `1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886bceca`). The `fdroid build` job rebuilds the app from source and then runs `fdroid publish --error-on-failed`, which compares the result byte-for-byte against the hosted reference binary and ships our APK only on a match. The same recipe — identical apart from the version fields — passed that comparison in this MR's pipeline 3098300035 (`compared built binary to supplied reference binary successfully`; `supplied reference binary has allowed signer 1c59c433…`).
 * [x] Setup abi split if the APK is large and the splitted ones can be much smaller.
   * Not needed: the APK is 17,993,664 bytes (~18 MB) with `arm64-v8a` + `armeabi-v7a` only (`reactNativeArchitectures` limits the build; the x86 emulator images are not packaged).
 * [x] Only the latest versions should be kept in the metadata before it's merged. If you update the metadata, please replace the old versions with the new ones.
-  * A single `Builds:` entry: 26.11.28 / 20261128.
+  * A single `Builds:` entry: 26.11.29 / 20261129.
 * [x] Don't add any disabled versions in the metadata.
 * [x] The `commit` field should be the full hash. Please don't use tag or branch in commit.
-  * `commit: 0d30c05f37d0e9139b78724802b174471227858b`
+  * `commit: dee1357ea41af75a998a9b0eab28efd1ff7717ca`
 
 ### Pipeline
 
@@ -141,6 +141,7 @@ What is unique here:
     * `Permission com.rootmyandroid.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` — React Native's own signature-level permission for non-exported broadcast receivers (comes with the RN template); it grants nothing to other apps.
     * `APK has no R8 Marker` — R8 is not used: the React Native release build sets `enableProguardInReleaseBuilds = false` and ships JS as Hermes bytecode.
     * `APK ABI and size: arm64-v8a (12M) armeabi-v7a (11M), 18M` and `Signing Key: CN=Root My Android Upload` — informational: the two packaged ABIs, and the upload key that `AllowedAPKSigningKeys` pins.
+    * `scanignore` — five entries, each measured load-bearing (the Build Metadata Reference asks for the reason in the MR): `node_modules/hermes-compiler/hermesc/linux64-bin/hermesc` is the prebuilt Hermes binary the JS bundle step requires (the Inclusion Policy permits Hermes prebuilts; precedent: merged recipe `dev.djara.wafrn_rn`); `react-native/ReactAndroid/publish.gradle` and the three library `build.gradle` files (`lottie-react-native`, `react-native-safe-area-context`, `react-native-svg`) declare a local maven repo the scanner flags as unknown, and `scandelete: node_modules` would otherwise delete them — autolinking then fails with "No package name found". The two entries that were here in the first draft (vendored tarball, desktop scaffold) are gone with this update: both files left the upstream repo (hermes-compiler now resolves from the npm registry, and the desktop scaffold's `Cargo.lock` is committed).
 * [x] F-Droid CI runners are under GitLab's FOSS program, so there's no need for you to pay for any CI time. If Gitlab starts asking for phone numbers or credit cards don't submit anything, just leave a note in the MR so we know we need to trigger the CI.
 
 Supersedes !58356, which was closed because the MR template was not followed.
