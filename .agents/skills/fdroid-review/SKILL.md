@@ -23,6 +23,7 @@ SKILL.md is the map; the rest is loaded on demand.
 | `tools/pool.sh` | ranking the `review-requested` pool |
 | `tools/codequality.sh <project> <pipeline>` | reading the Reports-tab codequality data |
 | `tools/mr-apk.sh <iid>` | getting the exact APK to install |
+| `tools/virustotal.sh <apk\|sha256>` | the Security Scan row (hash lookup; key stays on blackhost/apecsdev) |
 
 ## Non-negotiables
 
@@ -55,5 +56,8 @@ SKILL.md is the map; the rest is loaded on demand.
 
 - v2 — 2026-11-23. Restructured from a single 93-line snapshot into this suite
   after round 3 exposed four gaps (P5, P6, P10, P11 in `pitfalls.md`).
+- v2.1 — 2026-11-23. VirusTotal wired in: `tools/virustotal.sh` (hash
+  lookups, key stays on blackhost/apecsdev), phase 7.5, the
+  `undetected`-is-not-`clean` rule (P13).
 - Rounds recorded: `2026-11-21` (3 reviews, rewritten in place), `2026-11-22`
-  (2 reviews + the TetheredNet ruling), `2026-11-23` (2 reviews drafted).
+  (2 reviews + the TetheredNet ruling), `2026-11-23` (2 reviews posted).

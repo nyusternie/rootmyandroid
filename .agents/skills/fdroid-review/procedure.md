@@ -121,6 +121,22 @@ adb logcat -d | grep -ci 'ANR in'
 adb shell dumpsys connectivity | grep -ic 'VPN CONNECTED'
 ```
 
+## Phase 7.5 — security scan (VirusTotal)
+
+```bash
+.agents/skills/fdroid-review/tools/virustotal.sh <apk>
+```
+
+Hash lookup only: the tool runs the API call **on** blackhost (fallback
+apecsdev), so the key never leaves the credential stores and only the
+sha256 travels. `UNKNOWN to VirusTotal` is a valid result — it means no
+report exists for that hash, not that the lookup failed. Never upload a
+sample without explicit owner approval.
+
+Phrase the row from the stats, exactly: `0 malicious` and `N undetected`
+are different facts. `undetected` means the engine returned no verdict;
+writing "N engines say clean" for an `undetected` result is a false claim.
+
 ## Phase 8 — report
 
 Compose from `report-template.md`. Before posting, run the `pitfalls.md`

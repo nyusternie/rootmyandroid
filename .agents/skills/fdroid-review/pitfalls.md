@@ -90,3 +90,11 @@ pipeline.
 **Gate:** phase 2 falls back to the job traces: `codequality` data lives in the
 `check apk` trace as `generate_report` lines, and the byte-compare line lives
 in the `fdroid build` trace.
+
+## P13 — "clean" when the engines said nothing (2026-11-23)
+
+**Symptom:** VirusTotal returns `malicious=0 harmless=0 undetected=66`; the
+tempting sentence is "66 engines say it is clean". `undetected` means the
+engine returned no verdict at all.
+**Gate:** `policy.md` §Security scan — quote the four counters, never a
+summary word. "0 malicious, 66 undetected" is the honest line.

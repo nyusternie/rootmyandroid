@@ -17,6 +17,9 @@ Filling rules:
   functions you could not exercise and what they need.
 - No meta-commentary: never mention your process, your earlier comment, or a
   previous version of the review.
+- Security Scan: quote the VirusTotal counters verbatim
+  (`malicious` / `suspicious` / `harmless` / `undetected`). `undetected` is
+  not `clean`, and an unknown hash is "no report", not a failure.
 
 ## Template
 

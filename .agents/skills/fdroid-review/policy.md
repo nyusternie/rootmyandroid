@@ -64,6 +64,24 @@ Quote the category's own description in the report when confirming it fits.
   the feature that schedules the work — verify the enqueue sites, do not
   assume they serve only one feature.
 
+## Security scan (VirusTotal)
+
+Run `tools/virustotal.sh <apk>` before writing the row. The key lives only on
+blackhost (`/root/.virustotal/api-key`) and apecsdev
+(`~/.config/virustotal/api_key`) per AGENTS rule 11; the tool calls the API on
+the store host so the secret never reaches the workstation.
+
+- `malicious` / `suspicious` — detections. Any non-zero value needs an
+explanation in the report, not silence.
+- `harmless` — engines that returned an explicit clean verdict.
+- `undetected` — engines with **no verdict**. Not the same as clean; say
+"undetected" when you mean it.
+- `404` — the hash is unknown to VirusTotal (no report). Report it as such.
+- Free-tier quota is small; a `429` is a rate limit, not a rejection. Wait and
+retry rather than dropping the row.
+- Uploading a sample is a privacy decision and is never automatic; ask the
+owner first.
+
 ## Network
 
 - Start the capture before launch; filter by the app label; `No matches` is a
