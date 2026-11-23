@@ -197,9 +197,14 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    (no env files, no dotfiles, no shell rc), and never in git — this repo
    is public (rule 3a). Read secrets where they live (`ssh blackhost …`,
    `ssh apecsdev …`); do not copy them to the workstation to use them.
-   Verified pair at adoption: the VirusTotal review key at
-   `blackhost:/root/.virustotal/api-key` and
-   `apecsdev:~/.config/virustotal/api_key`. Complements rule 9
+   Verified pairs at adoption (2026-11-23, byte-identical, files `600`,
+   dirs `700`): the VirusTotal key
+   (`blackhost:/root/.virustotal/api-key` vs
+   `apecsdev:~/.config/virustotal/api_key`), the runner secrets
+   (`/home/gh-runner/secrets/` vs `apecsdev:~/.config/rootmyandroid/secrets/`),
+   the Cloudflare envs (`/root/.cloudflare/` vs `apecsdev:~/.config/cloudflare/`)
+   and the gh config (`/root/.config/gh/` vs `apecsdev:~/.config/gh/`).
+   Complements rule 9
    (possession confers no authority) and rule 3a. History: the 2026-11-10
    wording ("EVERYTHING SHOULD STAY ON blackhost",
    docs/HANDOFF-2026-11-10-bootimg-agent-token-storage.md) is superseded.
