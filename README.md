@@ -86,7 +86,6 @@ third-party tracking.
 ├── packages/
 │   └── shared/       # rootmyandroid-shared — theme + typed /v1 API client
 ├── .agents/skills/   # Project agent skills (brand-image: brand canon)
-├── .vendor/          # Vendored tarballs (hermes-compiler; see pnpm-workspace.yaml)
 ├── .github/workflows/    # web.yml (web CI + Pages deploy gate),
 │                       # android-preview.yml, rootz.yml, rootzd.yml
 ├── pnpm-workspace.yaml

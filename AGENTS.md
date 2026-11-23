@@ -50,8 +50,6 @@ Top-ups are prepaid (Mullvad-style): add time anytime, no auto-renewal.
 │                       # build dispatch; rootzd cargo tests also auto-run on
 │                       # master pushes touching the crate)
 ├── .agents/skills/   # Project agent skills (brand-image: brand canon)
-├── .vendor/          # Vendored tarballs (hermes-compiler; see overrides in
-│                     # pnpm-workspace.yaml)
 ├── pnpm-workspace.yaml
 └── package.json      # root scripts only; private, no publish
 ```
@@ -552,8 +550,7 @@ successfully"*, signer `1c59c433…`) and `check apk`. One file in the diff:
   workspace root. The recipe symlinks all three into
   `apps/android/node_modules/`.
 - **`scanignore` entries that are load-bearing** (each one was a red
-  pipeline): `.vendor` (gzip tarball), `apps/desktop` (Cargo.toml without
-  a lock), `node_modules/hermes-compiler/hermesc/linux64-bin/hermesc`
+  pipeline): `node_modules/hermes-compiler/hermesc/linux64-bin/hermesc`
   (bundle step needs it; precedent: merged recipe `dev.djara.wafrn_rn`),
   and the four library `build.gradle` files that declare a LOCAL maven
   repo — `react-native/ReactAndroid/publish.gradle`,
@@ -563,6 +560,21 @@ successfully"*, signer `1c59c433…`) and `check apk`. One file in the diff:
   autolinking dies with "No package name found". Enumerate with
   `grep -rl 'url "$projectDir|$rootDir|node_modules/react-native/android'`
   over `node_modules/*/android/build.gradle`, never from memory.
+
+**2026-11-23 — `.vendor` and `apps/desktop` left the recipe.** Both were
+upstream defects, fixed at the source: the vendored
+`.vendor/hermes-compiler-260318099.0.4.tgz` was DELETED (it was a
+byte-identical copy of the npm registry tarball — sha512 integrity in
+`pnpm-lock.yaml` == registry `dist.integrity` == the file's own hash; the
+override existed only because THIS host's link cannot fetch 19 MB — rule 12;
+the registry resolution is what F-Droid's buildserver and our runner use),
+and `apps/desktop/src-tauri/Cargo.lock` was COMMITTED (generated on
+blackhost, 433 packages, tauri =2.12.5 pinned) so the scanner's
+"dependency file without lock" walk finds the lock. The recipe's scanignore
+is the five node_modules entries below. Local `pnpm install` on THIS host
+now needs the healthy leg (blackhost) or a one-off
+`--config.overrides.hermes-compiler=file:<path>` — sustained fetches here
+are a rule-12 violation anyway.
 - **Autolinking must not shell out to `npx`** on the build VM (offline,
   no TTY): `settings.gradle` invokes the CLI as
   `node <cli>/build/bin.js config` with an app-local → workspace-root

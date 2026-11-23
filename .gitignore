@@ -251,6 +251,4 @@ bin
 .keystore/
 apps/*/android/app/release.keystore
 
-# Vendored hermes-compiler tarball is intentional (slow registry workaround)
-!.vendor/*.tgz
 .drafts/

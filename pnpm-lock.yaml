@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  hermes-compiler: file:./.vendor/hermes-compiler-260318099.0.4.tgz
-
 importers:
 
   .:
@@ -4270,9 +4267,8 @@ packages:
   hast-util-whitespace@3.0.0:
     resolution: {integrity: sha512-88JUN06ipLwsnv+dVn+OIYOvAuvBMy/Qoi6O7mQHxdPXpjy+Cd6xRkWwux7DKO+4sYILtLBRIKgsdpS2gQc7qw==}
 
-  hermes-compiler@file:.vendor/hermes-compiler-260318099.0.4.tgz:
-    resolution: {integrity: sha512-8odcPFkPC82HlqCl0C5QI9mBN4rEAT+IAo55sJhzwKw//K3qZloiv3ex6J2O8CuBbhdmkJozfidNsset2KH25w==, tarball: file:.vendor/hermes-compiler-260318099.0.4.tgz}
-    version: 260318099.0.4
+  hermes-compiler@260318099.0.4:
+    resolution: {integrity: sha512-8odcPFkPC82HlqCl0C5QI9mBN4rEAT+IAo55sJhzwKw//K3qZloiv3ex6J2O8CuBbhdmkJozfidNsset2KH25w==}
 
   hermes-estree@0.25.1:
     resolution: {integrity: sha512-0wUoCcLp+5Ev5pDW2OriHC2MJCbwLwuRx+gAqMTOkGKJJiBCLjtrvy4PWUGn6MIVefecRpzoOZ/UV6iGdOr+Cw==}
@@ -11390,7 +11386,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.5
 
-  hermes-compiler@file:.vendor/hermes-compiler-260318099.0.4.tgz: {}
+  hermes-compiler@260318099.0.4: {}
 
   hermes-estree@0.25.1: {}
 
@@ -13088,7 +13084,7 @@ snapshots:
       base64-js: 1.5.1
       flow-enums-runtime: 0.0.6
       flow-parser: 0.327.0
-      hermes-compiler: file:.vendor/hermes-compiler-260318099.0.4.tgz
+      hermes-compiler: 260318099.0.4
       invariant: 2.2.4
       memoize-one: 5.2.1
       metro-runtime: 0.87.1
