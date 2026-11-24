@@ -9,6 +9,7 @@ const common: typeof en = {
   navRoms: 'ROM',
   navGurus: 'Gurus',
   navScan: '立即扫描',
+  navMenu: '菜单',
   langLabel: '语言',
   footerTagline: '扫描你的 Android 设备，获取 root / 升级方案。无需邮箱，无需密码。',
   footerProduct: '产品',

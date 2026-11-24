@@ -15,6 +15,7 @@ const common = {
   navRoms: 'ROMs',
   navGurus: 'Gurus',
   navScan: 'Scan NOW!',
+  navMenu: 'Menu',
   // aria-label of the language switcher (header + footer).
   langLabel: 'Language',
   // Footer.

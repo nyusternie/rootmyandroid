@@ -9,6 +9,7 @@ const common: typeof en = {
   navRoms: '롬',
   navGurus: 'Gurus',
   navScan: '지금 스캔',
+  navMenu: '메뉴',
   langLabel: '언어',
   footerTagline:
     'Android 기기를 스캔하고 루팅 / 업그레이드 계획을 받으세요. 이메일도 비밀번호도 필요 없습니다.',

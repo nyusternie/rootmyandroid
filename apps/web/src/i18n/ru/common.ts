@@ -10,6 +10,7 @@ const common: typeof en = {
   navRoms: 'Прошивки',
   navGurus: 'Gurus',
   navScan: 'Сканировать',
+  navMenu: 'Меню',
   langLabel: 'Язык',
   footerTagline:
     'Отсканируйте ваше Android-устройство и получите план рутирования / обновления. Без email, без пароля.',
