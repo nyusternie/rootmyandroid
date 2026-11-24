@@ -71,9 +71,9 @@ const apps = [
   {
     slug: 'guardian-angel',
     name: d.download.guardianH2,
-    pkg: 'com.rootmyandroid.guardian',
-    href: `${RELEASES}/download/android-v1.0.0/guardian-release.apk`,
-    file: 'guardian-release.apk',
+    pkg: 'com.rootmyandroid.guardian_angel',
+    href: `${RELEASES}/download/guardian-angel-apk/guardian-angel-release.apk`,
+    file: 'guardian-angel-release.apk',
     art: '/img/brand/guardian-angel.webp',
     alt: d.download.guardianArtAlt,
     badge: d.download.guardianBadge,
@@ -87,11 +87,11 @@ const apps = [
   },
 ]
 
-// Signing certificates (public: the current key is in
-// .github/workflows/android.yml's release body; the v1.0.0 key is in the
-// android-v1.0.0 release notes). Never translated.
+// Signing certificate (public: the current key is in
+// .github/workflows/android.yml's release body). The Rootz preview is
+// debug-signed by its workflow, so it has no stable fingerprint to publish.
+// Never translated.
 const KEY_CURRENT = '1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886bceca'
-const KEY_PREVIEW = '0f3d92ee81ce8f8c3a54149748e25ecf67e90262910e68c53694f818fce6253d'
 ---
 
 <Base title={d.download.metaTitle} description={d.download.metaDescription}>
@@ -249,19 +249,11 @@ const KEY_PREVIEW = '0f3d92ee81ce8f8c3a54149748e25ecf67e90262910e68c53694f818fce
     <div class="panel mt-6">
       <h3 class="mt-0">{d.download.verifyH3}</h3>
       <p>{d.download.verifyP}</p>
-      <div class="grid gap-4 min-[560px]:grid-cols-2">
-        <div>
-          <p class="m-0 text-[0.8rem] font-bold uppercase tracking-[0.06em] text-dim">
-            {d.download.verifyCurrent}
-          </p>
-          <code class="dl-fingerprint">{KEY_CURRENT}</code>
-        </div>
-        <div>
-          <p class="m-0 text-[0.8rem] font-bold uppercase tracking-[0.06em] text-dim">
-            {d.download.verifyLegacy}
-          </p>
-          <code class="dl-fingerprint">{KEY_PREVIEW}</code>
-        </div>
+      <div>
+        <p class="m-0 text-[0.8rem] font-bold uppercase tracking-[0.06em] text-dim">
+          {d.download.verifyCurrent}
+        </p>
+        <code class="dl-fingerprint">{KEY_CURRENT}</code>
       </div>
       <p class="faint mb-0 mt-4 text-[0.85rem]">{d.download.verifyNote}</p>
     </div>

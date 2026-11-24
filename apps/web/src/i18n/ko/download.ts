@@ -6,10 +6,9 @@ import type en from '../en/download'
 const download: typeof en = {
   metaTitle: '앱 다운로드',
   metaDescription:
-    'Root My Android 다운로드 — 대표 클라이언트, 직접 APK. Apple App Store와 Google Play는 곧 출시. Rootz 및 Guardian Angel 프리뷰 APK도 계속 이용할 수 있습니다.',
+    'Root My Android 다운로드 — 대표 클라이언트, 직접 APK. Apple App Store와 Google Play는 곧 출시. Rootz 및 Guardian Angel APK도 계속 이용할 수 있습니다.',
   h1: '앱 다운로드',
-  tagline:
-    '직접 APK 다운로드 — 대표 클라이언트는 롤링 빌드로 제공되며, 아래에서 v1.0.0 프리뷰 앱을 계속 이용할 수 있습니다.',
+  tagline: '직접 APK 다운로드 — 모든 빌드를 이 페이지에서 바로 설치할 수 있습니다.',
   heroCta: '최신 빌드 다운로드',
   heroInstall: '설치 방법',
   heroArtAlt:
@@ -30,7 +29,7 @@ const download: typeof en = {
   packageLabel: '패키지',
   featuredBadge: '최신 빌드',
   rootzBadge: '롤링 프리뷰',
-  guardianBadge: 'v1.0.0 프리뷰',
+  guardianBadge: '롤링 빌드',
   featuredPoint1: 'ADB를 통한 읽기 전용 기기 스캔',
   featuredPoint2: '계정으로 암호화된 백업',
   featuredPoint3: '페어링된 Guardian 기기와 도구',
@@ -57,11 +56,10 @@ const download: typeof en = {
   installStep3After: '를 탭하세요.',
   verifyH3: '다운로드한 파일 확인',
   verifyP:
-    '모든 APK는 서명되어 있습니다. 대표 빌드는 현재 업로드 키를, v1.0.0 프리뷰는 이전 프리뷰 키를 사용합니다.',
+    '대표 빌드와 Guardian Angel은 현재 업로드 키로 서명됩니다. Rootz 프리뷰는 공개 디버그 키로 서명됩니다 — 프리뷰 전용입니다.',
   verifyCurrent: '현재 업로드 키(SHA-256)',
-  verifyLegacy: 'v1.0.0 프리뷰 키(SHA-256)',
-  verifyNote: 'apksigner 또는 파일 관리자로 서명 인증서를 위 지문과 비교하세요.',
-  requiresBefore: 'Android 7.0(API 24) 이상이 필요합니다. 각 APK의 서명을 위 지문과 비교하거나 다음을 확인하세요: ',
+  verifyNote: 'apksigner 또는 파일 관리자로 서명 인증서를 이 지문과 비교하세요.',
+  requiresBefore: 'Android 7.0(API 24) 이상이 필요합니다. 대표 빌드와 Guardian Angel APK의 서명을 위 지문과 비교하거나 다음을 확인하세요: ',
   requiresLink: '릴리스 노트',
   requiresAfter: '.',
   previewNote:
@@ -72,7 +70,7 @@ const download: typeof en = {
   sideloadStep2: 'Android에서 출처 불명 앱을 묻습니다: 브라우저의 설치를 허용하세요(1회만).',
   sideloadStep3: '알림이나 다운로드 앱에서 APK를 열고 ‘설치’를 누르세요.',
   sideloadNote:
-    '대표 APK는 현재 업로드 키로, v1.0.0 프리뷰는 이전 프리뷰 키로 서명되었습니다. Android는 서명이 바뀐 업데이트를 거부합니다 — 이전 앱을 먼저 제거하세요.',
+    '대표 APK와 Guardian Angel은 현재 업로드 키로, Rootz 프리뷰는 디버그 키로 서명됩니다. Android는 서명이 바뀐 업데이트를 거부합니다 — 이전 빌드를 먼저 제거하세요.',
   sideloadContinue: '계속해서 다운로드',
   sideloadCancel: '취소',
 }

@@ -4,10 +4,9 @@
 const download = {
   metaTitle: 'Download the apps',
   metaDescription:
-    'Download Root My Android — the featured client, direct APK. Apple App Store and Google Play coming soon. Rootz and Guardian Angel preview APKs remain available.',
+    'Download Root My Android — the featured client, direct APK. Apple App Store and Google Play coming soon. Rootz and Guardian Angel APKs remain available.',
   h1: 'Download the apps',
-  tagline:
-    'Direct APK downloads — the featured client ships as a rolling build; the v1.0.0 preview apps stay available below.',
+  tagline: 'Direct APK downloads — every build installs straight from this page.',
   heroCta: 'Download the latest build',
   heroInstall: 'How to install',
   heroArtAlt:
@@ -28,7 +27,7 @@ const download = {
   packageLabel: 'Package',
   featuredBadge: 'Latest build',
   rootzBadge: 'Rolling preview',
-  guardianBadge: 'v1.0.0 preview',
+  guardianBadge: 'Rolling build',
   featuredPoint1: 'Read-only device scan over ADB',
   featuredPoint2: 'Encrypted backups to your account',
   featuredPoint3: 'Paired Guardian devices and tools',
@@ -56,13 +55,12 @@ const download = {
   installStep3After: '.',
   verifyH3: 'Verify what you download',
   verifyP:
-    'Every APK is signed. The featured build uses our current upload key; the v1.0.0 previews use the earlier preview key.',
+    'The featured build and Guardian Angel are signed with our current upload key. The Rootz preview is signed with a public debug key — preview only.',
   verifyCurrent: 'Current upload key (SHA-256)',
-  verifyLegacy: 'v1.0.0 preview key (SHA-256)',
   verifyNote:
-    'Compare the signing certificate against these fingerprints with apksigner or your file manager.',
+    'Compare the signing certificate against this fingerprint with apksigner or your file manager.',
   requiresBefore:
-    'Requires Android 7.0 (API 24) or later. Compare each APK\'s signature against the fingerprints above, or browse the ',
+    'Requires Android 7.0 (API 24) or later. Compare the featured and Guardian APKs against the fingerprint above, or browse the ',
   requiresLink: 'release notes',
   requiresAfter: '.',
   previewNote:
@@ -73,7 +71,7 @@ const download = {
   sideloadStep2: 'Android asks about unknown apps: allow installs for your browser (one-time).',
   sideloadStep3: 'Open the APK from the notification or your Downloads app and tap “Install”.',
   sideloadNote:
-    'The featured APK is signed with our current upload key; the v1.0.0 previews use the earlier preview key. Android refuses updates across a signature change — uninstall the old app first.',
+    'The featured APK and Guardian Angel are signed with our current upload key; the Rootz preview is debug-signed. Android refuses updates across a signature change — uninstall an older build first.',
   sideloadContinue: 'Continue to download',
   sideloadCancel: 'Cancel',
 }

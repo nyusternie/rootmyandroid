@@ -70,3 +70,25 @@ apps/web/dist/downloads/index.html:
 APK links verified live (HTTP 200): `android-apk/rootmyandroid-release.apk`,
 `rootz-preview-apk/app-release.apk`,
 `android-v1.0.0/guardian-release.apk`.
+
+## No API upgrade is required
+
+The collector is already generic: any name matching `/^[a-z0-9_.-]{1,60}$/`
+is stored with its detail (150-char cap). No new endpoint, table, or column
+is needed for these five events.
+
+## Where the admin page already reads them
+
+- `rootmyandroid-admin/src/lib/analytics.js:493-506` — query [9] counts
+  client events by name (the "Click events" card); query [10] groups
+  `name='download'` by detail (the "Downloads" card).
+- `rootmyandroid-admin/public/app.js:530-542` — `renderCountTable` renders
+  both; `:1061` wires `tbl-downloads`.
+- `rootmyandroid-admin/public/index.html:380-388` — the two card headings.
+
+Result with zero admin changes: the "Downloads" card lists
+`rootz/app-release.apk`, `rootmyandroid/rootmyandroid-release.apk`,
+`guardian-angel/guardian-angel-release.apk` with per-file counts, and
+"Click events" shows `apk_download_click` as one aggregate row. A per-app
+click breakdown (and a click → modal → download funnel) needs a new
+query/card in the admin repo only.

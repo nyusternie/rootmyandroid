@@ -5,9 +5,9 @@ import type en from '../en/download'
 const download: typeof en = {
   metaTitle: '下载应用',
   metaDescription:
-    '下载 Root My Android——精选客户端，直接下载 APK。Apple App Store 与 Google Play 即将上线。Rootz 和 Guardian Angel 预览版 APK 仍可下载。',
+    '下载 Root My Android——精选客户端，直接下载 APK。Apple App Store 与 Google Play 即将上线。Rootz 和 Guardian Angel APK 仍可下载。',
   h1: '下载应用',
-  tagline: '直接 APK 下载——精选客户端为滚动构建；下方的 v1.0.0 预览应用仍可下载。',
+  tagline: '直接 APK 下载——每个构建都可以直接从本页安装。',
   heroCta: '下载最新构建',
   heroInstall: '安装方法',
   heroArtAlt:
@@ -27,7 +27,7 @@ const download: typeof en = {
   packageLabel: '包名',
   featuredBadge: '最新构建',
   rootzBadge: '滚动预览版',
-  guardianBadge: 'v1.0.0 预览版',
+  guardianBadge: '滚动构建',
   featuredPoint1: '通过 ADB 进行只读设备扫描',
   featuredPoint2: '加密备份到你的账户',
   featuredPoint3: '已配对的 Guardian 设备与工具',
@@ -53,11 +53,10 @@ const download: typeof en = {
   installStep3Strong: '安装',
   installStep3After: '。',
   verifyH3: '验证你下载的文件',
-  verifyP: '每个 APK 都已签名。精选构建使用当前上传密钥；v1.0.0 预览版使用较早的预览密钥。',
+  verifyP: '精选构建与 Guardian Angel 使用当前上传密钥签名。Rootz 预览版使用公开调试密钥签名——仅供预览。',
   verifyCurrent: '当前上传密钥（SHA-256）',
-  verifyLegacy: 'v1.0.0 预览密钥（SHA-256）',
-  verifyNote: '使用 apksigner 或文件管理器将签名证书与上述指纹比对。',
-  requiresBefore: '需要 Android 7.0（API 24）或更高版本。请将每个 APK 的签名与上方的指纹比对，或浏览',
+  verifyNote: '使用 apksigner 或文件管理器将签名证书与此指纹比对。',
+  requiresBefore: '需要 Android 7.0（API 24）或更高版本。请将精选构建与 Guardian Angel APK 的签名与上方的指纹比对，或浏览',
   requiresLink: '发布说明',
   requiresAfter: '。',
   previewNote: '这些是预览构建——产品功能正在陆续推出。免费版涵盖基础扫描和文档。',
@@ -67,7 +66,7 @@ const download: typeof en = {
   sideloadStep2: 'Android 会询问未知应用：允许你的浏览器安装应用（只需一次）。',
   sideloadStep3: '从通知或“下载”应用中打开 APK，点按“安装”。',
   sideloadNote:
-    '精选 APK 使用当前上传密钥签名；v1.0.0 预览版使用较早的预览密钥。Android 会拒绝跨签名变更的更新——请先卸载旧应用。',
+    '精选 APK 与 Guardian Angel 使用当前上传密钥签名；Rootz 预览版为调试签名。Android 会拒绝跨签名变更的更新——请先卸载旧构建。',
   sideloadContinue: '继续下载',
   sideloadCancel: '取消',
 }
