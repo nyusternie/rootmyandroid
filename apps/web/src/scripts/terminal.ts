@@ -64,9 +64,17 @@ document.addEventListener('DOMContentLoaded', () => {
   accountInput.value = localStorage.getItem(LS_ACCOUNT) ?? ''
   deviceInput.value = localStorage.getItem(LS_DEVICE) ?? ''
 
+  // QR handoff (owner order 2026-11-24): the Rootz app's pairing QR opens
+  // this page with ?device=<64-hex>, so a scan prefills the field.
+  const deviceFromUrl = new URLSearchParams(location.search).get('device')
+  if (deviceFromUrl && /^[0-9a-f]{64}$/i.test(deviceFromUrl.trim())) {
+    deviceInput.value = deviceFromUrl.trim().toLowerCase()
+  }
+
   function setStatus(text: string, tone: 'ok' | 'warn' | 'muted'): void {
     statusEl.textContent = text
-    statusEl.className = tone === 'ok' ? 'small text-ok' : tone === 'warn' ? 'small text-warn' : 'small muted'
+    statusEl.className =
+      tone === 'ok' ? 'text-[1rem] text-ok' : tone === 'warn' ? 'text-[1rem] text-warn' : 'text-[1rem] muted'
   }
 
   function appendLog(text: string, cls?: string): void {

@@ -184,7 +184,7 @@
     @apply sticky top-0 z-10 border-b border-line bg-page/88 backdrop-blur;
   }
   .site-header .container {
-    @apply flex h-[3.5rem] max-w-[60rem] items-center justify-between;
+    @apply flex h-[4rem] max-w-[60rem] items-center justify-between min-[900px]:h-[5rem];
   }
   .brand {
     @apply flex items-center gap-[0.6rem] text-[1.35rem] font-bold tracking-[-0.01em] text-ink hover:no-underline;
@@ -332,7 +332,7 @@
   /* /terminal scrollback — fixed height so the log can't be squeezed away
      by sibling content (the Rootz app's measured layout lesson, 2026-11-09). */
   .termlog {
-    @apply h-[20rem] overflow-y-auto whitespace-pre-wrap break-words rounded-[0.5rem] border border-line bg-inset px-[0.75rem] py-[0.6rem] font-mono text-[0.85rem];
+    @apply h-[20rem] overflow-y-auto whitespace-pre-wrap break-words rounded-[0.5rem] border border-line bg-inset px-[0.75rem] py-[0.6rem] font-mono text-[1rem];
   }
 
   /* Keep Android Open banner (Base.astro `banner` prop pages) — persisted
