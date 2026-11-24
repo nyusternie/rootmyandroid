@@ -74,7 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function setStatus(text: string, tone: 'ok' | 'warn' | 'muted'): void {
     statusEl.textContent = text
     statusEl.className =
-      tone === 'ok' ? 'text-[1rem] text-ok' : tone === 'warn' ? 'text-[1rem] text-warn' : 'text-[1rem] muted'
+      tone === 'ok'
+        ? 'text-[1.15rem] text-ok'
+        : tone === 'warn'
+          ? 'text-[1.15rem] text-warn'
+          : 'text-[1.15rem] text-body'
   }
 
   function appendLog(text: string, cls?: string): void {

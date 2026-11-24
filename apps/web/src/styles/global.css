@@ -12,6 +12,9 @@
   --color-inset: #0a0c0e;
   --color-line: #23282f;
   --color-ink: #e8eaed;
+  /* Readable body copy between dim and ink (owner order 2026-11-24: the
+     /terminal instructions were hard to read at --color-dim on page). */
+  --color-body: #ccd4de;
   --color-dim: #9aa3ad;
   --color-faint: #6b7280;
   --color-accent: #3d9df2;
@@ -332,7 +335,7 @@
   /* /terminal scrollback — fixed height so the log can't be squeezed away
      by sibling content (the Rootz app's measured layout lesson, 2026-11-09). */
   .termlog {
-    @apply h-[20rem] overflow-y-auto whitespace-pre-wrap break-words rounded-[0.5rem] border border-line bg-inset px-[0.75rem] py-[0.6rem] font-mono text-[1rem];
+    @apply h-[20rem] overflow-y-auto whitespace-pre-wrap break-words rounded-[0.5rem] border border-line bg-inset px-[0.75rem] py-[0.6rem] font-mono text-[1.0625rem];
   }
 
   /* Keep Android Open banner (Base.astro `banner` prop pages) — persisted
