@@ -51,7 +51,6 @@ const apps = [
       d.download.featuredPoint2,
       d.download.featuredPoint3,
     ],
-    range: '[animation-range:entry_0%_entry_40%]',
     featured: true,
   },
   {
@@ -69,7 +68,6 @@ const apps = [
       d.download.rootzPoint2,
       d.download.rootzPoint3,
     ],
-    range: '[animation-range:entry_8%_entry_48%]',
     featured: false,
   },
   {
@@ -87,7 +85,6 @@ const apps = [
       d.download.guardianPoint2,
       d.download.guardianPoint3,
     ],
-    range: '[animation-range:entry_16%_entry_56%]',
     featured: false,
   },
 ]
@@ -107,7 +104,7 @@ const KEY_CURRENT = '1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886
           {d.download.featuredEyebrow}
         </p>
         <h1>{d.download.h1}</h1>
-        <p class="lede">{d.download.tagline}</p>
+        <p class="lede text-body">{d.download.tagline}</p>
 
         <div class="row mt-6 items-center">
           <a
@@ -123,7 +120,7 @@ const KEY_CURRENT = '1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886
           <a class="btn" href="#install">{d.download.heroInstall}</a>
         </div>
 
-        <p class="faint mt-3 text-[0.85rem]">{d.download.featuredStatus}</p>
+        <p class="text-dim mt-3 text-[0.9rem]">{d.download.featuredStatus}</p>
 
         <ul class="dl-trust">
           <li>{d.download.trustAndroid}</li>
@@ -150,16 +147,12 @@ const KEY_CURRENT = '1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886
 
   <section class="container pb-8">
     <h2>{d.download.appsH2}</h2>
-    <p class="faint">{d.download.appsNote}</p>
+    <p class="text-dim">{d.download.appsNote}</p>
 
     <div class="mt-5 grid gap-5 min-[720px]:grid-cols-3">
       {apps.map((app) => (
         <article
-          class:list={[
-            'panel dl-card reveal motion-safe:supports-[animation-timeline:view()]:animate-reveal-in motion-safe:supports-[animation-timeline:view()]:[animation-timeline:view()]',
-            app.range,
-            app.featured && 'dl-card-featured',
-          ]}
+          class:list={['panel dl-card', app.featured && 'dl-card-featured']}
         >
           <div class="dl-card-art">
             <span class="dl-badge">{app.badge}</span>
@@ -191,7 +184,7 @@ const KEY_CURRENT = '1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886
               data-rma-event-detail={app.slug}
               >{d.download.downloadCta}</a
             >
-            <p class="faint mb-0 mt-2 text-center font-mono text-[0.72rem]">{app.file}</p>
+            <p class="text-dim mb-0 mt-2 text-center font-mono text-[0.78rem]">{app.file}</p>
           </div>
         </article>
       ))}
@@ -200,7 +193,7 @@ const KEY_CURRENT = '1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886
     <!-- Store chips — coming soon, client only (Rootz / Guardian Angel stay sideload-only) -->
     <div class="row mt-5 items-stretch gap-3">
       <span
-        class="flex items-center gap-2 rounded-[0.5rem] border border-dashed border-line px-3 py-2 text-[0.85rem] text-faint"
+        class="flex items-center gap-2 rounded-[0.5rem] border border-dashed border-line px-3 py-2 text-[0.85rem] text-dim"
         aria-disabled="true">
         <svg class="h-[1.15rem] w-[1.15rem] fill-current" viewBox="0 0 24 24" aria-hidden="true">
           <path
@@ -211,7 +204,7 @@ const KEY_CURRENT = '1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886
         <span>{d.download.comingSoon}</span>
       </span>
       <span
-        class="flex items-center gap-2 rounded-[0.5rem] border border-dashed border-line px-3 py-2 text-[0.85rem] text-faint"
+        class="flex items-center gap-2 rounded-[0.5rem] border border-dashed border-line px-3 py-2 text-[0.85rem] text-dim"
         aria-disabled="true">
         <svg class="h-[1.15rem] w-[1.15rem] fill-current" viewBox="0 0 24 24" aria-hidden="true">
           <path
@@ -260,13 +253,13 @@ const KEY_CURRENT = '1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886
         </p>
         <code class="dl-fingerprint">{KEY_CURRENT}</code>
       </div>
-      <p class="faint mb-0 mt-4 text-[0.85rem]">{d.download.verifyNote}</p>
+      <p class="text-dim mb-0 mt-4 text-[0.9rem]">{d.download.verifyNote}</p>
     </div>
 
     <p class="mt-5">
       {d.download.requiresBefore}<a href={RELEASES}>{d.download.requiresLink}</a>{d.download.requiresAfter}
     </p>
-    <p class="faint">
+    <p class="text-dim">
       {d.download.previewNote}
     </p>
   </section>
@@ -287,7 +280,7 @@ const KEY_CURRENT = '1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886
       class="panel w-full max-w-[26rem] p-6 shadow-2xl"
       role="document"
     >
-      <p class="m-0 flex items-center gap-2 text-[0.75rem] font-bold uppercase tracking-[0.08em] text-faint">
+      <p class="m-0 flex items-center gap-2 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-dim">
         <span>{d.download.sideloadApp}</span>
         <strong id="sideload-app" class="rounded-full border border-ok/45 bg-ok/12 px-[0.55rem] py-[0.1rem] text-[0.72rem] text-ok"></strong>
       </p>
@@ -297,7 +290,7 @@ const KEY_CURRENT = '1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886
         <li>{d.download.sideloadStep2}</li>
         <li>{d.download.sideloadStep3}</li>
       </ol>
-      <p class="faint mb-5 text-[0.82rem]">{d.download.sideloadNote}</p>
+      <p class="text-dim mb-5 text-[0.88rem]">{d.download.sideloadNote}</p>
       <div class="row items-center justify-end gap-3">
         <button
           id="sideload-cancel"

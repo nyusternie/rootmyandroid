@@ -16,7 +16,10 @@
      /terminal instructions were hard to read at --color-dim on page). */
   --color-body: #ccd4de;
   --color-dim: #9aa3ad;
-  --color-faint: #6b7280;
+  /* Owner order 2026-11-24 (second pass): small secondary text was hard to
+     read on the dark palette — #6b7280 measured 3.96:1 on --color-page.
+     #8b95a3 measures 6.3:1 on page and 5.8:1 on raise (WCAG AA). */
+  --color-faint: #8b95a3;
   --color-accent: #3d9df2;
   --color-accent-dim: #1c5f9e;
   --color-ok: #3fb96b;
@@ -644,7 +647,7 @@
     @apply mt-6 flex list-none flex-wrap gap-[0.5rem] p-0;
   }
   .dl-trust li {
-    @apply rounded-full border border-line bg-raise px-[0.75rem] py-[0.3rem] text-[0.8rem] text-dim;
+    @apply rounded-full border border-line bg-raise px-[0.75rem] py-[0.3rem] text-[0.85rem] text-dim;
   }
   .dl-trust li::before {
     content: '✓ ';
@@ -673,7 +676,7 @@
     @apply border-ok/45 shadow-[0_0_45px_rgba(63,185,107,0.14)];
   }
   .dl-badge {
-    @apply absolute left-3 top-3 z-[1] rounded-full border border-ok/45 bg-page/85 px-[0.6rem] py-[0.2rem] text-[0.7rem] font-bold uppercase tracking-[0.06em] text-ok backdrop-blur;
+    @apply absolute left-3 top-3 z-[1] rounded-full border border-ok/45 bg-page/85 px-[0.6rem] py-[0.2rem] text-[0.72rem] font-bold uppercase tracking-[0.06em] text-ok backdrop-blur;
   }
   .dl-card-body {
     @apply flex flex-1 flex-col p-5;
@@ -682,10 +685,10 @@
     @apply mb-1 mt-0 text-[1.2rem];
   }
   .dl-pkg {
-    @apply mb-4 mt-0 break-all font-mono text-[0.75rem] text-faint;
+    @apply mb-4 mt-0 break-all font-mono text-[0.8rem] text-dim;
   }
   .dl-points {
-    @apply mb-5 mt-0 list-none p-0 text-[0.88rem] text-dim;
+    @apply mb-5 mt-0 list-none p-0 text-[0.95rem] text-body;
   }
   .dl-points li {
     @apply relative mt-[0.45rem] pl-[1.35rem] before:absolute before:left-0 before:font-bold before:text-ok before:content-['✓'];
@@ -704,10 +707,10 @@
     @apply mb-4 mt-[-1.4rem] grid h-[2.8rem] w-[2.8rem] place-items-center rounded-full border border-ok/45 bg-page text-[1.15rem] font-bold text-ok shadow-[0_0_20px_rgba(63,185,107,0.2)];
   }
   .dl-step p {
-    @apply m-0 text-[0.92rem] text-dim;
+    @apply m-0 text-[0.98rem] text-body;
   }
   .dl-fingerprint {
-    @apply mt-1 block break-all font-mono text-[0.72rem] leading-[1.5] text-dim;
+    @apply mt-1 block break-all font-mono text-[0.78rem] leading-[1.5] text-dim;
   }
 
   /* ---------- footer ---------- */
