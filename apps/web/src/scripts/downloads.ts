@@ -7,8 +7,11 @@
 // clicked link, so navigation still happens through a plain anchor click.
 //
 // Per-APK tracking (owner request 2026-11-24, three separate APKs):
-//   - the card/hero buttons carry static data-rma-event="apk_download_click"
-//     + data-rma-event-detail="<app slug>" (analytics.ts per-element binding)
+//   - the card/hero buttons carry a PER-APP static event name
+//     (apk_download_click_<slug>) + data-rma-event-detail="<app slug>"
+//     (analytics.ts per-element binding). The name carries the product so
+//     the admin's existing "Click events" card (grouped by name) reports
+//     each app separately without an admin change.
 //   - this module sets the modal label from data-apk-name and the Continue
 //     anchor's data-rma-event-detail to "<app slug>/<file>", so the anchor's
 //     static data-rma-event="download" lands in the dashboard's existing
@@ -31,8 +34,9 @@ if (modal && continueBtn && cancelBtn) {
   // Display toggling: exactly one of the two display classes is present
   // at a time (no `hidden flex` ambiguity from stylesheet ordering).
   const open = (link: HTMLAnchorElement) => {
-    // Slug (data-rma-event-detail) joins the funnel with apk_download_click;
-    // data-apk-name is the product name shown in the modal chip.
+    // Slug (data-rma-event-detail) joins the funnel with the per-app
+    // apk_download_click_<slug> event; data-apk-name is the product name
+    // shown in the modal chip.
     const app = link.dataset.rmaEventDetail ?? ''
     const file = link.dataset.apkFile ?? ''
     lastFocus = document.activeElement as HTMLElement | null
