@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- apps/rootz/app/src/main/res/values/themes.xml -->
 <resources>
+    <!-- Outlined-field hint/label type: 16sp + 30% (owner order
+         2026-11-24: all text up 30%). -->
+    <style name="TextAppearance.Rootz.FieldHint" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textSize">20.8sp</item>
+    </style>
+
     <style name="Theme.Rootz" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/rootz_primary</item>
         <item name="colorPrimaryVariant">@color/rootz_primary_variant</item>

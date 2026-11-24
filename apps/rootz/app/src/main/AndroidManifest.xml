@@ -8,6 +8,7 @@
 
     <application
         android:label="Rootz"
+        android:icon="@drawable/rootz_icon"
         android:theme="@style/Theme.Rootz"
         android:allowBackup="false"
         android:supportsRtl="true">

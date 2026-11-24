@@ -127,6 +127,7 @@ class MainActivity : AppCompatActivity() {
         ).apply { cornerRadius = dp(4).toFloat() } // M2 contained-button spec: 4dp corners
         return MaterialButton(this).apply {
             this.text = text
+            textSize = 18.2f // button label 14sp + 30% (owner order 2026-11-24)
             backgroundTintList = null
             background = RippleDrawable(ColorStateList.valueOf(0x40FFFFFF), gradient, gradient)
         }
@@ -136,10 +137,15 @@ class MainActivity : AppCompatActivity() {
      *  sections must read as separate blocks, not one blended column). */
     private fun sectionTitle(text: String) = TextView(this).apply {
         this.text = text
-        textSize = 16f
+        // 16sp + 30% (owner order 2026-11-24).
+        textSize = 20.8f
         setTypeface(typeface, Typeface.BOLD)
         setTextColor(0xFFE8EAED.toInt())
     }
+
+    /** Plain status line: Material body 14sp + 30% (owner order
+     *  2026-11-24: ALL text up 30%). */
+    private fun statusText() = TextView(this).apply { textSize = 18.2f }
 
     /** A MaterialCardView wrapping a vertical, padded column of children
      *  with 12dp gaps between them (Material 8dp grid, min touch spacing). */
@@ -171,10 +177,15 @@ class MainActivity : AppCompatActivity() {
         val layout = TextInputLayout(this).apply {
             hint = hintText
             boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
+            // 16sp + 30% for the floating label (owner order 2026-11-24).
+            setHintTextAppearance(R.style.TextAppearance_Rootz_FieldHint)
         }
         // TextInputEditText must be created with the TextInputLayout's
         // (theme-wrapped) context — documented Material requirement.
-        val edit = TextInputEditText(layout.context).apply(configure)
+        val edit = TextInputEditText(layout.context).apply {
+            textSize = 20.8f // 16sp + 30% (owner order 2026-11-24)
+            configure()
+        }
         layout.addView(edit)
         return layout to edit
     }
@@ -183,20 +194,53 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
 
-        val toolbar = MaterialToolbar(this).apply { title = "Rootz" }
+        // Brand row: app icon left of the wordmark, wordmark at 2x the
+        // Material title size (owner order 2026-11-24).
+        val brandIcon = ImageView(this).apply {
+            setImageResource(R.drawable.rootz_icon)
+            contentDescription = null
+        }
+        val brandTitle = TextView(this).apply {
+            text = "Rootz"
+            textSize = 40f // 20sp title doubled
+            setTypeface(typeface, Typeface.BOLD)
+            setTextColor(0xFFE8EAED.toInt())
+            setPadding(dp(12), 0, 0, 0)
+        }
+        val brandRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            addView(brandIcon, LinearLayout.LayoutParams(dp(44), dp(44)))
+            addView(
+                brandTitle,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                ),
+            )
+        }
+        val toolbar = MaterialToolbar(this).apply {
+            addView(
+                brandRow,
+                androidx.appcompat.widget.Toolbar.LayoutParams(
+                    androidx.appcompat.widget.Toolbar.LayoutParams.WRAP_CONTENT,
+                    androidx.appcompat.widget.Toolbar.LayoutParams.WRAP_CONTENT,
+                ),
+            )
+        }
 
         // Section 1 — DEVICE: identity + the current account/sync state.
         // Status only: NO command surface (owner order 2026-11-24: "we DO
         // NOT give any control on this app — EVERYTHING RUNS THRU THE
         // CLIENT"). The shell lives in the web /terminal page and the Root
         // My Android apps; this app is the relay daemon.
-        wifiStatus = TextView(this)
-        status = TextView(this)
-        relayStatus = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
+        wifiStatus = statusText()
+        status = statusText()
+        relayStatus = statusText().apply { setPadding(0, dp(4), 0, dp(8)) }
         relayDevice = TextView(this).apply {
             setTextIsSelectable(true)
             typeface = Typeface.MONOSPACE
-            textSize = 11f
+            textSize = 14.3f // 11sp + 30%
             setPadding(0, 0, 0, dp(8))
         }
         val deviceCard = sectionCard(
@@ -222,7 +266,7 @@ class MainActivity : AppCompatActivity() {
         relayQrHint = TextView(this).apply {
             text = "Scan with Root My Android → Devices → Pair a new device, or open rootmyandroid.com/terminal on a computer."
             setTextColor(0xFFB0BEC5.toInt())
-            textSize = 12f
+            textSize = 15.6f // 12sp + 30%
         }
         val (relayAccountLayout, relayAccountEdit) = outlinedField("16-digit account number") {
             inputType = InputType.TYPE_CLASS_NUMBER
@@ -237,6 +281,7 @@ class MainActivity : AppCompatActivity() {
             com.google.android.material.R.attr.materialButtonOutlinedStyle,
         ).apply {
             text = "Disconnect"
+            textSize = 18.2f // 14sp + 30%
             isEnabled = false
         }
         val accountCard = sectionCard(
@@ -250,14 +295,14 @@ class MainActivity : AppCompatActivity() {
 
         // Section 3 — WIRELESS ADB PAIRING (device setup, not control):
         // title + description on owner order 2026-11-24.
-        pairStatus = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
+        pairStatus = statusText().apply { setPadding(0, dp(4), 0, dp(8)) }
         val pairDesc = TextView(this).apply {
             text = "Pair this app with your phone's own ADB pairing server. Open " +
                 "Developer options → Wireless debugging → \"Pair device with pairing " +
                 "code\", then type the 6-digit code it shows here. The code expires in " +
                 "under a minute. On the same phone, arm the notification first and type " +
                 "the code there."
-            textSize = 12f
+            textSize = 15.6f // 12sp + 30%
             setTextColor(0xFFB0BEC5.toInt())
         }
         val (pairLayout, pairEdit) = outlinedField("6-digit pairing code") {
@@ -278,7 +323,7 @@ class MainActivity : AppCompatActivity() {
         output = TextView(this).apply {
             setTextIsSelectable(true)
             typeface = Typeface.MONOSPACE
-            textSize = 12f
+            textSize = 15.6f // 12sp + 30%
             setPadding(0, dp(8), 0, dp(8))
         }
         val scroll = ScrollView(this).apply { addView(output) }
@@ -292,7 +337,14 @@ class MainActivity : AppCompatActivity() {
         // Page layout: fixed toolbar, then a SCROLLING content column.
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            addView(toolbar)
+            // Taller bar for the 40sp wordmark + 44dp icon.
+            addView(
+                toolbar,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    dp(88),
+                ),
+            )
             val content = LinearLayout(this@MainActivity).apply {
                 orientation = LinearLayout.VERTICAL
                 addView(deviceCard, cardMargins())
