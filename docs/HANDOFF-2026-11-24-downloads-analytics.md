@@ -21,6 +21,10 @@ modal emit six event names:
 | `apk_sideload_continue` | modal "Continue to download" | JSON `{"app":"<slug>"}` |
 | `download` | the Continue anchor's real navigation | `<app slug>/<file>`, e.g. `rootz/app-release.apk` |
 
+Transition: events recorded before 2026-11-24T20:45Z carry the old
+aggregate name `apk_download_click` with the slug in `detail`; from that
+deploy onward the per-app names below are emitted.
+
 The click event NAME carries the product. The admin's existing "Click
 events" card groups by name
 (`rootmyandroid-admin/src/lib/analytics.js:493-500`), so each app appears
