@@ -3,6 +3,7 @@ package com.rootmyandroid.rootz
 
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
@@ -12,6 +13,7 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.view.View
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -25,6 +27,8 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.qrcode.QRCodeWriter
 import java.io.File
 import java.net.Socket
 import java.text.SimpleDateFormat
@@ -62,6 +66,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pairInput: TextInputEditText
     private lateinit var relayStatus: TextView
     private lateinit var relayDevice: TextView
+    private lateinit var relayQr: ImageView
+    private lateinit var relayQrWrap: LinearLayout
+    private lateinit var relayQrHint: TextView
+    private lateinit var relayDisconnect: MaterialButton
     private lateinit var relayAccount: TextInputEditText
     private lateinit var sendButton: MaterialButton
     private lateinit var outputScroll: ScrollView
@@ -78,6 +86,30 @@ class MainActivity : AppCompatActivity() {
     // APK.
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+
+    /** QR payload: the web terminal opens with the device field prefilled
+     *  (apps/web/src/scripts/terminal.ts reads ?device=). */
+    private fun pairingPayload(deviceId: String) =
+        "https://rootmyandroid.com/terminal?device=$deviceId"
+
+    /** Black-on-white QR only — inverted codes do not decode on Android's
+     *  ZXing port (measured 2026-11-16, AGENTS.md test-QR discipline). */
+    private fun qrBitmap(text: String, sizePx: Int): Bitmap? = try {
+        val matrix = QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, sizePx, sizePx)
+        Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888).apply {
+            for (y in 0 until sizePx) for (x in 0 until sizePx) {
+                setPixel(x, y, if (matrix[x, y]) 0xFF000000.toInt() else 0xFFFFFFFF.toInt())
+            }
+        }
+    } catch (e: Exception) {
+        android.util.Log.e("Rootz", "QR render failed", e)
+        null
+    }
+
+    private fun setPairingQrVisible(visible: Boolean) {
+        relayQrWrap.visibility = if (visible) View.VISIBLE else View.GONE
+        relayQrHint.visibility = if (visible) View.VISIBLE else View.GONE
+    }
 
     private fun cardMargins(height: Int = LinearLayout.LayoutParams.WRAP_CONTENT) =
         LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height).apply {
@@ -182,9 +214,25 @@ class MainActivity : AppCompatActivity() {
         val pairCard = sectionCard(pairStatus, pairLayout, pairButton, armButton)
 
         // Relay-daemon card (the APK's primary role — owner ruling
-        // 2026-11-11): device id for pairing + the account number that
-        // starts the lane.
+        // 2026-11-11): a scannable pairing QR until the device is paired
+        // (owner order 2026-11-24), the device id, the account number that
+        // starts the lane, and Disconnect.
         relayStatus = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
+        relayQr = ImageView(this).apply {
+            contentDescription = "pairing QR — scan with the Root My Android app"
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            setBackgroundColor(0xFFFFFFFF.toInt())
+        }
+        relayQrWrap = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = android.view.Gravity.CENTER_HORIZONTAL
+            addView(relayQr, LinearLayout.LayoutParams(dp(220), dp(220)))
+        }
+        relayQrHint = TextView(this).apply {
+            text = "Scan with Root My Android → Devices → Pair a new device, or open rootmyandroid.com/terminal on a computer."
+            setTextColor(0xFFB0BEC5.toInt())
+            textSize = 12f
+        }
         relayDevice = TextView(this).apply {
             setTextIsSelectable(true)
             typeface = Typeface.MONOSPACE
@@ -196,7 +244,25 @@ class MainActivity : AppCompatActivity() {
         }
         relayAccount = relayAccountEdit
         val relayButton = gradientButton("Pair & start relay daemon")
-        val relayCard = sectionCard(relayStatus, relayDevice, relayAccountLayout, relayButton)
+        // Secondary action: outlined (not the green filled style) so the
+        // primary "pair & start" action keeps visual weight.
+        relayDisconnect = MaterialButton(
+            this,
+            null,
+            com.google.android.material.R.attr.materialButtonOutlinedStyle,
+        ).apply {
+            text = "Disconnect"
+            isEnabled = false
+        }
+        val relayCard = sectionCard(
+            relayStatus,
+            relayQrWrap,
+            relayQrHint,
+            relayDevice,
+            relayAccountLayout,
+            relayButton,
+            relayDisconnect,
+        )
 
         output = TextView(this).apply {
             setTextIsSelectable(true)
@@ -206,44 +272,13 @@ class MainActivity : AppCompatActivity() {
         }
         val scroll = ScrollView(this).apply { addView(output) }
         outputScroll = scroll
-        val logLabel = TextView(this).apply { text = "output" }
-        val clearButton = gradientButton("Clear").apply {
-            setOnClickListener { output.text = "" }
-        }
-        val logHeader = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            addView(
-                logLabel,
-                LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f),
-            )
-            addView(
-                clearButton,
-                LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                ),
-            )
-        }
-        val logInner = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(8), dp(16), dp(16))
-            addView(logHeader)
-            addView(
-                scroll,
-                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f),
-            )
-        }
-        val logCard = MaterialCardView(this).apply {
-            radius = dp(12).toFloat()
-            cardElevation = dp(2).toFloat()
-            useCompatPadding = true
-            addView(logInner)
-        }
+        // The scrollback card was REMOVED from this screen (owner order
+        // 2026-11-24): Rootz is the relay daemon, not a terminal — the
+        // terminal lives in the web /terminal page and the Root My Android
+        // apps. The buffer is kept (detached) because the relay receipts
+        // and the overflow Export still write/read it.
 
         // Page layout: fixed toolbar, then a SCROLLING content column.
-        // The log card needs a fixed height — as a weighted sibling of the
-        // two (tall) input cards it was squeezed to ~26dp on a Pixel 3 and
-        // the output was invisible (measured via uiautomator bounds).
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             addView(toolbar)
@@ -252,12 +287,6 @@ class MainActivity : AppCompatActivity() {
                 addView(relayCard, cardMargins())
                 addView(shellCard, cardMargins())
                 addView(pairCard, cardMargins())
-                addView(
-                    logCard,
-                    LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT, dp(320),
-                    ).apply { setMargins(dp(12), dp(8), dp(12), dp(12)) },
-                )
             }
             addView(
                 ScrollView(this@MainActivity).apply { addView(content) },
@@ -297,7 +326,20 @@ class MainActivity : AppCompatActivity() {
             }
             getSharedPreferences(PREFS_RELAY, MODE_PRIVATE).edit().putString(KEY_ACCOUNT, account).apply()
             relayStatus.text = "relay: starting…"
+            setPairingQrVisible(false)
             startRelayDaemon(account)
+        }
+        // Disconnect (owner order 2026-11-24): stop the lane and FORGET the
+        // account so the daemon does not auto-start on the next launch; the
+        // pairing QR returns. The relay pairing marker is kept — re-pairing
+        // the same key is idempotent (API: POST /v1/relay/devices).
+        relayDisconnect.setOnClickListener {
+            relayDaemon?.stop()
+            relayDaemon = null
+            getSharedPreferences(PREFS_RELAY, MODE_PRIVATE).edit().remove(KEY_ACCOUNT).apply()
+            relayDisconnect.isEnabled = false
+            relayStatus.text = "relay: disconnected — scan the QR or enter your 16-digit account number"
+            setPairingQrVisible(true)
         }
         runCommand("id", silent = true)
         handlePairIntent(intent)
@@ -310,12 +352,16 @@ class MainActivity : AppCompatActivity() {
         // account number is already stored (paired earlier).
         thread {
             val id = RelayIdentity.loadOrGenerate(this)
+            val bmp = qrBitmap(pairingPayload(id.deviceId), dp(220))
             val saved = getSharedPreferences(PREFS_RELAY, MODE_PRIVATE).getString(KEY_ACCOUNT, null)
             runOnUiThread {
                 relayIdentity = id
-                relayDevice.text = "device id (pair this into your Root My Android account):\n${id.deviceId}"
+                if (bmp != null) relayQr.setImageBitmap(bmp)
+                relayDevice.text = "device id: ${id.deviceId}"
                 relayStatus.text =
-                    if (saved != null) "relay: starting…" else "relay: idle — enter your 16-digit account number to pair"
+                    if (saved != null) "relay: starting…"
+                    else "relay: idle — scan the QR or enter your 16-digit account number"
+                setPairingQrVisible(saved == null)
                 if (saved != null) startRelayDaemon(saved)
             }
         }
@@ -457,6 +503,8 @@ class MainActivity : AppCompatActivity() {
             },
         )
         relayDaemon = daemon
+        relayDisconnect.isEnabled = true
+        setPairingQrVisible(false)
         daemon.start()
     }
 

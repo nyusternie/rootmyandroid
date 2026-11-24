@@ -12,8 +12,8 @@ android {
         targetSdk 36
         // versionCode = YYYYMMDD of versionName (owner ruling 2026-11-11 —
         // the two must ALWAYS match; applies repo-wide).
-        versionCode 20261114
-        versionName "26.11.11"
+        versionCode 20261124
+        versionName "26.11.24"
     }
 
     buildTypes {
@@ -47,6 +47,9 @@ dependencies {
     // (observed on blueline: Class.forName fails for both names), so we
     // ship our own provider and take EKM from its public API.
     implementation "org.conscrypt:conscrypt-android:2.5.2"
+    // Pairing QR on the Rootz screen (owner order 2026-11-24). Encode-only:
+    // the scanner lives in the Root My Android app (ZXing 3.5.3 there too).
+    implementation "com.google.zxing:core:3.5.3"
     // Pure-JVM unit tests for the pairing crypto (Ed25519/SPAKE2/HKDF/GCM)
     // — validated against RFC 8032 + RFC 5869 vectors, CI-gated in
     // .github/workflows/rootz.yml.
