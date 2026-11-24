@@ -9,31 +9,21 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.os.Bundle
 import android.text.InputType
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.BackgroundColorSpan
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.content.FileProvider
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
-import java.io.File
 import java.net.Socket
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import kotlin.concurrent.thread
 
 /**
@@ -61,7 +51,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var status: TextView
     private lateinit var wifiStatus: TextView
     private lateinit var output: TextView
-    private lateinit var input: TextInputEditText
     private lateinit var pairStatus: TextView
     private lateinit var pairInput: TextInputEditText
     private lateinit var relayStatus: TextView
@@ -71,11 +60,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var relayQrHint: TextView
     private lateinit var relayDisconnect: MaterialButton
     private lateinit var relayAccount: TextInputEditText
-    private lateinit var sendButton: MaterialButton
     private lateinit var outputScroll: ScrollView
     private val adbWifi by lazy { AdbWifiDiscovery(this) }
     private val guard by lazy { CommandGuard(this) }
-    private val bookmarks by lazy { Bookmarks(this) }
     private var relayIdentity: RelayIdentity? = null
     private var relayDaemon: RelayDaemon? = null
 
@@ -179,39 +166,39 @@ class MainActivity : AppCompatActivity() {
 
         val toolbar = MaterialToolbar(this).apply { title = "Rootz" }
 
-        // Overflow menu (no icons → all items land in the three-dot
-        // overflow by default): the Terminal Editor surface (aShell You
-        // bar, pattern 85 in .session-notes/repo-reviews.md).
-        toolbar.menu.add(0, MENU_EXAMPLES, 0, "Examples")
-        toolbar.menu.add(0, MENU_SAVED, 1, "Saved commands")
-        toolbar.menu.add(0, MENU_SEARCH, 2, "Search output")
-        toolbar.menu.add(0, MENU_EXPORT, 3, "Export output (.txt)")
-        toolbar.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                MENU_EXAMPLES -> { showExamples(); true }
-                MENU_SAVED -> { showSaved(); true }
-                MENU_SEARCH -> { showSearch(); true }
-                MENU_EXPORT -> { exportOutput(); true }
-                else -> false
-            }
-        }
-
+        // Device status only — NO command surface (owner order 2026-11-24:
+        // "we DO NOT give any control on this app — EVERYTHING RUNS THRU
+        // THE CLIENT"). The shell lives in the web /terminal page and the
+        // Root My Android apps; this app is the relay daemon.
         wifiStatus = TextView(this)
         status = TextView(this)
-        val (commandLayout, commandEdit) = outlinedField("shell command (e.g. id)")
-        input = commandEdit
-        val send = gradientButton("Send")
-        sendButton = send
-        val shellCard = sectionCard(wifiStatus, status, commandLayout, send)
+        val deviceCard = sectionCard(wifiStatus, status)
 
+        // Wireless-debugging pairing card (device setup, not control):
+        // title + description on owner order 2026-11-24.
         pairStatus = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
+        val pairTitle = TextView(this).apply {
+            text = "Wireless debugging"
+            textSize = 16f
+            setTypeface(typeface, Typeface.BOLD)
+            setTextColor(0xFFE8EAED.toInt())
+        }
+        val pairDesc = TextView(this).apply {
+            text = "Pair this app with your phone's own ADB pairing server. Open " +
+                "Developer options → Wireless debugging → \"Pair device with pairing " +
+                "code\", then type the 6-digit code it shows here. The code expires in " +
+                "under a minute. On the same phone, arm the notification first and type " +
+                "the code there."
+            textSize = 12f
+            setTextColor(0xFFB0BEC5.toInt())
+        }
         val (pairLayout, pairEdit) = outlinedField("6-digit pairing code") {
             inputType = InputType.TYPE_CLASS_NUMBER
         }
         pairInput = pairEdit
         val pairButton = gradientButton("Pair (wireless debugging)")
         val armButton = gradientButton("Arm pairing notification (same-device)")
-        val pairCard = sectionCard(pairStatus, pairLayout, pairButton, armButton)
+        val pairCard = sectionCard(pairTitle, pairDesc, pairStatus, pairLayout, pairButton, armButton)
 
         // Relay-daemon card (the APK's primary role — owner ruling
         // 2026-11-11): a scannable pairing QR until the device is paired
@@ -285,7 +272,7 @@ class MainActivity : AppCompatActivity() {
             val content = LinearLayout(this@MainActivity).apply {
                 orientation = LinearLayout.VERTICAL
                 addView(relayCard, cardMargins())
-                addView(shellCard, cardMargins())
+                addView(deviceCard, cardMargins())
                 addView(pairCard, cardMargins())
             }
             addView(
@@ -309,7 +296,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        send.setOnClickListener { guardedRun(input.text.toString().trim()) }
         pairButton.setOnClickListener { startPairing() }
         // Same-device pairing must NOT foreground this activity — that
         // kills the Settings pairing server (measured on blueline). The
@@ -510,12 +496,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun runCommand(cmd: String, silent: Boolean = false) {
         if (cmd.isEmpty()) return
-        runOnUiThread {
-            sendButton.isEnabled = false
-            sendButton.text = "Running…"
-        }
         thread {
-          try {
             // Prefer wireless ADB (key enrolled via pairing) when the
             // _adb-tls-connect endpoint is up; fall back to the rootd
             // socket (needed for `su` tiers).
@@ -564,198 +545,12 @@ class MainActivity : AppCompatActivity() {
                     if (!silent) appendOutput(cmd, result.trim())
                 }
             }
-          } finally {
-            runOnUiThread {
-                sendButton.isEnabled = true
-                sendButton.text = "Send"
-            }
-          }
         }
     }
 
-    /**
-     * Entry point for USER-typed commands: consult the CommandGuard before
-     * touching any transport (wireless ADB shell tier OR the daemon socket,
-     * which may be uid 0 — the gate must live at this single choke point).
-     * Repo rule 6 enforced in-app (CommandGuard.kt docstring).
-     */
-    private fun guardedRun(cmd: String) {
-        if (cmd.isEmpty()) return
-        val decision = guard.decisionFor(cmd)
-        if (decision.allow) {
-            runCommand(cmd)
-            return
-        }
-        val gated = decision.findings.filter { it.risk != Risk.SAFE }
-        val reasons = gated.joinToString("\n\n") { "${it.patternKey}\n${it.reason}" }
-        val builder = MaterialAlertDialogBuilder(this)
-            .setTitle("Confirm command — ${decision.risk.name.lowercase()}")
-            .setMessage("$cmd\n\n$reasons")
-            .setPositiveButton("Run once") { _, _ ->
-                guard.recordRunOnce(decision)
-                appendGuardReceipt(
-                    if (decision.risk == Risk.CAUTION) {
-                        ReceiptCode.ASK_ALLOWED_SESSION
-                    } else {
-                        ReceiptCode.ASK_ALLOWED_ONCE
-                    },
-                    cmd,
-                )
-                runCommand(cmd)
-            }
-            .setNegativeButton("Cancel") { _, _ ->
-                appendGuardReceipt(ReceiptCode.ASK_CANCELLED, cmd)
-            }
-        // "Always allow" is never offered for DESTRUCTIVE — wipes are
-        // re-confirmed every single time (pattern 61, AndroidHarness).
-        if (decision.offerAlways) {
-            builder.setNeutralButton("Always allow (all such commands)") { _, _ ->
-                guard.recordAlways(decision)
-                appendGuardReceipt(ReceiptCode.ASK_ALLOWED_ALWAYS, cmd)
-                runCommand(cmd)
-            }
-        }
-        builder.show()
-    }
-
-    /** Guard audit receipt in the scrollback: one line, closed reason
-     *  codes, no payloads (pattern 8, Argus). Only gated commands get a
-     *  receipt — SAFE commands leave no line because the `$ cmd` echo is
-     *  already the record. */
-    private fun appendGuardReceipt(code: ReceiptCode, cmd: String) {
-        output.append("[guard] ${code.tag}: $cmd\n\n")
-    }
-
-    /** Built-in examples → tap fills the command field (never runs it —
-     *  the user still presses Send, so the guard still applies). */
-    private fun showExamples() {
-        val labels = ExampleCommands.ALL
-            .map { "${it.label} — ${it.command}" }
-            .toTypedArray()
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Examples (tap to fill)")
-            .setItems(labels) { _, which ->
-                input.setText(ExampleCommands.ALL[which].command)
-                input.setSelection(input.text?.length ?: 0)
-            }
-            .show()
-    }
-
-    /** Saved commands: tap fills, long-press deletes (a Toast is the
-     *  undo-free record). Saving replaces same-named entries (see
-     *  Bookmarks.kt docstring). */
-    private fun showSaved() {
-        val all = bookmarks.all()
-        if (all.isEmpty()) {
-            Toast.makeText(
-                this,
-                "no saved commands yet — type a command, then use \"Save current input\" here",
-                Toast.LENGTH_LONG,
-            ).show()
-        }
-        val labels = all.map { "${it.name} — ${it.command}" }.toTypedArray()
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle("Saved commands")
-            .setItems(labels) { _, which ->
-                input.setText(all[which].command)
-                input.setSelection(input.text?.length ?: 0)
-            }
-            .setNeutralButton("Save current input") { _, _ ->
-                val cmd = input.text.toString().trim()
-                if (cmd.isEmpty()) {
-                    Toast.makeText(this, "command field is empty", Toast.LENGTH_SHORT).show()
-                } else {
-                    val name = bookmarks.save(cmd)
-                    Toast.makeText(this, "saved: $name", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .show()
-        dialog.listView.setOnItemLongClickListener { _, _, position, _ ->
-            bookmarks.remove(all[position].name)
-            Toast.makeText(this, "deleted: ${all[position].name}", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
-            true
-        }
-    }
-
-    private fun showSearch() {
-        val (layout, edit) = outlinedField("find in output")
-        layout.setPadding(dp(16), dp(8), dp(16), 0)
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Search output")
-            .setView(layout)
-            .setPositiveButton("Find next") { _, _ -> findNext(edit.text.toString()) }
-            .setNegativeButton("Close", null)
-            .show()
-    }
-
-    /** Highlight every match and scroll to the next one (repeated
-     *  "Find next" with the same term cycles, wrapping at the end). */
-    private fun findNext(term: String) {
-        if (term.isEmpty()) return
-        val text = output.text.toString()
-        val startFrom = if (term == lastSearch) lastSearchIndex + 1 else 0
-        var idx = text.indexOf(term, startIndex = startFrom, ignoreCase = true)
-        if (idx < 0 && startFrom > 0) idx = text.indexOf(term, 0, ignoreCase = true)
-        if (idx < 0) {
-            Toast.makeText(this, "no match: $term", Toast.LENGTH_SHORT).show()
-            return
-        }
-        lastSearch = term
-        lastSearchIndex = idx
-        val spanned = SpannableString(text)
-        var h = text.indexOf(term, 0, ignoreCase = true)
-        while (h >= 0) {
-            spanned.setSpan(
-                BackgroundColorSpan(SEARCH_HIGHLIGHT),
-                h,
-                h + term.length,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
-            )
-            h = text.indexOf(term, h + term.length, ignoreCase = true)
-        }
-        output.text = spanned
-        // Scroll after layout so output.layout is non-null.
-        output.post {
-            val l = output.layout ?: return@post
-            val target = maxOf(0, l.getLineTop(l.getLineForOffset(idx)) - dp(8))
-            outputScroll.scrollTo(0, target)
-        }
-    }
-
-    /** Export the scrollback as a real .txt file via the share sheet
-     *  (FileProvider into cacheDir — no storage permission needed). */
-    private fun exportOutput() {
-        val text = output.text.toString()
-        if (text.isBlank()) {
-            Toast.makeText(this, "nothing to export yet", Toast.LENGTH_SHORT).show()
-            return
-        }
-        val dir = File(cacheDir, "exports").apply { mkdirs() }
-        val stamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
-        val file = File(dir, "rootz-output-$stamp.txt")
-        file.writeText(text)
-        val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", file)
-        val share = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_STREAM, uri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        startActivity(Intent.createChooser(share, "Export output (.txt)"))
-    }
-
-    private var lastSearch: String? = null
-    private var lastSearchIndex = -1
 
     companion object {
-        private const val MENU_EXAMPLES = 1
-        private const val MENU_SAVED = 2
-        private const val MENU_SEARCH = 3
-        private const val MENU_EXPORT = 4
-
         private const val PREFS_RELAY = "relay"
         private const val KEY_ACCOUNT = "account"
-        /** Semi-transparent Rootz green for search highlights. */
-        private const val SEARCH_HIGHLIGHT = 0x5566BB6A
     }
 }
