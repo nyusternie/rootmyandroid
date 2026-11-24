@@ -27,8 +27,8 @@ import java.net.Socket
 import kotlin.concurrent.thread
 
 /**
- * Rootz MVP: minimal client for the rootzd daemon bridge
- * (127.0.0.1:7357). Built from scratch — no fork, no third-party code.
+ * Rootz MVP: the relay DAEMON on the phone, plus the pairing surfaces.
+ * Built from scratch — no fork, no third-party code.
  *
  * Date-based versioning YY.M.D (monorepo rulings 2026-11-09/10 — no v0.x
  * codes). 26.11.8 added in-app wireless-debugging pairing; self-start and
@@ -40,9 +40,17 @@ import kotlin.concurrent.thread
  * SHELL-tier RELAY daemon runs IN the app (RelayDaemon.kt — owner
  * ruling 2026-11-11: the APK is the daemon on non-rooted phones).
  *
- * Protocol: one fresh TCP connection per command — write the command plus
- * "exit", then read until EOF (each connection gets its own piped sh in
- * the daemon, so "exit" cleanly closes it).
+ * No command surface (owner order 2026-11-24): the screen is three
+ * sections — Device (identity + account/sync status), Account pairing
+ * (QR + 16-digit account), Wireless debugging (6-digit ADB pairing).
+ * Every shell session runs through a CLIENT (web /terminal, the Root My
+ * Android apps, Desktop) over the relay; runCommand below is used only
+ * for the silent startup status probe.
+ *
+ * Protocol (status probe + relay sessions): one fresh TCP connection per
+ * command — write the command plus "exit", then read until EOF (each
+ * connection gets its own piped sh in the daemon, so "exit" cleanly
+ * closes it).
  *
  * UI: Material Components, dark (terminal-green Rootz identity).
  */
@@ -100,7 +108,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun cardMargins(height: Int = LinearLayout.LayoutParams.WRAP_CONTENT) =
         LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height).apply {
-            setMargins(dp(12), dp(8), dp(12), 0)
+            // 16dp between sections (was 8dp): the three cards read as
+            // separate blocks (owner order 2026-11-24).
+            setMargins(dp(12), dp(16), dp(12), 0)
         }
 
     /**
@@ -120,6 +130,15 @@ class MainActivity : AppCompatActivity() {
             backgroundTintList = null
             background = RippleDrawable(ColorStateList.valueOf(0x40FFFFFF), gradient, gradient)
         }
+    }
+
+    /** Section heading inside a card (owner order 2026-11-24: the three
+     *  sections must read as separate blocks, not one blended column). */
+    private fun sectionTitle(text: String) = TextView(this).apply {
+        this.text = text
+        textSize = 16f
+        setTypeface(typeface, Typeface.BOLD)
+        setTextColor(0xFFE8EAED.toInt())
     }
 
     /** A MaterialCardView wrapping a vertical, padded column of children
@@ -166,45 +185,30 @@ class MainActivity : AppCompatActivity() {
 
         val toolbar = MaterialToolbar(this).apply { title = "Rootz" }
 
-        // Device status only — NO command surface (owner order 2026-11-24:
-        // "we DO NOT give any control on this app — EVERYTHING RUNS THRU
-        // THE CLIENT"). The shell lives in the web /terminal page and the
-        // Root My Android apps; this app is the relay daemon.
+        // Section 1 — DEVICE: identity + the current account/sync state.
+        // Status only: NO command surface (owner order 2026-11-24: "we DO
+        // NOT give any control on this app — EVERYTHING RUNS THRU THE
+        // CLIENT"). The shell lives in the web /terminal page and the Root
+        // My Android apps; this app is the relay daemon.
         wifiStatus = TextView(this)
         status = TextView(this)
-        val deviceCard = sectionCard(wifiStatus, status)
-
-        // Wireless-debugging pairing card (device setup, not control):
-        // title + description on owner order 2026-11-24.
-        pairStatus = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
-        val pairTitle = TextView(this).apply {
-            text = "Wireless debugging"
-            textSize = 16f
-            setTypeface(typeface, Typeface.BOLD)
-            setTextColor(0xFFE8EAED.toInt())
-        }
-        val pairDesc = TextView(this).apply {
-            text = "Pair this app with your phone's own ADB pairing server. Open " +
-                "Developer options → Wireless debugging → \"Pair device with pairing " +
-                "code\", then type the 6-digit code it shows here. The code expires in " +
-                "under a minute. On the same phone, arm the notification first and type " +
-                "the code there."
-            textSize = 12f
-            setTextColor(0xFFB0BEC5.toInt())
-        }
-        val (pairLayout, pairEdit) = outlinedField("6-digit pairing code") {
-            inputType = InputType.TYPE_CLASS_NUMBER
-        }
-        pairInput = pairEdit
-        val pairButton = gradientButton("Pair (wireless debugging)")
-        val armButton = gradientButton("Arm pairing notification (same-device)")
-        val pairCard = sectionCard(pairTitle, pairDesc, pairStatus, pairLayout, pairButton, armButton)
-
-        // Relay-daemon card (the APK's primary role — owner ruling
-        // 2026-11-11): a scannable pairing QR until the device is paired
-        // (owner order 2026-11-24), the device id, the account number that
-        // starts the lane, and Disconnect.
         relayStatus = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
+        relayDevice = TextView(this).apply {
+            setTextIsSelectable(true)
+            typeface = Typeface.MONOSPACE
+            textSize = 11f
+            setPadding(0, 0, 0, dp(8))
+        }
+        val deviceCard = sectionCard(
+            sectionTitle("Device"),
+            relayStatus,
+            relayDevice,
+            wifiStatus,
+            status,
+        )
+
+        // Section 2 — ACCOUNT PAIRING: the QR (until paired) and the
+        // 16-digit account number that starts the relay lane.
         relayQr = ImageView(this).apply {
             contentDescription = "pairing QR — scan with the Root My Android app"
             scaleType = ImageView.ScaleType.FIT_CENTER
@@ -219,12 +223,6 @@ class MainActivity : AppCompatActivity() {
             text = "Scan with Root My Android → Devices → Pair a new device, or open rootmyandroid.com/terminal on a computer."
             setTextColor(0xFFB0BEC5.toInt())
             textSize = 12f
-        }
-        relayDevice = TextView(this).apply {
-            setTextIsSelectable(true)
-            typeface = Typeface.MONOSPACE
-            textSize = 11f
-            setPadding(0, 0, 0, dp(8))
         }
         val (relayAccountLayout, relayAccountEdit) = outlinedField("16-digit account number") {
             inputType = InputType.TYPE_CLASS_NUMBER
@@ -241,14 +239,40 @@ class MainActivity : AppCompatActivity() {
             text = "Disconnect"
             isEnabled = false
         }
-        val relayCard = sectionCard(
-            relayStatus,
+        val accountCard = sectionCard(
+            sectionTitle("Account pairing"),
             relayQrWrap,
             relayQrHint,
-            relayDevice,
             relayAccountLayout,
             relayButton,
             relayDisconnect,
+        )
+
+        // Section 3 — WIRELESS ADB PAIRING (device setup, not control):
+        // title + description on owner order 2026-11-24.
+        pairStatus = TextView(this).apply { setPadding(0, dp(4), 0, dp(8)) }
+        val pairDesc = TextView(this).apply {
+            text = "Pair this app with your phone's own ADB pairing server. Open " +
+                "Developer options → Wireless debugging → \"Pair device with pairing " +
+                "code\", then type the 6-digit code it shows here. The code expires in " +
+                "under a minute. On the same phone, arm the notification first and type " +
+                "the code there."
+            textSize = 12f
+            setTextColor(0xFFB0BEC5.toInt())
+        }
+        val (pairLayout, pairEdit) = outlinedField("6-digit pairing code") {
+            inputType = InputType.TYPE_CLASS_NUMBER
+        }
+        pairInput = pairEdit
+        val pairButton = gradientButton("Pair (wireless debugging)")
+        val armButton = gradientButton("Arm pairing notification (same-device)")
+        val pairCard = sectionCard(
+            sectionTitle("Wireless debugging"),
+            pairDesc,
+            pairStatus,
+            pairLayout,
+            pairButton,
+            armButton,
         )
 
         output = TextView(this).apply {
@@ -263,7 +287,7 @@ class MainActivity : AppCompatActivity() {
         // 2026-11-24): Rootz is the relay daemon, not a terminal — the
         // terminal lives in the web /terminal page and the Root My Android
         // apps. The buffer is kept (detached) because the relay receipts
-        // and the overflow Export still write/read it.
+        // (onReceipt) still write it.
 
         // Page layout: fixed toolbar, then a SCROLLING content column.
         val root = LinearLayout(this).apply {
@@ -271,8 +295,8 @@ class MainActivity : AppCompatActivity() {
             addView(toolbar)
             val content = LinearLayout(this@MainActivity).apply {
                 orientation = LinearLayout.VERTICAL
-                addView(relayCard, cardMargins())
                 addView(deviceCard, cardMargins())
+                addView(accountCard, cardMargins())
                 addView(pairCard, cardMargins())
             }
             addView(
