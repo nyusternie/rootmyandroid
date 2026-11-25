@@ -47,7 +47,7 @@ import {
   View,
 } from 'react-native';
 import LottieView from 'lottie-react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Shared Rootz/Guardian palette (packages/shared/src/theme.ts) — single
 // source of truth for the mobile-app colors (dynamic props only; static
@@ -69,6 +69,18 @@ type SyncedAccount = {
 };
 
 function App() {
+  return (
+    <SafeAreaProvider>
+      <GuardianScreen />
+    </SafeAreaProvider>
+  );
+}
+
+function GuardianScreen() {
+  // Absolute children position against the parent's border box, not its
+  // safe-area padding — the avatar needs the real inset to clear the
+  // gesture bar (measured on redfin 2026-11-25).
+  const insets = useSafeAreaInsets();
   const [accountInput, setAccountInput] = useState('');
   const [synced, setSynced] = useState<SyncedAccount | null>(null);
   const [iconVisible, setIconVisible] = useState(true);
@@ -195,7 +207,7 @@ function App() {
   const bobY = bob.interpolate({ inputRange: [0, 1], outputRange: [3, -3] });
 
   return (
-    <SafeAreaProvider>
+    <>
       {/* RN 0.88 types omit StatusBar's Android-only backgroundColor; spread-cast keeps the runtime behavior. */}
       <StatusBar barStyle="light-content" {...({ backgroundColor: BACKDROP_TOP } as object)} />
       <SafeAreaView className="flex-1 bg-[#0A0D14]" edges={['top', 'bottom']}>
@@ -330,7 +342,8 @@ function App() {
             Lottie ring is the "protection pulse"; the mascot bobs over it.
             Becomes the assistant/chat entry point in a later build. */}
         <View
-          className="absolute bottom-3 right-2 h-[150px] w-[150px] items-center justify-center"
+          className="absolute h-[150px] w-[150px] items-center justify-center"
+          style={{ bottom: insets.bottom + 10, right: 6 }}
           pointerEvents="none"
           accessible
           accessibilityLabel="Guardian Angel assistant"
@@ -349,7 +362,7 @@ function App() {
           </Animated.View>
         </View>
       </SafeAreaView>
-    </SafeAreaProvider>
+    </>
   );
 }
 
