@@ -117,8 +117,11 @@ jobs:
       - name: Stage APK under its public asset name
         run: cp apps/guardian-angel/android/app/build/outputs/apk/release/app-release.apk guardian-angel-release.apk
 
+      # Pinned to v2: v3 failed on 2026-11-25 with "Unexpected error
+      # fetching GitHub release for tag refs/heads/master" after finding
+      # the release (same failure as rootz.yml that day).
       - name: Publish APK as rolling prerelease
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: guardian-angel-apk
           name: Guardian Angel APK (rolling)
