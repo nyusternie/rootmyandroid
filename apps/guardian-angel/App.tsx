@@ -49,7 +49,7 @@ const { Uninstall, LauncherIcon, SyncStore, DeviceAdmin } = NativeModules;
 
 const API_BASE = 'https://rootmyandroid.com/v1';
 
-/** Top of the backdrop gradient (matches assets/bg-gradient.png). */
+/** Top of the backdrop gradient (matches assets/backdrop.png). */
 const BACKDROP_TOP = '#12203A';
 
 type SyncedAccount = {
@@ -164,19 +164,19 @@ function App() {
     <SafeAreaProvider>
       {/* RN 0.88 types omit StatusBar's Android-only backgroundColor; spread-cast keeps the runtime behavior. */}
       <StatusBar barStyle="light-content" {...({ backgroundColor: BACKDROP_TOP } as object)} />
-      <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
+      <SafeAreaView className="flex-1 bg-[#090C0A]" edges={['top', 'bottom']}>
         {/* Backdrop (owner order 2026-11-25: same treatment as Rootz — the
-            flat fill read as empty). Gradient covers, the 64px grid tile
-            repeats over it; both sit under every other child. */}
+            flat fill read as empty). One baked 1080x2340 image: vertical
+            gradient plus a 64dp grid (176px at 440dpi). Baked rather than
+            layered because RN draws assets at their intrinsic dp size —
+            a 16px-wide gradient stretched by cover showed only its top
+            slice, and the repeated tile never appeared (measured on
+            redfin). The parent bg matches the gradient's bottom so the
+            navigation-bar inset blends. */}
         <Image
-          source={require('./assets/bg-gradient.png')}
+          source={require('./assets/backdrop.png')}
           className="absolute h-full w-full"
           resizeMode="cover"
-        />
-        <Image
-          source={require('./assets/bg-grid.png')}
-          className="absolute h-full w-full"
-          resizeMode="repeat"
         />
 
         {/* Brand bar: icon + 40px wordmark, 88dp tall (Rootz parity). */}
