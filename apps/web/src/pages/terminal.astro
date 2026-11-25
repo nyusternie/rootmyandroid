@@ -22,10 +22,9 @@ import Base from '../layouts/Base.astro'
     <div class="panel">
       <h2>Connect</h2>
       <p class="break-words text-body text-[1.15rem]">
-        Enter your account number and the device_id that rootzd prints at
-        startup (also in <code>device_id</code> next to the daemon's key —
-        default <code>/data/local/tmp/rootzd/device_id</code>). A device
-        picker returns once the API ships a device-list endpoint.
+        Enter your 16-digit account number, then load the devices paired to
+        it and pick one. A device appears here once the Rootz app on it has
+        been paired (Account pairing → Pair &amp; start relay daemon).
       </p>
       <div class="stack">
         <input
@@ -37,14 +36,12 @@ import Base from '../layouts/Base.astro'
           spellcheck="false"
           placeholder="1234 5678 9012 3456"
         />
-        <input
-          id="device-id"
-          class="text-[1.2rem]"
-          type="text"
-          autocomplete="off"
-          spellcheck="false"
-          placeholder="device_id (64 hex characters)"
-        />
+        <div class="row">
+          <select id="device-select" class="min-w-0 flex-1 text-[1.2rem]" aria-label="Device">
+            <option value="">Enter your account number, then load devices…</option>
+          </select>
+          <button type="button" class="btn" id="load-devices-btn">Load devices</button>
+        </div>
         <div class="row">
           <button type="button" class="btn btn-primary" id="connect-btn">Connect</button>
           <button type="button" class="btn" id="disconnect-btn" disabled>Disconnect</button>

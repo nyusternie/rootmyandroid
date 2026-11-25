@@ -6,10 +6,11 @@
 // account-number auth happens at the relay; device identity is proven
 // inside the E2E handshake (device-id binding + transcript signature).
 //
-// No device-list endpoint exists (as of 2026-11-10 —
-// apps/rootzd/docs/relay-api-todo-2026-11-10.md), so the device_id the
-// daemon prints at startup is pasted manually (persisted in localStorage).
+// The device is picked from the account's paired devices
+// (POST /v1/relay/devices/list — owner order 2026-11-24); a ?device=<64hex>
+// link (the Rootz pairing QR) is offered as an extra option.
 
+import { listRelayDevices } from '../lib/api.js'
 import {
   clientHello,
   hex,
@@ -40,7 +41,8 @@ function el<T extends HTMLElement>(id: string): T {
 
 document.addEventListener('DOMContentLoaded', () => {
   const accountInput = el<HTMLInputElement>('account-number')
-  const deviceInput = el<HTMLInputElement>('device-id')
+  const deviceSelect = el<HTMLSelectElement>('device-select')
+  const loadDevicesBtn = el<HTMLButtonElement>('load-devices-btn')
   const connectBtn = el<HTMLButtonElement>('connect-btn')
   const disconnectBtn = el<HTMLButtonElement>('disconnect-btn')
   const statusEl = el<HTMLParagraphElement>('conn-status')
@@ -61,14 +63,86 @@ document.addEventListener('DOMContentLoaded', () => {
   let outDecoder = new TextDecoder()
   let errDecoder = new TextDecoder()
 
-  accountInput.value = localStorage.getItem(LS_ACCOUNT) ?? ''
-  deviceInput.value = localStorage.getItem(LS_DEVICE) ?? ''
+  const storedAccount = localStorage.getItem(LS_ACCOUNT) ?? ''
+  const storedDevice = localStorage.getItem(LS_DEVICE) ?? ''
+  accountInput.value = storedAccount
 
   // QR handoff (owner order 2026-11-24): the Rootz app's pairing QR opens
-  // this page with ?device=<64-hex>, so a scan prefills the field.
+  // this page with ?device=<64-hex>. A device that is not in the account's
+  // list yet (just paired, list not refreshed) is offered as an option.
   const deviceFromUrl = new URLSearchParams(location.search).get('device')
-  if (deviceFromUrl && /^[0-9a-f]{64}$/i.test(deviceFromUrl.trim())) {
-    deviceInput.value = deviceFromUrl.trim().toLowerCase()
+  const linkedDevice =
+    deviceFromUrl && /^[0-9a-f]{64}$/i.test(deviceFromUrl.trim())
+      ? deviceFromUrl.trim().toLowerCase()
+      : ''
+
+  function deviceOption(id: string, label: string): HTMLOptionElement {
+    const option = document.createElement('option')
+    option.value = id
+    option.textContent = label
+    return option
+  }
+
+  function shortId(id: string): string {
+    return `${id.slice(0, 8)}…`
+  }
+
+  /** Fill the picker: the account's devices first, then the ?device= link
+   *  when the list does not include it. Selection order: the linked device,
+   *  the last device used on this browser, else the first row. */
+  function setDeviceOptions(devices: Array<{ device_id?: string; device_name?: string }>): void {
+    deviceSelect.innerHTML = ''
+    const seen = new Set<string>()
+    for (const device of devices) {
+      const id = String(device.device_id ?? '').toLowerCase()
+      if (!/^[0-9a-f]{64}$/.test(id) || seen.has(id)) continue
+      seen.add(id)
+      const name = device.device_name || 'Rootz device'
+      deviceSelect.appendChild(deviceOption(id, `${name} — ${shortId(id)}`))
+    }
+    if (linkedDevice && !seen.has(linkedDevice)) {
+      deviceSelect.appendChild(deviceOption(linkedDevice, `Device from your link — ${shortId(linkedDevice)}`))
+      seen.add(linkedDevice)
+    }
+    if (!deviceSelect.options.length) {
+      deviceSelect.appendChild(deviceOption('', 'No devices paired to this account yet'))
+      return
+    }
+    const preferred = [linkedDevice, storedDevice].find((id) => id && seen.has(id))
+    deviceSelect.value = preferred ?? deviceSelect.options[0].value
+  }
+
+  async function loadDevices(): Promise<void> {
+    const account = accountInput.value.replace(/[^0-9]/g, '')
+    if (account.length !== 16) {
+      setStatus('Enter your 16-digit account number first.', 'warn')
+      return
+    }
+    loadDevicesBtn.disabled = true
+    setStatus('Loading devices…', 'muted')
+    try {
+      const res = await listRelayDevices(account)
+      const devices = res.ok ? (res.data?.devices ?? []) : []
+      if (res.ok) {
+        setDeviceOptions(devices)
+        setStatus(
+          devices.length
+            ? `Loaded ${devices.length} device${devices.length === 1 ? '' : 's'} — pick one and connect.`
+            : 'No devices paired to this account yet — pair one in the Rootz app.',
+          devices.length ? 'ok' : 'warn',
+        )
+      } else if (res.status === 404) {
+        setStatus('Account not found — check the 16-digit number.', 'warn')
+      } else if (res.status === 429) {
+        setStatus('Too many device-list requests — wait a minute, then retry.', 'warn')
+      } else {
+        setStatus('Could not load devices. Retry in a moment.', 'warn')
+      }
+    } catch {
+      setStatus('Network error. Is the API reachable?', 'warn')
+    } finally {
+      loadDevicesBtn.disabled = false
+    }
   }
 
   function setStatus(text: string, tone: 'ok' | 'warn' | 'muted'): void {
@@ -130,15 +204,28 @@ document.addEventListener('DOMContentLoaded', () => {
     ws.send(hello.frame)
   }
 
+  loadDevicesBtn.addEventListener('click', () => {
+    void loadDevices()
+  })
+
+  // Pre-fill from the stored account: one list request on page load, so a
+  // returning user lands on a ready picker (limit: 20/IP/hour, 30/account).
+  // Without a stored account the picker still shows a ?device= link option.
+  if (storedAccount.replace(/[^0-9]/g, '').length === 16) {
+    void loadDevices()
+  } else {
+    setDeviceOptions([])
+  }
+
   connectBtn.addEventListener('click', () => {
     const account = formatAccountNumber(accountInput.value)
-    const device = deviceInput.value.trim().toLowerCase()
+    const device = deviceSelect.value.trim().toLowerCase()
     if (account.replace(/[^0-9]/g, '').length !== 16) {
       setStatus('Enter your 16-digit account number.', 'warn')
       return
     }
     if (!/^[0-9a-f]{64}$/.test(device)) {
-      setStatus('Enter the device_id rootzd printed at startup (64 hex characters).', 'warn')
+      setStatus('Pick a device from the list (or load your account first).', 'warn')
       return
     }
     localStorage.setItem(LS_ACCOUNT, account)

@@ -39,6 +39,16 @@ export function getAccount(accountNumber) {
   return request(`/accounts/${encodeURIComponent(accountNumber)}`)
 }
 
+// POST /v1/relay/devices/list — the relay devices paired to an account
+// (device_id, device_name, created_at). POST so the account number travels
+// in the body, never the URL. Rate-limited per IP and per account.
+export function listRelayDevices(accountNumber) {
+  return request('/relay/devices/list', {
+    method: 'POST',
+    body: { account_number: accountNumber },
+  })
+}
+
 export function createCheckout({ accountNumber, plan }) {
   return request('/billing/checkout', {
     method: 'POST',
