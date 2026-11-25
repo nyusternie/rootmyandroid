@@ -17,9 +17,15 @@
  * packages/shared/src/theme.ts).
  *
  * Makeover 2026-11-25 (owner order: same treatment as Rootz): brand header
- * (icon + 40px wordmark, 88dp bar), gradient + grid backdrop, three titled
- * cards with 16dp gaps, and every text size +30% (12→15.6, 14→18.2,
- * 16→20.8, 13→16.9, 16→20.8 for the input). Sizes are px = dp on RN.
+ * (icon + 40px wordmark, 88dp bar), three titled cards with 16dp gaps, and
+ * every text size +30% (12→15.6, 14→18.2, 16→20.8, 13→16.9, 16→20.8 for
+ * the input). Sizes are px = dp on RN.
+ *
+ * Family-safety pass (owner order 2026-11-25, second round): the terminal
+ * grid is gone — the backdrop is a night sky (deep indigo, a warm halo
+ * top-right, cool light lower-left, fine stars, vignette). Bottom-right
+ * carries the animated guardian: a Lottie "protection pulse" behind the
+ * mascot, which breathes and bobs. It is the future chatbot entry point.
  *
  * @format
  */
@@ -27,7 +33,9 @@
 import './global.css';
 import React, { useEffect, useState } from 'react';
 import {
+  Animated,
   AppState,
+  Easing,
   Image,
   NativeModules,
   ScrollView,
@@ -38,6 +46,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import LottieView from 'lottie-react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 // Shared Rootz/Guardian palette (packages/shared/src/theme.ts) — single
@@ -49,8 +58,8 @@ const { Uninstall, LauncherIcon, SyncStore, DeviceAdmin } = NativeModules;
 
 const API_BASE = 'https://rootmyandroid.com/v1';
 
-/** Top of the backdrop gradient (matches assets/backdrop.png). */
-const BACKDROP_TOP = '#12203A';
+/** Top of the backdrop gradient (matches assets/backdrop@3x.png). */
+const BACKDROP_TOP = '#171E3A';
 
 type SyncedAccount = {
   /** Full 16-digit number is kept only to derive the last-4 display. */
@@ -160,11 +169,36 @@ function App() {
     });
   };
 
+  // Guardian avatar bob (native driver — runs off the JS thread so the
+  // Lottie pulse and this float never fight for frames).
+  const bob = React.useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(bob, {
+          toValue: 1,
+          duration: 1900,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(bob, {
+          toValue: 0,
+          duration: 1900,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [bob]);
+  const bobY = bob.interpolate({ inputRange: [0, 1], outputRange: [3, -3] });
+
   return (
     <SafeAreaProvider>
       {/* RN 0.88 types omit StatusBar's Android-only backgroundColor; spread-cast keeps the runtime behavior. */}
       <StatusBar barStyle="light-content" {...({ backgroundColor: BACKDROP_TOP } as object)} />
-      <SafeAreaView className="flex-1 bg-[#090C0A]" edges={['top', 'bottom']}>
+      <SafeAreaView className="flex-1 bg-[#0A0D14]" edges={['top', 'bottom']}>
         {/* Backdrop (owner order 2026-11-25: same treatment as Rootz — the
             flat fill read as empty). One baked 1080x2340 image: vertical
             gradient plus a 64dp grid (176px at 440dpi). Baked rather than
@@ -191,7 +225,7 @@ function App() {
           </Text>
         </View>
 
-        <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+        <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 170 }}>
           {/* Section 1 — ACCOUNT: sync input until paired, then the
               account card and the uninstall escape hatch. */}
           <View className="mb-4 rounded-xl border border-border bg-panel p-4">
@@ -291,6 +325,29 @@ function App() {
             </Text>
           </View>
         </ScrollView>
+
+        {/* Guardian avatar — bottom right, above the scroll content. The
+            Lottie ring is the "protection pulse"; the mascot bobs over it.
+            Becomes the assistant/chat entry point in a later build. */}
+        <View
+          className="absolute bottom-3 right-2 h-[150px] w-[150px] items-center justify-center"
+          pointerEvents="none"
+          accessible
+          accessibilityLabel="Guardian Angel assistant"
+        >
+          <LottieView
+            source={require('./assets/guardian-pulse.json')}
+            autoPlay
+            loop
+            style={{ position: 'absolute', width: 150, height: 150 }}
+          />
+          <Animated.View
+            style={{ transform: [{ translateY: bobY }] }}
+            className="h-[76px] w-[76px] overflow-hidden rounded-full border-2 border-[#FFD27A]/70 bg-[#14181d]"
+          >
+            <Image source={require('./assets/brand-angel.png')} className="h-full w-full" />
+          </Animated.View>
+        </View>
       </SafeAreaView>
     </SafeAreaProvider>
   );
