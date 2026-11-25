@@ -72,10 +72,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var relayDisconnect: MaterialButton
     private lateinit var relayAccount: TextInputEditText
     private lateinit var outputScroll: ScrollView
-    private val adbWifi by lazy { AdbWifiDiscovery(this) }
-    private val guard by lazy { CommandGuard(this) }
+    private val adbWifi by lazy { AdbWifi.get(this) }
     private var relayIdentity: RelayIdentity? = null
-    private var relayDaemon: RelayDaemon? = null
+    /** Daemon status → the card, fed by RelayBus (the daemon now lives in
+     *  RelayService and outlives this activity). */
+    private var relayStatusListener: ((String) -> Unit)? = null
 
     // Relay roles (owner ruling 2026-11-11): the Rootz APK is the relay
     // DAEMON on non-rooted phones (the device lane — RelayDaemon.kt,
@@ -407,13 +408,18 @@ class MainActivity : AppCompatActivity() {
         // pairing QR returns. The relay pairing marker is kept — re-pairing
         // the same key is idempotent (API: POST /v1/relay/devices).
         relayDisconnect.setOnClickListener {
-            relayDaemon?.stop()
-            relayDaemon = null
+            RelayService.stop(this)
             getSharedPreferences(PREFS_RELAY, MODE_PRIVATE).edit().remove(KEY_ACCOUNT).apply()
             relayDisconnect.isEnabled = false
-            relayStatus.text = "relay: disconnected — scan the QR or enter your 16-digit account number"
+            RelayBus.set("relay: disconnected — scan the QR or enter your 16-digit account number")
             setPairingQrVisible(true)
         }
+        // The daemon lives in RelayService (reboot survival); its status
+        // reaches this card through RelayBus. Adding the listener delivers
+        // the current line immediately, so a running lane paints as "up".
+        val busListener: (String) -> Unit = { text -> runOnUiThread { relayStatus.text = text } }
+        relayStatusListener = busListener
+        RelayBus.addListener(busListener)
         runCommand("id", silent = true)
         handlePairIntent(intent)
 
@@ -431,9 +437,12 @@ class MainActivity : AppCompatActivity() {
                 relayIdentity = id
                 if (bmp != null) relayQr.setImageBitmap(bmp)
                 relayDevice.text = "device id: ${id.deviceId}"
-                relayStatus.text =
-                    if (saved != null) "relay: starting…"
-                    else "relay: idle — scan the QR or enter your 16-digit account number"
+                // A running lane paints itself through RelayBus; only the
+                // idle line is ours to set (2026-11-25).
+                if (saved == null) {
+                    relayStatus.text = "relay: idle — scan the QR or enter your 16-digit account number"
+                }
+                relayDisconnect.isEnabled = saved != null
                 setPairingQrVisible(saved == null)
                 if (saved != null) startRelayDaemon(saved)
             }
@@ -453,8 +462,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        relayDaemon?.stop()
-        adbWifi.stop()
+        // The relay daemon keeps running in RelayService — closing the app
+        // must not drop the device offline (owner order 2026-11-25). Only
+        // the UI listener goes away; discovery stays up for the service.
+        relayStatusListener?.let { RelayBus.removeListener(it) }
+        relayStatusListener = null
         super.onDestroy()
     }
 
@@ -582,35 +594,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Start (or restart) the relay-DAEMON lane for [account]. Status lines
-     * land in the daemon card; receipts (tunnel auth, session opens, guard
-     * blocks) append to the output log.
+     * Start (or restart) the relay-DAEMON lane for [account]. The lane
+     * runs in RelayService (foreground, survives backgrounding + reboots);
+     * status lines come back through RelayBus, receipts go to logcat.
      */
     private fun startRelayDaemon(account: String) {
-        val id = relayIdentity ?: return
-        relayDaemon?.stop()
-        val version = packageManager.getPackageInfo(packageName, 0).versionName ?: "unknown"
-        val daemon = RelayDaemon(
-            context = applicationContext,
-            account = account,
-            identity = id,
-            tier = "shell",
-            version = version,
-            deviceName = android.os.Build.MODEL,
-            adbWifi = adbWifi,
-            guard = guard,
-            onStatus = { msg -> runOnUiThread { relayStatus.text = msg } },
-            onReceipt = { line ->
-                runOnUiThread {
-                    output.append("$line\n\n")
-                    outputScroll.post { outputScroll.fullScroll(View.FOCUS_DOWN) }
-                }
-            },
-        )
-        relayDaemon = daemon
+        // The lane itself runs in RelayService (foreground, START_STICKY,
+        // restarted by BootReceiver). The activity only asks for it.
+        getSharedPreferences(PREFS_RELAY, MODE_PRIVATE).edit().putString(KEY_ACCOUNT, account).apply()
         relayDisconnect.isEnabled = true
         setPairingQrVisible(false)
-        daemon.start()
+        RelayService.start(this)
     }
 
     private fun runCommand(cmd: String, silent: Boolean = false) {

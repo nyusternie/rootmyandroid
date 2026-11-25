@@ -25,7 +25,8 @@ import Base from '../layouts/Base.astro'
         Enter your 16-digit account number — the devices paired to it load
         automatically. Pick one, then press Connect. A device appears here
         once the Rootz app on it has been paired (Account pairing →
-        Pair &amp; start relay daemon).
+        Pair &amp; start relay daemon). First phone? The four steps below
+        take a minute.
       </p>
       <div class="stack">
         <input
@@ -49,6 +50,50 @@ import Base from '../layouts/Base.astro'
         </div>
       </div>
       <p id="conn-status" class="text-body text-[1.15rem]">Not connected.</p>
+    </div>
+
+    <div class="panel">
+      <h2>First time? Set up the phone (once)</h2>
+      <ol class="text-body text-[1.05rem]">
+        <li class="mb-2">
+          <strong class="text-ink">Turn on Wireless debugging.</strong>
+          On the phone: Settings → System → Developer options →
+          <em>Wireless debugging</em> → on, then accept “Always allow on this
+          network”. The phone starts advertising its pairing and connect
+          ports.
+        </li>
+        <li class="mb-2">
+          <strong class="text-ink">Arm the pairing notification.</strong>
+          Open <a href="/rootz">Rootz</a> → the <em>Wireless debugging</em>
+          card → <strong>ARM PAIRING NOTIFICATION</strong>, and allow
+          notifications when asked. This is what lets you type the code
+          without leaving Settings — switching apps kills the pairing
+          server.
+        </li>
+        <li class="mb-2">
+          <strong class="text-ink">Pair the app.</strong>
+          In Settings tap <em>Pair device with pairing code</em> — a 6-digit
+          code appears. Pull down the notification shade, tap
+          <strong>Pair</strong> on the Rootz notification, type the code and
+          send. The Settings dialog closes itself once the phone accepts the
+          key. You only do this once per phone.
+        </li>
+        <li class="mb-2">
+          <strong class="text-ink">Wait for “ready”, then connect.</strong>
+          The Rootz card shows
+          <code class="text-ink">wireless adb: ready — ip:port</code> and the
+          relay card shows <code class="text-ink">relay: up</code>. Enter
+          your 16-digit account number above and the phone appears in the
+          device list.
+        </li>
+      </ol>
+      <p class="text-body text-[1rem]">
+        After a reboot the relay reconnects on its own — Rootz runs it as a
+        foreground service with a “Rootz relay” notification. Wireless
+        debugging must stay on: if commands answer
+        <code class="text-ink">wireless adb not ready</code>, open Rootz and
+        wait for the card to read <code class="text-ink">ready</code>.
+      </p>
     </div>
 
     <div class="panel">

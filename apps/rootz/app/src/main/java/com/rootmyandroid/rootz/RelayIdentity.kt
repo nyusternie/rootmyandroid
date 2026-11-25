@@ -32,7 +32,15 @@ internal class RelayIdentity private constructor(
         private const val DIR = "relay"
         private const val KEY_FILE = "device.key"
 
-        fun loadOrGenerate(context: Context): RelayIdentity {
+        private val lock = Any()
+
+        /**
+         * Synchronized: MainActivity (QR) and RelayService (daemon) can
+         * call this concurrently on a cold start; two racing generations
+         * would write different seeds and the QR would advertise a
+         * device_id the daemon never uses (2026-11-25).
+         */
+        fun loadOrGenerate(context: Context): RelayIdentity = synchronized(lock) {
             val dir = File(context.filesDir, DIR).apply { mkdirs() }
             val keyPath = File(dir, KEY_FILE)
             val seed = if (keyPath.isFile) {
@@ -43,7 +51,7 @@ internal class RelayIdentity private constructor(
                 ByteArray(32).also { SecureRandom().nextBytes(it) }.also { keyPath.writeBytes(it) }
             }
             val pubkey = Ed25519.publicKey(seed)
-            return RelayIdentity(seed, pubkey, E2eSession.deviceIdFromPubkey(pubkey))
+            RelayIdentity(seed, pubkey, E2eSession.deviceIdFromPubkey(pubkey))
         }
     }
 }

@@ -9,6 +9,14 @@
          server). Android 13+ blocks notifications without this runtime
          grant, so the arm button requests it (targetSdk 36). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- The relay daemon runs in a foreground service so the lane survives
+         backgrounding and reboots (owner order 2026-11-25). specialUse is
+         the honest type: a user-visible, user-started tunnel, not a data
+         sync with a 6-hour cap on Android 15. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- BootReceiver restarts the lane after BOOT_COMPLETED / app update. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:label="Rootz"
@@ -25,6 +33,25 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Foreground host for the relay daemon (survives backgrounding and
+             reboots). Started by the app or by BootReceiver. -->
+        <service
+            android:name=".RelayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="User-paired relay tunnel for the Root My Android web terminal; runs only while an account is paired and is visible as an ongoing notification." />
+        </service>
+        <!-- Restarts the relay lane after a reboot or an app update. -->
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
         <!-- Inline-reply target for notification-based same-device pairing.
              Exported so adb shell can also drive it directly (development
              hook: am broadcast with a pair_code string extra — pairs
