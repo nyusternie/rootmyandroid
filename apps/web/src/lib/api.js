@@ -49,6 +49,19 @@ export function listRelayDevices(accountNumber) {
   })
 }
 
+/**
+ * Devices paired to an account (web /guardian picker).
+ * Contract: docs/HANDOFF-2026-11-25-guardian-device-list.md — the route is
+ * requested from the API team; until it ships this answers 404 not_found.
+ * @param {string} accountNumber
+ */
+export function listGuardianDevices(accountNumber) {
+  return request('/guardian/devices/list', {
+    method: 'POST',
+    body: { account_number: accountNumber },
+  })
+}
+
 export function createCheckout({ accountNumber, plan }) {
   return request('/billing/checkout', {
     method: 'POST',
