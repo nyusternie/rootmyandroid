@@ -371,7 +371,7 @@ class MainActivity : AppCompatActivity() {
         }
         setContentView(root)
 
-        wifiStatus.text = "wireless adb: searching… (off? turn on Developer options → Wireless debugging)"
+        wifiStatus.text = wifiHint()
         wifiStatus.setTextColor(0xFFB0BEC5.toInt())
         status.text = "daemon: not queried yet"
         adbWifi.onEndpointsChanged = {
@@ -380,7 +380,7 @@ class MainActivity : AppCompatActivity() {
                 wifiStatus.text = "wireless adb: ready — ${ep.first}:${ep.second}"
                 wifiStatus.setTextColor(0xFF66BB6A.toInt())
             } else {
-                wifiStatus.text = "wireless adb: searching… (off? turn on Developer options → Wireless debugging)"
+                wifiStatus.text = wifiHint()
                 wifiStatus.setTextColor(0xFFB0BEC5.toInt())
             }
         }
@@ -484,6 +484,21 @@ class MainActivity : AppCompatActivity() {
         relayStatusListener = null
         super.onDestroy()
     }
+
+    /**
+     * Why the endpoint is missing, read from the system switch itself
+     * (Settings.Global is readable without a permission). Two different
+     * failures, two different fixes: the toggle is off (Android clears it
+     * on some boots), or it is on but adbd's mDNS registration failed
+     * (measured on redfin 2026-11-25: "Could not register mDNS service
+     * _adb-tls-connect._tcp, error (-65563)") — only an off/on retries it.
+     */
+    private fun wifiHint(): String =
+        if (android.provider.Settings.Global.getInt(contentResolver, "adb_wifi_enabled", 0) == 0) {
+            "wireless adb: off — turn on Developer options → Wireless debugging"
+        } else {
+            "wireless adb: on but not advertised — toggle Wireless debugging off/on in Developer options"
+        }
 
     private fun armPairingNotification() {
         PairingNotifier.postPairingPrompt(this)
