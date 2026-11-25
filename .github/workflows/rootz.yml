@@ -73,18 +73,15 @@ jobs:
       # artifact (the account's Actions artifact-storage quota is exhausted
       # and release assets don't count against it). The repo is public; the
       # APK is a debug-signed preview, so public download is acceptable.
-      # softprops/action-gh-release@v3 started failing on 2026-11-25 with
-      # "Unexpected error fetching GitHub release for tag refs/heads/master"
-      # after finding the release — the gh CLI path below is deterministic
-      # (release exists or is created, then the asset is clobbered).
+      # Pinned to v2: v3 failed on 2026-11-25 with "Unexpected error
+      # fetching GitHub release for tag refs/heads/master" after finding
+      # the release (both runs), leaving the previous asset in place.
+      # The runner has no `gh` CLI, so the action stays the publish path.
       - name: Publish APK as rolling prerelease
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if ! gh release view rootz-preview-apk >/dev/null 2>&1; then
-            gh release create rootz-preview-apk \
-              --prerelease \
-              --title "Rootz MVP preview APK (rolling)" \
-              --notes "Rolling debug-signed preview of the Rootz MVP app (rootzd daemon client), built from master@${{ github.sha }} on blackhost. Install with \`adb install -r app-release.apk\` (package \`com.rootmyandroid.rootz\`)."
-          fi
-          gh release upload rootz-preview-apk apps/rootz/app/build/outputs/apk/release/app-release.apk --clobber
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: rootz-preview-apk
+          name: Rootz MVP preview APK (rolling)
+          body: 'Rolling debug-signed preview of the Rootz MVP app (rootzd daemon client), built from master@${{ github.sha }} on blackhost. Install with `adb install -r app-release.apk` (package `com.rootmyandroid.rootz`).'
+          prerelease: true
+          files: apps/rootz/app/build/outputs/apk/release/app-release.apk
