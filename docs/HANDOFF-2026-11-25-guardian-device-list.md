@@ -5,8 +5,10 @@
 **To:** API team (`rootmyandroid-api`)
 **From:** web/mobile workstream (`rootmyandroid`, apps/web + apps/guardian-angel)
 **Date:** 2026-11-25
-**Status:** REQUESTED — the web page `/guardian` is live and blocked on this
-one route; it currently answers the 404 with an explicit "not live yet" line
+**Status:** RESOLVED 2026-11-25 (API team) — `POST /v1/guardian/devices/list`
+deployed (worker `5f680394-7428-410b-b4ba-e48bfbd783cb`, commit `38702d8`).
+Reply: `docs/HANDOFF-REPLY-2026-11-25-guardian-device-list.md`. Re-verified
+from this side the same day — see §8.
 
 Per `AGENTS.md` rule 9 this document is the only write channel into the API
 repo. Everything below is verifiable from the paths and commands quoted.
@@ -273,3 +275,41 @@ production and close this out.
   has no soft-delete column today).
 - Monitoring feature flags per device — the app currently owns all
   on-device settings, and the page says so.
+
+---
+
+## 8. Resolution — re-verified from this side (2026-11-25)
+
+Probes against production, after the reply's deploy:
+
+| call | result |
+| --- | --- |
+| `--data-binary 'not json'` | 400 `invalid_json` |
+| `{"account_number":"123"}` | 400 `invalid_account_number` |
+| `{"account_number":"0000000000000000"}` | 404 `account_not_found` |
+| `--data-binary 'null'` | 400 `invalid_account_number` (no 500) |
+| the synced account | 200, one row: `Google Pixel 5`, `8e2c2b1b-…`, `created_at 2026-11-25T19:52:32.676Z` |
+| `GET /v1/` | discovery lists `/v1/guardian/devices/list (POST)` |
+
+Page check (`https://rootmyandroid.com/guardian/`, Chrome CDP, 1280 px):
+
+```
+status : Device loaded — see below.
+picker : Google Pixel 5 — 8e2c2b1b…
+name   : Google Pixel 5
+paired : Nov 25, 2026
+id     : 8e2c2b1b-a98b-4cea-a3ad-c9f3821dbb2b
+```
+
+Source review (read-only): `src/index.js:308` handler, route at `:1440`,
+discovery entry at `:1382`, `listGuardianDevices` in `src/lib/guardian.js:80`,
+nine list tests in `test/guardian.test.js:189`. Per-IP cap precedes account
+lookup, per-account cap follows it — unknown accounts burn only the per-IP
+budget, as the reply states.
+
+Not independently verifiable: the worker version id — `GET /v1/health`
+reports `"version": "v1"` only. Everything behavioural matches.
+
+Remaining (the reply's §7, unchanged): rename, unlink, and staleness of rows
+left behind by a reinstall (a fresh install without the stored `device_id`
+gets a new UUID, so the picker can show a stale sibling).
