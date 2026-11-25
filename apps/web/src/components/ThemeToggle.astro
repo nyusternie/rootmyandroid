@@ -1,0 +1,23 @@
+---
+// src/components/ThemeToggle.astro — light/dark switch (owner order
+// 2026-11-24). Markup only: the pre-paint theme application and the
+// delegated click handler live in Base.astro (one inline script, since a
+// persistent theme cannot be done in static HTML + CSS alone). Which icon
+// shows is decided by CSS on html[data-theme] — see global.css.
+---
+
+<button
+  type="button"
+  data-theme-toggle
+  aria-label="Switch between light and dark theme"
+  title="Switch theme"
+  class="flex h-[2rem] w-[2rem] cursor-pointer items-center justify-center rounded-[0.5rem] border border-line bg-raise p-0 text-dim transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
+>
+  <svg data-theme-icon="moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+  </svg>
+  <svg data-theme-icon="sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2" />
+    <path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6" />
+  </svg>
+</button>

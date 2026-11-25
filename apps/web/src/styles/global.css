@@ -25,6 +25,14 @@
   --color-ok: #3fb96b;
   --color-warn: #e0a13e;
   --color-danger: #e05e5e;
+  /* Foreground on an accent fill (primary buttons, tags, FAB). */
+  --color-on-accent: #06121d;
+  --color-accent-hover: #58adf5;
+  /* Notice/chip text — tuned per theme so the tinted panels stay readable. */
+  --color-info-ink: #bcdcf7;
+  --color-warn-ink: #f3d9a8;
+  --color-ok-ink: #b6e6c6;
+  --color-danger-ink: #f0b4b4;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas,
     monospace;
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
@@ -130,6 +138,33 @@
   }
 }
 
+/* Light theme (owner order 2026-11-24). Same token names, so every utility
+   (bg-page, text-ink, border-line, …) follows automatically. [data-theme] is
+   set before first paint by the inline script in Base.astro (stored choice,
+   else prefers-color-scheme); the header/footer toggle flips it. */
+html[data-theme='light'] {
+  color-scheme: light;
+  --color-page: #f7f8fa;
+  --color-raise: #ffffff;
+  --color-inset: #eef1f5;
+  --color-line: #d7dde6;
+  --color-ink: #14181d;
+  --color-body: #2b323b;
+  --color-dim: #5b6673;
+  --color-faint: #6b7280;
+  --color-accent: #1668b3;
+  --color-accent-hover: #0f4f8a;
+  --color-accent-dim: #9cc4e8;
+  --color-ok: #1e7a42;
+  --color-warn: #a15f00;
+  --color-danger: #b3261e;
+  --color-on-accent: #ffffff;
+  --color-info-ink: #0d4a7a;
+  --color-warn-ink: #6b3f00;
+  --color-ok-ink: #145c31;
+  --color-danger-ink: #8c1d18;
+}
+
 /* Base elements. Preflight strips browser defaults, so the UA styles the old
    stylesheet implicitly relied on (heading sizes/margins, paragraph and list
    spacing) are restored explicitly here to keep rendered output 1:1. */
@@ -212,7 +247,7 @@
      invisible against the primary background. */
   .nav a.btn-primary,
   .nav a.btn-primary:hover {
-    @apply text-[#06121d];
+    @apply text-on-accent;
   }
 
   /* ---------- buttons ---------- */
@@ -220,7 +255,7 @@
     @apply inline-block cursor-pointer rounded-[0.5rem] border border-line bg-raise px-[1.1rem] py-[0.6rem] font-semibold text-ink transition-[background,border-color] duration-150 hover:border-faint hover:no-underline;
   }
   .btn-primary {
-    @apply border-accent bg-accent text-[#06121d] hover:border-[#58adf5] hover:bg-[#58adf5];
+    @apply border-accent bg-accent text-on-accent hover:border-accent-hover hover:bg-accent-hover;
   }
   .btn[disabled] {
     @apply cursor-not-allowed opacity-50;
@@ -252,19 +287,36 @@
   input[type='text'] {
     @apply w-full rounded-[0.5rem] border border-line bg-inset px-[0.9rem] py-[0.7rem] font-mono text-[1.1rem] tracking-[0.12em] text-ink focus:border-accent focus:outline-none placeholder:text-faint;
   }
+  /* Native select styled like the text inputs (device picker on /terminal). */
+  select {
+    @apply w-full cursor-pointer rounded-[0.5rem] border border-line bg-inset px-[0.9rem] py-[0.7rem] text-ink focus:border-accent focus:outline-none;
+  }
+
+  /* Theme toggle icons: moon in dark mode (click → light), sun in light
+     mode. Visibility is pure CSS — the inline script only flips
+     data-theme (Base.astro, owner order 2026-11-24). */
+  [data-theme-icon='sun'] {
+    @apply hidden;
+  }
+  [data-theme='light'] [data-theme-icon='sun'] {
+    @apply inline-block;
+  }
+  [data-theme='light'] [data-theme-icon='moon'] {
+    @apply hidden;
+  }
 
   /* ---------- notices ---------- */
   .notice {
     @apply rounded-[0.5rem] border px-[1rem] py-[0.85rem] text-[0.92rem];
   }
   .notice-info {
-    @apply border-accent-dim bg-accent/12 text-[#bcdcf7];
+    @apply border-accent-dim bg-accent/12 text-info-ink;
   }
   .notice-warn {
-    @apply border-warn/45 bg-warn/12 text-[#f3d9a8];
+    @apply border-warn/45 bg-warn/12 text-warn-ink;
   }
   .notice-ok {
-    @apply border-ok/45 bg-ok/12 text-[#b6e6c6];
+    @apply border-ok/45 bg-ok/12 text-ok-ink;
   }
 
   /* ---------- misc ---------- */
@@ -400,10 +452,10 @@
     @apply rounded-[2rem] border border-line bg-inset px-[0.7rem] py-[0.2rem] font-mono text-[0.8rem] text-dim;
   }
   .audit .chip-ok {
-    @apply border-ok/45 text-[#b6e6c6];
+    @apply border-ok/45 text-ok-ink;
   }
   .audit .chip-danger {
-    @apply border-danger/45 text-[#f0b4b4];
+    @apply border-danger/45 text-danger-ink;
   }
   .audit .panel-danger {
     @apply border-danger/45;
@@ -418,7 +470,7 @@
     @apply fixed right-[1.25rem] bottom-[1.25rem] z-50;
   }
   .support-toggle {
-    @apply relative flex h-[3.25rem] w-[3.25rem] cursor-pointer items-center justify-center rounded-full border border-accent bg-accent p-0 text-[#06121d] shadow-[0_4px_16px_rgba(0,0,0,0.45)] transition-[background,border-color] duration-150 hover:border-[#58adf5] hover:bg-[#58adf5];
+    @apply relative flex h-[3.25rem] w-[3.25rem] cursor-pointer items-center justify-center rounded-full border border-accent bg-accent p-0 text-on-accent shadow-[0_4px_16px_rgba(0,0,0,0.45)] transition-[background,border-color] duration-150 hover:border-accent-hover hover:bg-accent-hover;
   }
   /* Subtle ping ring draws the eye; disabled under prefers-reduced-motion. */
   .support-toggle::after {
@@ -459,7 +511,7 @@
     @apply text-[0.78rem] text-faint;
   }
   .support-note-warn {
-    @apply rounded-[0.5rem] border border-warn/45 bg-warn/12 px-[0.75rem] py-[0.5rem] text-[#f3d9a8];
+    @apply rounded-[0.5rem] border border-warn/45 bg-warn/12 px-[0.75rem] py-[0.5rem] text-warn-ink;
   }
   .support-composer {
     @apply flex items-end gap-[0.5rem];
@@ -504,7 +556,7 @@
     @apply cursor-pointer self-start border-none bg-none p-0 text-[0.82rem] text-accent hover:underline;
   }
   .support-error {
-    @apply m-0 rounded-[0.5rem] border border-danger/45 bg-danger/12 px-[0.75rem] py-[0.5rem] text-[0.82rem] text-[#f0b4b4];
+    @apply m-0 rounded-[0.5rem] border border-danger/45 bg-danger/12 px-[0.75rem] py-[0.5rem] text-[0.82rem] text-danger-ink;
   }
   .support-messages {
     @apply flex max-h-[16rem] min-h-[6rem] flex-col gap-[0.5rem] overflow-y-auto rounded-[0.5rem] border border-line bg-inset p-[0.75rem];

@@ -4,6 +4,7 @@
 // bottom of <body> (no scripts on content pages — see AGENTS.md rule 4).
 import '../styles/global.css'
 import LangSwitcher from '../components/LangSwitcher.astro'
+import ThemeToggle from '../components/ThemeToggle.astro'
 import {
   LOCALES,
   LOCALIZED_ROUTES,
@@ -128,6 +129,46 @@ const footerIcons: Record<string, string> = {
     <meta name="twitter:description" content={metaDescription} />
     <meta name="twitter:image" content={ogImageAbs} />
     <meta name="theme-color" content="#0d0f12" />
+    {/* Theme (owner order 2026-11-24): the stored choice wins, else the OS
+        preference; applied before first paint so there is no flash. The
+        same inline block handles the header/footer toggle clicks. This is
+        the sanctioned exception to the content-page zero-JS rule — a
+        persistent theme cannot be done in static HTML + CSS alone. */}
+    <script is:inline>
+      (() => {
+        const KEY = 'rma.theme'
+        const root = document.documentElement
+        const meta = document.querySelector('meta[name="theme-color"]')
+        let stored = null
+        try {
+          stored = localStorage.getItem(KEY)
+        } catch {
+          /* storage disabled — follow the OS */
+        }
+        const apply = (theme) => {
+          root.dataset.theme = theme
+          if (meta) meta.setAttribute('content', theme === 'light' ? '#f7f8fa' : '#0d0f12')
+        }
+        apply(
+          stored === 'light' || stored === 'dark'
+            ? stored
+            : window.matchMedia('(prefers-color-scheme: light)').matches
+              ? 'light'
+              : 'dark',
+        )
+        document.addEventListener('click', (event) => {
+          const target = event.target instanceof Element ? event.target.closest('[data-theme-toggle]') : null
+          if (!target) return
+          const next = root.dataset.theme === 'light' ? 'dark' : 'light'
+          apply(next)
+          try {
+            localStorage.setItem(KEY, next)
+          } catch {
+            /* storage disabled — the choice lasts for this page */
+          }
+        })
+      })()
+    </script>
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script type="application/ld+json" set:html={JSON.stringify(orgSchema)} />
@@ -183,7 +224,7 @@ const footerIcons: Record<string, string> = {
         documented in src/i18n/en/common.ts (bannerText). */}
     {
       banner && (
-        <div class="kao-banner border-b border-warn/45 bg-warn/12 text-[0.92rem] text-[#f3d9a8] has-checked:hidden">
+        <div class="kao-banner border-b border-warn/45 bg-warn/12 text-[0.92rem] text-warn-ink has-checked:hidden">
           <div class="container flex max-w-[60rem] items-center justify-between gap-[0.75rem] py-[0.6rem]">
             <p class="m-0">
               {d.common.bannerText}{' '}
@@ -264,6 +305,9 @@ const footerIcons: Record<string, string> = {
               same page when localized, else the locale home. Hidden on
               narrow screens — the footer switcher below is the mobile
               path. */}
+          <span class="hidden items-center min-[760px]:flex">
+            <ThemeToggle />
+          </span>
           <span class="ml-[0.25rem] hidden items-center border-l border-line pl-[0.9rem] min-[680px]:flex">
             <LangSwitcher />
           </span>
@@ -324,6 +368,7 @@ const footerIcons: Record<string, string> = {
       </div>
       <div class="container footer-bottom">
         <span>© {year} Root My Android</span>
+        <ThemeToggle />
         <LangSwitcher dropup />
         <a href="https://rootmyandroid.com/v1/health" rel="noopener">API</a>
       </div>

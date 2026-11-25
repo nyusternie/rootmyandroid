@@ -74,7 +74,7 @@ const pricingSchema = {
     <div class="tiers-grid tiers-grid-2 grid grid-cols-1 items-stretch gap-[0.9rem] min-[560px]:mx-auto min-[560px]:max-w-[46rem] min-[560px]:grid-cols-2">
       {guardianTiers.map((t) => (
         <div class:list={['panel', 'tier-card', 'relative flex flex-col gap-1 text-center', { featured: t.featured, 'border-accent': t.featured }]}>
-          {t.tag && <span class="tier-tag absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-[0.2rem] text-[0.75rem] font-bold tracking-[0.05em] text-[#0d0f12]">{t.tag}</span>}
+          {t.tag && <span class="tier-tag absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-[0.2rem] text-[0.75rem] font-bold tracking-[0.05em] text-on-accent">{t.tag}</span>}
           <img
             class="app-badge"
             src={t.badge}
@@ -89,7 +89,7 @@ const pricingSchema = {
             {t.price} <span class="muted text-[0.9rem] font-normal">/ {t.per}</span>
           </p>
           <ul class="tier-features mt-3 mb-5 grid list-none gap-[0.4rem] p-0">
-            {t.features.map((f) => <li class="before:font-bold before:text-[#3fb96b] before:content-['✓_']">{f}</li>)}
+            {t.features.map((f) => <li class="before:font-bold before:text-ok before:content-['✓_']">{f}</li>)}
           </ul>
           <a class:list={['btn', 'mt-auto', { 'btn-primary': t.featured }]} href={lp(locale, '/account')}>
             {t.ctaLabel}
@@ -104,7 +104,7 @@ const pricingSchema = {
     <div class="tiers-grid tiers-grid-1 grid grid-cols-1 items-stretch gap-[0.9rem] min-[560px]:grid-cols-[minmax(0,23rem)] min-[560px]:justify-center">
       {rootzTiers.map((t) => (
         <div class:list={['panel', 'tier-card', 'relative flex flex-col gap-1 text-center', { featured: t.featured, 'border-accent': t.featured }]}>
-          {t.tag && <span class="tier-tag absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-[0.2rem] text-[0.75rem] font-bold tracking-[0.05em] text-[#0d0f12]">{t.tag}</span>}
+          {t.tag && <span class="tier-tag absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-[0.2rem] text-[0.75rem] font-bold tracking-[0.05em] text-on-accent">{t.tag}</span>}
           <img
             class="app-badge"
             src={t.badge}
@@ -119,7 +119,7 @@ const pricingSchema = {
             {t.price} <span class="muted text-[0.9rem] font-normal">/ {t.per}</span>
           </p>
           <ul class="tier-features mt-3 mb-5 grid list-none gap-[0.4rem] p-0">
-            {t.features.map((f) => <li class="before:font-bold before:text-[#3fb96b] before:content-['✓_']">{f}</li>)}
+            {t.features.map((f) => <li class="before:font-bold before:text-ok before:content-['✓_']">{f}</li>)}
           </ul>
           <a class:list={['btn', 'mt-auto', { 'btn-primary': t.featured }]} href={lp(locale, '/account')}>
             {t.ctaLabel}
