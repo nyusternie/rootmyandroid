@@ -60,6 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let session: ClientSession | null = null
   // Last account whose device list loaded cleanly (drives the auto-load).
   let loadedAccount = ''
+  // Account whose request is in flight (prevents duplicate auto-loads).
+  let loadingAccount = ''
   let pendingStdin: Uint8Array[] = []
   // Streaming UTF-8 decode: a multibyte sequence may split across chunks.
   let outDecoder = new TextDecoder()
@@ -121,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return
     }
     loadDevicesBtn.disabled = true
+    loadingAccount = account
     setStatus('Loading devices…', 'muted')
     try {
       const res = await listRelayDevices(account)
@@ -137,15 +140,22 @@ document.addEventListener('DOMContentLoaded', () => {
           devices.length ? 'ok' : 'warn',
         )
       } else if (res.status === 404) {
+        // A failed lookup must not keep the account cached: correcting the
+        // number has to reload (found on /guardian 2026-11-25).
+        loadedAccount = ''
         setStatus('Account not found — check the 16-digit number.', 'warn')
       } else if (res.status === 429) {
+        loadedAccount = ''
         setStatus('Too many device-list requests — wait a minute, then retry.', 'warn')
       } else {
+        loadedAccount = ''
         setStatus('Could not load devices. Retry in a moment.', 'warn')
       }
     } catch {
+      loadedAccount = ''
       setStatus('Network error. Is the API reachable?', 'warn')
     } finally {
+      loadingAccount = ''
       loadDevicesBtn.disabled = false
     }
   }
@@ -227,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return
     }
-    if (digits === loadedAccount) return
+    if (digits === loadedAccount || digits === loadingAccount) return
     autoLoadTimer = window.setTimeout(() => {
       void loadDevices()
     }, 450)

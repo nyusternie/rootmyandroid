@@ -55,6 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let devices: GuardianDevice[] = []
   let loadedAccount = ''
+  // Account whose request is in flight (prevents duplicate auto-loads).
+  let loadingAccount = ''
   let autoLoadTimer = 0
 
   const storedAccount = localStorage.getItem(LS_ACCOUNT) ?? ''
@@ -115,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return
     }
     loadBtn.disabled = true
+    loadingAccount = account
     setStatus('Loading devices…', 'muted')
     try {
       const res = await listGuardianDevices(account)
@@ -132,11 +135,14 @@ document.addEventListener('DOMContentLoaded', () => {
           list.length ? 'ok' : 'warn',
         )
       } else if (res.status === 404 && res.data?.error === 'account_not_found') {
+        loadedAccount = ''
         setDevices([])
         setStatus('Account not found — check the 16-digit number.', 'warn')
       } else if (res.status === 429) {
+        loadedAccount = ''
         setStatus('Too many list requests — wait a minute, then retry.', 'warn')
       } else if (res.status === 404) {
+        loadedAccount = ''
         // The route itself is not deployed yet (API handoff pending).
         setDevices([])
         setStatus(
@@ -144,11 +150,14 @@ document.addEventListener('DOMContentLoaded', () => {
           'warn',
         )
       } else {
+        loadedAccount = ''
         setStatus('Could not load devices. Retry in a moment.', 'warn')
       }
     } catch {
+      loadedAccount = ''
       setStatus('Network error. Is the API reachable?', 'warn')
     } finally {
+      loadingAccount = ''
       loadBtn.disabled = false
     }
   }
@@ -166,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return
     }
-    if (digits === loadedAccount) return
+    if (digits === loadedAccount || digits === loadingAccount) return
     autoLoadTimer = window.setTimeout(() => {
       void loadDevices()
     }, 450)
