@@ -24,15 +24,28 @@
         android:theme="@style/Theme.Rootz"
         android:allowBackup="false"
         android:supportsRtl="true">
+        <!-- The launcher entry is the ALIAS, not the activity: disabling
+             .LauncherAlias removes the icon from the drawer while the app
+             (and the relay service) keeps running — the same mechanism the
+             Guardian Angel app uses (docs/TODO-2026-11-25-icon-removal.md,
+             owner picked option A on 2026-11-25). MainActivity stays
+             exported for explicit starts (adb, the pairing hook). -->
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTask"
+            android:exported="true" />
+        <activity-alias
+            android:name=".LauncherAlias"
+            android:targetActivity=".MainActivity"
+            android:label="Rootz"
+            android:icon="@drawable/rootz_icon"
+            android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity-alias>
         <!-- Foreground host for the relay daemon (survives backgrounding and
              reboots). Started by the app or by BootReceiver. -->
         <service
