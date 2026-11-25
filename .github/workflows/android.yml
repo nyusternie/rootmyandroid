@@ -17,7 +17,7 @@ name: Android app build
 # with an explicit iteration-only disclosure. Installs from the v1.0.0
 # preview or earlier debug-signed builds need a ONE-TIME uninstall before
 # updating (different key = signature mismatch).
-# Install with: adb install -r rootmyandroid-release.apk
+# Install with: adb install -r rootmyandroid.apk
 
 # Two triggers (F-Droid Phase 4, docs/FDROID-SUBMISSION-PLAN.md):
 #   • workflow_dispatch — the rolling iteration build (android-apk prerelease)
@@ -196,7 +196,7 @@ jobs:
       # meaningful URL.
       - name: Stage APKs under their public asset names
         run: |
-          cp apps/android/android/app/build/outputs/apk/appstore/release/app-appstore-release.apk rootmyandroid-release.apk
+          cp apps/android/android/app/build/outputs/apk/appstore/release/app-appstore-release.apk rootmyandroid.apk
           cp apps/android/android/app/build/outputs/apk/fdroid/release/app-fdroid-release.apk rootmyandroid-fdroid-release.apk
 
       - name: Publish APK as rolling prerelease
@@ -205,10 +205,10 @@ jobs:
         with:
           tag_name: android-apk
           name: Root My Android (Android edition) APK (rolling)
-          body: 'Rolling iteration build of the Android edition (package `com.rootmyandroid`), built from master@${{ github.sha }} on blackhost, signed with our upload key. Review builds — features are rolling out. Install with `adb install -r rootmyandroid-release.apk`.'
+          body: 'Rolling iteration build of the Android edition (package `com.rootmyandroid`), built from master@${{ github.sha }} on blackhost, signed with our upload key. Review builds — features are rolling out. Install with `adb install -r rootmyandroid.apk`.'
           prerelease: true
           files: |
-            rootmyandroid-release.apk
+            rootmyandroid.apk
             rootmyandroid-fdroid-release.apk
 
       # Tag runs publish the F-Droid release asset under its EXACT name

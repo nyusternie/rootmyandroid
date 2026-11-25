@@ -6,7 +6,7 @@ name: Guardian Angel APK build
 # asset linked from /downloads. Manual dispatch only — see
 # .agents/skills/build/SKILL.md.
 #
-# Asset name: guardian-angel-release.apk on tag guardian-angel-apk.
+# Asset name: guardian-angel.apk on tag guardian-angel-apk.
 # The previous public Guardian artifact was the android-v1.0.0 preview
 # (package com.rootmyandroid.guardian); this workflow supersedes it.
 
@@ -115,7 +115,7 @@ jobs:
       # blackhost has no gh CLI; this action bundles its own client and
       # replaces same-named assets on re-run (rolling prerelease).
       - name: Stage APK under its public asset name
-        run: cp apps/guardian-angel/android/app/build/outputs/apk/release/app-release.apk guardian-angel-release.apk
+        run: cp apps/guardian-angel/android/app/build/outputs/apk/release/app-release.apk guardian-angel.apk
 
       # Pinned to v2: v3 failed on 2026-11-25 with "Unexpected error
       # fetching GitHub release for tag refs/heads/master" after finding
@@ -125,6 +125,6 @@ jobs:
         with:
           tag_name: guardian-angel-apk
           name: Guardian Angel APK (rolling)
-          body: 'Rolling build of Guardian Angel (package `com.rootmyandroid.guardian_angel`), built from master@${{ github.sha }} on blackhost and signed with our upload key (cert sha256 1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886bceca). Install with `adb install -r guardian-angel-release.apk`.'
+          body: 'Rolling build of Guardian Angel (package `com.rootmyandroid.guardian_angel`), built from master@${{ github.sha }} on blackhost and signed with our upload key (cert sha256 1c59c4331c9c8f1fc0e41578ef47ac404396ba7596f5a4c8e94528d4886bceca). Install with `adb install -r guardian-angel.apk`.'
           prerelease: true
-          files: guardian-angel-release.apk
+          files: guardian-angel.apk

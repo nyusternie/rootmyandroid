@@ -3,7 +3,7 @@ name: Rootz MVP build
 # Builds the Rootz MVP app (apps/rootz — plain Gradle Kotlin app, client
 # for the rootzd daemon) as a RELEASE APK. Manual dispatch only — see
 # .agents/skills/build/SKILL.md. Signed with the public debug key
-# (preview-only, never publish); install with: adb install -r app-release.apk
+# (preview-only, never publish); install with: adb install -r rootz.apk
 #
 # Unlike android-preview.yml there is NO pnpm/node/RN-farm stage: this app
 # has no package.json and no JavaScript. gradle.properties is gitignored
@@ -77,11 +77,14 @@ jobs:
       # fetching GitHub release for tag refs/heads/master" after finding
       # the release (both runs), leaving the previous asset in place.
       # The runner has no `gh` CLI, so the action stays the publish path.
+      - name: Stage APK under its public asset name
+        run: cp apps/rootz/app/build/outputs/apk/release/app-release.apk rootz.apk
+
       - name: Publish APK as rolling prerelease
         uses: softprops/action-gh-release@v2
         with:
           tag_name: rootz-preview-apk
           name: Rootz MVP preview APK (rolling)
-          body: 'Rolling debug-signed preview of the Rootz MVP app (rootzd daemon client), built from master@${{ github.sha }} on blackhost. Install with `adb install -r app-release.apk` (package `com.rootmyandroid.rootz`).'
+          body: 'Rolling debug-signed preview of the Rootz MVP app (rootzd daemon client), built from master@${{ github.sha }} on blackhost. Install with `adb install -r rootz.apk` (package `com.rootmyandroid.rootz`).'
           prerelease: true
-          files: apps/rootz/app/build/outputs/apk/release/app-release.apk
+          files: rootz.apk
