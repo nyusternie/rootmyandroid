@@ -1,12 +1,15 @@
 // apps/rootz/app/src/main/java/com/rootmyandroid/rootz/MainActivity.kt
 package com.rootmyandroid.rootz
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
+import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
@@ -377,8 +380,16 @@ class MainActivity : AppCompatActivity() {
         // kills the Settings pairing server (measured on blueline). The
         // notification's inline reply collects the code instead.
         armButton.setOnClickListener {
-            PairingNotifier.postPairingPrompt(this)
-            pairStatus.text = "pairing notification armed — open the Settings pairing dialog, then type the code into the notification"
+            // Android 13+ drops notifications without the runtime grant and
+            // the same-device flow lives in the notification's inline reply.
+            if (Build.VERSION.SDK_INT >= 33 &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQ_POST_NOTIFICATIONS)
+                pairStatus.text = "pairing: allow notifications, then tap ARM PAIRING NOTIFICATION again"
+                return@setOnClickListener
+            }
+            armPairingNotification()
         }
         relayButton.setOnClickListener {
             val account = relayAccount.text.toString().trim()
@@ -429,10 +440,42 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Wireless debugging can be switched on AFTER this app started; the
+     * discovery watchdog gives up after MAX_AUTO_RESTARTS, so the card
+     * would sit on "searching…" forever (measured on redfin 2026-11-25).
+     * Every return to the app with no endpoint restarts discovery with a
+     * fresh budget.
+     */
+    override fun onResume() {
+        super.onResume()
+        if (adbWifi.connectEndpoint == null) adbWifi.restartWithFreshBudget()
+    }
+
     override fun onDestroy() {
         relayDaemon?.stop()
         adbWifi.stop()
         super.onDestroy()
+    }
+
+    private fun armPairingNotification() {
+        PairingNotifier.postPairingPrompt(this)
+        pairStatus.text = "pairing notification armed — open the Settings pairing dialog, then type the code into the notification"
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQ_POST_NOTIFICATIONS) {
+            if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+                armPairingNotification()
+            } else {
+                pairStatus.text = "pairing: notifications denied — the inline code field cannot be shown"
+            }
+        }
     }
 
     /**
@@ -628,5 +671,6 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val PREFS_RELAY = "relay"
         private const val KEY_ACCOUNT = "account"
+        private const val REQ_POST_NOTIFICATIONS = 1001
     }
 }

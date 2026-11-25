@@ -2,9 +2,13 @@
 <!-- apps/rootz/app/src/main/AndroidManifest.xml -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- The MVP talks to the rootzd daemon bridge over localhost TCP.
-         No other permission is requested. -->
+    <!-- The MVP talks to the rootzd daemon bridge over localhost TCP. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Same-device wireless-ADB pairing runs from a notification's inline
+         reply (foregrounding this activity kills the Settings pairing
+         server). Android 13+ blocks notifications without this runtime
+         grant, so the arm button requests it (targetSdk 36). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:label="Rootz"

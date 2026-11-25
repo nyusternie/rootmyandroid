@@ -93,6 +93,19 @@ class AdbWifiDiscovery(context: Context) {
         start()
     }
 
+    /**
+     * restart() plus a fresh watchdog budget. The auto-restart budget is
+     * bounded so a long-backgrounded app stops churning mDNS sessions;
+     * the UI resume path (MainActivity.onResume) resets it, because the
+     * user may have switched Wireless debugging on while the app was open
+     * (observed on redfin 2026-11-25: budget spent, service published
+     * later, card stuck on "searching…" until a force-stop).
+     */
+    fun restartWithFreshBudget() {
+        autoRestarts = 0
+        restart()
+    }
+
     private fun listener(type: String) = object : NsdManager.DiscoveryListener {
         override fun onServiceFound(info: NsdServiceInfo) {
             Log.i(TAG, "found [$type] name=${info.serviceName} — resolving")
