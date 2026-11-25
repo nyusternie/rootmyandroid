@@ -127,11 +127,14 @@ adb shell dumpsys connectivity | grep -ic 'VPN CONNECTED'
 .agents/skills/fdroid-review/tools/virustotal.sh <apk>
 ```
 
-Hash lookup only: the tool runs the API call **on** blackhost (fallback
-apecsdev), so the key never leaves the credential stores and only the
-sha256 travels. `UNKNOWN to VirusTotal` is a valid result — it means no
-report exists for that hash, not that the lookup failed. Never upload a
-sample without explicit owner approval.
+The tool runs the API calls **on** blackhost (fallback apecsdev), so the
+key never leaves the credential stores. With an APK argument it looks the
+hash up, and on `404` it **uploads the sample** and polls the analysis
+until the counters are available (owner ruling 2026-11-24: always obtain a
+real scan; "unknown to VirusTotal" is not an acceptable final row when a
+sample exists). If the analysis is still running after the poll window,
+re-run with `--analysis <id>`. A hash-only argument cannot be uploaded and
+reports `404` as such.
 
 Phrase the row from the stats, exactly: `0 malicious` and `N undetected`
 are different facts. `undetected` means the engine returned no verdict;

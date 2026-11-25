@@ -79,8 +79,11 @@ explanation in the report, not silence.
 - `404` — the hash is unknown to VirusTotal (no report). Report it as such.
 - Free-tier quota is small; a `429` is a rate limit, not a rejection. Wait and
 retry rather than dropping the row.
-- Uploading a sample is a privacy decision and is never automatic; ask the
-owner first.
+- ALWAYS obtain a real scan (owner ruling 2026-11-24): when the hash is
+unknown, upload the sample and report the analysis counters. A row that
+says "unknown to VirusTotal" is only acceptable when there is no sample to
+upload (hash-only input). Our purpose is to do what other testers do not
+or cannot — the upload is the difference.
 
 ## Network
 

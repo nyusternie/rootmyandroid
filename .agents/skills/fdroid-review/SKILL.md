@@ -59,5 +59,9 @@ SKILL.md is the map; the rest is loaded on demand.
 - v2.1 — 2026-11-23. VirusTotal wired in: `tools/virustotal.sh` (hash
   lookups, key stays on blackhost/apecsdev), phase 7.5, the
   `undetected`-is-not-`clean` rule (P13).
+- v2.2 — 2026-11-24. Upload policy (owner ruling): an unknown hash is no
+  longer a final row — the tool uploads the APK on `404` and polls the
+  analysis, so every review carries real engine counters. Key isolation is
+  unchanged: the file is staged on the store host, the key never leaves it.
 - Rounds recorded: `2026-11-21` (3 reviews, rewritten in place), `2026-11-22`
   (2 reviews + the TetheredNet ruling), `2026-11-23` (2 reviews posted).
