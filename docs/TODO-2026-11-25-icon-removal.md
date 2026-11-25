@@ -3,7 +3,9 @@
 # TODO — remove the app icon from the drawer (Guardian Angel **and** Rootz)
 
 **Requested by:** owner, 2026-11-25
-**Status:** OPEN — blocked on one owner decision (§3), not on code
+**Status:** DONE 2026-11-25 — owner picked **option A** (alias toggle, no
+device owner). Guardian Angel already shipped it; Rootz got the same
+mechanism in `26.11.32`. Evidence in §7.
 
 ## 1. What exists today
 
@@ -86,3 +88,46 @@ provisioning and an owner-run `dpm set-device-owner` step.
 documented contract; we have not exercised it on redfin. Before committing
 to path B, provision a test device as device owner and confirm the
 suspension behaviour with our apps.
+
+---
+
+## 7. Implemented — option A, both apps (2026-11-25)
+
+**Guardian Angel** — unchanged; it shipped `.LauncherAlias` +
+`LauncherIconModule` (`setLauncherIconVisible` / `isLauncherIconVisible`)
+and the "Launcher icon" switch.
+
+**Rootz `26.11.32`** — the launcher entry moved from `MainActivity` to
+`.LauncherAlias` (activity-alias → MainActivity, MAIN/LAUNCHER filter);
+`MainActivity` stays exported for explicit starts and the `pair_code`
+hook. New `LauncherIcon` object (`setVisible` / `isVisible`,
+`DONT_KILL_APP`) and a fourth card in the app: "Launcher icon" → switch
+"Show in the launcher" + the way back
+(`adb shell am start -n com.rootmyandroid.rootz/.MainActivity`).
+
+Measured on redfin (Pixel 5, Android 14), icon hidden:
+
+```
+$ dumpsys package com.rootmyandroid.rootz | grep -A1 disabledComponents
+      disabledComponents:
+        com.rootmyandroid.rootz.LauncherAlias
+$ cmd package resolve-activity --brief -c android.intent.category.LAUNCHER com.rootmyandroid.rootz
+No activity found
+$ dumpsys activity services com.rootmyandroid.rootz | grep isForeground
+    isForeground=true foregroundId=4300 types=40000000 …
+```
+
+and with the icon hidden the relay still served the web Terminal:
+
+```
+$ id
+uid=2000(shell) gid=2000(shell) … context=u:r:shell:s0
+```
+
+Toggling back: `disabledComponents` empty and `resolve-activity` answers
+`com.rootmyandroid.rootz/.LauncherAlias` again. Guardian's toggle was
+exercised the same way (hidden → `resolve-activity` "No activity found",
+restored → alias resolves).
+
+Both apps keep working while hidden: the launcher entry is only a filter
+on the alias, the process and services are untouched.
