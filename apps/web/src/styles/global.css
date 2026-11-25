@@ -225,7 +225,7 @@ html[data-theme='light'] {
     @apply sticky top-0 z-10 border-b border-line bg-page/88 backdrop-blur;
   }
   .site-header .container {
-    @apply flex h-[4rem] max-w-[60rem] items-center justify-between min-[900px]:h-[5rem];
+    @apply flex h-[4rem] max-w-[60rem] items-center justify-between min-[1024px]:h-[5rem];
   }
   .brand {
     @apply flex items-center gap-[0.6rem] text-[1.35rem] font-bold tracking-[-0.01em] text-ink hover:no-underline;
