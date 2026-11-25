@@ -22,9 +22,10 @@ import Base from '../layouts/Base.astro'
     <div class="panel">
       <h2>Connect</h2>
       <p class="break-words text-body text-[1.15rem]">
-        Enter your 16-digit account number, then load the devices paired to
-        it and pick one. A device appears here once the Rootz app on it has
-        been paired (Account pairing → Pair &amp; start relay daemon).
+        Enter your 16-digit account number — the devices paired to it load
+        automatically. Pick one, then press Connect. A device appears here
+        once the Rootz app on it has been paired (Account pairing →
+        Pair &amp; start relay daemon).
       </p>
       <div class="stack">
         <input
@@ -38,9 +39,9 @@ import Base from '../layouts/Base.astro'
         />
         <div class="row">
           <select id="device-select" class="min-w-0 flex-1 text-[1.2rem]" aria-label="Device">
-            <option value="">Enter your account number, then load devices…</option>
+            <option value="">Devices load once your account number is complete…</option>
           </select>
-          <button type="button" class="btn" id="load-devices-btn">Load devices</button>
+          <button type="button" class="btn" id="load-devices-btn">Refresh list</button>
         </div>
         <div class="row">
           <button type="button" class="btn btn-primary" id="connect-btn">Connect</button>

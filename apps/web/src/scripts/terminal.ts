@@ -58,6 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let ws: WebSocket | null = null
   let session: ClientSession | null = null
+  // Last account whose device list loaded cleanly (drives the auto-load).
+  let loadedAccount = ''
   let pendingStdin: Uint8Array[] = []
   // Streaming UTF-8 decode: a multibyte sequence may split across chunks.
   let outDecoder = new TextDecoder()
@@ -125,10 +127,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const devices = res.ok ? (res.data?.devices ?? []) : []
       if (res.ok) {
         setDeviceOptions(devices)
+        loadedAccount = account
         setStatus(
-          devices.length
-            ? `Loaded ${devices.length} device${devices.length === 1 ? '' : 's'} — pick one and connect.`
-            : 'No devices paired to this account yet — pair one in the Rootz app.',
+          devices.length === 1
+            ? 'Device found — press Connect.'
+            : devices.length
+              ? `Loaded ${devices.length} devices — pick one and press Connect.`
+              : 'No devices paired to this account yet — pair one in the Rootz app.',
           devices.length ? 'ok' : 'warn',
         )
       } else if (res.status === 404) {
@@ -203,6 +208,30 @@ document.addEventListener('DOMContentLoaded', () => {
     session = hello.session
     ws.send(hello.frame)
   }
+
+  // Owner order 2026-11-25: the device list loads itself the moment the
+  // account number is complete — no button press between typing and picking.
+  // The button stays as a manual refresh (a device paired after this page
+  // loaded would not appear otherwise). The 450 ms debounce keeps a typed
+  // number to one request (limits: 20/IP/hour, 30/account/hour).
+  let autoLoadTimer = 0
+  accountInput.addEventListener('input', () => {
+    window.clearTimeout(autoLoadTimer)
+    const digits = accountInput.value.replace(/[^0-9]/g, '')
+    if (digits.length !== 16) {
+      // An edited account must not keep another account's devices.
+      if (loadedAccount && digits !== loadedAccount) {
+        loadedAccount = ''
+        setDeviceOptions([])
+        setStatus('Enter your 16-digit account number.', 'muted')
+      }
+      return
+    }
+    if (digits === loadedAccount) return
+    autoLoadTimer = window.setTimeout(() => {
+      void loadDevices()
+    }, 450)
+  })
 
   loadDevicesBtn.addEventListener('click', () => {
     void loadDevices()
