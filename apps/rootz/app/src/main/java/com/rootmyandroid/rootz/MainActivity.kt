@@ -247,11 +247,20 @@ class MainActivity : AppCompatActivity() {
             textSize = 14.3f // 11sp + 30%
             setPadding(0, 0, 0, dp(8))
         }
+        // Android turns Wireless debugging off on some boots (measured on
+        // redfin 2026-11-25: AdbDebuggingManager sees no network at boot,
+        // clears the setting, and never re-enables it). One tap to the
+        // system screen beats hunting through Settings.
+        val devOptionsButton = MaterialButton(this).apply {
+            text = "Open developer options"
+            textSize = 18.2f // button label 14sp + 30%
+        }
         val deviceCard = sectionCard(
             sectionTitle("Device"),
             relayStatus,
             relayDevice,
             wifiStatus,
+            devOptionsButton,
             status,
         )
 
@@ -362,7 +371,7 @@ class MainActivity : AppCompatActivity() {
         }
         setContentView(root)
 
-        wifiStatus.text = "wireless adb: searching…"
+        wifiStatus.text = "wireless adb: searching… (off? turn on Developer options → Wireless debugging)"
         wifiStatus.setTextColor(0xFFB0BEC5.toInt())
         status.text = "daemon: not queried yet"
         adbWifi.onEndpointsChanged = {
@@ -371,8 +380,14 @@ class MainActivity : AppCompatActivity() {
                 wifiStatus.text = "wireless adb: ready — ${ep.first}:${ep.second}"
                 wifiStatus.setTextColor(0xFF66BB6A.toInt())
             } else {
-                wifiStatus.text = "wireless adb: searching…"
+                wifiStatus.text = "wireless adb: searching… (off? turn on Developer options → Wireless debugging)"
                 wifiStatus.setTextColor(0xFFB0BEC5.toInt())
+            }
+        }
+
+        devOptionsButton.setOnClickListener {
+            runCatching {
+                startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
             }
         }
 

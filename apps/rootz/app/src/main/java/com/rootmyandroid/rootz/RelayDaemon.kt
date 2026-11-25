@@ -365,7 +365,7 @@ internal class RelayDaemon(
             enqueueInner(
                 sidKey,
                 E2eSession.encodeInnerStderr(
-                    "wireless adb not ready on the device — open Rootz and wait for \"wireless adb: ready\"\n"
+                    "wireless adb not ready on the device — open Rootz, turn on Developer options → Wireless debugging, and wait for \"wireless adb: ready\"\n"
                         .toByteArray(Charsets.UTF_8),
                 ),
             )
