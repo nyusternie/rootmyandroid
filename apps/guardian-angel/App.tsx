@@ -126,7 +126,9 @@ function GuardianScreen() {
       const deviceName: string | null = await (SyncStore?.getDeviceName?.() ??
         Promise.resolve(null)
       ).catch(() => null);
-      const res = await fetch(`${API_BASE}/guardian-angel/sync`, {
+      // The API route is /v1/guardian/sync (rootmyandroid-api route table).
+      // The old /guardian-angel/sync path 404s — it never matched a route.
+      const res = await fetch(`${API_BASE}/guardian/sync`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ account_number: digits, device_name: deviceName }),
