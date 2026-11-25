@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import { Modal } from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
 import App from '../App';
 
@@ -20,5 +21,27 @@ test('renders correctly', async () => {
   // otherwise the timer keeps jest alive after the run.
   await ReactTestRenderer.act(() => {
     tree?.unmount();
+  });
+});
+
+test('the avatar opens the assistant sheet', async () => {
+  let tree: ReactTestRenderer.ReactTestRenderer | null = null;
+  await ReactTestRenderer.act(() => {
+    tree = ReactTestRenderer.create(<App />);
+  });
+  const root = tree as unknown as ReactTestRenderer.ReactTestRenderer;
+
+  expect(root.root.findByType(Modal).props.visible).toBe(false);
+
+  const avatar = root.root.findAll(
+    (node) => (node.props as { testID?: string })?.testID === 'guardian-avatar',
+  )[0];
+  await ReactTestRenderer.act(() => {
+    avatar.props.onPress();
+  });
+
+  expect(root.root.findByType(Modal).props.visible).toBe(true);
+  await ReactTestRenderer.act(() => {
+    root.unmount();
   });
 });

@@ -1,5 +1,7 @@
 module.exports = {
   preset: '@react-native/jest-preset',
+  // SafeAreaProvider renders nothing without native insets (see the file).
+  setupFiles: ['<rootDir>/jest.setup.js'],
   // App.tsx imports ./global.css (NativeWind); jest can't parse css.
   // lottie-react-native is native-backed; tests only need a null stub
   // (same pattern as apps/android).

@@ -25,7 +25,13 @@
  * grid is gone — the backdrop is a night sky (deep indigo, a warm halo
  * top-right, cool light lower-left, fine stars, vignette). Bottom-right
  * carries the animated guardian: a Lottie "protection pulse" behind the
- * mascot, which breathes and bobs. It is the future chatbot entry point.
+ * mascot, which breathes and bobs.
+ *
+ * Assistant sheet (2026-11-25, third round): tapping the mascot opens a
+ * bottom sheet with the phone's Guardian state (protection, synced account)
+ * and an inert "Ask the Guardian…" field — the future chat surface. The
+ * sheet only shows real state and real actions (sync, turn on protection);
+ * nothing here pretends to be a conversation yet.
  *
  * @format
  */
@@ -37,7 +43,9 @@ import {
   AppState,
   Easing,
   Image,
+  Modal,
   NativeModules,
+  Pressable,
   ScrollView,
   StatusBar,
   Switch,
@@ -88,6 +96,7 @@ function GuardianScreen() {
   const [syncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     LauncherIcon?.isLauncherIconVisible?.()
@@ -251,6 +260,7 @@ function GuardianScreen() {
                   number shown in the Root My Android app.
                 </Text>
                 <TextInput
+                  testID="account-input"
                   className="mb-4 rounded-[10px] border border-border bg-bg px-4 py-3.5 text-[20.8px] tracking-[2px] text-text"
                   value={accountInput}
                   onChangeText={setAccountInput}
@@ -262,6 +272,7 @@ function GuardianScreen() {
                   autoCapitalize="none"
                 />
                 <TouchableOpacity
+                  testID="sync-button"
                   className={`items-center rounded-[10px] bg-accent py-4 ${!canSync ? 'opacity-40' : ''}`}
                   onPress={onSync}
                   disabled={!canSync}
@@ -340,29 +351,122 @@ function GuardianScreen() {
           </View>
         </ScrollView>
 
-        {/* Guardian avatar — bottom right, above the scroll content. The
-            Lottie ring is the "protection pulse"; the mascot bobs over it.
-            Becomes the assistant/chat entry point in a later build. */}
+        {/* Guardian avatar — bottom right. The Lottie ring is the
+            "protection pulse" (inert: box-none on the container, none on the
+            pulse) and the mascot badge is the assistant trigger. Only the
+            76dp badge takes touches, so the switch cards underneath stay
+            reachable. */}
         <View
           className="absolute h-[150px] w-[150px] items-center justify-center"
           style={{ bottom: insets.bottom + 10, right: 6 }}
-          pointerEvents="none"
-          accessible
-          accessibilityLabel="Guardian Angel assistant"
+          pointerEvents="box-none"
         >
-          <LottieView
-            source={require('./assets/guardian-pulse.json')}
-            autoPlay
-            loop
-            style={{ position: 'absolute', width: 150, height: 150 }}
-          />
-          <Animated.View
-            style={{ transform: [{ translateY: bobY }] }}
-            className="h-[76px] w-[76px] overflow-hidden rounded-full border-2 border-[#FFD27A]/70 bg-[#14181d]"
+          <View pointerEvents="none" style={{ position: 'absolute', width: 150, height: 150 }}>
+            <LottieView
+              source={require('./assets/guardian-pulse.json')}
+              autoPlay
+              loop
+              style={{ width: 150, height: 150 }}
+            />
+          </View>
+          <Pressable
+            testID="guardian-avatar"
+            onPress={() => setSheetOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Open the Guardian assistant"
+            className="h-[76px] w-[76px] items-center justify-center overflow-hidden rounded-full border-2 border-[#FFD27A]/70 bg-[#14181d]"
           >
-            <Image source={require('./assets/brand-angel.png')} className="h-full w-full" />
-          </Animated.View>
+            <Animated.View
+              style={{ transform: [{ translateY: bobY }] }}
+              className="h-full w-full"
+            >
+              <Image source={require('./assets/brand-angel.png')} className="h-full w-full" />
+            </Animated.View>
+          </Pressable>
         </View>
+
+        {/* Assistant sheet — real state, real actions, and an inert field
+            that marks where the conversation will live. */}
+        <Modal
+          visible={sheetOpen}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setSheetOpen(false)}
+        >
+          <View className="flex-1 justify-end bg-black/60">
+            <Pressable className="flex-1" onPress={() => setSheetOpen(false)} />
+            <View
+              testID="guardian-sheet"
+              className="rounded-t-2xl border-t border-border bg-panel px-5 pb-8 pt-5"
+            >
+              <View className="mb-3 flex-row items-center justify-between">
+                <Text className="text-[26px] font-bold text-text">Guardian</Text>
+                <Pressable
+                  onPress={() => setSheetOpen(false)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Close the Guardian assistant"
+                  className="rounded-lg border border-border px-3 py-1.5"
+                >
+                  <Text className="text-[16.9px] font-semibold text-muted">Close</Text>
+                </Pressable>
+              </View>
+              <Text className="mb-4 text-[16.9px] leading-[24px] text-muted">
+                I watch over this phone's Guardian Angel setup. Ask me things here
+                soon — for now I can show you what's on and turn it on.
+              </Text>
+
+              <View className="mb-4 rounded-xl border border-border bg-bg p-4">
+                <View className="flex-row justify-between py-1.5">
+                  <Text className="text-[18.2px] text-muted">Protection</Text>
+                  <Text className="text-[18.2px] font-medium text-text">
+                    {protectionActive ? 'On' : 'Off'}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between py-1.5">
+                  <Text className="text-[18.2px] text-muted">Account</Text>
+                  <Text className="text-[18.2px] font-medium text-text">
+                    {synced ? `•••• ${synced.last4}` : 'Not synced'}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between py-1.5">
+                  <Text className="text-[18.2px] text-muted">Launcher icon</Text>
+                  <Text className="text-[18.2px] font-medium text-text">
+                    {iconVisible ? 'Visible' : 'Hidden'}
+                  </Text>
+                </View>
+              </View>
+
+              <View className="mb-4 flex-row items-center gap-2 rounded-xl border border-border bg-bg px-4 py-3">
+                <Text className="flex-1 text-[18.2px] text-faint">Ask the Guardian… (coming soon)</Text>
+                <View className="rounded-lg bg-accent/30 px-3 py-2">
+                  <Text className="text-[16.9px] font-semibold text-white">Send</Text>
+                </View>
+              </View>
+
+              {!protectionActive && (
+                <TouchableOpacity
+                  testID="sheet-protection"
+                  className="items-center rounded-[10px] bg-accent py-4"
+                  onPress={() => {
+                    setSheetOpen(false);
+                    onToggleProtection(true);
+                  }}
+                >
+                  <Text className="text-[18.2px] font-semibold text-white">Turn on protection</Text>
+                </TouchableOpacity>
+              )}
+              {!synced && (
+                <TouchableOpacity
+                  testID="sheet-sync"
+                  className="mt-3 items-center rounded-[10px] border border-border py-4"
+                  onPress={() => setSheetOpen(false)}
+                >
+                  <Text className="text-[18.2px] font-semibold text-text">Sync this phone</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </>
   );
