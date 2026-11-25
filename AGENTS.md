@@ -676,13 +676,24 @@ the no-verdict rule), `report-template.md` (verbatim official template),
 codequality, mr-apk). Every round appends `rounds/YYYY-MM-DD.md`; a dismissed
 claim becomes a `pitfalls.md` entry in the same commit.
 
-Three rules that are not negotiable:
+Four rules that are not negotiable:
 1. Pool is `review-requested` + **fewest notes**; "no outside review" means no
    **non-maintainer** comment (check project membership, not just the count).
 2. `INTERNET` apps get a network capture (PCAPdroid) started **before** the app
    is opened — `ss` samples and `strings` on the binary are not a network check.
 3. Reports use the official template (Basic Function / Policy Compliance /
    Permissions / Network / Language / Security). No freeform prose.
+4. **ALWAYS obtain a real VirusTotal scan** (owner ruling 2026-11-24): when the
+   hash is unknown, `tools/virustotal.sh` uploads the sample and polls the
+   analysis — an "unknown to VirusTotal" row is only acceptable when there is
+   no sample to upload. The sample is staged on blackhost/apecsdev so the key
+   never leaves the store. Our purpose is to do what other testers do not or
+   cannot.
+
+Rounds: `2026-11-21` (3 reviews), `2026-11-22` (2 reviews + TetheredNet
+ruling), `2026-11-23` (Usuals !58329 + Spunto !58328), `2026-11-24`
+(Counting Edge !53737, note 4324021185 — the first with a real upload scan:
+`malicious=0 suspicious=0 harmless=0 undetected=66`, 0 of 66 engines).
 
 ### F-Droid MR SUBMISSION FORMAT — the rule that cost a rejection
 
