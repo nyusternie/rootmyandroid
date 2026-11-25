@@ -89,10 +89,12 @@ import Base from '../layouts/Base.astro'
       </ol>
       <p class="text-body text-[1rem]">
         After a reboot the relay reconnects on its own — Rootz runs it as a
-        foreground service with a “Rootz relay” notification. Wireless
-        debugging must stay on: if commands answer
-        <code class="text-ink">wireless adb not ready</code>, open Rootz and
-        wait for the card to read <code class="text-ink">ready</code>.
+        foreground service with a “Rootz relay” notification, so the device
+        stays reachable with the app closed. Android can switch Wireless
+        debugging off during a reboot: if commands answer
+        <code class="text-ink">wireless adb not ready</code>, open Rootz →
+        <em>Open developer options</em> → <em>Wireless debugging</em> → on,
+        then wait for the card to read <code class="text-ink">ready</code>.
       </p>
     </div>
 
