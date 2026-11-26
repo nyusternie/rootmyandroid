@@ -47,10 +47,27 @@ interface Props {
   current: string
   // Optional page-specific JSON-LD (schema.org object; emitted verbatim).
   schema?: Record<string, unknown>
+  // Android package this profile is about, when we have an /app/<package>
+  // page for it. Rendered as a contextual cross-link (never a redirect or a
+  // canonical): the profile stays the editorial page, the app page answers
+  // the package-name query (owner ruling 2026-11-26).
+  packageName?: string
 }
 
-const { title, description, h1, lede, image, credit, name, owner, ownerUrl, current, schema } =
-  Astro.props
+const {
+  title,
+  description,
+  h1,
+  lede,
+  image,
+  credit,
+  name,
+  owner,
+  ownerUrl,
+  current,
+  schema,
+  packageName,
+} = Astro.props
 
 // Internal cross-links between the ten profile pages (SEO + navigation).
 const profiles = [
@@ -87,6 +104,13 @@ const og = image.src.endsWith('.svg')
     <p class="muted mb-7 text-[1.1rem] max-w-[38rem]">
       {lede}
     </p>
+
+    {packageName && (
+      <p class="text-body text-[1rem] max-w-[38rem]">
+        Android package: <code class="text-ink">{packageName}</code> —
+        <a href={`/app/${packageName}`}>what this package is, and how to check it on your phone</a>
+      </p>
+    )}
 
     <figure class="m-0 mb-8">
       <img
