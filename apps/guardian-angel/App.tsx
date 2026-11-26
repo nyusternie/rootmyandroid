@@ -74,6 +74,9 @@ type SyncedAccount = {
   last4: string;
   /** Optional name/description set from the Root My Android app. */
   name: string | null;
+  /** What the API returned at sync time — shown so support can match the
+   *  phone against the /guardian device list. Not a secret on its own. */
+  deviceId?: string;
 };
 
 function App() {
@@ -117,7 +120,7 @@ function GuardianScreen() {
     SyncStore?.getSync?.()
       .then((saved: { accountNumber: string } | null) => {
         if (saved?.accountNumber) {
-          setSynced({ last4: saved.accountNumber.slice(-4), name: null });
+          setSynced({ last4: saved.accountNumber.slice(-4), name: null, deviceId: saved.deviceId });
         }
       })
       .catch(() => {});
@@ -145,7 +148,7 @@ function GuardianScreen() {
       const body = await res.json().catch(() => null);
       if (res.ok && body?.ok && body.device_id) {
         await SyncStore?.saveSync?.(digits, body.device_id)?.catch(() => {});
-        setSynced({ last4: digits.slice(-4), name: null });
+        setSynced({ last4: digits.slice(-4), name: null, deviceId: body.device_id });
       } else if (res.status === 400 || res.status === 404) {
         setSyncError('Account number not found. Check the 16 digits and try again.');
       } else {
@@ -294,6 +297,12 @@ function GuardianScreen() {
                 <View className="flex-row justify-between py-2">
                   <Text className="text-[18.2px] text-muted">Name</Text>
                   <Text className="text-[18.2px] font-medium text-text">{synced.name ?? '—'}</Text>
+                </View>
+                <View className="py-2">
+                  <Text className="mb-1 text-[18.2px] text-muted">Device id</Text>
+                  <Text selectable className="text-[15.6px] leading-[22px] text-faint">
+                    {synced.deviceId ?? '—'}
+                  </Text>
                 </View>
                 <Text className="mt-2 text-[15.6px] leading-[22px] text-faint">
                   This device is managed from the Root My Android app. All settings are

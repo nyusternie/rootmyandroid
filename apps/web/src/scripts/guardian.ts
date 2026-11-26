@@ -143,10 +143,13 @@ document.addEventListener('DOMContentLoaded', () => {
         setStatus('Too many list requests — wait a minute, then retry.', 'warn')
       } else if (res.status === 404) {
         loadedAccount = ''
-        // The route itself is not deployed yet (API handoff pending).
+        // A 404 WITHOUT account_not_found means the route itself is missing
+        // (rollback, wrong host). The route shipped 2026-11-25
+        // (docs/HANDOFF-REPLY-2026-11-25-guardian-device-list.md).
+        loadedAccount = ''
         setDevices([])
         setStatus(
-          'The device list is not live yet — the API route is pending. Retry after the next API deploy.',
+          'Device list unavailable — the API answered 404. Retry after the next deploy.',
           'warn',
         )
       } else {
