@@ -5,11 +5,12 @@
 **To:** owner + API team (`rootmyandroid-api`) + Android workstream
 **From:** web workstream (`rootmyandroid`, apps/web)
 **Date:** 2026-11-26
-**Status:** page SHIPPED as a labeled preview; device manifest not yet written.
+**Status:** Option B chosen (owner, 2026-11-26). The web read side and the
+Rootz heartbeat tool are SHIPPED; the Worker route is REQUESTED here. The
+page falls back to Option A until the route ships.
 
 Per `AGENTS.md` rule 9 this document is the only write channel into a sibling
-repo. Nothing below has been applied to `rootmyandroid-api`; the page uses
-only routes that already exist.
+repo. Nothing below has been applied to `rootmyandroid-api`.
 
 ---
 
@@ -24,24 +25,37 @@ only routes that already exist.
   validator, and the memory-budget arithmetic.
 - `apps/web/src/lib/harness.test.ts` — pins the sample, the parser, and the
   budget math.
+- `apps/web/src/lib/api.js` — `listHarnessAgents` for the dedicated route.
+- `apps/rootzd/tools/harness-heartbeat.mjs` — the first Rootz heartbeat
+  writer (Option B, with an `--audit-fallback` for Option A).
+- `apps/rootzd/tools/harness-snapshot.example.json` — the runnable sample.
 
-The page is wired to real infrastructure on two legs:
+The page is wired to real infrastructure on three legs:
 
 | leg | route | status |
 | --- | --- | --- |
 | device picker | `POST /v1/relay/devices/list` | LIVE (the same route `/terminal` uses) |
-| agent registry | `POST /v1/device/audit/list` with `audit_type: "harness-agents"` | LIVE route; no device writes the snapshot yet |
+| agent registry (Option B) | `POST /v1/harness/agents/list` | REQUESTED — 404 today, page falls back |
+| agent registry fallback (Option A) | `POST /v1/device/audit/list` with `audit_type: "harness-agents"` | LIVE route; the heartbeat tool writes it with `--audit-fallback` |
 
-Until a device writes a `harness-agents` snapshot, the registry is
-`HARNESS_SAMPLE` behind a visible **SAMPLE** badge. A real sync replaces it
-with the selected device's latest snapshot and the badge becomes **LIVE
-SNAPSHOT**. If the account has no snapshot for that device, the page keeps
-the sample and says, in the page copy, that it is not a read from the device.
+Until the Rootz harness writes a heartbeat, the registry is
+`HARNESS_SAMPLE` behind a visible **SAMPLE** badge. A real sync from either
+route replaces it with the selected device's latest snapshot and the badge
+becomes **LIVE SNAPSHOT**. If the account has no snapshot for that device,
+the page keeps the sample and says, in the page copy, that it is not a read
+from the device.
 
-**No new API route was added for this first version.** The existing audit
-pipeline already accepts the `harness-agents` audit type (the API's audit-type
-pattern is `^[a-z][a-z0-9-]{0,31}$`; see AGENTS.md), and `/guardian` already
-uses the same pipeline for `guardian-apps`.
+**Scope: the Rootz harness only for now** (owner decision 2026-11-26). The
+sample carries one agent, `Rootz Agent`. Third-party agents are a later
+integration; see §6.1.
+
+**The Worker route is not live yet.** The existing audit pipeline already
+accepts the `harness-agents` audit type (the API's audit-type pattern is
+`^[a-z][a-z0-9-]{0,31}$`; see AGENTS.md), and `/guardian` already uses the
+same pipeline for `guardian-apps`. The page therefore asks Option B first
+and falls back to Option A on 404; the heartbeat tool does the same with
+`--audit-fallback`. The page works today; the dedicated route removes the
+audit-table growth and adds `received_at`/TTL semantics.
 
 ---
 
@@ -76,7 +90,7 @@ not a measurement. Only the model sizes and the RAM anchor are verified.
 
 ## 3. Options for the sync model (the discussion)
 
-### Option A — reuse the audit pipeline (SHIPPED)
+### Option A — reuse the audit pipeline (FALLBACK)
 
 Device writes `audit_type: "harness-agents"` to `POST /v1/device/audit`;
 page reads the latest row from `POST /v1/device/audit/list`.
@@ -89,9 +103,10 @@ page reads the latest row from `POST /v1/device/audit/list`.
 - **Fit:** the first version, and a stable fallback even after a dedicated
   route ships.
 
-### Option B — a dedicated harness route (RECOMMENDED NEXT)
+### Option B — a dedicated harness route (CHOSEN 2026-11-26)
 
-Proposed contract:
+The web read side (`listHarnessAgents`) and the Rootz heartbeat tool are
+shipped in this repo; the Worker route is requested in §5. Contract:
 
 - `POST /v1/harness/heartbeat` — the device writes its current registry
   (same snapshot shape, plus a server-side `received_at`); upsert one row
@@ -106,7 +121,8 @@ Proposed contract:
   easy to add `stale` / `last_seen` semantics; no audit-table growth.
 - **Cons:** API + D1 work, deploy, rate limits, a new contract to keep in
   sync with the device app.
-- **Fit:** the right home once the device app ships the manifest.
+- **Fit:** the chosen home. The page already asks it first; the route is
+the only missing piece.
 
 ### Option C — live pull through the relay (LATER)
 
@@ -126,7 +142,8 @@ A phone-local HTTP endpoint (`127.0.0.1:8399`) is not reachable from a public
 HTTPS page, and a LAN address would need discovery, CORS, and mixed-content
 handling. Rejected for the web page; the on-device app can still use it.
 
-**Recommendation:** A now (shipped), B next for heartbeat/TTL, C only as an
+**Decision:** B is chosen. A stays as the fallback until the Worker route
+ships (and for older devices that only know the audit path). C is a later
 explicit refresh action if the owner wants it. Keep the page read-only in
 all three: no start/stop, no model switching, no shell.
 
@@ -181,13 +198,94 @@ page's “Proposed snapshot” `<details>`. Field contract:
 
 ---
 
-## 5. Open questions for the owner
+## 5. Option B route contract (requested from the API team)
 
-1. **Scope of “installed agents.”** Only our own Rootz harness, or also
-   third-party local-model apps? An app can report its own runtime; another
-   app's internal runtime needs a defined integration (or a privileged path)
-   that we have not chosen or verified. Do not promise third-party discovery
-   until the integration exists.
+### 5.1 `POST /v1/harness/heartbeat` — device writes
+
+Request body:
+
+```json
+{
+  "account_number": "1234567890123456",
+  "device_id": "64-hex relay device id",
+  "device_name": "Pixel 5",
+  "snapshot": { "schema": 1, "device": {}, "runtime": {}, "agents": [] }
+}
+```
+
+Response 200: `{ "ok": true, "device_id": "…", "received_at": "ISO" }`.
+
+Rules:
+
+- `device_id` MUST be the relay device id. The page joins the picker and the
+  snapshot on that value.
+- Upsert one row per `(account_number, device_id)`; `received_at` is the
+  server timestamp.
+- The account number is the credential, exactly as on the audit route.
+- Mirror the audit route's body/account validation and rate limits; no new
+  numeric limits without an owner ruling.
+- Reject `snapshot.schema !== 1` with `400 { "error": "invalid_snapshot" }`.
+- Proposed size cap: 16 KiB serialized snapshot. The audit route's cap is
+  512 KiB (`rootmyandroid-api/src/lib/audit.js`), but a registry does not
+  need that much.
+- No prompts, completions, chat history, model weights, files, shell output,
+  or user identifiers.
+
+### 5.2 `POST /v1/harness/agents/list` — page reads
+
+Request: `{ "account_number": "…", "device_id": "…" }`.
+
+Response 200: `{ "ok": true, "snapshot": { …schema v1… }, "received_at": "ISO" }`.
+
+Response 404: `{ "ok": false, "error": "harness_snapshot_not_found" }` — the
+page falls back to the audit snapshot. A 404 with `account_not_found` is the
+account error and does not fall back.
+
+Response 429: the page shows the rate-limit message and stops.
+
+### 5.3 D1 shape (proposal)
+
+Table `harness_snapshots`:
+
+| column | type | note |
+| --- | --- | --- |
+| `account_number` | TEXT | credential; normalized like accounts |
+| `device_id` | TEXT | relay device id |
+| `device_name` | TEXT | display label |
+| `payload` | TEXT | serialized snapshot |
+| `collected_at` | TEXT | device timestamp |
+| `received_at` | TEXT | server timestamp |
+| `updated_at` | TEXT | server timestamp |
+
+Unique `(account_number, device_id)`; index on `account_number`. D1 access
+stays with the API team (`AGENTS.md` rule 11: this repo's Cloudflare
+credentials are for this project's Pages deploy, not the API's D1).
+
+### 5.4 Migration and fallback
+
+- The page calls B first; on 404 it calls A.
+- The heartbeat tool calls B first; with `--audit-fallback` it calls A on 404.
+- Once B is live and the Rootz heartbeat writes it, A stays for older devices.
+- One valid snapshot is enough; the page never requires both.
+- **The audit fallback is not free on the first write.** `POST /v1/device/audit`
+  charges the first `(device, audit_type)` slot at the `audit_report` price
+  (5 GURU, `rootmyandroid-api/src/lib/guru.js:40`); refreshing an existing
+  slot is free. The dedicated B route should be free for the harness
+  heartbeat, or carry an owner-ruled price — no price is set here.
+
+### 5.5 Staleness
+
+`received_at` is the server timestamp and the page displays it. A stale badge
+needs an owner-ruled threshold; no threshold is shipped.
+
+---
+
+## 6. Open questions for the owner
+
+1. **Scope — RESOLVED 2026-11-26: the Rootz harness only for now.** An app
+   can report its own runtime; another app's internal runtime needs a defined
+   integration (or a privileged path) that we have not chosen or verified.
+   Do not promise third-party discovery until that integration exists.
 2. **Endpoints.** Show `127.0.0.1:8399`-style endpoints on the page, or hide
    them behind a disclosure? The sample shows them; they are device-local,
    but the owner may prefer not to publish them.
@@ -210,7 +308,7 @@ page's “Proposed snapshot” `<details>`. Field contract:
 
 ---
 
-## 6. Verification
+## 7. Verification
 
 - **No host build** (AGENTS.md build rule): CI on `blackhost` runs
   `check → test:coverage → build`; the page is static and the new unit tests
@@ -218,6 +316,11 @@ page's “Proposed snapshot” `<details>`. Field contract:
 - Local, non-build checks run before the commit: the styling gate
   (`tools/check-web-styling.mjs`), the pinned-version gate, and the targeted
   Vitest files (`harness.test.ts`, `ai-surfaces.test.js`, `api.test.js`).
+- `apps/rootzd/tools/harness-heartbeat.mjs --dry-run` prints the exact
+  heartbeat payload without a network call; the example snapshot is
+  `apps/rootzd/tools/harness-snapshot.example.json`.
 - The page's sample is labeled in three places: the hero PREVIEW badge, the
   registry SAMPLE badge, and the registry note. A real sync changes the badge
-  to LIVE SNAPSHOT and the note to the collected timestamp.
+  to LIVE SNAPSHOT and the note to the route/timestamp.
+- The page asks Option B first and falls back to Option A on 404; the
+  `listHarnessAgents` client call is pinned in `api.test.js`.

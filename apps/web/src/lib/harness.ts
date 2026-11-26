@@ -76,7 +76,8 @@ export interface HarnessBudget {
  * model sizes (Q4_K_M file sizes verified on /models, 2026-11-11) and the
  * Pixel 5 RAM anchor (7.29 GiB total / 3.71 GiB free at idle, /proc/meminfo,
  * 2026-11-11). Everything else is illustrative and must stay behind the
- * page's SAMPLE badge.
+ * page's SAMPLE badge. Scope is the Rootz harness only for now (owner
+ * decision 2026-11-26); third-party agents are a later integration.
  */
 export const HARNESS_SAMPLE: HarnessSnapshot = {
   schema: 1,
@@ -114,36 +115,6 @@ export const HARNESS_SAMPLE: HarnessSnapshot = {
       endpoint: '127.0.0.1:8399',
       last_heartbeat: '2026-11-26T18:55:00Z',
       capabilities: ['read-only audit', 'shell plan', 'tool calls'],
-    },
-    {
-      id: 'guardian-digest',
-      name: 'Guardian Digest',
-      runtime: 'llama.cpp',
-      model: 'Qwen2.5-1.5B-Instruct',
-      quantization: 'Q4_K_M',
-      parameters_b: 1.54,
-      context: 4096,
-      model_gib: 1.04,
-      resident_gib: 0,
-      status: 'idle',
-      endpoint: '127.0.0.1:8401',
-      last_heartbeat: '2026-11-26T18:54:40Z',
-      capabilities: ['summarize', 'classify'],
-    },
-    {
-      id: 'scan-explainer',
-      name: 'Scan Explainer',
-      runtime: 'llama.cpp',
-      model: 'Qwen2.5-0.5B-Instruct',
-      quantization: 'Q4_K_M',
-      parameters_b: 0.49,
-      context: 2048,
-      model_gib: 0.46,
-      resident_gib: 0,
-      status: 'stopped',
-      endpoint: null,
-      last_heartbeat: '2026-11-26T18:50:00Z',
-      capabilities: ['explain scan', 'suggest next step'],
     },
   ],
 }

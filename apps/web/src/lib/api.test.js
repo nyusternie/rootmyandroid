@@ -10,6 +10,7 @@ import {
   createSupportConversation,
   getSupportMessages,
   listAudits,
+  listHarnessAgents,
   postSupportEscalate,
   postSupportGuru,
   postSupportGuruQuote,
@@ -128,6 +129,27 @@ describe('api client', () => {
     expect(JSON.parse(init.body)).toEqual({
       account_number: '1234 5678 9012 3456',
       audit_type: 'backup',
+    })
+  })
+
+  it('listHarnessAgents posts account and device to the dedicated harness route', async () => {
+    fetch.mockImplementation(() =>
+      jsonResponse(200, {
+        ok: true,
+        snapshot: { schema: 1, agents: [] },
+        received_at: '2026-11-26T19:00:00Z',
+      }),
+    )
+    const res = await listHarnessAgents('0711465548568044', 'a'.repeat(64))
+    expect(res.ok).toBe(true)
+    expect(res.data.received_at).toBe('2026-11-26T19:00:00Z')
+    expect(fetch).toHaveBeenCalledWith(`${BASE}/harness/agents/list`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        account_number: '0711465548568044',
+        device_id: 'a'.repeat(64),
+      }),
     })
   })
 

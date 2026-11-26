@@ -77,6 +77,21 @@ export function listDeviceAudits(accountNumber, auditType) {
 }
 
 /**
+ * Latest harness snapshot for one device (web /harness, Option B).
+ * Contract: docs/HANDOFF-2026-11-26-harness-page.md §5 — requested from the
+ * API team; until POST /v1/harness/agents/list ships this answers 404 and the
+ * page falls back to the existing `harness-agents` audit snapshot.
+ * @param {string} accountNumber
+ * @param {string} deviceId
+ */
+export function listHarnessAgents(accountNumber, deviceId) {
+  return request('/harness/agents/list', {
+    method: 'POST',
+    body: { account_number: accountNumber, device_id: deviceId },
+  })
+}
+
+/**
  * One app from a device's shared inventory (web /guardian detail dialog).
  * Contract: docs/HANDOFF-2026-11-26-guardian-app-detail.md — requested from
  * the API team; until it ships this answers 404 not_found and the page falls

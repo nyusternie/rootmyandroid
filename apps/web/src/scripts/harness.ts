@@ -2,17 +2,18 @@
 //
 // Device picker: the account's real paired devices
 // (POST /v1/relay/devices/list — the same route /terminal uses).
-// Agent registry: the latest `harness-agents` audit snapshot
-// (POST /v1/device/audit/list — the same pipeline Guardian Angel uses for
-// its app inventory). Until the device app writes one, the page keeps the
-// labeled HARNESS_SAMPLE and says exactly that. No new API route is needed
-// for this first version; the live-heartbeat route is the next step
-// (docs/HANDOFF-2026-11-26-harness-page.md).
+// Agent registry: the dedicated harness route first
+// (POST /v1/harness/agents/list, Option B). Until that route ships the API
+// answers 404, and the page falls back to the latest `harness-agents` audit
+// snapshot (POST /v1/device/audit/list — the same pipeline Guardian Angel
+// uses for its app inventory). Until the Rootz harness writes a heartbeat,
+// the page keeps the labeled HARNESS_SAMPLE and says exactly that. Contract:
+// docs/HANDOFF-2026-11-26-harness-page.md.
 //
 // Everything rendered here is registry metadata. The page never reads
 // prompts, completions, chat history, model weights, files, or shell output.
 
-import { listDeviceAudits, listRelayDevices } from '../lib/api.js'
+import { listDeviceAudits, listHarnessAgents, listRelayDevices } from '../lib/api.js'
 import {
   HARNESS_SAMPLE,
   formatContext,
@@ -282,6 +283,41 @@ document.addEventListener('DOMContentLoaded', () => {
     syncBtn.disabled = true
     setStatus('Reading the latest harness snapshot…', 'muted')
     try {
+      // Option B first: the dedicated harness route. Until it ships the API
+      // answers 404, and the page falls back to the same snapshot through the
+      // existing audit pipeline (Option A).
+      const harness = await listHarnessAgents(account, deviceId)
+      if (harness.ok) {
+        const snapshot = parseHarnessSnapshot(
+          harness.data?.snapshot ?? harness.data,
+        )
+        if (snapshot) {
+          localStorage.setItem(LS_DEVICE, deviceId)
+          renderSnapshot(snapshot, 'device')
+          setStatus('Snapshot synced from the dedicated harness route.', 'ok')
+          setSource(
+            `Dedicated harness route · received ${formatStamp(harness.data?.received_at ?? snapshot.collected_at)}`,
+          )
+          return
+        }
+        setStatus(
+          'The dedicated route returned no usable snapshot — trying the audit fallback.',
+          'warn',
+        )
+      } else if (harness.status === 404) {
+        setStatus(
+          'Dedicated harness route not live yet — reading the audit snapshot…',
+          'muted',
+        )
+      } else if (harness.status === 429) {
+        setStatus('Too many harness requests — wait a minute, then retry.', 'warn')
+        return
+      } else {
+        setStatus('Could not read the harness route. Retry in a moment.', 'warn')
+        return
+      }
+
+      // Option A fallback: the existing `harness-agents` audit snapshot.
       const res = await listDeviceAudits(account, AUDIT_TYPE)
       if (!res.ok) {
         if (res.status === 404) {
@@ -301,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSnapshot(HARNESS_SAMPLE, 'sample')
         setBadge('SAMPLE · NO DEVICE SNAPSHOT', 'none')
         noteEl.textContent =
-          'No harness snapshot for this device yet. The registry below is the labeled sample, not a read from your device — the device app writes one on its next sync.'
+          'No harness snapshot for this device yet. The registry below is the labeled sample, not a read from your device — the Rootz harness writes one on its next heartbeat.'
         setStatus(
           'No harness snapshot for this device yet — showing the labeled sample.',
           'warn',
@@ -311,9 +347,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       localStorage.setItem(LS_DEVICE, deviceId)
       renderSnapshot(snapshot, 'device')
-      setStatus('Snapshot synced from your device.', 'ok')
+      setStatus('Snapshot synced through the audit fallback.', 'ok')
       setSource(
-        `Read-only audit snapshot · collected ${formatStamp(snapshot.collected_at)}`,
+        `Audit fallback · collected ${formatStamp(snapshot.collected_at)}`,
       )
     } catch {
       setStatus('Network error while reading the snapshot.', 'warn')

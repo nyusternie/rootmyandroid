@@ -13,13 +13,11 @@ import {
 } from './harness'
 
 describe('HARNESS_SAMPLE', () => {
-  it('is schema v1 with the three labeled sample agents', () => {
+  it('is schema v1 with the Rootz harness sample agent', () => {
     expect(HARNESS_SAMPLE.schema).toBe(1)
     expect(HARNESS_SAMPLE.device.name).toContain('sample')
     expect(HARNESS_SAMPLE.agents.map((agent) => agent.name)).toEqual([
       'Rootz Agent',
-      'Guardian Digest',
-      'Scan Explainer',
     ])
   })
 
@@ -41,9 +39,15 @@ describe('HARNESS_SAMPLE', () => {
   it('does not count idle or stopped agents as resident', () => {
     const withIdleResident = {
       ...HARNESS_SAMPLE,
-      agents: HARNESS_SAMPLE.agents.map((agent) =>
-        agent.status === 'idle' ? { ...agent, resident_gib: 99 } : agent,
-      ),
+      agents: [
+        ...HARNESS_SAMPLE.agents,
+        {
+          ...HARNESS_SAMPLE.agents[0],
+          id: 'idle-agent',
+          status: 'idle' as const,
+          resident_gib: 99,
+        },
+      ],
     }
     expect(memoryBudget(withIdleResident).residentGiB).toBeCloseTo(2.8, 5)
   })
@@ -53,7 +57,7 @@ describe('parseHarnessSnapshot', () => {
   it('accepts the sample after a JSON round-trip', () => {
     const parsed = parseHarnessSnapshot(JSON.parse(JSON.stringify(HARNESS_SAMPLE)))
     expect(parsed).not.toBeNull()
-    expect(parsed?.agents).toHaveLength(3)
+    expect(parsed?.agents).toHaveLength(1)
     expect(parsed?.device.free_ram_gib).toBe(3.71)
   })
 
@@ -90,7 +94,9 @@ describe('parseHarnessSnapshot', () => {
       ...HARNESS_SAMPLE,
       agents: [
         {
-          ...HARNESS_SAMPLE.agents[2],
+          ...HARNESS_SAMPLE.agents[0],
+          status: 'stopped' as const,
+          endpoint: null,
           capabilities: Array.from({ length: 20 }, (_, i) => `cap-${i}`),
         },
       ],

@@ -5,12 +5,13 @@
 // src/scripts/harness.ts drives the sync flow; the snapshot contract and
 // the labeled sample live in src/lib/harness.ts.
 //
-// First version: the page reads the latest `harness-agents` audit snapshot
-// through the EXISTING audit pipeline (POST /v1/device/audit/list) — no new
-// API route is required. The device picker uses the real paired-device list
-// (POST /v1/relay/devices/list). Until the device app writes a snapshot, the
-// registry is HARNESS_SAMPLE behind a visible SAMPLE badge. The live
-// heartbeat route and the other options are written up in
+// Option B: the page asks the dedicated harness route first
+// (POST /v1/harness/agents/list). Until that route ships, it falls back to
+// the latest `harness-agents` audit snapshot through the existing audit
+// pipeline (POST /v1/device/audit/list). The device picker uses the real
+// paired-device list (POST /v1/relay/devices/list). Until the Rootz harness
+// writes a heartbeat, the registry is HARNESS_SAMPLE behind a visible SAMPLE
+// badge. The route contract and the other options are written up in
 // docs/HANDOFF-2026-11-26-harness-page.md.
 //
 // DATA PROVENANCE: the model sizes and the Pixel 5 RAM anchor come from the
@@ -71,7 +72,7 @@ const modelRows = [
 const faqs = [
   {
     q: 'What is the Harness?',
-    a: 'The Harness is the device-side registry for the AI agents that report to it: each agent’s runtime, model, quantization, memory footprint, status, and heartbeat. It is the device view. Gurus are the advisor layer that can explain what the Harness reports; they never act on their own.',
+    a: 'The Harness is the device-side registry for the Rootz harness agent: its runtime, model, quantization, memory footprint, status, and heartbeat. It is the device view. Gurus are the advisor layer that can explain what the Harness reports; they never act on their own.',
   },
   {
     q: 'Does the Harness upload my prompts or chats?',
@@ -82,12 +83,12 @@ const faqs = [
     a: 'Because memory is the binding constraint. On our measured Pixel 5, Android 14, the device reports 7.29 GiB total RAM and 3.71 GiB free at idle (2026-11-11). Q4_K_M is roughly half a byte per parameter, so a 4B model is about 2.33 GiB of weights before the runtime and KV cache. Higher-bit quants are larger; lower-bit quants fit more but lose fidelity.',
   },
   {
-    q: 'Can I run two agents at once?',
-    a: 'It depends on their resident memory, not their model names. In the sample snapshot the 4B agent uses 2.68 GiB including its runtime, and the harness supervisor adds 0.12 GiB, leaving about 0.91 GiB of the 3.71 GiB free budget. That is enough for the 0.5B agent (0.46 GiB of weights plus a sample 0.35 GiB of runtime/KV), not the 1.5B. The page shows the budget so you can see why.',
+    q: 'Can the phone run more than one model at once?',
+    a: 'It depends on their resident memory, not their model names. In the sample snapshot the Rootz 4B agent uses 2.68 GiB including its runtime, and the harness supervisor adds 0.12 GiB, leaving about 0.91 GiB of the 3.71 GiB free budget. That is enough for the 0.5B model (0.46 GiB of weights plus a sample 0.35 GiB of runtime/KV), not the 1.5B. The page shows the budget so you can see why.',
   },
   {
     q: 'Is the Harness live?',
-    a: 'Not yet. The registry on this page is a labeled sample. The device picker uses your real paired devices, and the page is wired to read a real harness-agents audit snapshot as soon as the device app writes one. A dedicated live-heartbeat route is the next step.',
+    a: 'Not yet. The registry on this page is a labeled sample. The device picker uses your real paired devices, and the page is wired to the dedicated harness route, with the harness-agents audit snapshot as the fallback until that route ships. The Rootz heartbeat tool is the first writer.',
   },
 ]
 
@@ -103,8 +104,8 @@ const faqSchema = {
 ---
 
 <Base
-  title="Harness — on-device AI agents, synced"
-  description="See the AI agents that report to the Harness on your Android device: runtime, model, 4-bit quantization, memory budget, and sync status. Read-only, account-synced, and no prompts leave the device."
+  title="Harness — the Rootz on-device AI agent"
+  description="See the Rootz harness on your Android device: runtime, model, 4-bit quantization, memory budget, and sync status. Read-only, account-synced, and no prompts leave the device."
   banner
 >
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
@@ -113,13 +114,13 @@ const faqSchema = {
     <div class="container relative">
       <p class="small faint m-0 mb-3">
         <span class="inline-block rounded-full border border-warn/45 bg-warn/12 px-[0.6rem] py-[0.15rem] text-[0.72rem] font-bold tracking-[0.08em] text-warn-ink">PREVIEW</span>
-        The registry below is a labeled sample until the device app ships the harness manifest.
+        The registry below is a labeled sample until the Rootz harness ships the heartbeat.
       </p>
       <h1>The <span class="hl text-accent">Harness</span>.</h1>
       <p class="lede">
-        Every harness-aware AI agent on your phone, in one place: what is
-        installed, what is running, which model and quantization it uses, and
-        how much of your RAM it is holding.
+        The Rootz harness on your phone, in one place: what is installed, what
+        is running, which model and quantization it uses, and how much of your
+        RAM it is holding.
       </p>
       <p class="panel text-[1.1rem]">
         <strong>Read-only by design.</strong> The Harness reports the registry;
@@ -159,9 +160,9 @@ const faqSchema = {
     <div class="panel">
       <p class="break-words text-body text-[1.05rem]">
         Enter the 16-digit account number your Rootz device is paired to. The
-        page reads the latest <code>harness-agents</code> snapshot the device
-        wrote through the existing audit pipeline — no new API route is
-        required for this first version.
+        page asks the dedicated harness route first
+        (<code>POST /v1/harness/agents/list</code>); until that route ships, it
+        falls back to the latest <code>harness-agents</code> audit snapshot.
       </p>
       <div class="stack">
         <input
@@ -201,7 +202,7 @@ const faqSchema = {
     <p id="snapshot-note" class="muted">
       Labeled sample snapshot — not a read from your device. The device picker
       above uses the real paired-device list; the registry switches to a real
-      snapshot when the device app writes one.
+      snapshot when the Rootz harness writes one.
     </p>
 
     <div class="panel">
@@ -248,7 +249,7 @@ const faqSchema = {
       </dl>
     </div>
 
-    <div id="agent-list" class="grid-3 steps-grid mt-4">
+    <div id="agent-list" class="steps-grid mt-4 grid grid-cols-1 gap-[0.9rem]">
       {sample.agents.map((agent) => (
         <article class="panel flex flex-col gap-4">
           <div class="flex items-start justify-between gap-3">
@@ -416,29 +417,29 @@ const faqSchema = {
     <div class="panel">
       <ol class="text-body text-[1.05rem]">
         <li class="mb-3">
-          <strong class="text-ink">The device writes a snapshot.</strong> The
-          Rootz app (or another harness-aware app) posts a
-          <code>harness-agents</code> audit snapshot to
-          <code>POST /v1/device/audit</code> — the same endpoint Guardian Angel
-          uses for its app inventory.
+          <strong class="text-ink">The Rootz harness writes a heartbeat.</strong>
+          The heartbeat tool posts the snapshot to
+          <code>POST /v1/harness/heartbeat</code> with the account number,
+          relay device id, and the registry payload.
         </li>
         <li class="mb-3">
-          <strong class="text-ink">The API keeps the snapshot in the account’s audit history.</strong>
+          <strong class="text-ink">The API keeps one row per device.</strong>
           No prompts, completions, model weights, files, or shell output are
           part of the snapshot.
         </li>
         <li class="mb-3">
           <strong class="text-ink">This page reads it.</strong>
-          <code>POST /v1/device/audit/list</code> with
-          <code>audit_type: "harness-agents"</code> returns the latest row; the
-          page renders the registry and the memory budget.
+          <code>POST /v1/harness/agents/list</code> returns the latest snapshot
+          for the selected device; the page renders the registry and the memory
+          budget.
         </li>
       </ol>
       <p class="text-body text-[1rem]">
-        For live heartbeats and remote start/stop controls, a dedicated
-        <code>/v1/harness/*</code> route is the next step. This first version
-        deliberately uses the existing audit pipeline so the page can ship
-        before the API work — and so the device only ever publishes metadata.
+        Until the dedicated route ships, the page falls back to the same
+        snapshot through <code>POST /v1/device/audit/list</code> with
+        <code>audit_type: "harness-agents"</code>. The fallback keeps the page
+        working today without a second writer — and the device only ever
+        publishes metadata.
       </p>
     </div>
 
@@ -448,7 +449,7 @@ const faqSchema = {
       </summary>
       <p class="small muted">
         This is the labeled sample payload. A real snapshot carries the same
-        shape; the device app is the only writer.
+        shape; the Rootz harness heartbeat tool is the only writer.
       </p>
       <pre class="overflow-x-auto whitespace-pre rounded-[0.5rem] border border-line bg-inset p-[1rem] text-[0.8rem] text-body">{sampleJson}</pre>
     </details>

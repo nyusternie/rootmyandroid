@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "collected_at": "2026-11-26T18:55:00Z",
+  "device": {
+    "id": "sample-redfin",
+    "name": "Pixel 5 (sample)",
+    "model": "Pixel 5 (redfin)",
+    "android": "Android 14",
+    "total_ram_gib": 7.29,
+    "free_ram_gib": 3.71,
+    "thermal": "nominal",
+    "battery_pct": 84,
+    "last_sync": "2026-11-26T18:55:00Z"
+  },
+  "runtime": {
+    "name": "llama.cpp",
+    "version": "v0.9.0",
+    "backend": "CPU",
+    "threads": 4,
+    "overhead_gib": 0.12
+  },
+  "agents": [
+    {
+      "id": "rootz-agent",
+      "name": "Rootz Agent",
+      "runtime": "llama.cpp",
+      "model": "Qwen3-4B-Instruct-2507",
+      "quantization": "Q4_K_M",
+      "parameters_b": 4.02,
+      "context": 8192,
+      "model_gib": 2.33,
+      "resident_gib": 2.68,
+      "status": "running",
+      "endpoint": "127.0.0.1:8399",
+      "last_heartbeat": "2026-11-26T18:55:00Z",
+      "capabilities": ["read-only audit", "shell plan", "tool calls"]
+    }
+  ]
+}

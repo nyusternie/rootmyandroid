@@ -1006,3 +1006,11 @@ Thermal aborts were removed from THIS harness only (owner ruling
 2026-11-11: test device); bench-phase*/bench-soak keep their thermal
 caps — their published numbers depend on them. Full handoff:
 `docs/HANDOFF-2026-11-12-on-device-agent-harness.md`.
+
+The web `/harness` registry reads the Rootz harness through Option B
+(`POST /v1/harness/agents/list`; requested) with the `harness-agents` audit
+snapshot as fallback. The first writer is
+`apps/rootzd/tools/harness-heartbeat.mjs` (dry-run with the example snapshot;
+`--audit-fallback` writes the audit route, which charges the first slot at
+the `audit_report` price). Handoff:
+`docs/HANDOFF-2026-11-26-harness-page.md`.
