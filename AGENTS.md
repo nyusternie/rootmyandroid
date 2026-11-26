@@ -333,12 +333,17 @@ image LLM itself, never composited in post (no PIL text).
 
 ## Payments direction (live + planning)
 
-- Crypto payments are LIVE (the Buy panel on `/account` issues real
-  invoices); crypto gets 15% off the listed prices (owner ruling 2026-11-05,
-  narrowed 2026-11-08: subscription plans ONLY — never Guru Balance or
-  AI-usage top-ups); enforced server-side in `rootmyandroid-api`. Credit
-  card checkout is mocked in the UI and activates once the merchant account
-  is approved.
+- **This site takes no payment (owner direction 2026-11-26).** The old Buy
+  panel is gone: `/account` reads *"Checkout on this page returns soon."*
+  Subscription time and GURU credit are sold as vouchers by marketplace
+  vendors (`/marketplace`) and redeemed on `/account` via `POST /v1/redeem`.
+  There is no merchant account and no direct checkout; `/pricing` no longer
+  promises one.
+- **The 15% crypto discount is NOT enforced anywhere** and is no longer
+  advertised: `grep -rniE "0\\.85|discount" rootmyandroid-api/src` returns a
+  single comment (`src/lib/guru.js:12`). The 2026-11-05/08 rulings stand on
+  paper, but with no direct checkout there is no purchase for a discount to
+  apply to. Reinstate it only with a server-side implementation.
 - Preference: crypto-first, but support fiat methods that auto-convert to
   crypto **without a bank account**. Candidate processors to evaluate:
   BTCPay Server (self-hosted, no KYC), NOWPayments, Coinbase Commerce,
@@ -417,7 +422,9 @@ no stored card). The authoritative price table (also live on `/pricing`):
   Pro is a separate lane — no switching). Lite = `read_apps` +
   `read_messages`; Pro absorbs the remaining monitoring features; the exact
   feature packaging is still being finalized (owner: to be sorted out later).
-- Crypto payments get 15% off listed prices (owner ruling 2026-11-05;
+- Crypto payments got 15% off listed prices (owner ruling 2026-11-05;
+  NOT enforced in code and not advertised while the marketplace is the only
+  purchase path — see the payments bullet above;
   narrowed 2026-11-08: subscription plans ONLY — never Guru Balance or
   AI-usage top-ups, and no discount badges on Guru Balance UI);
   enforcement is server-side in `rootmyandroid-api` — do NOT hard-code

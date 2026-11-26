@@ -6,9 +6,17 @@
 // is its 1-YEAR subscription. Plans are top-up subscriptions (Mullvad-style).
 // Offer schema (below) mirrors the visible tier cards exactly — it is BUILT
 // from the same tier arrays (src/i18n/<locale>/pricing.ts) that render the
-// cards, so copy and structured data cannot drift. Listed fiat prices ONLY:
-// the 15% crypto discount is enforced server-side and is NEVER hard-coded
-// in clients (AGENTS.md). Owner ruling 2026-11-07.
+// cards, so copy and structured data cannot drift. Listed fiat prices ONLY.
+//
+// PAYMENT MODEL (owner direction 2026-11-26): this site takes no payment.
+// Subscription time and GURU credit are sold as vouchers by marketplace
+// vendors (/marketplace) and redeemed on /account. The old footer promise
+// ("credit card checkout launches when our merchant account is approved")
+// is removed — there is no merchant account and no direct checkout. The 15%
+// crypto discount is removed from the copy for the same reason: nothing in
+// rootmyandroid-api enforces it (grep -rniE "0\.85|discount" src/ → one
+// comment), and with no direct checkout there is no purchase it can apply
+// to. Reinstating it is an owner decision, not a copy edit.
 import Base from '../../layouts/Base.astro'
 import { dictFor, localeOf, lp } from '../../i18n/i18n'
 
