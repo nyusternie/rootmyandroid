@@ -33,7 +33,7 @@ internal object RootzNotifier {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.stat_notify_sync)
+            .setSmallIcon(R.drawable.rootz_notif)
             .setContentTitle("Rootz")
             .setContentText("Tap to open")
             .setContentIntent(open)

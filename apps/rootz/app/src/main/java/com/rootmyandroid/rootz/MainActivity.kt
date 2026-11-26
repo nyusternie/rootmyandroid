@@ -371,9 +371,11 @@ class MainActivity : AppCompatActivity() {
         }
         setContentView(root)
 
-        // No launcher icon (option B): keep the entry notification alive so
-        // the app can be reopened from the shade.
-        RootzNotifier.post(this)
+        // No launcher icon (option B): keep an entry notification alive so
+        // the app can be reopened from the shade — but only when the relay
+        // service is not already showing its own (one Rootz in the shade,
+        // owner order 2026-11-26).
+        if (!RelayService.running) RootzNotifier.post(this)
 
         wifiStatus.text = wifiHint()
         wifiStatus.setTextColor(0xFFB0BEC5.toInt())

@@ -43,6 +43,7 @@ internal class RelayService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        running = true
         channel()
         RelayBus.addListener(statusListener)
     }
@@ -72,10 +73,16 @@ internal class RelayService : Service() {
     }
 
     override fun onDestroy() {
+        running = false
         RelayBus.removeListener(statusListener)
         daemon?.stop()
         daemon = null
         super.onDestroy()
+        // Disconnected (or the lane died): the relay notification went with
+        // the service, so put the entry notification back — without it the
+        // launcher-less app would have no way in but adb (owner order
+        // 2026-11-26).
+        RootzNotifier.post(this)
     }
 
     private fun startDaemon(account: String) {
@@ -108,7 +115,7 @@ internal class RelayService : Service() {
     private fun channel() {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_ID, "Relay tunnel", NotificationManager.IMPORTANCE_LOW)
+            NotificationChannel(CHANNEL_ID, "Rootz Relay", NotificationManager.IMPORTANCE_LOW)
         )
     }
 
@@ -120,8 +127,8 @@ internal class RelayService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.stat_notify_sync)
-            .setContentTitle("Rootz relay")
+            .setSmallIcon(R.drawable.rootz_notif)
+            .setContentTitle("Rootz Relay")
             .setContentText(status)
             .setStyle(NotificationCompat.BigTextStyle().bigText(status))
             .setContentIntent(open)
@@ -134,9 +141,18 @@ internal class RelayService : Service() {
     private fun updateNotification(status: String) {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         runCatching { nm.notify(NOTIFICATION_ID, buildNotification(status)) }
+        // The relay notification IS the app's entry point while the lane is
+        // up — drop the fallback one so the shade shows a single Rootz
+        // (owner order 2026-11-26).
+        runCatching { nm.cancel(RootzNotifier.NOTIFICATION_ID) }
     }
 
     companion object {
+        /** True while the foreground service is alive (single-notification rule). */
+        @Volatile
+        var running: Boolean = false
+            private set
+
         const val ACTION_STOP = "com.rootmyandroid.rootz.action.STOP_RELAY"
         const val CHANNEL_ID = "relay"
         const val NOTIFICATION_ID = 4300

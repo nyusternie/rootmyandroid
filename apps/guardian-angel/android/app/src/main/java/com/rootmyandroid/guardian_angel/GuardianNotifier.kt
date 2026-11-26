@@ -27,7 +27,7 @@ internal object GuardianNotifier {
         nm.createNotificationChannel(
             NotificationChannel(
                 CHANNEL_ID,
-                "Guardian Angel",
+                "Guardian Angel Relay",
                 NotificationManager.IMPORTANCE_LOW,
             ),
         )
@@ -38,8 +38,8 @@ internal object GuardianNotifier {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.stat_notify_sync)
-            .setContentTitle("Guardian Angel")
+            .setSmallIcon(R.drawable.guardian_notif)
+            .setContentTitle("Guardian Angel Relay")
             .setContentText("Tap to open")
             .setContentIntent(open)
             .addAction(0, "Open", open)
