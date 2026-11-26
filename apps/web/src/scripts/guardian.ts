@@ -142,8 +142,12 @@ document.addEventListener('DOMContentLoaded', () => {
       // point at a 404.
       const linked = !app.system && curated.has(app.package ?? '')
       const row = document.createElement(linked ? 'a' : 'div')
+      // Linked rows read as clickable: a tinted background, a brighter left
+      // rule, and the "Details ›" affordance nudging right, all on the same
+      // 150ms colour/transform transition. Unlinked rows stay inert — they
+      // are not links, so they must not answer the pointer.
       row.className = linked
-        ? 'flex w-full flex-wrap items-baseline justify-between gap-x-3 rounded-[0.35rem] border-l-[3px] border-l-accent bg-raise py-[0.35rem] pl-2 pr-1 text-left no-underline hover:border-l-accent-hover hover:bg-raise'
+        ? 'group flex w-full flex-wrap items-baseline justify-between gap-x-3 rounded-[0.35rem] border-l-[3px] border-l-accent bg-raise py-[0.35rem] pl-2 pr-1 text-left no-underline transition-colors duration-150 hover:border-l-accent-hover hover:bg-accent/10 focus-visible:border-l-accent-hover focus-visible:bg-accent/10'
         : 'flex w-full flex-wrap items-baseline justify-between gap-x-3 border-l-[3px] border-l-transparent py-[0.35rem] pl-2 pr-1 text-left'
       if (linked) row.setAttribute('href', `/app/${app.package}`)
       const name = document.createElement('span')
@@ -161,7 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
       row.append(name, meta)
       if (linked) {
         const affordance = document.createElement('span')
-        affordance.className = 'text-accent text-[0.85rem] font-semibold'
+        affordance.className =
+          'text-accent text-[0.85rem] font-semibold transition-transform duration-150 group-hover:translate-x-[2px]'
         affordance.textContent = 'Details ›'
         row.append(affordance)
       }
