@@ -89,8 +89,8 @@ android {
         applicationId "com.rootmyandroid.guardian_angel"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 20261138
-        versionName "26.11.38"
+        versionCode 20261139
+        versionName "26.11.39"
     }
     signingConfigs {
         debug {

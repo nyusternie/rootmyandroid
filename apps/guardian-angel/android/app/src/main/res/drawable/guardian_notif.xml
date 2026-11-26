@@ -1,16 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- apps/guardian-angel/android/app/src/main/res/drawable/guardian_notif.xml -->
-<!-- Status-bar / notification icon: a shield with a check — protection, in
-     one glyph. Monochrome by design: Android tints status-bar icons, so any
-     colour would be flattened to a white silhouette. The check is a hole
-     (fillType evenOdd) so it reads at 24dp. -->
+<!-- Status-bar / notification icon: an outlined shield with a check —
+     protection, in one glyph. Monochrome by design: Android tints
+     status-bar icons, so any colour would be flattened to a white
+     silhouette. Stroked, not filled: a cut-out check (evenOdd) ate the
+     shield's left edge at 24dp (measured in a 24dp rasterisation), and
+     notification icons have no background colour to draw a filled check
+     against. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
+    <!-- shield outline -->
     <path
-        android:fillColor="#FFFFFFFF"
-        android:fillType="evenOdd"
-        android:pathData="M12,1.8 L20.4,4.9 L20.4,11.3 C20.4,16.6 16.7,20.9 12,22.4 C7.3,20.9 3.6,16.6 3.6,11.3 L3.6,4.9 Z M10.7,16.2 L6.9,12.4 L8.4,10.9 L10.7,13.2 L15.6,8.3 L17.1,9.8 Z" />
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.9"
+        android:strokeLineJoin="round"
+        android:pathData="M12,2.3 L19.9,5.1 L19.9,11.2 C19.9,16.3 16.5,20.5 12,21.9 C7.5,20.5 4.1,16.3 4.1,11.2 L4.1,5.1 Z" />
+    <!-- check -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.1"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M8.3,12.4 L10.8,14.9 L15.6,10.1" />
 </vector>
