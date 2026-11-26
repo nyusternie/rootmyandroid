@@ -270,9 +270,9 @@ Then:
 
 - **Rate-limit numbers — SHIPPED, follow-up requested:** 60/h/IP heartbeat
   does not fit the tool's 15 s floor (240/h) and does not fit two devices at
-  60 s behind one IP. See the ACK for the math and
-  `docs/HANDOFF-2026-11-26-harness-rate-limits.md` for the two-constant
-  request.
+  60 s behind one IP. Target: five devices per account at 60 s, one device at
+  15 s. Request: both heartbeat limits to 300/h; the ACK and
+  `docs/HANDOFF-2026-11-26-harness-rate-limits.md` carry the math.
 - **Staleness/TTL** — not implemented; `received_at` is returned and the page
   shows it without a stale badge (owner has not ruled a threshold).
 - **`harness_snapshots` table name** — shipped as proposed; a rename costs a

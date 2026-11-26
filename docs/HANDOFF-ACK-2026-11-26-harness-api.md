@@ -95,19 +95,21 @@ The tool now prints a startup warning when `--interval` is below 60 s, and its
 default 60 s fits the current IP limit for one device. The account's
 five-device ceiling and the 15 s floor do not.
 
-**Recommendation for the API team:** pick the deployment the limits protect:
+**Target deployment:** up to five Rootz harness devices per account, each at
+the tool's 60 s default; one device at the 15 s floor also fits. The
+one-harness-per-IP profile is not the target.
 
-- **One harness per IP, 15 s floor:** raise
-  `HARNESS_HEARTBEAT_MAX_PER_IP_PER_HOUR` to 240; the account limit already
-  fits one device at 240/h.
-- **Five devices per account/IP, 60 s default:** raise both the IP and account
-  limits to 300/h.
-- **One device per IP, 60 s default:** keep the current numbers and document
-  that assumption; the tool's `--interval < 60` warning covers the rest.
+**Requested change:** raise **both** heartbeat limits to 300/h:
 
-The tool and page work with any of the three; the constants are four exports
-in `src/lib/harness.js`. The standalone request for the first option is
-`docs/HANDOFF-2026-11-26-harness-rate-limits.md`.
+```js
+HARNESS_HEARTBEAT_MAX_PER_IP_PER_HOUR = 300
+HARNESS_HEARTBEAT_MAX_PER_ACCOUNT_PER_HOUR = 300
+```
+
+The 240/240 option is withdrawn. The standalone request is
+`docs/HANDOFF-2026-11-26-harness-rate-limits.md`; the API team owns only the
+two constants. The tool's warning string lives in this repo and is being
+made limit-agnostic.
 
 ---
 

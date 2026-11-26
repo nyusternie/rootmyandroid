@@ -29,6 +29,11 @@ shipped:
 The list limits are fine: the page's **Sync agents** is click-driven. The
 heartbeat limits are the issue.
 
+**Target deployment (this request):** up to **five Rootz harness devices per
+account**, each at the tool's **60 s default**; one device at the **15 s
+floor** also fits. This is the profile the limits protect. The
+one-harness-per-IP profile is not the target.
+
 ---
 
 ## 2. The arithmetic
@@ -56,7 +61,7 @@ account ceiling.
 
 ## 3. Requested change
 
-Raise the two heartbeat limits:
+Raise **both** heartbeat limits:
 
 ```js
 // rootmyandroid-api/src/lib/harness.js
@@ -64,7 +69,9 @@ export const HARNESS_HEARTBEAT_MAX_PER_IP_PER_HOUR = 300
 export const HARNESS_HEARTBEAT_MAX_PER_ACCOUNT_PER_HOUR = 300
 ```
 
-Keep the two list limits unchanged (20/h/IP, 30/h/account).
+Keep the two list limits unchanged (20/h/IP, 30/h/account). The ACK's
+240/240 option is withdrawn: it covered one harness per IP, which is not the
+target deployment.
 
 Why 300:
 
@@ -74,8 +81,10 @@ Why 300:
 - five devices at 15 s = 1,200/h → still over, but that is not a default and
   not a cadence the tool recommends.
 
-The tool's startup warning for `--interval < 60` names the shipped 60/h limit;
-after the change it becomes conservative rather than blocking.
+The tool's startup warning for `--interval < 60` is in this repo
+(`apps/rootzd/tools/harness-heartbeat.mjs`), not the API repo. We own that
+edit and are making the string limit-agnostic in the same change window; the
+API team owns only the two constants above.
 
 ---
 
@@ -91,13 +100,13 @@ after the change it becomes conservative rather than blocking.
 
 ---
 
-## 5. Alternative
+## 5. Not chosen
 
-If the deployment is one harness per IP and the 15 s floor is not a supported
-production cadence, keep 60/h/IP and 240/h/account and document that
-assumption. The tool's default 60 s fits one device; its `--interval < 60`
-warning and `retry_after` backoff cover the rest. In that case no API change
-is needed.
+The one-harness-per-IP profile (keep 60/h/IP and 240/h/account) is not the
+target. It covers one device at 60 s and throttles the 15 s floor and every
+multi-device account. The tool's `retry_after` backoff makes that profile
+survivable, but it does not meet the documented five-device ceiling.
 
-The web/Android side does not need either variant to keep working; the ACK
-records the finding and this handoff is the actionable request.
+The web/Android side does not need a coordinated release for the tool
+warning; that string lives in this repo and is being updated to avoid naming
+a fixed API limit.

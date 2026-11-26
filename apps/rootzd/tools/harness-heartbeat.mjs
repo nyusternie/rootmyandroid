@@ -277,7 +277,7 @@ if (!WATCH) {
 
 if (INTERVAL < 60) {
   console.error(
-    '[harness-heartbeat] warning: the API heartbeat IP limit shipped at 60/h on 2026-11-26; an interval below 60s will hit 429 for one device. Raise the API limit or use --interval 60+.',
+    '[harness-heartbeat] warning: a sub-60s interval can hit the API heartbeat IP limit; the tool backs off on 429. See docs/HANDOFF-2026-11-26-harness-rate-limits.md.',
   )
 }
 console.log(
