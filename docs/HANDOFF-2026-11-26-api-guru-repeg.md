@@ -207,3 +207,96 @@ Per `rootmyandroid` AGENTS.md rule 9, `rootmyandroid-api` is READ-ONLY for this
 workstream: everything above was read (`src/`, `workers/`, `test/`,
 `docs/`), and **nothing was written, migrated or deployed.** Ownership of the
 migration, its sequencing and its rollback stays with your team.
+
+---
+
+## 12. Addendum — the six gates the API team added (2026-11-26)
+
+The API team reviewed this handoff and requires all six in the same change set.
+All six are correct; four of them close holes in §4–§7 above. Verified against
+`4876c62`.
+
+### G1. `scripts/make-codes.js` must be re-based — **agreed, my omission**
+
+`const args = { count: 100, guru: 500, batch: null, dir: null }`
+(`scripts/make-codes.js:29`), the usage line (`:5`) and the summary print
+(`:70`) all say 500. New default: **5,000,000** µGURU (= $5), and the header
+note must say µGURU, not GURU.
+
+### G2. Old pack ids must not strand a paid invoice — **agreed, and this is money**
+
+`PACKS[planFromIpn(...)]` is looked up in two settlement paths:
+`src/index.js:613` (IPN) and `:1051` (status poll). A NOWPayments order created
+as `guru_500` before the rename resolves to `undefined` after it, so a **paid**
+invoice credits nothing — silently, because the `if (pack)` guard simply does
+not fire.
+
+**Prefer aliases over a state check.** A "verified no in-flight invoices"
+assertion cannot be re-verified at deploy time; a lookup table can:
+
+```js
+// deprecated ids, kept until no order can carry them
+const LEGACY_PACKS = {
+  guru_500:  GURU_PACKS.guru_5,
+  guru_2000: GURU_PACKS.guru_20,
+  guru_3000: GURU_PACKS.guru_30,
+}
+const packFor = (id) => PACKS[id] || LEGACY_PACKS[id]
+```
+
+Then `packFor()` at `:613`, `:873` (checkout validation) and `:1051`. Checkout
+should keep *rejecting* the old ids (`:873`), so only settlement accepts them.
+
+### G3. `schema_meta` + one batch, and the rename option is four columns — **agreed, my §4 was under-specified**
+
+My §4 named only `accounts.guru_balance`. The full set is:
+
+| table | columns |
+|---|---|
+| `accounts` | `guru_balance` |
+| `guru_ledger` | `delta`, `balance_after` |
+| `redeem_codes` | `guru_amount` |
+
+So the rename guard is three table renames, not one — the marker is simpler.
+**The marker insert must ride inside the same `db.batch()` as the four
+UPDATEs**, otherwise a failed batch after a successful marker silently skips
+the scale, and a marker written after a partial apply would scale twice. The
+file already batches its migrations (`src/schema.js:267, :290, :313`).
+
+### G4. Nine GraphQL fields go to `String`, not six — **agreed, I missed two**
+
+`workers/rootmyandroid-graphql/src/schema.js`:
+`:218` `guruBalance`, `:237` `priceGuru`, `:246` `delta`, `:247`
+`balanceAfter`, `:261` `guruBalance` (GuruBalance type), `:303` `guru`
+(GuruCheckout), `:323` `guru` (GuruCryptoCheckout), **`:354` `redeemed`**,
+**`:355` `guruBalance`** (redeem result).
+
+**Not converted:** `days` (`:286`) — subscription time stays `Int`; cursors
+and timestamps (`:374`, `:377`, `:406`); `asn` (`:144`).
+
+REST equivalents: `POST /v1/redeem` returns `{ redeemed, guru_balance }`
+(`src/lib/redeem.js:106`) — both become strings.
+
+### G5. API docs — **agreed, my §7 listed only one**
+
+Re-peg `AGENTS.md`, `README.md`, `docs/ai-pricing.md`, and annotate
+`docs/HANDOFF-2026-11-26-guru-cutover.md` as historical for the peg (the same
+annotation the web repo applied to its copy).
+
+### G6. Items 9 and 10 — **please name the document**
+
+This handoff has no items 9/10: §9 is the five-point acceptance list, §10 is
+what the web already shipped. If items 9/10 come from an internal review
+document, quote them and they go into §9 verbatim.
+
+### Three more that neither list covers
+
+1. **Printed voucher artifacts.** `redeem_codes.guru_amount` ×10,000 preserves
+   dollar value (500 → 5,000,000 µGURU = $5), but any plaintext `codes.txt`
+   already handed out was printed as "500 GURU" and now means something else.
+   Re-issue or re-describe any code that has left the building.
+2. **`PLANS` must not move.** `monthly` ($5 / 30 days, `src/index.js:71`) is
+   time, not GURU. It is untouched by the re-peg — and by the pack rename.
+3. **Cost vs charge stay in their own units.** `ai-pricing.md`'s `cost_nusd`
+   is provider cost in nano-USD; `charge_nguru` is what the customer pays.
+   Converting the provider cost to GURU would destroy the margin check.
