@@ -5,11 +5,15 @@
 **To:** API team (`rootmyandroid-api`)
 **From:** web + Android workstream (`rootmyandroid`)
 **Date:** 2026-11-26
-**Status:** REQUESTED. Owner rulings: **the heartbeat is FREE**, device-local
-endpoints are shown, and the scope is the **Rootz harness only** for now.
+**Status:** SHIPPED by the API team — see
+`rootmyandroid-api/docs/HANDOFF-REPLY-2026-11-26-harness-api.md` (commits
+`f209b18` + `776a1f5`, CI `45889707477`, deployed and verified live). Owner
+rulings: **the heartbeat is FREE**, device-local endpoints are shown, and the
+scope is the **Rootz harness only** for now.
 
-Per `AGENTS.md` rule 9 this document is the only write channel into
-`rootmyandroid-api`. Nothing below has been applied to that repo.
+Per `AGENTS.md` rule 9 this document is the write channel into
+`rootmyandroid-api`; the API team applied it in its own repo. Review:
+`docs/HANDOFF-ACK-2026-11-26-harness-api.md`.
 
 ---
 
@@ -22,12 +26,13 @@ harness registry through two paths:
 2. **Option A (fallback):** `POST /v1/device/audit/list` with
    `audit_type: "harness-agents"`.
 
-The page calls B first and falls back to A on 404. The Rootz heartbeat tool
+The page calls B first and falls back to A when B has no row or is
+unavailable. The Rootz heartbeat tool
 (`apps/rootzd/tools/harness-heartbeat.mjs`) posts B first and falls back to A
-only with `--audit-fallback`. **The missing piece is the Worker route.**
+only with `--audit-fallback`. **The Worker route is live.**
 
-The page and the tool are already wired; no web change is needed when the
-route ships.
+The page and the tool were already wired; the API team shipped the route.
+The audit fallback remains for older devices and for explicit tool use.
 
 ---
 
@@ -57,7 +62,7 @@ Request:
   "snapshot": {
     "schema": 1,
     "collected_at": "2026-11-26T19:00:00Z",
-    "device": {},
+    "device": { "id": "64-hex relay device id" },
     "runtime": {},
     "agents": []
   }
@@ -94,8 +99,9 @@ Rules:
   `413 { "error": "snapshot_too_large" }`.
 - No prompts, completions, chat history, model weights, files, shell output,
   or user identifiers.
-- Rate-limit with the existing helper. No new numeric limit is ruled; mirror
-  the audit route's limits for the first cut.
+- Rate-limited through the existing helper. Shipped constants
+  (`rootmyandroid-api/src/lib/harness.js`): `harness_heartbeat_ip` 60/h/IP,
+  `harness_heartbeat_account` 240/h/account.
 - Return `404 { "error": "account_not_found" }` when the account is unknown.
 
 ### 2.2 `POST /v1/harness/agents/list` — page reads
@@ -127,8 +133,10 @@ Rules:
   `404 { "ok": false, "error": "harness_snapshot_not_found" }`. The page falls
   back to the audit snapshot.
 - Unknown account: `404 { "ok": false, "error": "account_not_found" }`. The
-  page shows the account error and does not fall back.
-- Rate-limit with the existing helper; no new numeric limit is ruled.
+  page shows the account error and does not fall back (`isAccountNotFound`
+  in `apps/web/src/lib/harness.ts`).
+- Rate-limited through the existing helper. Shipped constants:
+  `harness_list_ip` 20/h/IP, `harness_list_account` 30/h/account.
 - `429` is surfaced by the page as a rate-limit message.
 
 ---
@@ -201,6 +209,9 @@ core shape and the size cap before storing.
   `audit_report` price (`rootmyandroid-api/src/index.js` PRO gate;
   `src/lib/guru.js`). Refreshes are free. The tool warns before using
   `--audit-fallback`.
+- **Size asymmetry:** B caps the snapshot at 16 KiB (bytes); A accepts up to
+  512 KiB. The heartbeat tool warns above 16 KiB and, with
+  `--audit-fallback`, retries A on a B `413`.
 
 ---
 
@@ -213,7 +224,7 @@ this document.
 # 1. Heartbeat (free; replace the placeholders)
 curl -sS https://rootmyandroid.com/v1/harness/heartbeat \
   -H 'content-type: application/json' \
-  -d '{"account_number":"<16 digits>","device_id":"<64 hex>","device_name":"Pixel 5","snapshot":{"schema":1,"collected_at":"2026-11-26T19:00:00Z","device":{},"runtime":{},"agents":[]}}'
+  -d '{"account_number":"<16 digits>","device_id":"<64 hex>","device_name":"Pixel 5","snapshot":{"schema":1,"collected_at":"2026-11-26T19:00:00Z","device":{"id":"<64 hex>"},"runtime":{},"agents":[]}}'
 
 # 2. Read it back
 curl -sS https://rootmyandroid.com/v1/harness/agents/list \
@@ -231,37 +242,41 @@ Then:
 - For a continuous test, add `--watch --interval 60`; the tool re-reads the
   snapshot file each cycle. With `--audit-fallback`, the first audit write
   carries the audit-route charge and later refreshes are free.
-- To exercise the page's B path before the Worker route exists, run the
-  DEV-ONLY mock: `node apps/web/tools/mock-harness-api.mjs` (port 8787),
+- To exercise the page's B path locally without a production account, run
+  the DEV-ONLY mock: `node apps/web/tools/mock-harness-api.mjs` (port 8787),
   then set `window.__RMA_API_BASE__ = 'http://127.0.0.1:8787/v1'` in the
   browser console. The mock preloads account `1234567890123456` and device
   `aaaa…`; the page's **Sync agents** reads the mock heartbeat route.
 
 ---
 
-## 7. Implementation checklist
+## 7. Implementation checklist (API team — shipped)
 
-- [ ] D1 migration for `harness_snapshots`.
-- [ ] `POST /v1/harness/heartbeat` handler: validation, 16 KiB cap, upsert,
+- [x] D1 migration for `harness_snapshots`.
+- [x] `POST /v1/harness/heartbeat` handler: validation, 16 KiB cap, upsert,
       free, `received_at`; return `free: true` and never call
       `chargeService`.
-- [ ] `POST /v1/harness/agents/list` handler: read, 404 shapes, free.
-- [ ] Router entries + the route catalog (the API's `/` route list).
-- [ ] Rate limits through the existing helper.
-- [ ] Tests: 200 heartbeat, 200 list, upsert replaces, 404 no row, 404
+- [x] `POST /v1/harness/agents/list` handler: read, 404 shapes, free.
+- [x] Router entries + the route catalog (the API's `/` route list).
+- [x] Rate limits through the existing helper.
+- [x] Tests: 200 heartbeat, 200 list, upsert replaces, 404 no row, 404
       account, 400 invalid device/snapshot, 413 size, 429, **no GURU charge**.
-- [ ] Deploy and run the curl recipe above.
-- [ ] Reply in `docs/HANDOFF-REPLY-2026-11-26-harness-api.md` (this repo's
-      docs only).
+- [x] Deploy and run the curl recipe above.
+- [x] Reply in `rootmyandroid-api/docs/HANDOFF-REPLY-2026-11-26-harness-api.md`.
 
 ---
 
-## 8. Open items
+## 8. Open items after the reply
 
-- Rate-limit numbers for both routes.
-- Staleness/TTL threshold for the page (owner has not ruled a value; the page
-  displays `received_at` without a stale badge).
-- Whether `harness_snapshots` is the final table name.
-- Whether A stays indefinitely or is removed after B has run for a release.
-- Model hashes/license in the snapshot (owner has not ruled; the current
-  contract omits them).
+- **Rate-limit numbers — SHIPPED, review flag:** 60/h/IP heartbeat does not
+  fit the tool's 15 s floor (240/h) and does not fit two devices at 60 s
+  behind one IP. The API team chose the constants; see the ACK for the math.
+- **Staleness/TTL** — not implemented; `received_at` is returned and the page
+  shows it without a stale badge (owner has not ruled a threshold).
+- **`harness_snapshots` table name** — shipped as proposed; a rename costs a
+  migration.
+- **A stays indefinitely** — the API team kept `POST /v1/device/audit`
+  unchanged; the first `(device, harness-agents)` slot still carries the
+  `audit_report` charge.
+- **Model hashes/license** — not columns; unknown snapshot fields round-trip
+  inside `payload` when the contract adds them.

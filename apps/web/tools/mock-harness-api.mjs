@@ -176,7 +176,7 @@ const server = createServer(async (req, res) => {
         json(res, 400, { ok: false, error: 'invalid_snapshot' })
         return
       }
-      if (JSON.stringify(body.snapshot).length > 16 * 1024) {
+      if (new TextEncoder().encode(JSON.stringify(body.snapshot)).length > 16 * 1024) {
         json(res, 413, { ok: false, error: 'snapshot_too_large' })
         return
       }

@@ -8,6 +8,7 @@ import {
   formatContext,
   formatGiB,
   formatStamp,
+  isAccountNotFound,
   memoryBudget,
   parseHarnessSnapshot,
   readHarnessRouteResponse,
@@ -129,6 +130,17 @@ describe('readHarnessRouteResponse', () => {
     expect(readHarnessRouteResponse(null)).toBeNull()
     expect(readHarnessRouteResponse({ ok: true, snapshot: null })).toBeNull()
     expect(readHarnessRouteResponse({ snapshot: { schema: 2 } })).toBeNull()
+  })
+})
+
+describe('isAccountNotFound', () => {
+  it('distinguishes the account 404 from the no-snapshot 404', () => {
+    expect(isAccountNotFound({ ok: false, error: 'account_not_found' })).toBe(true)
+    expect(
+      isAccountNotFound({ ok: false, error: 'harness_snapshot_not_found' }),
+    ).toBe(false)
+    expect(isAccountNotFound(null)).toBe(false)
+    expect(isAccountNotFound({ ok: false })).toBe(false)
   })
 })
 

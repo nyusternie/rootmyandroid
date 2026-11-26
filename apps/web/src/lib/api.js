@@ -78,9 +78,9 @@ export function listDeviceAudits(accountNumber, auditType) {
 
 /**
  * Latest harness snapshot for one device (web /harness, Option B).
- * Contract: docs/HANDOFF-2026-11-26-harness-page.md §5 — requested from the
- * API team; until POST /v1/harness/agents/list ships this answers 404 and the
- * page falls back to the existing `harness-agents` audit snapshot.
+ * Contract: docs/HANDOFF-2026-11-26-harness-api.md §5 — LIVE (API f209b18).
+ * On 404 the page falls back to the existing `harness-agents` audit snapshot;
+ * `account_not_found` is the exception (the page shows the account error).
  * @param {string} accountNumber
  * @param {string} deviceId
  */

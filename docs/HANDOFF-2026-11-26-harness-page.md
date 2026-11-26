@@ -5,14 +5,15 @@
 **To:** owner + API team (`rootmyandroid-api`) + Android workstream
 **From:** web workstream (`rootmyandroid`, apps/web)
 **Date:** 2026-11-26
-**Status:** Option B chosen (owner, 2026-11-26). The web read side and the
-Rootz heartbeat tool are SHIPPED; the Worker route is REQUESTED in
-`docs/HANDOFF-2026-11-26-harness-api.md`. Owner rulings: **the heartbeat is
-FREE**, device-local endpoints are shown, and the scope is the Rootz harness
-only. The page falls back to Option A until the route ships.
+**Status:** Option B LIVE. The API team shipped the Worker routes (commits
+`f209b18` + `776a1f5`, CI `45889707477`); reply:
+`rootmyandroid-api/docs/HANDOFF-REPLY-2026-11-26-harness-api.md`; review:
+`docs/HANDOFF-ACK-2026-11-26-harness-api.md`. Owner rulings: **the heartbeat
+is FREE**, device-local endpoints are shown, and the scope is the Rootz
+harness only. The page asks Option B first and keeps Option A as fallback.
 
-Per `AGENTS.md` rule 9 this document is the only write channel into a sibling
-repo. Nothing below has been applied to `rootmyandroid-api`.
+Per `AGENTS.md` rule 9 this document is the write channel into a sibling
+repo; the API team applied the route in its own repo.
 
 ---
 
@@ -37,7 +38,7 @@ The page is wired to real infrastructure on three legs:
 | leg | route | status |
 | --- | --- | --- |
 | device picker | `POST /v1/relay/devices/list` | LIVE (the same route `/terminal` uses) |
-| agent registry (Option B) | `POST /v1/harness/agents/list` | REQUESTED — 404 today, page falls back; heartbeat FREE |
+| agent registry (Option B) | `POST /v1/harness/agents/list` | LIVE (API `f209b18`, CI `45889707477`); heartbeat FREE |
 | agent registry fallback (Option A) | `POST /v1/device/audit/list` with `audit_type: "harness-agents"` | LIVE route; the heartbeat tool writes it with `--audit-fallback` |
 
 Until the Rootz harness writes a heartbeat, the registry is
@@ -51,13 +52,13 @@ from the device.
 sample carries one agent, `Rootz Agent`. Third-party agents are a later
 integration; see §6.1.
 
-**The Worker route is not live yet.** The existing audit pipeline already
-accepts the `harness-agents` audit type (the API's audit-type pattern is
+**The Worker route is live.** The existing audit pipeline already accepts the
+`harness-agents` audit type (the API's audit-type pattern is
 `^[a-z][a-z0-9-]{0,31}$`; see AGENTS.md), and `/guardian` already uses the
-same pipeline for `guardian-apps`. The page therefore asks Option B first
-and falls back to Option A on 404; the heartbeat tool does the same with
-`--audit-fallback`. The page works today; the dedicated route removes the
-audit-table growth and adds `received_at`/TTL semantics.
+same pipeline for `guardian-apps`. The page asks Option B first and falls
+back to Option A when B has no row or is unavailable; the heartbeat tool does
+the same with `--audit-fallback`. The dedicated route removes the audit-table
+growth and adds `received_at`; A remains for older devices.
 
 ---
 
@@ -336,3 +337,6 @@ needs an owner-ruled threshold; no threshold is shipped.
 - The DEV-ONLY mock `apps/web/tools/mock-harness-api.mjs` exercises the B
   path (heartbeat/list, relay device list, audit fallback) without the Worker
   route; set `window.__RMA_API_BASE__` to its base in the browser console.
+- The production route is live: `GET /v1/` lists both harness routes; the
+  404/400 checks and the API team's write checks are recorded in
+  `docs/HANDOFF-ACK-2026-11-26-harness-api.md`.

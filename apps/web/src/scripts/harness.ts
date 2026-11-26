@@ -20,6 +20,7 @@ import {
   formatContext,
   formatGiB,
   formatStamp,
+  isAccountNotFound,
   memoryBudget,
   parseHarnessSnapshot,
   readHarnessRouteResponse,
@@ -307,8 +308,14 @@ document.addEventListener('DOMContentLoaded', () => {
           'warn',
         )
       } else if (harness.status === 404) {
+        // The API keeps the two 404 codes distinct: account_not_found is the
+        // account error, not a reason to try the audit fallback.
+        if (isAccountNotFound(harness.data)) {
+          setStatus('Account not found — check the 16-digit number.', 'warn')
+          return
+        }
         setStatus(
-          'Dedicated harness route not live yet — reading the audit snapshot…',
+          'Dedicated harness route has no snapshot — reading the audit fallback…',
           'muted',
         )
       } else if (harness.status === 429) {

@@ -281,6 +281,15 @@ export function readHarnessRouteResponse(
 }
 
 /**
+ * The dedicated list route's account 404. The page shows the account error
+ * and does NOT fall back to the audit snapshot; a 404 with any other error
+ * (or no JSON error) is the fallback case.
+ */
+export function isAccountNotFound(value: unknown): boolean {
+  return isRecord(value) && value.error === 'account_not_found'
+}
+
+/**
  * The page's memory readout: resident memory of RUNNING agents plus the
  * shared harness supervisor, against the free RAM the device reported.
  * Idle/stopped agents hold no resident memory in this model.

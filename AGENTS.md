@@ -1008,10 +1008,13 @@ caps — their published numbers depend on them. Full handoff:
 `docs/HANDOFF-2026-11-12-on-device-agent-harness.md`.
 
 The web `/harness` registry reads the Rootz harness through Option B
-(`POST /v1/harness/agents/list`; requested) with the `harness-agents` audit
-snapshot as fallback. The heartbeat is FREE (owner ruling 2026-11-26). The
-first writer is `apps/rootzd/tools/harness-heartbeat.mjs` (dry-run with the
-example snapshot; `--audit-fallback` writes the audit route, which charges
-the first slot at the `audit_report` price). Handoffs:
-`docs/HANDOFF-2026-11-26-harness-page.md` and
-`docs/HANDOFF-2026-11-26-harness-api.md`.
+(`POST /v1/harness/agents/list`; LIVE, API `f209b18`, CI `45889707477`) with
+the `harness-agents` audit snapshot as fallback. The heartbeat is FREE (owner
+ruling 2026-11-26). The first writer is
+`apps/rootzd/tools/harness-heartbeat.mjs` (dry-run with the example snapshot;
+`--audit-fallback` writes the audit route, which charges the first slot at
+the `audit_report` price). Handoffs:
+`docs/HANDOFF-2026-11-26-harness-page.md`,
+`docs/HANDOFF-2026-11-26-harness-api.md`, and the reviewed reply
+`docs/HANDOFF-ACK-2026-11-26-harness-api.md` (open rate-limit finding:
+60/h/IP heartbeat vs the tool's 15 s floor).

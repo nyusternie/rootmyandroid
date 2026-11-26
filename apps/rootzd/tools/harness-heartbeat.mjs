@@ -13,7 +13,9 @@
 // POST /v1/harness/heartbeat ships, --audit-fallback writes the same snapshot
 // through POST /v1/device/audit with audit_type "harness-agents" — the route
 // the web page already reads as a fallback; that route charges the first
-// (device, audit_type) slot at the audit_report price.
+// (device, audit_type) slot at the audit_report price. The dedicated route
+// caps the snapshot at 16 KiB; the audit fallback accepts 512 KiB, so an
+// oversized snapshot can succeed only through the fallback.
 //
 // Usage:
 //   node apps/rootzd/tools/harness-heartbeat.mjs \
@@ -124,6 +126,7 @@ async function post(url, body) {
 // Print the /health transition once, not once per watch cycle.
 let lastHealth = null
 let auditWarned = false
+let sizeWarned = false
 
 async function heartbeatOnce() {
   let snapshot
@@ -158,6 +161,14 @@ async function heartbeatOnce() {
     }
   }
 
+  const snapshotBytes = new TextEncoder().encode(JSON.stringify(snapshot)).length
+  if (snapshotBytes > 16 * 1024 && !sizeWarned) {
+    console.error(
+      `[harness-heartbeat] warning: snapshot is ${snapshotBytes} bytes; the dedicated route's contract cap is 16384 bytes (it may answer 413). The audit fallback accepts up to 512 KiB.`,
+    )
+    sizeWarned = true
+  }
+
   const payload = {
     account_number: ACCOUNT,
     device_id: DEVICE,
@@ -166,6 +177,7 @@ async function heartbeatOnce() {
   }
 
   if (DRY_RUN) {
+    console.log(`[harness-heartbeat] snapshot bytes: ${snapshotBytes}`)
     console.log(
       JSON.stringify({ route: `${API}/harness/heartbeat`, payload }, null, 2),
     )
@@ -188,7 +200,8 @@ async function heartbeatOnce() {
     return true
   }
 
-  if (primary.res.status === 404 && AUDIT_FALLBACK) {
+  const sizeRejected = primary.res.status === 413
+  if ((primary.res.status === 404 || sizeRejected) && AUDIT_FALLBACK) {
     if (!auditWarned) {
       console.error(
         '[harness-heartbeat] warning: the audit fallback charges the first (device, harness-agents) slot at the audit_report price; refreshes are free. See docs/HANDOFF-2026-11-26-harness-page.md §5.4.',
@@ -196,7 +209,7 @@ async function heartbeatOnce() {
       auditWarned = true
     }
     console.log(
-      '[harness-heartbeat] dedicated route 404 — writing through the audit fallback',
+      `[harness-heartbeat] dedicated route rejected the snapshot (${primary.res.status}) — writing through the audit fallback`,
     )
     let audit
     try {
@@ -219,15 +232,23 @@ async function heartbeatOnce() {
       console.log(JSON.stringify(audit.data, null, 2))
       return true
     }
+    const auditRetry = audit.data?.retry_after
+      ? ` retry_after=${audit.data.retry_after}s`
+      : ''
     console.error(
-      `[harness-heartbeat] audit fallback failed (${audit.res.status}): ${JSON.stringify(audit.data)}`,
+      `[harness-heartbeat] audit fallback failed (${audit.res.status}): ${JSON.stringify(audit.data)}${auditRetry}`,
     )
     return false
   }
 
+  const retry = primary.data?.retry_after
+    ? ` retry_after=${primary.data.retry_after}s`
+    : ''
   console.error(
-    `[harness-heartbeat] dedicated route failed (${primary.res.status}): ${JSON.stringify(primary.data)}` +
-      (primary.res.status === 404 ? ' — retry with --audit-fallback' : ''),
+    `[harness-heartbeat] dedicated route failed (${primary.res.status}): ${JSON.stringify(primary.data)}${retry}` +
+      (primary.res.status === 404 || primary.res.status === 413
+        ? ' — retry with --audit-fallback'
+        : ''),
   )
   return false
 }
@@ -237,6 +258,11 @@ if (!WATCH) {
   process.exit(ok ? 0 : 1)
 }
 
+if (INTERVAL < 60) {
+  console.error(
+    '[harness-heartbeat] warning: the current API heartbeat IP limit is 60/h; an interval below 60s will hit 429 for one device. Raise the API limit or use --interval 60+.',
+  )
+}
 console.log(
   `[harness-heartbeat] watch mode: every ${INTERVAL}s; snapshot ${SNAPSHOT_PATH}`,
 )

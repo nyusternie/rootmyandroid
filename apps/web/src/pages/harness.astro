@@ -88,7 +88,7 @@ const faqs = [
   },
   {
     q: 'Is the Harness live?',
-    a: 'Not yet. The registry on this page is a labeled sample. The device picker uses your real paired devices, and the page is wired to the dedicated harness route, with the harness-agents audit snapshot as the fallback until that route ships. The Rootz heartbeat tool is the first writer.',
+    a: 'Yes. The dedicated harness route is live. The registry on this page is a labeled sample until the Rootz harness writes a heartbeat; the page reads the dedicated route, with the harness-agents audit snapshot as the fallback.',
   },
 ]
 
@@ -114,7 +114,7 @@ const faqSchema = {
     <div class="container relative">
       <p class="small faint m-0 mb-3">
         <span class="inline-block rounded-full border border-warn/45 bg-warn/12 px-[0.6rem] py-[0.15rem] text-[0.72rem] font-bold tracking-[0.08em] text-warn-ink">PREVIEW</span>
-        The registry below is a labeled sample until the Rootz harness ships the heartbeat.
+        The registry below is a labeled sample until the Rootz harness writes a heartbeat.
       </p>
       <h1>The <span class="hl text-accent">Harness</span>.</h1>
       <p class="lede">
@@ -161,8 +161,9 @@ const faqSchema = {
       <p class="break-words text-body text-[1.05rem]">
         Enter the 16-digit account number your Rootz device is paired to. The
         page asks the dedicated harness route first
-        (<code>POST /v1/harness/agents/list</code>); until that route ships, it
-        falls back to the latest <code>harness-agents</code> audit snapshot.
+        (<code>POST /v1/harness/agents/list</code>); if no snapshot is
+        available, it falls back to the latest <code>harness-agents</code>
+        audit snapshot.
       </p>
       <div class="stack">
         <input
@@ -439,11 +440,11 @@ const faqSchema = {
         </li>
       </ol>
       <p class="text-body text-[1rem]">
-        Until the dedicated route ships, the page falls back to the same
-        snapshot through <code>POST /v1/device/audit/list</code> with
-        <code>audit_type: "harness-agents"</code>. The fallback keeps the page
-        working today without a second writer — and the device only ever
-        publishes metadata.
+        If the dedicated route has no snapshot (or is unavailable), the page
+        falls back to the same snapshot through
+        <code>POST /v1/device/audit/list</code> with
+        <code>audit_type: "harness-agents"</code>. The fallback remains for
+        older devices — and the device only ever publishes metadata.
       </p>
     </div>
 
