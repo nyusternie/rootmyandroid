@@ -62,12 +62,53 @@ import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-
 // styling lives in NativeWind classes).
 import { rootzColors as colors } from 'rootmyandroid-shared';
 
-const { Uninstall, LauncherIcon, SyncStore, DeviceAdmin } = NativeModules;
+const { Uninstall, LauncherIcon, SyncStore, DeviceAdmin, AppInventory } = NativeModules;
 
 const API_BASE = 'https://rootmyandroid.com/v1';
 
 /** Top of the backdrop gradient (matches assets/backdrop@3x.png). */
 const BACKDROP_TOP = '#171E3A';
+
+/** Audit slot for the installed-app inventory (open-ended API slug). */
+const APPS_AUDIT_TYPE = 'guardian_apps';
+
+/**
+ * Upload the installed-app inventory (owner-approved first monitoring slice,
+ * 2026-11-25 — docs/DECISION-2026-11-25-guardian-monitoring.md). Read-only
+ * package metadata: name, label, version, system flag. The API upserts one
+ * snapshot per (device, audit_type), so re-uploading replaces the previous
+ * list instead of growing storage.
+ *
+ * @returns the number of apps shared, or null when it could not be sent.
+ */
+async function shareInstalledApps(
+  accountNumber: string,
+  deviceId: string,
+): Promise<number | null> {
+  try {
+    const apps = (await AppInventory?.listInstalledApps?.()) ?? [];
+    if (!Array.isArray(apps) || apps.length === 0) return null;
+    const collectedAt = new Date().toISOString();
+    const deviceName: string | null = await (SyncStore?.getDeviceName?.() ??
+      Promise.resolve(null)
+    ).catch(() => null);
+    const res = await fetch(`${API_BASE}/device/audit`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        account_number: accountNumber,
+        device_id: deviceId,
+        audit_type: APPS_AUDIT_TYPE,
+        device_name: deviceName,
+        collected_at: collectedAt,
+        snapshot: { count: apps.length, collected_at: collectedAt, apps },
+      }),
+    });
+    return res.ok ? apps.length : null;
+  } catch {
+    return null;
+  }
+}
 
 type SyncedAccount = {
   /** Full 16-digit number is kept only to derive the last-4 display. */
@@ -100,6 +141,8 @@ function GuardianScreen() {
   const [syncError, setSyncError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  /** Installed apps shared with the account (null = not shared yet). */
+  const [appsShared, setAppsShared] = useState<number | null>(null);
 
   useEffect(() => {
     LauncherIcon?.isLauncherIconVisible?.()
@@ -121,6 +164,11 @@ function GuardianScreen() {
       .then((saved: { accountNumber: string } | null) => {
         if (saved?.accountNumber) {
           setSynced({ last4: saved.accountNumber.slice(-4), name: null, deviceId: saved.deviceId });
+          // One inventory upload per launch (the API upserts, so this is a
+          // refresh, not an append). A saved pairing always carries the id.
+          if (saved.deviceId) {
+            void shareInstalledApps(saved.accountNumber, saved.deviceId).then(setAppsShared);
+          }
         }
       })
       .catch(() => {});
@@ -149,6 +197,7 @@ function GuardianScreen() {
       if (res.ok && body?.ok && body.device_id) {
         await SyncStore?.saveSync?.(digits, body.device_id)?.catch(() => {});
         setSynced({ last4: digits.slice(-4), name: null, deviceId: body.device_id });
+        void shareInstalledApps(digits, body.device_id).then(setAppsShared);
       } else if (res.status === 400 || res.status === 404) {
         setSyncError('Account number not found. Check the 16 digits and try again.');
       } else {
@@ -307,6 +356,17 @@ function GuardianScreen() {
                     {synced.deviceId ?? '—'}
                   </Text>
                 </View>
+                <View className="flex-row justify-between py-2">
+                  <Text className="text-[18.2px] text-muted">Apps shared</Text>
+                  <Text className="text-[18.2px] font-medium text-text">
+                    {appsShared === null ? '—' : appsShared}
+                  </Text>
+                </View>
+                <Text className="mt-1 text-[15.6px] leading-[22px] text-faint">
+                  The app list (name, package, version) is shared with your
+                  account and shown on the Guardian Angel page. Nothing else
+                  leaves this phone.
+                </Text>
                 <Text className="mt-2 text-[15.6px] leading-[22px] text-faint">
                   This device is managed from the Root My Android app. All settings are
                   controlled there.
@@ -438,6 +498,12 @@ function GuardianScreen() {
                   <Text className="text-[18.2px] text-muted">Account</Text>
                   <Text className="text-[18.2px] font-medium text-text">
                     {synced ? `•••• ${synced.last4}` : 'Not synced'}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between py-1.5">
+                  <Text className="text-[18.2px] text-muted">Apps shared</Text>
+                  <Text className="text-[18.2px] font-medium text-text">
+                    {appsShared === null ? '—' : appsShared}
                   </Text>
                 </View>
                 <View className="flex-row justify-between py-1.5">

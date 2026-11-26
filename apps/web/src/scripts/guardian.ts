@@ -10,7 +10,7 @@
 // Nothing here touches a phone: pairing, protection and the launcher icon
 // are on-device actions in the Guardian Angel app.
 
-import { listGuardianDevices } from '../lib/api.js'
+import { listDeviceAudits, listGuardianDevices } from '../lib/api.js'
 
 const LS_ACCOUNT = 'rma.guardian.account'
 const LS_DEVICE = 'rma.guardian.device'
@@ -19,6 +19,20 @@ type GuardianDevice = {
   device_id?: string
   device_name?: string | null
   created_at?: string
+}
+
+type InstalledApp = {
+  package?: string
+  label?: string
+  version?: string
+  system?: boolean
+}
+
+/** The installed-app snapshot the app uploads (audit_type guardian_apps). */
+type AppsSnapshot = {
+  count?: number
+  collected_at?: string
+  apps?: InstalledApp[]
 }
 
 function el<T extends HTMLElement>(id: string): T {
@@ -52,8 +66,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const infoName = el<HTMLElement>('devinfo-name')
   const infoPaired = el<HTMLElement>('devinfo-paired')
   const infoId = el<HTMLElement>('devinfo-id')
+  const appsFilter = el<HTMLInputElement>('apps-filter')
+  const appsRefresh = el<HTMLButtonElement>('apps-refresh')
+  const appsStatus = el<HTMLParagraphElement>('apps-status')
+  const appsList = el<HTMLUListElement>('apps-list')
 
   let devices: GuardianDevice[] = []
+  let apps: InstalledApp[] = []
   let loadedAccount = ''
   // Account whose request is in flight (prevents duplicate auto-loads).
   let loadingAccount = ''
@@ -62,6 +81,85 @@ document.addEventListener('DOMContentLoaded', () => {
   const storedAccount = localStorage.getItem(LS_ACCOUNT) ?? ''
   const storedDevice = localStorage.getItem(LS_DEVICE) ?? ''
   accountInput.value = storedAccount
+
+  function setAppsStatus(text: string, tone: 'ok' | 'warn' | 'muted'): void {
+    appsStatus.textContent = text
+    appsStatus.className =
+      tone === 'ok'
+        ? 'text-[1.05rem] text-ok'
+        : tone === 'warn'
+          ? 'text-[1.05rem] text-warn'
+          : 'text-[1.05rem] text-body'
+  }
+
+  /** Render the shared app list, honouring the filter box. */
+  function renderApps(): void {
+    const needle = appsFilter.value.trim().toLowerCase()
+    appsList.innerHTML = ''
+    const shown = apps.filter((app) => {
+      if (!needle) return true
+      return (
+        (app.label ?? '').toLowerCase().includes(needle) ||
+        (app.package ?? '').toLowerCase().includes(needle)
+      )
+    })
+    for (const app of shown) {
+      const li = document.createElement('li')
+      li.className =
+        'flex flex-wrap items-baseline justify-between gap-x-3 border-b border-line py-[0.35rem]'
+      const name = document.createElement('span')
+      name.className = 'text-body text-[1rem]'
+      name.textContent = app.label || app.package || '(unnamed)'
+      const meta = document.createElement('span')
+      meta.className = 'text-faint text-[0.85rem]'
+      meta.textContent = `${app.package ?? ''}${app.system ? ' · system' : ''}`
+      li.append(name, meta)
+      appsList.appendChild(li)
+    }
+    if (!shown.length) {
+      const li = document.createElement('li')
+      li.className = 'text-faint text-[0.95rem] py-2'
+      li.textContent = apps.length ? 'No app matches that filter.' : ''
+      appsList.appendChild(li)
+    }
+  }
+
+  /** Load the selected device's app inventory (audit_type guardian_apps). */
+  async function loadApps(): Promise<void> {
+    const account = loadedAccount || accountInput.value.replace(/[^0-9]/g, '')
+    const deviceId = deviceSelect.value
+    apps = []
+    renderApps()
+    if (!account || account.length !== 16 || !deviceId) {
+      setAppsStatus('Pick a device above.', 'muted')
+      return
+    }
+    setAppsStatus('Loading the shared app list…', 'muted')
+    try {
+      const res = await listDeviceAudits(account, 'guardian_apps')
+      if (!res.ok) {
+        setAppsStatus('Could not load the app list. Retry in a moment.', 'warn')
+        return
+      }
+      const row = (res.data?.audits ?? []).find(
+        (audit: { device_id?: string }) => audit.device_id === deviceId,
+      )
+      const snapshot: AppsSnapshot | undefined = row?.snapshot
+      apps = Array.isArray(snapshot?.apps) ? snapshot!.apps! : []
+      if (!apps.length) {
+        setAppsStatus(
+          'No app list shared yet — open Guardian Angel on the phone (it shares one per launch).',
+          'warn',
+        )
+        return
+      }
+      const when = formatDate(snapshot?.collected_at)
+      setAppsStatus(`${apps.length} apps · shared ${when}`, 'ok')
+      renderApps()
+    } catch {
+      setAppsStatus('Network error while loading the app list.', 'warn')
+    }
+  }
 
   function setStatus(text: string, tone: 'ok' | 'warn' | 'muted'): void {
     statusEl.textContent = text
@@ -126,6 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setDevices(list)
         loadedAccount = account
         localStorage.setItem(LS_ACCOUNT, account)
+        void loadApps()
         setStatus(
           list.length === 1
             ? 'Device loaded — see below.'
@@ -190,6 +289,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   deviceSelect.addEventListener('change', () => {
     showDevice(devices.find((d) => d.device_id === deviceSelect.value) ?? null)
+    void loadApps()
+  })
+
+  appsFilter.addEventListener('input', () => {
+    renderApps()
+    if (apps.length) {
+      setAppsStatus(`${apps.length} apps · filter: ${appsFilter.value.trim() || 'none'}`, 'ok')
+    }
+  })
+
+  appsRefresh.addEventListener('click', () => {
+    void loadApps()
   })
 
   // Returning user: one request on load, so the page lands on their device.

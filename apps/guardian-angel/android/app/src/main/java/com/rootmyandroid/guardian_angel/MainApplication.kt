@@ -20,6 +20,7 @@ class MainApplication : Application(), ReactApplication {
           add(LauncherIconPackage())
           add(SyncStorePackage())
           add(DeviceAdminPackage())
+          add(AppInventoryPackage())
         },
     )
   }

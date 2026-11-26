@@ -72,6 +72,28 @@ import Base from '../layouts/Base.astro'
     </div>
 
     <div class="panel">
+      <h2>Installed apps</h2>
+      <p class="small muted">
+        The app list the Guardian Angel app shares with this account — package
+        name, label and version. Nothing else is collected: no messages, no
+        calls, no browser history.
+      </p>
+      <div class="row">
+        <input
+          id="apps-filter"
+          class="min-w-0 flex-1 text-[1.05rem]"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="Filter apps…"
+        />
+        <button type="button" class="btn" id="apps-refresh">Refresh</button>
+      </div>
+      <p id="apps-status" class="text-body text-[1.05rem]">Pick a device above.</p>
+      <ul id="apps-list" class="m-0 list-none p-0"></ul>
+    </div>
+
+    <div class="panel">
       <h2>Set up a device</h2>
       <ol class="text-body text-[1.05rem]">
         <li class="mb-2">

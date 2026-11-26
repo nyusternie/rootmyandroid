@@ -62,6 +62,20 @@ export function listGuardianDevices(accountNumber) {
   })
 }
 
+/**
+ * Latest audit snapshots for an account (optionally one audit_type).
+ * Used by /guardian to render the installed-app inventory the Guardian
+ * Angel app uploads (audit_type "guardian_apps").
+ * @param {string} accountNumber
+ * @param {string} [auditType]
+ */
+export function listDeviceAudits(accountNumber, auditType) {
+  return request('/device/audit/list', {
+    method: 'POST',
+    body: { account_number: accountNumber, audit_type: auditType },
+  })
+}
+
 export function createCheckout({ accountNumber, plan }) {
   return request('/billing/checkout', {
     method: 'POST',

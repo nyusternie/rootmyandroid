@@ -1,6 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Installed-app inventory (owner-approved first monitoring slice,
+         2026-11-25): package names/labels/versions only, no SMS, no call
+         log, no browser history. QUERY_ALL_PACKAGES is what makes the full
+         list visible on Android 11+; it is Play-policy-restricted, which is
+         acceptable for the F-Droid/sideload distribution this app uses. -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <application
       android:name=".MainApplication"
