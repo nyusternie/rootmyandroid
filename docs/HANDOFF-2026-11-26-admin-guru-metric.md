@@ -4,9 +4,11 @@
 
 **From:** web workstream in `rootmyandroid` (the public repo)
 **For:** `rootmyandroid-admin` (Admin Center worker + `public/app.js`)
-**Status:** PROPOSED — nothing applied. This is a request.
-**Context:** the Halo → GURU cutover shipped in `rootmyandroid-api` as
-`4876c62`, and GURU was then re-pegged to $1.00 with 6 decimals
+**Status:** SHIPPED — admin `900d5da` (CI `45880098731`, deploy success;
+live asset verified serving `GURU consumptions` and `funnel.guru_consumed`).
+**Context:** the Halo → GURU cutover landed in `rootmyandroid-api` across
+`4876c62` (the rename) and `6313e2b` (the historical-row `UPDATE`), and GURU
+was then re-pegged to $1.00 with 6 decimals
 (`HANDOFF-2026-11-26-api-guru-repeg.md`).
 **Baseline:** admin `master` at `f50e2e8`, read 2026-11-26.
 
@@ -47,9 +49,14 @@ AND name IN ('account_created', 'checkout_started', 'payment_completed',
 `halo_consumed` in that list no longer matches any row — the other four
 names (`account_created`, `checkout_started`, `payment_completed`,
 `voucher_redeemed`) still match. **No data was lost**: the events are there
-under the new name. The card reports 0 through the `|| 0` at `:1050`, which
-looks exactly like "nobody used the service" — the worst possible failure
-mode for a dashboard.
+under the new name. What the card shows depends on one thing (§5.1):
+
+- if the historical `UPDATE` ran, it reports **0** through the `|| 0` at
+  `:1050`;
+- if it did not, it counts only `guru_consumed` and **under-reports**.
+
+Either way it reads as "nobody used the service", which is the worst possible
+failure mode for a dashboard.
 
 ---
 
@@ -84,6 +91,11 @@ exists in `wrangler.jsonc` — only a comment claiming it
 that same D1: `INSERT` at `src/lib/analytics.js:232`, `DELETE` at `:244`,
 called from `src/index.js:334` and `:341`. The comment and the feature
 contradict each other.
+
+The same false claim also sits in the API repo —
+`rootmyandroid-api/wrangler.jsonc:40`: *"rootmyandroid-admin binds this same
+database read-only for the Admin Center dashboards."* That copy belongs to the
+API team; it is recorded here so the contradiction is not lost.
 
 The instruction stands, for a different reason: `events` is the API's table,
 written by its collector, and the historical rename is the API's one-shot.
@@ -147,8 +159,12 @@ SELECT name, COUNT(*) AS n FROM events
 ```
 
 **What the dashboard shows if this is wrong:** if the `UPDATE` has not run,
-both names are in use, and a card that queries only `guru_consumed` reports a
-count that is too low rather than zero — a quieter version of the same bug.
+both names **can** be in use — and `guru_consumed` rows exist only if a
+`/v1/guru/consume` succeeded after the deploy: `recordEvent(...,
+'guru_consumed', ...)` sits at `rootmyandroid-api/src/index.js:974`, *after*
+the `402 insufficient_guru` branch returns, so a refused consume records
+nothing. A card that queries only `guru_consumed` then reports a count that is
+too low rather than zero — a quieter version of the same bug.
 That is why the metric rename and the verification belong in one change set.
 
 **D1 access, checked 2026-11-26.** The query above cannot be run from this
@@ -197,3 +213,25 @@ Per `rootmyandroid` AGENTS.md rule 9, `rootmyandroid-admin` is READ-ONLY for
 this workstream: everything above was read (`src/`, `public/`, `test/`,
 `wrangler.jsonc`, `.github/`), and **nothing was written, committed or
 deployed.** Ownership of the change and its deploy stays with your team.
+
+---
+
+## 8. Outcome (2026-11-26)
+
+Shipped by the admin team as **`900d5da`** — exactly the seven lines in §2
+across three files, no logic changes. CI `45880098731` on blackhost: test
+passed, deploy ran `pnpm deploy`, conclusion success.
+
+Verified from this side after the deploy:
+
+- `https://admin.rootmyandroid.com/app.js` serves `GURU consumptions` and
+  `guru_consumed`, with no `halo_consumed` left;
+- `grep -rniI "halo" src public test` in the repo → **0**.
+
+**Still open, and it is not a code change:** the row split in §5.1. It needs
+the `CLOUDFLARE_ACCOUNT_ID` credential, which exists only as a GitHub secret
+(`rootmyandroid-api/.github/workflows/ci.yml:68,74,80`). Neither this
+workstation nor the sanctioned credential stores can run it: blackhost's token
+is account-scoped, apecsdev holds the same token, and sansbank's D1-capable
+token belongs to a different account (Sansbank DAO), where
+`rootmyandroid-analytics` returns `7404 could not be found`.
