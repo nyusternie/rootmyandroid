@@ -14,6 +14,7 @@ import { listDeviceAudits, listGuardianDevices } from '../lib/api.js'
 
 const LS_ACCOUNT = 'rma.guardian.account'
 const LS_DEVICE = 'rma.guardian.device'
+const LS_SHOW_ALL = 'rma.guardian.showall'
 
 type GuardianDevice = {
   device_id?: string
@@ -67,12 +68,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const infoPaired = el<HTMLElement>('devinfo-paired')
   const infoId = el<HTMLElement>('devinfo-id')
   const appsFilter = el<HTMLInputElement>('apps-filter')
+  const appsShowAll = el<HTMLInputElement>('apps-show-all')
   const appsRefresh = el<HTMLButtonElement>('apps-refresh')
   const appsStatus = el<HTMLParagraphElement>('apps-status')
   const appsList = el<HTMLUListElement>('apps-list')
 
   let devices: GuardianDevice[] = []
   let apps: InstalledApp[] = []
+  let appsWhen = ''
   let loadedAccount = ''
   // Account whose request is in flight (prevents duplicate auto-loads).
   let loadingAccount = ''
@@ -93,16 +96,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /** Render the shared app list, honouring the filter box. */
-  function renderApps(): void {
+  /** The apps the panel is showing right now: the "Show all apps" toggle
+   *  first (a stock Pixel shares ~300 packages and nearly all of them are
+   *  system ones, so the default view is user-installed apps only), then
+   *  the text filter. */
+  function visibleApps(): InstalledApp[] {
     const needle = appsFilter.value.trim().toLowerCase()
-    appsList.innerHTML = ''
-    const shown = apps.filter((app) => {
+    const hideSystem = !appsShowAll.checked
+    return apps.filter((app) => {
+      if (hideSystem && app.system) return false
       if (!needle) return true
       return (
         (app.label ?? '').toLowerCase().includes(needle) ||
         (app.package ?? '').toLowerCase().includes(needle)
       )
     })
+  }
+
+  function renderApps(): void {
+    const needle = appsFilter.value.trim().toLowerCase()
+    appsList.innerHTML = ''
+    const shown = visibleApps()
     for (const app of shown) {
       const li = document.createElement('li')
       li.className =
@@ -119,7 +133,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!shown.length) {
       const li = document.createElement('li')
       li.className = 'text-faint text-[0.95rem] py-2'
-      li.textContent = apps.length ? 'No app matches that filter.' : ''
+      li.textContent = !apps.length
+        ? ''
+        : needle
+          ? 'No app matches that filter.'
+          : 'No user-installed apps on this device.'
       appsList.appendChild(li)
     }
   }
@@ -153,8 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
         )
         return
       }
-      const when = formatDate(snapshot?.collected_at)
-      setAppsStatus(`${apps.length} apps · shared ${when}`, 'ok')
+      appsWhen = formatDate(snapshot?.collected_at)
+      setAppsStatus(appsStatusText(), 'ok')
       renderApps()
     } catch {
       setAppsStatus('Network error while loading the app list.', 'warn')
@@ -292,16 +310,36 @@ document.addEventListener('DOMContentLoaded', () => {
     void loadApps()
   })
 
+  /** "268 of 315 apps · shared 26 Nov 2026" — the shown count always
+   *  matches the rows below it, so a filter or the system toggle can never
+   *  leave a stale total on screen. */
+  function appsStatusText(): string {
+    const parts = [`${visibleApps().length} of ${apps.length} apps`]
+    const needle = appsFilter.value.trim()
+    if (needle) parts.push(`filter: ${needle}`)
+    parts.push(`shared ${appsWhen || '—'}`)
+    return parts.join(' · ')
+  }
+
   appsFilter.addEventListener('input', () => {
     renderApps()
-    if (apps.length) {
-      setAppsStatus(`${apps.length} apps · filter: ${appsFilter.value.trim() || 'none'}`, 'ok')
-    }
+    if (apps.length) setAppsStatus(appsStatusText(), 'ok')
+  })
+
+  appsShowAll.addEventListener('change', () => {
+    localStorage.setItem(LS_SHOW_ALL, appsShowAll.checked ? '1' : '0')
+    renderApps()
+    if (apps.length) setAppsStatus(appsStatusText(), 'ok')
   })
 
   appsRefresh.addEventListener('click', () => {
     void loadApps()
   })
+
+  // Default: user-installed apps only — system packages are ~95% of a stock
+  // Pixel's list and drown the view. "Show all apps" flips it, and the
+  // choice sticks, so the panel opens the way it was left.
+  appsShowAll.checked = localStorage.getItem(LS_SHOW_ALL) === '1'
 
   // Returning user: one request on load, so the page lands on their device.
   if (storedAccount.replace(/[^0-9]/g, '').length === 16) {

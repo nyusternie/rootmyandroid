@@ -88,6 +88,16 @@ import Base from '../layouts/Base.astro'
           placeholder="Filter apps…"
         />
         <button type="button" class="btn" id="apps-refresh">Refresh</button>
+        <label
+          class="flex cursor-pointer items-center gap-2 text-body text-[1.05rem]"
+        >
+          <input
+            id="apps-show-all"
+            class="h-[1.15rem] w-[1.15rem] cursor-pointer"
+            type="checkbox"
+          />
+          Show all apps (incl. system)
+        </label>
       </div>
       <p id="apps-status" class="text-body text-[1.05rem]">Pick a device above.</p>
       <ul id="apps-list" class="m-0 list-none p-0"></ul>
