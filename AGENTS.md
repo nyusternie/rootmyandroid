@@ -100,8 +100,10 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
 4. **Static export.** `apps/web` is a purely static **Astro** site
    (`astro build` → `dist/`). No SSR, no Astro server adapters. Client-side
    JavaScript is limited to the vanilla TS modules on the app pages
-   (`/account`, `/audit`, `/pay`, `/profile`, and `/scan` once it ships)
-   that talk to the API Worker at `rootmyandroid.com/v1`. Content pages
+   (`/account`, `/audit`, `/pay`, `/profile`, `/scan`, `/guardian`,
+   `/terminal`, and `/app/<package>` — the last one only for its inline
+   "is it on your device?" block; its indexed content is static HTML) that
+   talk to the API Worker at `rootmyandroid.com/v1`. Content pages
    (`/`, `/guides/*`) must ship
    **zero JavaScript**. All dynamic/backend functionality lives in the
    separate `rootmyandroid-api` Cloudflare Worker. The landing page `/` is a
@@ -114,6 +116,17 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
 5. **Guides are Astro content collections** (`src/content/guides/*.md`, schema
    in `src/content.config.ts`). Real, device-accurate content only — per the
    no-guessing rule, do not invent device behavior.
+   **App detail pages** (`/app/<package>`, `src/content/apps/*.md`, shell
+   `src/layouts/AppDetail.astro`) are a store-style listing per Android
+   package: `/app/com.topjohnwu.magisk` answers the package-name query while
+   `/Magisk` stays the editorial profile — distinct pages, linked to each
+   other, never redirected into one another. Curated only: a page exists
+   where the package name and the copy can be sourced from the project's own
+   listing (verify `applicationId`/`namespace` upstream, never from memory).
+   No ratings, download counts or screenshots — we have none. The device
+   block is client-side only: an indexed page must not reveal who has what
+   installed. `/apps.json` is the build-time manifest the `/guardian` list
+   reads to decide which rows may link, and system apps never link.
 6. **Never wipe third-party app data.** Do NOT run `pm clear`, `pm uninstall`,
    or any other data-destroying command on any package other than our own
    (`com.rootmyandroid`, `com.rootmyandroid.preview`,

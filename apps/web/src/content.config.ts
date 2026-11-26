@@ -175,4 +175,40 @@ const models = defineCollection({
   }),
 })
 
-export const collections = { guides, roms, devices, models }
+// App detail pages (/app/<package>) — one file per Android package name,
+// e.g. src/content/apps/com.topjohnwu.magisk.md. Curated, never generated:
+// a page exists only where the package name and the copy can be sourced
+// (docs/HANDOFF-2026-11-26-guardian-app-detail.md, owner ruling 2026-11-26).
+// The package name IS the file id, so the URL is the identifier people
+// actually search for.
+const apps = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/apps' }),
+  schema: z.object({
+    // Display name, e.g. "Magisk".
+    name: z.string(),
+    // One-sentence summary — the meta description and the index card.
+    summary: z.string().max(200),
+    // Who publishes it (person or project), for the fact table.
+    developer: z.string(),
+    // schema.org applicationCategory, e.g. "UtilitiesApplication".
+    category: z.string().default('UtilitiesApplication'),
+    // Official home of the app (site or repository) — a sourced link.
+    official: z.string().url(),
+    // Where the package is distributed from (F-Droid / GitHub releases /
+    // Play). Optional: not every app has a public store listing.
+    source: z.string().url().optional(),
+    // SPDX-ish license label, when the upstream states one.
+    license: z.string().optional(),
+    // true when the package normally ships inside the system image.
+    system: z.boolean().default(false),
+    // The profile page for this app, when one exists (/Magisk …). Linked
+    // contextually — never used as a redirect or a canonical.
+    profile: z.string().optional(),
+    // Internal links worth offering next: guides, root methods, tools.
+    related: z.array(z.object({ href: z.string(), label: z.string() })).default([]),
+    // When the facts on the page were last checked against upstream.
+    checked: z.string(),
+  }),
+})
+
+export const collections = { guides, roms, devices, models, apps }

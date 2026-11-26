@@ -1,0 +1,270 @@
+---
+// src/layouts/AppDetail.astro — shell for /app/<package> pages: one Android
+// package name per page, prerendered from the `apps` content collection.
+//
+// Laid out like an app-store listing (owner order 2026-11-26) because that is
+// the mental model the visitor arrives with: icon, name, developer, badges,
+// action buttons, "About this app", and an "App info" fact sheet — with the
+// account-scoped half ("is it on my device?") inline as a store-style panel
+// rather than an overlay.
+//
+// What a store shows and we do NOT, because we would have to invent it:
+// ratings, review counts, download counts, screenshots, size, install counts.
+// The icon is a monogram tile, not the app's artwork: third-party hotlinks are
+// banned site-wide (privacy) and we have no license to host the icons.
+//
+// The device block is client-side only: an indexed page must never reveal who
+// has what installed (docs/HANDOFF-2026-11-26-guardian-app-detail.md).
+import Base from './Base.astro'
+
+interface Sibling {
+  id: string
+  name: string
+  summary: string
+}
+
+interface Props {
+  packageName: string
+  name: string
+  summary: string
+  developer: string
+  category: string
+  official: string
+  source?: string
+  license?: string
+  system: boolean
+  profile?: string
+  related: { href: string; label: string }[]
+  checked: string
+  siblings: Sibling[]
+}
+
+const {
+  packageName,
+  name,
+  summary,
+  developer,
+  category,
+  official,
+  source,
+  license,
+  system,
+  profile,
+  related,
+  checked,
+  siblings,
+} = Astro.props
+
+const markdownUrl = `/app/${packageName}.md`
+const monogram = (name.trim()[0] ?? '?').toUpperCase()
+// "UtilitiesApplication" → "Utilities" for the human-facing badge.
+const categoryLabel = category.replace(/Application$/, '')
+// SoftwareApplication, mirroring exactly what the page shows. No
+// aggregateRating / review / downloadCount: we have none, and inventing them
+// is banned (AGENTS.md — structured data must mirror visible copy).
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name,
+  identifier: packageName,
+  applicationCategory: category,
+  operatingSystem: 'Android',
+  url: `https://rootmyandroid.com/app/${packageName}/`,
+  sameAs: [official, ...(source ? [source] : [])],
+  ...(license ? { license } : {}),
+}
+---
+
+<Base
+  title={`${packageName} — ${name} (Android package)`}
+  description={summary}
+  ogType="article"
+>
+  <link slot="head" rel="alternate" type="text/markdown" href={markdownUrl} />
+  <article class="container px-5 py-10">
+    <p class="small muted mb-4">
+      <a href="/apps">Android packages</a> › {name}
+    </p>
+
+    <!-- Store header: icon, title, developer, badges, actions. -->
+    <div class="flex flex-wrap items-start gap-5">
+      <div
+        class="grid h-20 w-20 shrink-0 place-items-center rounded-[1.25rem] border border-line bg-raise text-[2.1rem] font-bold text-accent"
+        aria-hidden="true"
+      >
+        {monogram}
+      </div>
+      <div class="min-w-0 flex-1">
+        <h1 class="mt-0 mb-1">{name}</h1>
+        <p class="m-0 text-body text-[1.05rem]">{developer}</p>
+        <p class="m-0 mt-1 break-all text-faint text-[0.95rem]"><code>{packageName}</code></p>
+        <ul class="mt-3 flex list-none flex-wrap gap-2 p-0 text-[0.85rem]">
+          <li class="rounded-full border border-line bg-raise px-3 py-1 text-body">
+            {system ? 'System app' : 'User-installed app'}
+          </li>
+          <li class="rounded-full border border-line bg-raise px-3 py-1 text-body">{categoryLabel}</li>
+          {license && <li class="rounded-full border border-line bg-raise px-3 py-1 text-body">{license}</li>}
+          <li class="rounded-full border border-line bg-raise px-3 py-1 text-body">Package verified {checked}</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="mt-5 text-body text-[1.15rem]">{summary}</p>
+
+    <!-- Store actions. No "Install": nothing here installs anything. -->
+    <div class="mt-5 flex flex-wrap gap-3">
+      <a href="#device" class="btn btn-primary">Check on my device</a>
+      <a href={official} class="btn" rel="noopener">Official site</a>
+      {source && <a href={source} class="btn" rel="noopener">Get it</a>}
+      {profile && <a href={profile} class="btn">Full profile</a>}
+    </div>
+
+    <div class="mt-10 grid gap-8 min-[880px]:grid-cols-[minmax(0,1fr)_19rem]">
+      <div>
+        <h2 class="mt-0">About this app</h2>
+        <div class="prose">
+          <slot />
+        </div>
+
+        <!-- Store-style "Is it on your device?" panel. -->
+        <div id="device" class="panel mt-8 scroll-mt-24">
+          <h2 class="mt-0">Is it on your device?</h2>
+          <p class="text-body text-[1.05rem]">
+            Enter the account number your device is paired to. The answer comes
+            from the app list Guardian Angel shared — nothing is installed,
+            changed or scanned from this page.
+          </p>
+          <div class="row">
+            <input
+              id="device-account"
+              class="min-w-0 flex-1 text-[1.05rem]"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="16-digit account number"
+              aria-label="Account number"
+            />
+            <select id="device-select" class="min-w-0 text-[1.05rem]" aria-label="Device">
+              <option value="">No device loaded</option>
+            </select>
+          </div>
+          <p id="device-status" class="text-body text-[1.05rem]">
+            Enter your account number to check this package.
+          </p>
+          <dl
+            id="device-facts"
+            data-package={packageName}
+            class="mt-2 hidden grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-body text-[1rem]"
+          >
+            <dt class="text-faint">on this device</dt>
+            <dd id="device-fact-present" class="m-0">—</dd>
+            <dt class="text-faint">version</dt>
+            <dd id="device-fact-version" class="m-0">—</dd>
+            <dt class="text-faint">kind</dt>
+            <dd id="device-fact-kind" class="m-0">—</dd>
+            <dt class="text-faint">list shared</dt>
+            <dd id="device-fact-shared" class="m-0">—</dd>
+            <dt class="text-faint">apps in that list</dt>
+            <dd id="device-fact-count" class="m-0">—</dd>
+          </dl>
+          <p class="mt-3 text-body text-[1rem]">
+            Not paired yet? <a href="/guardian">Set up Guardian Angel</a> on the
+            phone, or check the device in your browser with the
+            <a href="/scan">read-only device scan</a>.
+          </p>
+        </div>
+
+        <div class="panel mt-6">
+          <h2 class="mt-0">Check it yourself</h2>
+          <p class="text-body text-[1.05rem]">
+            Android reports every installed package to the shell. With a USB
+            cable and ADB you can list them and read one package's record —
+            read-only commands, nothing is changed:
+          </p>
+          <pre class="overflow-x-auto rounded-[0.5rem] border border-line bg-raise p-3 text-[0.95rem]"><code>adb shell pm list packages
+adb shell dumpsys package {packageName} | head -40</code></pre>
+        </div>
+      </div>
+
+      <aside>
+        <!-- Store-style "App info" fact sheet. -->
+        <div class="panel">
+          <h2 class="mt-0 text-[1.15rem]">App info</h2>
+          <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-body text-[0.98rem]">
+            <dt class="text-faint">package</dt>
+            <dd class="m-0 break-all"><code class="text-ink">{packageName}</code></dd>
+            <dt class="text-faint">app</dt>
+            <dd class="m-0">{name}</dd>
+            <dt class="text-faint">developer</dt>
+            <dd class="m-0">{developer}</dd>
+            <dt class="text-faint">category</dt>
+            <dd class="m-0">{categoryLabel}</dd>
+            <dt class="text-faint">system app</dt>
+            <dd class="m-0">{system ? 'Yes' : 'No'}</dd>
+            <dt class="text-faint">official</dt>
+            <dd class="m-0 break-all"><a href={official} rel="noopener">{official.replace(/^https?:\/\//, '')}</a></dd>
+            {source && (
+              <>
+                <dt class="text-faint">distributed</dt>
+                <dd class="m-0 break-all"><a href={source} rel="noopener">{source.replace(/^https?:\/\//, '')}</a></dd>
+              </>
+            )}
+            {license && (
+              <>
+                <dt class="text-faint">license</dt>
+                <dd class="m-0">{license}</dd>
+              </>
+            )}
+            <dt class="text-faint">checked</dt>
+            <dd class="m-0">{checked}</dd>
+          </dl>
+        </div>
+
+        {siblings.length > 0 && (
+          <div class="panel mt-6">
+            <h2 class="mt-0 text-[1.15rem]">More package pages</h2>
+            <ul class="m-0 list-none p-0 text-body text-[0.98rem]">
+              {siblings.map((sibling) => (
+                <li class="mb-2">
+                  <a href={`/app/${sibling.id}`}>{sibling.name}</a>
+                  <span class="block break-all text-faint text-[0.85rem]"><code>{sibling.id}</code></span>
+                </li>
+              ))}
+            </ul>
+            <p class="m-0 mt-2 text-faint text-[0.9rem]">
+              <a href="/apps">All {siblings.length + 1} package pages</a>
+            </p>
+          </div>
+        )}
+
+        <div class="panel mt-6">
+          <h2 class="mt-0 text-[1.15rem]">Keep reading</h2>
+          <ul class="m-0 list-none p-0 text-body text-[0.98rem]">
+            {related.map((link) => (
+              <li class="mb-2"><a href={link.href}>{link.label}</a></li>
+            ))}
+            <li class="mb-2">
+              <a href={markdownUrl} rel="alternate" type="text/markdown">This page as Markdown</a>
+            </li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+
+    <p class="small muted mt-10">
+      Package names, developer and distribution details are quoted from the
+      project's own listing; the package name is the Android identifier, not a
+      trademark claim. No ratings, download counts or screenshots are shown
+      because we do not have them — this page installs, changes and scans
+      nothing.
+    </p>
+
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  </article>
+  <script>
+    import '../scripts/analytics.ts'
+    import '../scripts/app-detail.ts'
+    import '../scripts/support.ts'
+  </script>
+</Base>

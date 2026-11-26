@@ -1,0 +1,45 @@
+---
+// src/pages/app/[...id].astro — one prerendered page per curated Android
+// package (content: src/content/apps/<package>.md; shell:
+// src/layouts/AppDetail.astro). The file id IS the package name, so the URL
+// is /app/com.topjohnwu.magisk — the string people search for.
+import { getCollection } from 'astro:content'
+import AppDetail from '../../layouts/AppDetail.astro'
+
+export async function getStaticPaths() {
+  const apps = await getCollection('apps')
+  // Every page links to its siblings ("More package pages") — internal
+  // linking that a crawler can follow, built from the same collection.
+  return apps.map((app) => ({
+    params: { id: app.id },
+    props: {
+      app,
+      siblings: apps
+        .filter((other) => other.id !== app.id)
+        .map((other) => ({ id: other.id, name: other.data.name, summary: other.data.summary }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    },
+  }))
+}
+
+const { app, siblings } = Astro.props
+const { Content } = await app.render()
+---
+
+<AppDetail
+  packageName={app.id}
+  name={app.data.name}
+  summary={app.data.summary}
+  developer={app.data.developer}
+  category={app.data.category}
+  official={app.data.official}
+  source={app.data.source}
+  license={app.data.license}
+  system={app.data.system}
+  profile={app.data.profile}
+  related={app.data.related}
+  checked={app.data.checked}
+  siblings={siblings}
+>
+  <Content />
+</AppDetail>

@@ -10,7 +10,7 @@
 // Nothing here touches a phone: pairing, protection and the launcher icon
 // are on-device actions in the Guardian Angel app.
 
-import { getGuardianApp, listDeviceAudits, listGuardianDevices } from '../lib/api.js'
+import { listDeviceAudits, listGuardianDevices } from '../lib/api.js'
 
 const LS_ACCOUNT = 'rma.guardian.account'
 const LS_DEVICE = 'rma.guardian.device'
@@ -76,18 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const appsPrev = el<HTMLButtonElement>('apps-prev')
   const appsNext = el<HTMLButtonElement>('apps-next')
   const appsPage = el<HTMLSpanElement>('apps-page')
-  const appDetail = el<HTMLDialogElement>('app-detail')
-  const detailTitle = el<HTMLHeadingElement>('app-detail-title')
-  const detailPackage = el<HTMLElement>('app-detail-package')
-  const detailVersion = el<HTMLElement>('app-detail-version')
-  const detailKind = el<HTMLElement>('app-detail-kind')
-  const detailDevice = el<HTMLElement>('app-detail-device')
-  const detailShared = el<HTMLElement>('app-detail-shared')
-  const detailNote = el<HTMLParagraphElement>('app-detail-note')
-  const detailPosition = el<HTMLParagraphElement>('app-detail-position')
-  const detailExtra = el<HTMLDivElement>('app-detail-extra')
-  const detailExtraList = el<HTMLDListElement>('app-detail-extra-list')
-  const detailClose = el<HTMLButtonElement>('app-detail-close')
   const appsRefresh = el<HTMLButtonElement>('apps-refresh')
   const appsStatus = el<HTMLParagraphElement>('apps-status')
   const appsList = el<HTMLUListElement>('apps-list')
@@ -96,6 +84,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let apps: InstalledApp[] = []
   let appsWhen = ''
   let appsPageNo = 1
+  /** Packages that have a curated /app/<package> page (dist/apps.json).
+   *  Empty until the manifest loads; rows simply do not link before that. */
+  let curated = new Set<string>()
+  let curatedLoaded = false
   let loadedAccount = ''
   // Account whose request is in flight (prevents duplicate auto-loads).
   let loadingAccount = ''
@@ -143,22 +135,30 @@ document.addEventListener('DOMContentLoaded', () => {
     for (const app of shown) {
       const li = document.createElement('li')
       li.className = 'border-b border-line'
-      // A row is a button: click/tap opens the app's detail dialog. The
-      // whole row is the hit area (it wraps on narrow screens).
-      const row = document.createElement('button')
-      row.type = 'button'
-      row.className =
-        'flex w-full cursor-pointer flex-wrap items-baseline justify-between gap-x-3 rounded-[0.35rem] px-1 py-[0.35rem] text-left hover:bg-raise'
+      // System apps never link: they are Android's own packages, there is
+      // nothing for us to explain (owner ruling 2026-11-26). A user app links
+      // only when a curated /app/<package> page exists — the manifest
+      // (dist/apps.json) is the single source of truth, so a row can never
+      // point at a 404.
+      const linked = !app.system && curated.has(app.package ?? '')
+      const row = document.createElement(linked ? 'a' : 'div')
+      row.className = linked
+        ? 'flex w-full flex-wrap items-baseline justify-between gap-x-3 rounded-[0.35rem] border-l-[3px] border-l-accent bg-raise py-[0.35rem] pl-2 pr-1 text-left no-underline hover:border-l-accent-hover hover:bg-raise'
+        : 'flex w-full flex-wrap items-baseline justify-between gap-x-3 border-l-[3px] border-l-transparent py-[0.35rem] pl-2 pr-1 text-left'
+      if (linked) row.setAttribute('href', `/app/${app.package}`)
       const name = document.createElement('span')
-      name.className = 'text-body text-[1rem]'
+      name.className = linked ? 'font-semibold text-ink text-[1rem]' : 'text-body text-[1rem]'
       name.textContent = app.label || app.package || '(unnamed)'
       const meta = document.createElement('span')
       meta.className = 'text-faint text-[0.85rem]'
       meta.textContent = `${app.package ?? ''}${app.system ? ' · system' : ''}`
       row.append(name, meta)
-      row.addEventListener('click', () => {
-        openAppDetail(app)
-      })
+      if (linked) {
+        const affordance = document.createElement('span')
+        affordance.className = 'text-accent text-[0.85rem] font-semibold'
+        affordance.textContent = 'Details ›'
+        row.append(affordance)
+      }
       li.appendChild(row)
       appsList.appendChild(li)
     }
@@ -179,6 +179,24 @@ document.addEventListener('DOMContentLoaded', () => {
     appsPage.textContent = `Page ${appsPageNo} of ${pages}`
   }
 
+  /** Read the build-time manifest of curated app pages. Failure is not an
+   *  error the user needs to see: without it the list still renders, rows
+   *  just do not link. */
+  async function loadCurated(): Promise<void> {
+    if (curatedLoaded) return
+    curatedLoaded = true
+    try {
+      const res = await fetch('/apps.json', { headers: { accept: 'application/json' } })
+      if (!res.ok) return
+      const data = await res.json()
+      if (Array.isArray(data?.packages)) {
+        curated = new Set(data.packages.map((pkg: unknown) => String(pkg)))
+      }
+    } catch {
+      /* no manifest → no links */
+    }
+  }
+
   /** Load the selected device's app inventory (audit_type guardian-apps). */
   async function loadApps(): Promise<void> {
     const account = loadedAccount || accountInput.value.replace(/[^0-9]/g, '')
@@ -192,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setAppsStatus('Loading the shared app list…', 'muted')
     try {
-      const res = await listDeviceAudits(account, 'guardian-apps')
+      const [res] = await Promise.all([listDeviceAudits(account, 'guardian-apps'), loadCurated()])
       if (!res.ok) {
         setAppsStatus('Could not load the app list. Retry in a moment.', 'warn')
         return
@@ -373,143 +391,6 @@ document.addEventListener('DOMContentLoaded', () => {
     appsPageNo = 1
     renderApps()
     if (apps.length) setAppsStatus(appsStatusText(), 'ok')
-  })
-
-  /** Which open dialog the in-flight detail request belongs to (a fast
-   *  second click must not paint the first app's answer into it). */
-  let detailToken = 0
-
-  /** "app 42 of 315" — where this app sits in the shared snapshot. The
-   *  index comes from the array the page already holds, so it is only
-   *  trustworthy while the server's `count` matches that array; when a newer
-   *  snapshot has landed, only the size is stated. */
-  function setDetailPosition(index: number, total: number | undefined): void {
-    if (!total || total < 1) {
-      detailPosition.textContent = ''
-      return
-    }
-    detailPosition.textContent =
-      index >= 1 && index <= total ? `app ${index} of ${total}` : `${total} apps in this snapshot`
-  }
-
-  /** A value from the server's `details` map → display text. Unknown shapes
-   *  are stringified rather than hidden: the whole point of the slot is that
-   *  the API can add fields without a web deploy. */
-  function formatDetailValue(value: unknown): string {
-    if (value === null || value === undefined) return '—'
-    if (typeof value === 'boolean') return value ? 'yes' : 'no'
-    if (typeof value === 'string') return value || '—'
-    if (typeof value === 'number') return String(value)
-    return JSON.stringify(value)
-  }
-
-  /** Render `app.details` (empty today; fields TBD by the owner). The section
-   *  stays hidden while the map is empty, so the dialog looks the same as
-   *  before the API adds anything. */
-  function renderDetailExtras(details: unknown): void {
-    detailExtraList.innerHTML = ''
-    if (!details || typeof details !== 'object' || Array.isArray(details)) {
-      detailExtra.classList.add('hidden')
-      return
-    }
-    const entries = Object.entries(details as Record<string, unknown>)
-    if (!entries.length) {
-      detailExtra.classList.add('hidden')
-      return
-    }
-    for (const [key, value] of entries) {
-      const dt = document.createElement('dt')
-      dt.className = 'text-faint'
-      dt.textContent = key.replace(/_/g, ' ')
-      const dd = document.createElement('dd')
-      dd.className = 'm-0 break-all'
-      dd.textContent = formatDetailValue(value)
-      detailExtraList.append(dt, dd)
-    }
-    detailExtra.classList.remove('hidden')
-  }
-
-  /** Show one app. The dialog paints from the list snapshot immediately —
-   *  that data is already here — then asks /v1/guardian/apps/get for the
-   *  server's record (contract: docs/HANDOFF-2026-11-26-guardian-app-detail.md).
-   *  Until that route ships it answers 404 not_found and the dialog keeps the
-   *  snapshot values, saying so. */
-  function openAppDetail(app: InstalledApp): void {
-    detailTitle.textContent = app.label || app.package || '(unnamed)'
-    detailPackage.textContent = app.package || '—'
-    detailVersion.textContent = app.version || '—'
-    detailKind.textContent = app.system ? 'system' : 'user-installed'
-    const device = devices.find((d) => d.device_id === deviceSelect.value)
-    detailDevice.textContent = device
-      ? `${device.device_name || 'Unnamed device'} — ${shortId(device.device_id ?? '')}`
-      : '—'
-    detailShared.textContent = appsWhen || '—'
-    const index = apps.findIndex((row) => row.package === app.package) + 1
-    setDetailPosition(index, apps.length)
-    renderDetailExtras(null)
-    detailNote.textContent = ''
-    if (!appDetail.open) appDetail.showModal()
-    void loadAppDetail(app)
-  }
-
-  async function loadAppDetail(app: InstalledApp): Promise<void> {
-    const account = loadedAccount || accountInput.value.replace(/[^0-9]/g, '')
-    const deviceId = deviceSelect.value
-    if (!account || account.length !== 16 || !deviceId || !app.package) return
-    const token = ++detailToken
-    try {
-      const res = await getGuardianApp(account, deviceId, app.package)
-      if (token !== detailToken || !appDetail.open) return
-      if (res.ok && res.data?.app) {
-        const served = res.data.app as InstalledApp
-        if (served.label) detailTitle.textContent = served.label
-        detailVersion.textContent = served.version || '—'
-        detailKind.textContent = served.system ? 'system' : 'user-installed'
-        if (res.data?.collected_at) detailShared.textContent = formatDate(res.data.collected_at)
-        // The server's device registry wins over the picker label (it can be
-        // renamed between the list load and this click).
-        const servedDevice = res.data?.device as
-          | { device_id?: string; device_name?: string | null }
-          | undefined
-        if (servedDevice?.device_name) {
-          detailDevice.textContent = `${servedDevice.device_name} — ${shortId(servedDevice.device_id ?? deviceId)}`
-        }
-        const servedCount = typeof res.data?.count === 'number' ? res.data.count : undefined
-        // The page's index is only meaningful while the server's count is the
-        // array it indexed (a newer share changes both).
-        const servedIndex = apps.findIndex((row) => row.package === app.package) + 1
-        setDetailPosition(servedCount === apps.length ? servedIndex : 0, servedCount ?? apps.length)
-        renderDetailExtras((res.data.app as { details?: unknown }).details)
-        detailNote.textContent = ''
-        return
-      }
-      const error = res.data?.error
-      if (res.status === 404 && error === 'not_found') {
-        detailNote.textContent =
-          'The detail endpoint is not deployed yet — showing the shared snapshot.'
-      } else if (res.status === 404 && error === 'app_not_found') {
-        detailNote.textContent =
-          'This app is not in the shared snapshot any more — open Guardian Angel on the phone to share a fresh one.'
-      } else if (res.status === 404) {
-        detailNote.textContent = 'The account or device was not found — reload the page.'
-      } else if (res.status === 429) {
-        detailNote.textContent = 'Too many detail requests — wait a minute, then click again.'
-      } else {
-        detailNote.textContent = 'Could not load details from the server — showing the shared snapshot.'
-      }
-    } catch {
-      if (token !== detailToken || !appDetail.open) return
-      detailNote.textContent = 'Network error — showing the shared snapshot.'
-    }
-  }
-
-  detailClose.addEventListener('click', () => {
-    appDetail.close()
-  })
-
-  // Click on the backdrop (the dialog element itself, not its content) closes.
-  appDetail.addEventListener('click', (event) => {
-    if (event.target === appDetail) appDetail.close()
   })
 
   /** Page moves keep the list in view — a Next press at the bottom of a

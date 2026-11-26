@@ -1,0 +1,47 @@
+---
+// src/pages/apps/index.astro — the index of /app/<package> pages. A crawl
+// hub and an internal-linking surface: every curated package is one link
+// away, and the list is generated from the collection so it cannot drift.
+import { getCollection } from 'astro:content'
+import Base from '../../layouts/Base.astro'
+
+const apps = (await getCollection('apps')).sort((a, b) =>
+  a.data.name.localeCompare(b.data.name),
+)
+---
+
+<Base
+  title="Android package names — what is this app?"
+  description="Android package names explained: what each package is, who publishes it, whether it ships with the system, and how to check it on your own phone."
+>
+  <div class="container px-5 py-12">
+    <h1 class="mt-0">Android package names</h1>
+    <p class="text-body text-[1.15rem]">
+      Every app on Android has a package name — the identifier you see in
+      <code>adb shell pm list packages</code> or in a device report. These
+      pages explain the ones people look up, with the facts quoted from each
+      project's own listing.
+    </p>
+    <p class="text-body text-[1.05rem]">
+      Curated on purpose: a page exists where the package name and the copy can
+      be sourced. Check any package on your own phone with the
+      <a href="/scan">read-only device scan</a>, or browse a device's whole list
+      in <a href="/guardian">Guardian Angel</a>.
+    </p>
+
+    <ul class="mt-8 list-none p-0">
+      {apps.map((app) => (
+        <li class="border-b border-line py-3">
+          <a href={`/app/${app.id}`} class="text-[1.15rem] font-semibold">{app.data.name}</a>
+          <span class="ml-2 text-faint text-[0.95rem]"><code>{app.id}</code></span>
+          <p class="m-0 mt-1 text-body text-[1rem]">{app.data.summary}</p>
+        </li>
+      ))}
+    </ul>
+
+    <p class="small muted mt-8">
+      {apps.length} package{apps.length === 1 ? '' : 's'} documented so far.
+      Package names are Android identifiers, not trademark claims.
+    </p>
+  </div>
+</Base>
