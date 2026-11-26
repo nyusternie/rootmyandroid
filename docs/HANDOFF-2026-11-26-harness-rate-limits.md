@@ -5,8 +5,10 @@
 **To:** API team (`rootmyandroid-api`)
 **From:** web + Android workstream (`rootmyandroid`)
 **Date:** 2026-11-26
-**Status:** REQUESTED. The routes are live and correct; this is a two-constant
-limit adjustment for the documented heartbeat cadences.
+**Status:** APPLIED — API commit `8172e88`, CI `45898642676`; reply
+`rootmyandroid-api/docs/HANDOFF-REPLY-2026-11-26-harness-rate-limits.md`;
+review `docs/HANDOFF-ACK-2026-11-26-harness-rate-limits.md`. The two
+constants are 300/h; the list limits are unchanged.
 
 Per `AGENTS.md` rule 9 this document is the write channel into
 `rootmyandroid-api`. The API team applied the original request in `f209b18`;
@@ -108,5 +110,14 @@ multi-device account. The tool's `retry_after` backoff makes that profile
 survivable, but it does not meet the documented five-device ceiling.
 
 The web/Android side does not need a coordinated release for the tool
-warning; that string lives in this repo and is being updated to avoid naming
-a fixed API limit.
+warning; that string lives in this repo and is limit-agnostic.
+
+---
+
+## 6. Resolution
+
+Applied 2026-11-26 in `rootmyandroid-api` commit `8172e88` (CI
+`45898642676`): both heartbeat caps are 300/h; the list caps are unchanged.
+The reply records a 61/61 live burst and the 429 tests. The review is
+`docs/HANDOFF-ACK-2026-11-26-harness-rate-limits.md`; the only open item is
+the product decision on the five-device relay cap, not the rate limit.

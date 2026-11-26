@@ -99,17 +99,19 @@ five-device ceiling and the 15 s floor do not.
 the tool's 60 s default; one device at the 15 s floor also fits. The
 one-harness-per-IP profile is not the target.
 
-**Requested change:** raise **both** heartbeat limits to 300/h:
+**Applied change:** both heartbeat limits are 300/h:
 
 ```js
 HARNESS_HEARTBEAT_MAX_PER_IP_PER_HOUR = 300
 HARNESS_HEARTBEAT_MAX_PER_ACCOUNT_PER_HOUR = 300
 ```
 
-The 240/240 option is withdrawn. The standalone request is
-`docs/HANDOFF-2026-11-26-harness-rate-limits.md`; the API team owns only the
-two constants. The tool's warning string lives in this repo and is being
-made limit-agnostic.
+API commit `8172e88`, CI `45898642676`. The 240/240 option is withdrawn.
+The request is `docs/HANDOFF-2026-11-26-harness-rate-limits.md`; the reply
+review is `docs/HANDOFF-ACK-2026-11-26-harness-rate-limits.md`. The API team
+owns only the two constants; the tool warning is limit-agnostic in this
+repo. The rate-limit request is closed; the only open item is the product
+decision on the five-device relay cap.
 
 ---
 

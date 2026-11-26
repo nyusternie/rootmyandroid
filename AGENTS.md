@@ -1017,6 +1017,7 @@ the `audit_report` price). Handoffs:
 `docs/HANDOFF-2026-11-26-harness-page.md`,
 `docs/HANDOFF-2026-11-26-harness-api.md`, the reviewed reply
 `docs/HANDOFF-ACK-2026-11-26-harness-api.md`, and the rate-limit follow-up
-`docs/HANDOFF-2026-11-26-harness-rate-limits.md` (60/h/IP heartbeat vs the
-tool's 15 s floor; requests 300/h for both heartbeat scopes, target five
-devices at 60 s).
+`docs/HANDOFF-2026-11-26-harness-rate-limits.md` (APPLIED: 300/h both
+heartbeat scopes, API `8172e88`, CI `45898642676`; review
+`docs/HANDOFF-ACK-2026-11-26-harness-rate-limits.md`; open product decision:
+the five-device relay cap is not enforced).
