@@ -33,6 +33,9 @@ class BootReceiver : BroadcastReceiver() {
         if (account == null || account.length != 16) return
         // Direct boot is not supported (prefs are credential-encrypted), so
         // BOOT_COMPLETED is delivered after the user unlocks.
+        // The entry notification comes back first: with no launcher icon it
+        // is the only way back into the app (owner order 2026-11-25).
+        RootzNotifier.post(context)
         runCatching { RelayService.start(context) }
     }
 }

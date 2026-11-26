@@ -21,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -334,33 +333,6 @@ class MainActivity : AppCompatActivity() {
             armButton,
         )
 
-        // Section 4 — LAUNCHER ICON (owner order 2026-11-25, option A in
-        // docs/TODO-2026-11-25-icon-removal.md): disabling the launcher
-        // alias removes the icon from the drawer; the relay service keeps
-        // running, so a hidden Rootz still answers the web Terminal.
-        val iconSwitch = SwitchMaterial(this).apply {
-            isChecked = LauncherIcon.isVisible(this@MainActivity)
-            text = "Show in the launcher"
-            textSize = 18.2f // body 14sp + 30% (owner order 2026-11-24)
-            setTextColor(0xFFE8EAED.toInt())
-        }
-        val iconHint = TextView(this).apply {
-            text = "Hidden, Rootz keeps running and can be opened from the Root " +
-                "My Android app or with: adb shell am start -n " +
-                "com.rootmyandroid.rootz/.MainActivity"
-            textSize = 15.6f // 12sp + 30%
-            setTextColor(0xFFB0BEC5.toInt())
-        }
-        iconSwitch.setOnCheckedChangeListener { _, checked ->
-            runCatching { LauncherIcon.setVisible(this@MainActivity, checked) }
-                .onFailure { iconSwitch.isChecked = LauncherIcon.isVisible(this@MainActivity) }
-        }
-        val iconCard = sectionCard(
-            sectionTitle("Launcher icon"),
-            iconSwitch,
-            iconHint,
-        )
-
         output = TextView(this).apply {
             setTextIsSelectable(true)
             typeface = Typeface.MONOSPACE
@@ -391,7 +363,6 @@ class MainActivity : AppCompatActivity() {
                 addView(deviceCard, cardMargins())
                 addView(accountCard, cardMargins())
                 addView(pairCard, cardMargins())
-                addView(iconCard, cardMargins())
             }
             addView(
                 ScrollView(this@MainActivity).apply { addView(content) },
@@ -399,6 +370,10 @@ class MainActivity : AppCompatActivity() {
             )
         }
         setContentView(root)
+
+        // No launcher icon (option B): keep the entry notification alive so
+        // the app can be reopened from the shade.
+        RootzNotifier.post(this)
 
         wifiStatus.text = wifiHint()
         wifiStatus.setTextColor(0xFFB0BEC5.toInt())

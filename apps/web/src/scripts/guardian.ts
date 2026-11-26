@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setAppsStatus('Loading the shared app list…', 'muted')
     try {
-      const res = await listDeviceAudits(account, 'guardian_apps')
+      const res = await listDeviceAudits(account, 'guardian-apps')
       if (!res.ok) {
         setAppsStatus('Could not load the app list. Retry in a moment.', 'warn')
         return

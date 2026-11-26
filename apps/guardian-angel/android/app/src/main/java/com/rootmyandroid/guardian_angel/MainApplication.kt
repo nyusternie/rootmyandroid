@@ -17,7 +17,6 @@ class MainApplication : Application(), ReactApplication {
           // Packages that cannot be autolinked yet can be added manually here, for example:
           // add(MyReactNativePackage())
           add(UninstallPackage())
-          add(LauncherIconPackage())
           add(SyncStorePackage())
           add(DeviceAdminPackage())
           add(AppInventoryPackage())

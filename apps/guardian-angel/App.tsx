@@ -62,7 +62,7 @@ import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-
 // styling lives in NativeWind classes).
 import { rootzColors as colors } from 'rootmyandroid-shared';
 
-const { Uninstall, LauncherIcon, SyncStore, DeviceAdmin, AppInventory } = NativeModules;
+const { Uninstall, SyncStore, DeviceAdmin, AppInventory } = NativeModules;
 
 const API_BASE = 'https://rootmyandroid.com/v1';
 
@@ -70,7 +70,7 @@ const API_BASE = 'https://rootmyandroid.com/v1';
 const BACKDROP_TOP = '#171E3A';
 
 /** Audit slot for the installed-app inventory (open-ended API slug). */
-const APPS_AUDIT_TYPE = 'guardian_apps';
+const APPS_AUDIT_TYPE = 'guardian-apps'; // hyphens only: AUDIT_TYPE_PATTERN = /^[a-z][a-z0-9-]{0,31}$/
 
 /**
  * Upload the installed-app inventory (owner-approved first monitoring slice,
@@ -135,7 +135,6 @@ function GuardianScreen() {
   const insets = useSafeAreaInsets();
   const [accountInput, setAccountInput] = useState('');
   const [synced, setSynced] = useState<SyncedAccount | null>(null);
-  const [iconVisible, setIconVisible] = useState(true);
   const [protectionActive, setProtectionActive] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -145,9 +144,6 @@ function GuardianScreen() {
   const [appsShared, setAppsShared] = useState<number | null>(null);
 
   useEffect(() => {
-    LauncherIcon?.isLauncherIconVisible?.()
-      .then(setIconVisible)
-      .catch(() => {});
     // Read device-admin state now and whenever the app returns to the
     // foreground (e.g. back from the system consent screen).
     const refreshProtection = () => {
@@ -235,13 +231,6 @@ function GuardianScreen() {
         })
         .catch(() => {});
     }
-  };
-
-  const onToggleIcon = (value: boolean) => {
-    setIconVisible(value);
-    LauncherIcon?.setLauncherIconVisible?.(value).catch(() => {
-      setIconVisible(!value);
-    });
   };
 
   // Guardian avatar bob (native driver — runs off the JS thread so the
@@ -404,23 +393,6 @@ function GuardianScreen() {
             </Text>
           </View>
 
-          {/* Section 3 — LAUNCHER ICON. */}
-          <View className="mb-4 rounded-xl border border-border bg-panel p-4">
-            <Text className="mb-3 text-[20.8px] font-bold text-text">Launcher icon</Text>
-            <View className="flex-row items-center justify-between">
-              <Text className="text-[18.2px] font-semibold text-text">Show in launcher</Text>
-              <Switch
-                value={iconVisible}
-                onValueChange={onToggleIcon}
-                trackColor={{ false: colors.border, true: colors.accent }}
-                thumbColor={colors.text}
-              />
-            </View>
-            <Text className="mt-2.5 text-[15.6px] leading-[22px] text-faint">
-              When hidden, Guardian Angel keeps running and can be opened from
-              the Root My Android app or via ADB.
-            </Text>
-          </View>
         </ScrollView>
 
         {/* Guardian avatar — bottom right. The Lottie ring is the
@@ -504,12 +476,6 @@ function GuardianScreen() {
                   <Text className="text-[18.2px] text-muted">Apps shared</Text>
                   <Text className="text-[18.2px] font-medium text-text">
                     {appsShared === null ? '—' : appsShared}
-                  </Text>
-                </View>
-                <View className="flex-row justify-between py-1.5">
-                  <Text className="text-[18.2px] text-muted">Launcher icon</Text>
-                  <Text className="text-[18.2px] font-medium text-text">
-                    {iconVisible ? 'Visible' : 'Hidden'}
                   </Text>
                 </View>
               </View>

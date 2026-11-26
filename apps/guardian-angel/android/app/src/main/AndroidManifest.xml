@@ -7,6 +7,12 @@
          list visible on Android 11+; it is Play-policy-restricted, which is
          acceptable for the F-Droid/sideload distribution this app uses. -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <!-- The notification is the only entry point (option B); it is re-posted
+         at boot, so the receiver needs this. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Android 13+ needs this runtime grant or the entry-point
+         notification never appears. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
       android:name=".MainApplication"
@@ -25,19 +31,18 @@
         android:windowSoftInputMode="adjustResize"
         android:exported="true">
       </activity>
-      <activity-alias
-        android:name=".LauncherAlias"
-        android:targetActivity=".MainActivity"
-        android:label="@string/app_name"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:enabled="true"
+      <!-- NO launcher entry (owner order 2026-11-25, option B). The app is
+           opened from its notification (GuardianNotifier), the installer's
+           Open button, or adb: am start -n com.rootmyandroid.guardian_angel/.MainActivity -->
+      <!-- Re-posts the entry-point notification after a reboot / update. -->
+      <receiver
+        android:name=".BootReceiver"
         android:exported="true">
         <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
+            <action android:name="android.intent.action.BOOT_COMPLETED" />
+            <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
         </intent-filter>
-      </activity-alias>
+      </receiver>
       <receiver
         android:name=".GuardianAdminReceiver"
         android:label="@string/app_name"
