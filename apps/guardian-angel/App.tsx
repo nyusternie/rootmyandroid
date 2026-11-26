@@ -251,7 +251,10 @@ function GuardianScreen() {
           </Text>
         </View>
 
-        <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 170 }}>
+        {/* paddingBottom clears the avatar badge (76dp) plus its margin —
+            it used to reserve 170dp, which read as a large empty tail
+            under the last card (owner report 2026-11-25). */}
+        <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 96 }}>
           {/* Section 1 — ACCOUNT: sync input until paired, then the
               account card and the uninstall escape hatch. */}
           <View className="mb-4 rounded-xl border border-border bg-panel p-4">
