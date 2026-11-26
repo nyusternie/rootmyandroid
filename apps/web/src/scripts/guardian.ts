@@ -10,7 +10,7 @@
 // Nothing here touches a phone: pairing, protection and the launcher icon
 // are on-device actions in the Guardian Angel app.
 
-import { listDeviceAudits, listGuardianDevices } from '../lib/api.js'
+import { getGuardianApp, listDeviceAudits, listGuardianDevices } from '../lib/api.js'
 
 const LS_ACCOUNT = 'rma.guardian.account'
 const LS_DEVICE = 'rma.guardian.device'
@@ -76,6 +76,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const appsPrev = el<HTMLButtonElement>('apps-prev')
   const appsNext = el<HTMLButtonElement>('apps-next')
   const appsPage = el<HTMLSpanElement>('apps-page')
+  const appDetail = el<HTMLDialogElement>('app-detail')
+  const detailTitle = el<HTMLHeadingElement>('app-detail-title')
+  const detailPackage = el<HTMLElement>('app-detail-package')
+  const detailVersion = el<HTMLElement>('app-detail-version')
+  const detailKind = el<HTMLElement>('app-detail-kind')
+  const detailDevice = el<HTMLElement>('app-detail-device')
+  const detailShared = el<HTMLElement>('app-detail-shared')
+  const detailNote = el<HTMLParagraphElement>('app-detail-note')
+  const detailClose = el<HTMLButtonElement>('app-detail-close')
   const appsRefresh = el<HTMLButtonElement>('apps-refresh')
   const appsStatus = el<HTMLParagraphElement>('apps-status')
   const appsList = el<HTMLUListElement>('apps-list')
@@ -130,15 +139,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const shown = matched.slice(start, start + APPS_PER_PAGE)
     for (const app of shown) {
       const li = document.createElement('li')
-      li.className =
-        'flex flex-wrap items-baseline justify-between gap-x-3 border-b border-line py-[0.35rem]'
+      li.className = 'border-b border-line'
+      // A row is a button: click/tap opens the app's detail dialog. The
+      // whole row is the hit area (it wraps on narrow screens).
+      const row = document.createElement('button')
+      row.type = 'button'
+      row.className =
+        'flex w-full cursor-pointer flex-wrap items-baseline justify-between gap-x-3 rounded-[0.35rem] px-1 py-[0.35rem] text-left hover:bg-raise'
       const name = document.createElement('span')
       name.className = 'text-body text-[1rem]'
       name.textContent = app.label || app.package || '(unnamed)'
       const meta = document.createElement('span')
       meta.className = 'text-faint text-[0.85rem]'
       meta.textContent = `${app.package ?? ''}${app.system ? ' · system' : ''}`
-      li.append(name, meta)
+      row.append(name, meta)
+      row.addEventListener('click', () => {
+        openAppDetail(app)
+      })
+      li.appendChild(row)
       appsList.appendChild(li)
     }
     if (!shown.length) {
@@ -352,6 +370,76 @@ document.addEventListener('DOMContentLoaded', () => {
     appsPageNo = 1
     renderApps()
     if (apps.length) setAppsStatus(appsStatusText(), 'ok')
+  })
+
+  /** Which open dialog the in-flight detail request belongs to (a fast
+   *  second click must not paint the first app's answer into it). */
+  let detailToken = 0
+
+  /** Show one app. The dialog paints from the list snapshot immediately —
+   *  that data is already here — then asks /v1/guardian/apps/get for the
+   *  server's record (contract: docs/HANDOFF-2026-11-26-guardian-app-detail.md).
+   *  Until that route ships it answers 404 not_found and the dialog keeps the
+   *  snapshot values, saying so. */
+  function openAppDetail(app: InstalledApp): void {
+    detailTitle.textContent = app.label || app.package || '(unnamed)'
+    detailPackage.textContent = app.package || '—'
+    detailVersion.textContent = app.version || '—'
+    detailKind.textContent = app.system ? 'system' : 'user-installed'
+    const device = devices.find((d) => d.device_id === deviceSelect.value)
+    detailDevice.textContent = device
+      ? `${device.device_name || 'Unnamed device'} — ${shortId(device.device_id ?? '')}`
+      : '—'
+    detailShared.textContent = appsWhen || '—'
+    detailNote.textContent = ''
+    if (!appDetail.open) appDetail.showModal()
+    void loadAppDetail(app)
+  }
+
+  async function loadAppDetail(app: InstalledApp): Promise<void> {
+    const account = loadedAccount || accountInput.value.replace(/[^0-9]/g, '')
+    const deviceId = deviceSelect.value
+    if (!account || account.length !== 16 || !deviceId || !app.package) return
+    const token = ++detailToken
+    try {
+      const res = await getGuardianApp(account, deviceId, app.package)
+      if (token !== detailToken || !appDetail.open) return
+      if (res.ok && res.data?.app) {
+        const served = res.data.app as InstalledApp
+        if (served.label) detailTitle.textContent = served.label
+        detailVersion.textContent = served.version || '—'
+        detailKind.textContent = served.system ? 'system' : 'user-installed'
+        if (res.data?.collected_at) detailShared.textContent = formatDate(res.data.collected_at)
+        detailNote.textContent = ''
+        return
+      }
+      const error = res.data?.error
+      if (res.status === 404 && error === 'not_found') {
+        detailNote.textContent =
+          'The detail endpoint is not deployed yet — showing the shared snapshot.'
+      } else if (res.status === 404 && error === 'app_not_found') {
+        detailNote.textContent =
+          'This app is not in the shared snapshot any more — open Guardian Angel on the phone to share a fresh one.'
+      } else if (res.status === 404) {
+        detailNote.textContent = 'The account or device was not found — reload the page.'
+      } else if (res.status === 429) {
+        detailNote.textContent = 'Too many detail requests — wait a minute, then click again.'
+      } else {
+        detailNote.textContent = 'Could not load details from the server — showing the shared snapshot.'
+      }
+    } catch {
+      if (token !== detailToken || !appDetail.open) return
+      detailNote.textContent = 'Network error — showing the shared snapshot.'
+    }
+  }
+
+  detailClose.addEventListener('click', () => {
+    appDetail.close()
+  })
+
+  // Click on the backdrop (the dialog element itself, not its content) closes.
+  appDetail.addEventListener('click', (event) => {
+    if (event.target === appDetail) appDetail.close()
   })
 
   /** Page moves keep the list in view — a Next press at the bottom of a

@@ -76,6 +76,22 @@ export function listDeviceAudits(accountNumber, auditType) {
   })
 }
 
+/**
+ * One app from a device's shared inventory (web /guardian detail dialog).
+ * Contract: docs/HANDOFF-2026-11-26-guardian-app-detail.md — requested from
+ * the API team; until it ships this answers 404 not_found and the page falls
+ * back to the list snapshot it already has.
+ * @param {string} accountNumber
+ * @param {string} deviceId
+ * @param {string} packageName
+ */
+export function getGuardianApp(accountNumber, deviceId, packageName) {
+  return request('/guardian/apps/get', {
+    method: 'POST',
+    body: { account_number: accountNumber, device_id: deviceId, package: packageName },
+  })
+}
+
 export function createCheckout({ accountNumber, plan }) {
   return request('/billing/checkout', {
     method: 'POST',

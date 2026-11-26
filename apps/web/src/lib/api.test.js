@@ -5,6 +5,7 @@ import {
   createCheckout,
   createCryptoCheckout,
   getAccount,
+  getGuardianApp,
   getPaymentStatus,
   createSupportConversation,
   getSupportMessages,
@@ -245,6 +246,28 @@ describe('api client', () => {
     expect(init.method).toBe('POST')
     expect(init.headers).toEqual({ 'x-support-token': 'b'.repeat(64) })
     expect(init.body).toBeUndefined()
+  })
+
+  it('getGuardianApp posts account, device and package to the detail route', async () => {
+    fetch.mockImplementation(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ ok: true, app: { package: 'com.android.chrome' } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      ),
+    )
+    const res = await getGuardianApp('0711465548568044', '8e2c2b1b-a98b-4cea-a3ad-c9f3821dbb2b', 'com.android.chrome')
+    expect(res.ok).toBe(true)
+    expect(fetch).toHaveBeenCalledWith(`${BASE}/guardian/apps/get`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        account_number: '0711465548568044',
+        device_id: '8e2c2b1b-a98b-4cea-a3ad-c9f3821dbb2b',
+        package: 'com.android.chrome',
+      }),
+    })
   })
 
   it('handles non-JSON responses gracefully', async () => {
