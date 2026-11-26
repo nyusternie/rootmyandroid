@@ -208,7 +208,12 @@ function relay(shellCmd, timeoutMs = 30000) {
       PROBE,
       '--device', RELAY_DEVICE,
       '--account', ACCOUNT,
-      '--cmd', `${shellCmd}; exit`,
+      // The Rootz app daemon runs each stdin LINE as a one-shot and does
+      // NOT emit an exit frame for it (only the exact `exit` line does).
+      // A marker on the same line gives the probe a completion signal and
+      // the command's exit code on both the app daemon and rootzd.
+      '--cmd', `${shellCmd}; printf '\\n__ROOTZ_HARNESS_DONE__%s\\n' "$?"`,
+      '--done-marker', '__ROOTZ_HARNESS_DONE__',
       '--json',
     ], { timeout: timeoutMs, maxBuffer: 4 * 1024 * 1024 })
     const parsed = JSON.parse(out.toString())

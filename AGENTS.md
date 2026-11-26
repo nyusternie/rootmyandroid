@@ -1019,8 +1019,12 @@ ruling 2026-11-26). The first writer is
 the `audit_report` price). Lane A transport is now in
 `apps/rootzd/tools/agent-demo.mjs` (`--transport relay --account … --device …`):
 each model command runs through the production E2E relay via
-`e2e-probe.mjs --json`; the model loop and guard are unchanged. First live
-run pending. Negative answers trigger the pinned canonical probes and a
+`e2e-probe.mjs --json` with the `__ROOTZ_HARNESS_DONE__<code>` marker (the
+Rootz app daemon does not emit an exit frame for a one-shot line); the model
+loop and guard are unchanged. Live 2026-11-26: relay handshake/session_info
+work; the first command hit the app daemon's `wireless adb not ready` state,
+so the first full run is pending Wireless debugging ready. Negative answers
+trigger the pinned canonical probes and a
 `NEGATIVE VERIFICATION` log line; a root-negative contradicted by `which su`
 is marked UNVERIFIED. Handoffs:
 `docs/HANDOFF-2026-11-26-harness-page.md`,

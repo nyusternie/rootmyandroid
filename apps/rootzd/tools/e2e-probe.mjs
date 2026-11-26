@@ -110,6 +110,7 @@ function parseArgs() {
     else if (args[i] === '--account') out.account = args[++i]
     else if (args[i] === '--cmd') out.cmd = args[++i]
     else if (args[i] === '--json') out.json = true
+    else if (args[i] === '--done-marker') out.doneMarker = args[++i]
     // Seconds of silence between handshake and stdin — exercises relay
     // restore-on-wake across a mid-session eviction (handoff 2026-11-10).
     else if (args[i] === '--idle-before-cmd') out.idleSec = Number(args[++i])
@@ -117,7 +118,7 @@ function parseArgs() {
   return out
 }
 
-function live({ device, account, cmd, json }) {
+function live({ device, account, cmd, json, doneMarker }) {
   const url = `${RELAY_CONNECT}?device=${encodeURIComponent(device)}&account=${encodeURIComponent(account)}`
   log(`probe: connecting ${RELAY_CONNECT} (device ${device.slice(0, 12)}…)`)
   const ws = new WebSocket(url)
@@ -141,9 +142,53 @@ function live({ device, account, cmd, json }) {
   }, 15_000)
   // Hard ceiling for ANY later stall (session established but no exit frame).
   const hardTimer = setTimeout(
-    () => fail(`session stalled after ${(args.idleSec ?? 0) + 30}s — no exit frame`),
+    () => {
+      if (outChunks.length) {
+        console.error(`probe: buffered stdout: ${JSON.stringify(outChunks.join('').slice(0, 500))}`)
+      }
+      if (errChunks.length) {
+        console.error(`probe: buffered stderr: ${JSON.stringify(errChunks.join('').slice(0, 500))}`)
+      }
+      fail(`session stalled after ${(args.idleSec ?? 0) + 30}s — no exit frame`)
+    },
     ((args.idleSec ?? 0) + 30) * 1000,
   )
+
+  const finish = (code, stdoutOverride) => {
+    if (done) return
+    const nonce = randomBytes(12)
+    const closeJson = new TextEncoder().encode(JSON.stringify({ type: 'close' }))
+    ws.send(JSON.stringify({
+      v: 1, type: 'enc', sid: b64e(session.sid), n: b64e(nonce),
+      d: b64e(new ChaCha20Poly1305(session.key).seal(nonce, closeJson)),
+    }))
+    ws.close()
+    clearTimeout(hardTimer)
+    done = true
+    log('probe: close sent, socket closed — FULL E2E ROUND-TRIP OK')
+    if (json) {
+      let stdout
+      if (stdoutOverride === undefined) {
+        outChunks.push(dec.decode())
+        stdout = outChunks.join('')
+      } else {
+        stdout = stdoutOverride
+      }
+      errChunks.push(dec.decode())
+      process.stdout.write(
+        JSON.stringify({
+          ok: true,
+          code: typeof code === 'number' ? code : null,
+          stdout,
+          stderr: errChunks.join(''),
+          ...sessionInfo,
+        }) + '\n',
+        () => process.exit(0),
+      )
+    } else {
+      process.exit(0)
+    }
+  }
 
   ws.addEventListener('open', () => {
     opened = true
@@ -214,40 +259,31 @@ function live({ device, account, cmd, json }) {
         log(`probe: session_info — name=${inner.name} tier=${inner.tier} version=v${inner.version}`)
       } else if (inner.type === 'stdout') {
         const text = dec.decode(b64d(inner.d), { stream: true })
-        if (json) outChunks.push(text)
-        else process.stdout.write(text)
+        if (json) {
+          outChunks.push(text)
+          if (doneMarker) {
+            const combined = outChunks.join('')
+            const idx = combined.lastIndexOf(doneMarker)
+            if (idx >= 0) {
+              const after = combined.slice(idx + doneMarker.length)
+              const m = /^(\d+)\r?\n/.exec(after)
+              if (m) {
+                const before = combined.slice(0, idx).replace(/\n$/, '')
+                finish(Number(m[1]), before)
+                return
+              }
+            }
+          }
+        } else {
+          process.stdout.write(text)
+        }
       } else if (inner.type === 'stderr') {
         const text = dec.decode(b64d(inner.d), { stream: true })
         if (json) errChunks.push(text)
         else process.stderr.write(text)
       } else if (inner.type === 'exit') {
         log(`probe: exit (code ${inner.code ?? 'unknown'})`)
-        const nonce = randomBytes(12)
-        const closeJson = new TextEncoder().encode(JSON.stringify({ type: 'close' }))
-        ws.send(JSON.stringify({
-          v: 1, type: 'enc', sid: b64e(session.sid), n: b64e(nonce),
-          d: b64e(new ChaCha20Poly1305(session.key).seal(nonce, closeJson)),
-        }))
-        ws.close()
-        clearTimeout(hardTimer)
-        done = true
-        log('probe: close sent, socket closed — FULL E2E ROUND-TRIP OK')
-        if (json) {
-          outChunks.push(dec.decode())
-          errChunks.push(dec.decode())
-          process.stdout.write(
-            JSON.stringify({
-              ok: true,
-              code: typeof inner.code === 'number' ? inner.code : null,
-              stdout: outChunks.join(''),
-              stderr: errChunks.join(''),
-              ...sessionInfo,
-            }) + '\n',
-            () => process.exit(0),
-          )
-        } else {
-          process.exit(0)
-        }
+        finish(typeof inner.code === 'number' ? inner.code : null)
       }
       return
     }

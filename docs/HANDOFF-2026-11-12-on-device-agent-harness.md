@@ -143,16 +143,27 @@ node apps/rootzd/tools/agent-demo.mjs \
 
 - The model loop and the mirrored guard are unchanged; only the command
   transport changes. `e2e-probe.mjs --json` runs one E2E session per command
-  (`${cmd}; exit`), buffers the command's stdout/stderr, and returns one JSON
-  object with `code`, `stdout`, `stderr`, `name`, `tier`, `version`.
+  and uses a `__ROOTZ_HARNESS_DONE__<code>` marker appended by the driver.
+  The Rootz app daemon runs each stdin LINE as a one-shot and does NOT emit an
+  exit frame for it (only the exact `exit` line does), so the marker is the
+  completion signal on both the app daemon and rootzd. The probe buffers
+  stdout/stderr and returns one JSON object with `code`, `stdout`, `stderr`,
+  `name`, `tier`, `version`.
 - The agent-demo logs the first `session_info` tier/name and never writes the
   account number to the transcript. The account number is a credential.
 - The llama-server model endpoint stays on the host via
   `adb forward tcp:8399`; Lane A moves the SHELL COMMAND transport, not the
   model HTTP.
-- First live run pending: pair/run the Rootz relay daemon, forward llama-server,
-  then run the command above. Watch the §5.1 shell-vs-root tier difference in
-  what the audit can see.
+- **Live 2026-11-26:** the relay E2E handshake and `session_info` work
+  (`name=Pixel 5 tier=shell version=v26.11.35`). The app daemon returned
+  `wireless adb not ready on the device` for the first command; the first
+  Lane A run is blocked on the device's Wireless debugging state, not the
+  transport. Open Rootz → Wireless debugging and wait for
+  `wireless adb: ready — ip:port`, then re-run.
+- **Live snapshot 2026-11-26:** the `/harness` page now has a real Pixel 5
+  snapshot — Rootz Agent RUNNING, Qwen3-4B-Instruct-2507 Q4_K_M, ctx 4096,
+  2.93 GiB resident, 3.54 GiB free, battery 100%, thermal nominal. The
+  heartbeat is the free B route.
 - **Negative verification (§5.2) is implemented** in the same driver. When
   the model's `done` text matches a negative (`not found`, `absent`,
   `unknown`, `no root`, …), the driver runs the pinned canonical probes
