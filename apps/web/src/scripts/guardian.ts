@@ -16,6 +16,9 @@ const LS_ACCOUNT = 'rma.guardian.account'
 const LS_DEVICE = 'rma.guardian.device'
 const LS_SHOW_ALL = 'rma.guardian.showall'
 
+/** Rows per page in the Installed-apps panel (owner order 2026-11-26). */
+const APPS_PER_PAGE = 20
+
 type GuardianDevice = {
   device_id?: string
   device_name?: string | null
@@ -69,6 +72,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const infoId = el<HTMLElement>('devinfo-id')
   const appsFilter = el<HTMLInputElement>('apps-filter')
   const appsShowAll = el<HTMLInputElement>('apps-show-all')
+  const appsPager = el<HTMLDivElement>('apps-pager')
+  const appsPrev = el<HTMLButtonElement>('apps-prev')
+  const appsNext = el<HTMLButtonElement>('apps-next')
+  const appsPage = el<HTMLSpanElement>('apps-page')
   const appsRefresh = el<HTMLButtonElement>('apps-refresh')
   const appsStatus = el<HTMLParagraphElement>('apps-status')
   const appsList = el<HTMLUListElement>('apps-list')
@@ -76,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let devices: GuardianDevice[] = []
   let apps: InstalledApp[] = []
   let appsWhen = ''
+  let appsPageNo = 1
   let loadedAccount = ''
   // Account whose request is in flight (prevents duplicate auto-loads).
   let loadingAccount = ''
@@ -95,11 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
           : 'text-[1.05rem] text-body'
   }
 
-  /** Render the shared app list, honouring the filter box. */
   /** The apps the panel is showing right now: the "Show all apps" toggle
    *  first (a stock Pixel shares ~300 packages and nearly all of them are
    *  system ones, so the default view is user-installed apps only), then
-   *  the text filter. */
+   *  the text filter. Paging happens in renderApps. */
   function visibleApps(): InstalledApp[] {
     const needle = appsFilter.value.trim().toLowerCase()
     const hideSystem = !appsShowAll.checked
@@ -116,7 +123,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderApps(): void {
     const needle = appsFilter.value.trim().toLowerCase()
     appsList.innerHTML = ''
-    const shown = visibleApps()
+    const matched = visibleApps()
+    const pages = Math.max(1, Math.ceil(matched.length / APPS_PER_PAGE))
+    appsPageNo = Math.min(Math.max(1, appsPageNo), pages)
+    const start = (appsPageNo - 1) * APPS_PER_PAGE
+    const shown = matched.slice(start, start + APPS_PER_PAGE)
     for (const app of shown) {
       const li = document.createElement('li')
       li.className =
@@ -140,6 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
           : 'No user-installed apps on this device.'
       appsList.appendChild(li)
     }
+    // The pager only exists when there is somewhere to go.
+    appsPager.classList.toggle('hidden', pages <= 1)
+    appsPrev.disabled = appsPageNo <= 1
+    appsNext.disabled = appsPageNo >= pages
+    appsPage.textContent = `Page ${appsPageNo} of ${pages}`
   }
 
   /** Load the selected device's app inventory (audit_type guardian_apps). */
@@ -147,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const account = loadedAccount || accountInput.value.replace(/[^0-9]/g, '')
     const deviceId = deviceSelect.value
     apps = []
+    appsPageNo = 1
     renderApps()
     if (!account || account.length !== 16 || !deviceId) {
       setAppsStatus('Pick a device above.', 'muted')
@@ -314,22 +331,44 @@ document.addEventListener('DOMContentLoaded', () => {
    *  matches the rows below it, so a filter or the system toggle can never
    *  leave a stale total on screen. */
   function appsStatusText(): string {
-    const parts = [`${visibleApps().length} of ${apps.length} apps`]
+    const matched = visibleApps()
+    const pages = Math.max(1, Math.ceil(matched.length / APPS_PER_PAGE))
+    const parts = [`${matched.length} of ${apps.length} apps`]
     const needle = appsFilter.value.trim()
     if (needle) parts.push(`filter: ${needle}`)
+    if (pages > 1) parts.push(`page ${appsPageNo} of ${pages}`)
     parts.push(`shared ${appsWhen || '—'}`)
     return parts.join(' · ')
   }
 
   appsFilter.addEventListener('input', () => {
+    appsPageNo = 1
     renderApps()
     if (apps.length) setAppsStatus(appsStatusText(), 'ok')
   })
 
   appsShowAll.addEventListener('change', () => {
     localStorage.setItem(LS_SHOW_ALL, appsShowAll.checked ? '1' : '0')
+    appsPageNo = 1
     renderApps()
     if (apps.length) setAppsStatus(appsStatusText(), 'ok')
+  })
+
+  /** Page moves keep the list in view — a Next press at the bottom of a
+   *  full page otherwise leaves the new page's top above the viewport. */
+  function goToPage(next: number): void {
+    appsPageNo = next
+    renderApps()
+    if (apps.length) setAppsStatus(appsStatusText(), 'ok')
+    appsList.scrollIntoView({ block: 'nearest' })
+  }
+
+  appsPrev.addEventListener('click', () => {
+    goToPage(appsPageNo - 1)
+  })
+
+  appsNext.addEventListener('click', () => {
+    goToPage(appsPageNo + 1)
   })
 
   appsRefresh.addEventListener('click', () => {

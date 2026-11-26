@@ -101,6 +101,11 @@ import Base from '../layouts/Base.astro'
       </div>
       <p id="apps-status" class="text-body text-[1.05rem]">Pick a device above.</p>
       <ul id="apps-list" class="m-0 list-none p-0"></ul>
+      <div class="row hidden items-center" id="apps-pager">
+        <button type="button" class="btn btn-sm" id="apps-prev">‹ Prev</button>
+        <span id="apps-page" class="text-body text-[1rem]">Page 1 of 1</span>
+        <button type="button" class="btn btn-sm" id="apps-next">Next ›</button>
+      </div>
     </div>
 
     <div class="panel">
