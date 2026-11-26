@@ -2,9 +2,11 @@
 package com.rootmyandroid.rootz
 
 import android.content.Context
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.net.HttpURLConnection
 import java.net.URL
 import java.security.SecureRandom
 import java.util.ArrayDeque
@@ -41,11 +43,17 @@ import javax.net.ssl.HttpsURLConnection
  * (owner ruling 2026-11-11); lines merely CONTAINING exit stay ordinary
  * one-shot text (no shell-grammar parsing, rule 3).
  *
- * CommandGuard (A6): every inbound line passes guard.decisionFor BEFORE
- * execution. allow → execute; anything gated is REFUSED with an stderr
- * frame + an on-device receipt line — interactive approval of remote
- * commands is a later build (repo rule 6: the guard never executes a
- * gated command without the device holder).
+ * CommandGuard (A6): every inbound SHELL line passes guard.decisionFor
+ * BEFORE execution. allow → execute; anything gated is REFUSED with an
+ * stderr frame + an on-device receipt line — interactive approval of remote
+ * commands is a later build (repo rule 6: the guard never executes a gated
+ * command without the device holder).
+ *
+ * Model chat extension: a stdin line starting with `__harness_model__` is a
+ * protocol command, not a shell line. It is handled BEFORE the guard and
+ * calls the on-device llama-server at 127.0.0.1:8399 (ChatML completion);
+ * the assistant content is stdout, followed by exit{0}. The web /harness
+ * page uses it for the two-way chat. No shell command is executed.
  *
  * Threading: a single-thread ScheduledExecutorService is the event loop —
  * WsClient reader-thread callbacks are posted onto it, so sessions /
@@ -362,6 +370,10 @@ internal class RelayDaemon(
     // --- command execution (session worker threads) -----------------------------------
 
     private fun execLine(sidKey: String, line: String) {
+        if (line.startsWith(HARNESS_MODEL_PREFIX)) {
+            execModel(sidKey, line.substring(HARNESS_MODEL_PREFIX.length))
+            return
+        }
         val decision = guard.decisionFor(line)
         if (!decision.allow) {
             enqueueInner(
@@ -416,6 +428,119 @@ internal class RelayDaemon(
             }
         } catch (_: RejectedExecutionException) {
             // Session reaped between enqueue and execute — drop the work.
+        }
+    }
+
+    /**
+     * Two-way model chat: the web client sends one JSON line with the
+     * conversation messages. The app builds a ChatML prompt, calls the local
+     * llama-server, streams the assistant content as stdout, then exit{0}.
+     * This is a protocol command, not a shell command; it is handled before
+     * CommandGuard. The model cannot run commands from this chat.
+     */
+    private fun execModel(sidKey: String, jsonText: String) {
+        val entry = sessions[sidKey] ?: return
+        val worker = entry.worker
+        try {
+            worker.execute {
+                val request = try {
+                    JSONObject(jsonText)
+                } catch (e: Exception) {
+                    enqueueInner(
+                        sidKey,
+                        E2eSession.encodeInnerStderr("invalid model request\n".toByteArray(Charsets.UTF_8)),
+                    )
+                    enqueueInner(sidKey, E2eSession.encodeInnerExit(2))
+                    sessions[sidKey]?.closing = true
+                    return@execute
+                }
+                val messages = request.optJSONArray("messages")
+                if (messages == null || messages.length() == 0 || messages.length() > 20) {
+                    enqueueInner(
+                        sidKey,
+                        E2eSession.encodeInnerStderr("model request needs 1-20 messages\n".toByteArray(Charsets.UTF_8)),
+                    )
+                    enqueueInner(sidKey, E2eSession.encodeInnerExit(2))
+                    sessions[sidKey]?.closing = true
+                    return@execute
+                }
+                val prompt = buildString {
+                    append("<|im_start|>system\nYou are the Rootz Agent on this Android device. Answer concisely and do not claim to have run commands. You may explain device evidence.\n<|im_end|>\n")
+                    for (i in 0 until messages.length()) {
+                        val message = messages.optJSONObject(i) ?: continue
+                        val role = if (message.optString("role") == "assistant") "assistant" else "user"
+                        val content = message.optString("content").take(4000)
+                        append("<|im_start|>$role\n$content<|im_end|>\n")
+                    }
+                    append("<|im_start|>assistant\n")
+                }
+                if (prompt.length > 12000) {
+                    enqueueInner(
+                        sidKey,
+                        E2eSession.encodeInnerStderr("conversation too long — clear the chat and retry\n".toByteArray(Charsets.UTF_8)),
+                    )
+                    enqueueInner(sidKey, E2eSession.encodeInnerExit(2))
+                    sessions[sidKey]?.closing = true
+                    return@execute
+                }
+                val temperature = request.optDouble("temperature", 0.6).coerceIn(0.0, 1.5)
+                val nPredict = request.optInt("n_predict", 256).coerceIn(16, 512)
+                val body = JSONObject()
+                    .put("prompt", prompt)
+                    .put("temperature", temperature)
+                    .put("n_predict", nPredict)
+                    .put("cache_prompt", true)
+                    .put("stop", JSONArray().put("<|im_end|>").put("\nuser:").put("\nassistant:"))
+                onReceipt("model chat: ${messages.length()} messages, ${prompt.length} chars")
+                val raw = try {
+                    httpPostJson("http://127.0.0.1:8399/completion", body.toString())
+                } catch (e: Exception) {
+                    enqueueInner(
+                        sidKey,
+                        E2eSession.encodeInnerStderr(
+                            "model server error: ${e.message ?: e.javaClass.simpleName}\n".toByteArray(Charsets.UTF_8),
+                        ),
+                    )
+                    enqueueInner(sidKey, E2eSession.encodeInnerExit(1))
+                    sessions[sidKey]?.closing = true
+                    return@execute
+                }
+                val content = try {
+                    JSONObject(raw).optString("content")
+                } catch (e: Exception) {
+                    ""
+                }
+                val bytes = content.toByteArray(Charsets.UTF_8)
+                var off = 0
+                while (bytes.size - off > 0) {
+                    val end = (off + E2eSession.MAX_INNER_CHUNK).coerceAtMost(bytes.size)
+                    enqueueInner(sidKey, E2eSession.encodeInnerStdout(bytes.copyOfRange(off, end)))
+                    off = end
+                }
+                enqueueInner(sidKey, E2eSession.encodeInnerExit(0))
+                sessions[sidKey]?.closing = true
+            }
+        } catch (_: RejectedExecutionException) {
+            // Session reaped between enqueue and execute — drop the work.
+        }
+    }
+
+    private fun httpPostJson(url: String, body: String): String {
+        val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 5_000
+            readTimeout = 300_000
+            requestMethod = "POST"
+            doOutput = true
+            setRequestProperty("Content-Type", "application/json")
+        }
+        return try {
+            conn.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
+            if (conn.responseCode !in 200..299) {
+                throw IllegalStateException("HTTP ${conn.responseCode}")
+            }
+            conn.inputStream.use { it.readBytes().toString(Charsets.UTF_8) }
+        } finally {
+            conn.disconnect()
         }
     }
 
@@ -562,6 +687,7 @@ internal class RelayDaemon(
     companion object {
         private const val API_BASE = "https://rootmyandroid.com/v1"
         private const val RELAY_HOST = "relay.rootmyandroid.com"
+        private const val HARNESS_MODEL_PREFIX = "__harness_model__"
         private const val DROPPED_MESSAGE =
             "relay: this device was dropped by a newer pairing (5-device limit) — tap Start relay to re-pair"
 

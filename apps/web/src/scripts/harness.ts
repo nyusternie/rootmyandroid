@@ -10,10 +10,12 @@
 // the page keeps the labeled HARNESS_SAMPLE and says exactly that. Contract:
 // docs/HANDOFF-2026-11-26-harness-page.md.
 //
-// Everything rendered here is registry metadata. The page never reads
-// prompts, completions, chat history, model weights, files, or shell output.
+// The registry is metadata only. The separate chat panel sends prompts to
+// the device's local model through the E2E relay (harness-relay.ts); prompts
+// and replies are never sent to this site's API or stored here.
 
 import { listDeviceAudits, listHarnessAgents, listRelayDevices } from '../lib/api.js'
+import { runRelayCommand, type RelayResult } from '../lib/harness-relay.js'
 import {
   HARNESS_SAMPLE,
   formatAge,
@@ -68,6 +70,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const noteEl = el<HTMLParagraphElement>('snapshot-note')
   const agentList = el<HTMLDivElement>('agent-list')
   const agentTemplate = el<HTMLTemplateElement>('agent-card-template')
+  const chatLog = el<HTMLDivElement>('chat-log')
+  const chatForm = el<HTMLFormElement>('chat-form')
+  const chatInput = el<HTMLTextAreaElement>('chat-input')
+  const chatSend = el<HTMLButtonElement>('chat-send-btn')
+  const chatClear = el<HTMLButtonElement>('chat-clear-btn')
+  const chatStatus = el<HTMLParagraphElement>('chat-status')
+  const relayTestBtn = el<HTMLButtonElement>('relay-test-btn')
+  const relayTestStatus = el<HTMLParagraphElement>('relay-test-status')
+  const relaySetup = el<HTMLDetailsElement>('relay-setup')
 
   const fields = {
     deviceName: el<HTMLElement>('device-name'),
@@ -126,6 +137,185 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setField(node: HTMLElement, value: string): void {
     node.textContent = value
+  }
+
+  let chatHistory: Array<{ role: 'user' | 'assistant'; content: string }> = []
+
+  function setChatStatus(text: string, tone: 'ok' | 'warn' | 'muted'): void {
+    chatStatus.textContent = text
+    chatStatus.className =
+      tone === 'ok'
+        ? 'text-[1.05rem] text-ok'
+        : tone === 'warn'
+          ? 'text-[1.05rem] text-warn'
+          : 'text-[1.05rem] text-body'
+  }
+
+  function setRelayTestStatus(
+    text: string,
+    tone: 'ok' | 'warn' | 'muted',
+  ): void {
+    relayTestStatus.textContent = text
+    relayTestStatus.className =
+      tone === 'ok'
+        ? 'text-[1.05rem] text-ok'
+        : tone === 'warn'
+          ? 'text-[1.05rem] text-warn'
+          : 'text-[1.05rem] text-body'
+  }
+
+  function appendChat(
+    role: 'user' | 'assistant' | 'system',
+    text: string,
+  ): void {
+    const bubble = document.createElement('div')
+    bubble.className =
+      role === 'user'
+        ? 'max-w-[85%] self-end whitespace-pre-wrap break-words rounded-[0.65rem] border border-accent/40 bg-accent/12 px-[0.8rem] py-[0.55rem] text-[0.95rem] text-body'
+        : role === 'assistant'
+          ? 'max-w-[85%] self-start whitespace-pre-wrap break-words rounded-[0.65rem] border border-line bg-raise px-[0.8rem] py-[0.55rem] text-[0.95rem] text-body'
+          : 'max-w-[85%] self-start whitespace-pre-wrap break-words rounded-[0.65rem] border border-warn/45 bg-warn/12 px-[0.8rem] py-[0.55rem] text-[0.9rem] text-warn-ink'
+    bubble.textContent = text
+    chatLog.appendChild(bubble)
+    chatLog.scrollTop = chatLog.scrollHeight
+  }
+
+  function resetChat(): void {
+    chatHistory = []
+    chatLog.replaceChildren()
+    setChatStatus(
+      'Chat cleared. Load a device above, then send a message.',
+      'muted',
+    )
+  }
+
+  function chatTarget(): { account: string; device: string } | null {
+    const digits = accountInput.value.replace(/[^0-9]/g, '')
+    const device = deviceSelect.value.trim().toLowerCase()
+    if (digits.length !== 16) {
+      setChatStatus('Enter your 16-digit account number above first.', 'warn')
+      return null
+    }
+    if (!/^[0-9a-f]{64}$/.test(device)) {
+      setChatStatus('Load and pick a device above first.', 'warn')
+      return null
+    }
+    return { account: formatAccountNumber(digits), device }
+  }
+
+  function relayErrorMessage(result: RelayResult): string {
+    if (
+      result.error === 'wireless_adb_not_ready' ||
+      /wireless adb not ready/i.test(result.stderr)
+    ) {
+      return 'Wireless debugging is not ready on the phone — follow the steps below.'
+    }
+    if (result.error === 'timeout') {
+      return 'The device did not answer in time. Wake the phone, check Wireless debugging, and retry.'
+    }
+    if (result.error === 'handshake') {
+      return 'The relay handshake failed — the selected device id did not match. Refresh the device list and retry.'
+    }
+    if (result.error === 'relay_closed' || result.error === 'relay_error') {
+      return 'The relay connection failed. Open Rootz on the phone and check that the relay card reads “relay: up”.'
+    }
+    if (/not found|No such file|inaccessible/i.test(result.stderr)) {
+      return 'The Rootz app on the phone does not support model chat yet — update the app from /downloads.'
+    }
+    return (
+      result.stderr.trim() ||
+      'The relay command failed. Check the device and retry.'
+    )
+  }
+
+  function showRelaySetup(message: string): void {
+    setChatStatus(message, 'warn')
+    setRelayTestStatus(message, 'warn')
+    relaySetup.open = true
+    relaySetup.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+
+  async function sendChat(): Promise<void> {
+    const target = chatTarget()
+    if (!target) return
+    const text = chatInput.value.trim()
+    if (!text) return
+    chatInput.value = ''
+    appendChat('user', text)
+    chatHistory.push({ role: 'user', content: text })
+    const messages = chatHistory.slice(-8)
+    chatSend.disabled = true
+    chatInput.disabled = true
+    setChatStatus('Connecting through the relay…', 'muted')
+    const command = `__harness_model__${JSON.stringify({
+      messages,
+      temperature: 0.6,
+      n_predict: 256,
+    })}`
+    const result = await runRelayCommand({
+      account: target.account,
+      device: target.device,
+      command,
+      timeoutMs: 180_000,
+      onStatus: (status) => setChatStatus(status, 'muted'),
+    })
+    if (result.ok) {
+      const reply = result.stdout.trim()
+      if (reply) {
+        appendChat('assistant', reply)
+        chatHistory.push({ role: 'assistant', content: reply })
+        setChatStatus('Reply received.', 'ok')
+      } else {
+        appendChat('system', 'The model returned an empty reply.')
+        setChatStatus('Empty reply — try a shorter prompt.', 'warn')
+      }
+    } else {
+      const message = relayErrorMessage(result)
+      appendChat('system', message)
+      setChatStatus(message, 'warn')
+      if (
+        result.error === 'wireless_adb_not_ready' ||
+        /wireless adb not ready/i.test(result.stderr)
+      ) {
+        showRelaySetup(message)
+      }
+    }
+    chatSend.disabled = false
+    chatInput.disabled = false
+    chatInput.focus()
+  }
+
+  async function testRelay(): Promise<void> {
+    const target = chatTarget()
+    if (!target) return
+    relayTestBtn.disabled = true
+    setRelayTestStatus('Testing the relay…', 'muted')
+    const result = await runRelayCommand({
+      account: target.account,
+      device: target.device,
+      command: `id; printf '\\n__ROOTZ_WEB_DONE__%s\\n' "$?"`,
+      doneMarker: '__ROOTZ_WEB_DONE__',
+      timeoutMs: 30_000,
+      onStatus: (status) => setRelayTestStatus(status, 'muted'),
+    })
+    if (result.ok) {
+      const who = `${result.name ?? 'device'} · ${result.tier} · v${result.version}`
+      const sample = result.stdout.trim().slice(0, 120)
+      setRelayTestStatus(
+        `Relay ready — ${who}.${sample ? ` ${sample}` : ''}`,
+        'ok',
+      )
+    } else {
+      const message = relayErrorMessage(result)
+      setRelayTestStatus(message, 'warn')
+      if (
+        result.error === 'wireless_adb_not_ready' ||
+        /wireless adb not ready/i.test(result.stderr)
+      ) {
+        showRelaySetup(message)
+      }
+    }
+    relayTestBtn.disabled = false
   }
 
   function renderAgents(snapshot: HarnessSnapshot): void {
@@ -418,6 +608,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   syncBtn.addEventListener('click', () => {
     void syncAgents()
+  })
+
+  chatForm.addEventListener('submit', (event) => {
+    event.preventDefault()
+    void sendChat()
+  })
+
+  chatClear.addEventListener('click', resetChat)
+
+  relayTestBtn.addEventListener('click', () => {
+    void testRelay()
+  })
+
+  deviceSelect.addEventListener('change', () => {
+    if (chatHistory.length) {
+      chatHistory = []
+      chatLog.replaceChildren()
+      setChatStatus('Device changed — conversation cleared.', 'muted')
+    }
   })
 
   demoBtn.addEventListener('click', loadSample)

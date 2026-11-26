@@ -127,6 +127,34 @@ Daemon → client:
 - `exit` ends the session daemon-side; the client re-handshakes (fresh
   `hello`, fresh sid) before the next command.
 
+### 3.1 Model chat extension (Rootz app daemon, v1)
+
+The Rootz app daemon (the APK daemon on non-rooted phones) handles a stdin
+line beginning `__harness_model__` BEFORE CommandGuard. The remainder is one
+JSON object:
+
+```json
+{
+  "messages": [
+    { "role": "user", "content": "What model are you?" },
+    { "role": "assistant", "content": "I am the Rootz Agent…" }
+  ],
+  "temperature": 0.6,
+  "n_predict": 256
+}
+```
+
+The daemon builds a ChatML prompt, calls the on-device llama-server
+(`http://127.0.0.1:8399/completion`), streams the assistant content as
+`stdout`, then `exit{0}`. Errors are `stderr` + `exit{1|2}`. This is a
+protocol command, not a shell command: no shell is executed, and the model
+cannot run commands from this chat.
+
+The Rust `rootzd` daemon does not implement this extension yet; the web
+`/harness` chat requires the Rootz app build with it. The line is
+newline-terminated like any stdin line; `messages` is capped at 20 and the
+prompt at 12,000 characters.
+
 ## 4. Session lifecycle
 
 - One piped `/system/bin/sh` per session (same bridge as the v26.11.8

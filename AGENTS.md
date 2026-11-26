@@ -1026,7 +1026,11 @@ work; the first command hit the app daemon's `wireless adb not ready` state,
 so the first full run is pending Wireless debugging ready. Negative answers
 trigger the pinned canonical probes and a
 `NEGATIVE VERIFICATION` log line; a root-negative contradicted by `which su`
-is marked UNVERIFIED. Handoffs:
+is marked UNVERIFIED. The `/harness` chat uses the Rootz app daemon's
+`__harness_model__` stdin extension (`e2e-protocol.md` §3.1) to call the
+on-device llama-server; the app build with it is `26.11.26` / `20261126`.
+The web client shows the Wireless-debugging steps when the relay returns
+`wireless adb not ready`. Handoffs:
 `docs/HANDOFF-2026-11-26-harness-page.md`,
 `docs/HANDOFF-2026-11-26-harness-api.md`, the reviewed reply
 `docs/HANDOFF-ACK-2026-11-26-harness-api.md`, and the rate-limit follow-up

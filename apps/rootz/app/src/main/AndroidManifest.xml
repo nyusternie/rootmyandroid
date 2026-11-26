@@ -23,6 +23,7 @@
         android:icon="@drawable/rootz_icon"
         android:theme="@style/Theme.Rootz"
         android:allowBackup="false"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true">
         <!-- NO launcher entry (owner order 2026-11-25, option B: a daemon
              should not sit in the drawer). The app is opened from its

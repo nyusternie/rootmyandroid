@@ -311,6 +311,91 @@ const faqSchema = {
     </div>
   </section>
 
+  <section id="chat" class="container scroll-mt-[4.5rem] pb-8">
+    <h2>Talk to the Rootz Agent</h2>
+    <p>
+      Send a message to the model running on the device. This uses the Rootz
+      relay and the device&apos;s local llama-server; the registry above works
+      without it, but the chat needs Wireless debugging ready and the
+      llama-server running (the agent status above reads RUNNING). Prompts
+      and replies travel E2E through the relay; this page does not store
+      them.
+    </p>
+    <p class="small faint">
+      Model chat needs the Rootz app build with the model extension; the
+      <a href="/downloads">downloads page</a> has the APK.
+    </p>
+    <div class="panel">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="m-0 text-body text-[1rem]">
+          The chat uses the account and device selected above.
+        </p>
+        <button type="button" class="btn btn-sm" id="chat-clear-btn">Clear chat</button>
+      </div>
+      <div
+        id="chat-log"
+        class="mt-4 flex max-h-[24rem] min-h-[8rem] flex-col gap-3 overflow-y-auto rounded-[0.5rem] border border-line bg-inset p-[0.9rem]"
+        aria-live="polite"
+      ></div>
+      <form id="chat-form" class="mt-4 flex flex-wrap items-end gap-3">
+        <label class="min-w-0 flex-1">
+          <span class="sr-only">Message</span>
+          <textarea
+            id="chat-input"
+            class="w-full rounded-[0.5rem] border border-line bg-inset px-[0.9rem] py-[0.7rem] text-[1.05rem] text-ink focus:border-accent focus:outline-none placeholder:text-faint"
+            rows="3"
+            maxlength="2000"
+            placeholder="Ask the Rootz Agent about this device…"
+          ></textarea>
+        </label>
+        <button type="submit" class="btn btn-primary" id="chat-send-btn">Send</button>
+      </form>
+      <p id="chat-status" class="text-body text-[1.05rem]">
+        Load a device above, then send a message.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h3 class="m-0">Relay check</h3>
+        <button type="button" class="btn btn-sm" id="relay-test-btn">Test relay</button>
+      </div>
+      <p id="relay-test-status" class="text-body text-[1.05rem]">
+        The heartbeat does not need this. The chat and live shell do.
+      </p>
+    </div>
+
+    <details id="relay-setup" class="panel">
+      <summary class="cursor-pointer font-semibold">
+        If the relay says “wireless adb not ready”
+      </summary>
+      <ol class="text-body text-[1.05rem]">
+        <li class="mb-2">
+          On the phone: Settings → System → Developer options →
+          <strong>Wireless debugging</strong> → on. Accept
+          “Always allow on this network”.
+        </li>
+        <li class="mb-2">
+          Open <strong>Rootz</strong> → the <strong>Wireless debugging</strong>
+          card. Wait for <code>wireless adb: ready — ip:port</code>.
+        </li>
+        <li class="mb-2">
+          If it says not ready or searching: turn Wireless debugging off and on
+          again, keep the phone unlocked, and wait for the card.
+        </li>
+        <li class="mb-2">
+          The Rootz card must also read <code>relay: up</code>. The harness
+          heartbeat works without this; the live relay chat and test need it.
+        </li>
+        <li>
+          First time pairing the phone? The
+          <a href="/terminal">Terminal page</a> has the full four-step pairing
+          flow.
+        </li>
+      </ol>
+    </details>
+  </section>
+
   <section class="container pb-8">
     <h2>The 8 GB reality: 4-bit, one big model at a time</h2>
     <p>

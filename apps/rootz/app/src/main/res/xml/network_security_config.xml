@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- apps/rootz/app/src/main/res/xml/network_security_config.xml — allow
+     cleartext ONLY to the on-device llama-server (127.0.0.1:8399) for the
+     /harness model chat. Everything else keeps the platform cleartext ban. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>

@@ -10,10 +10,11 @@ android {
         applicationId "com.rootmyandroid.rootz"
         minSdk 24
         targetSdk 36
-        // versionCode = YYYYMMDD of versionName (owner ruling 2026-11-11 —
-        // the two must ALWAYS match; applies repo-wide).
-        versionCode 20261135
-        versionName "26.11.35"
+        // Date-based versioning (owner rule 10): versionName YY.M.D,
+        // versionCode YYYYMMDD. 26.11.30 is followed by 26.12.1 /
+        // 20261201 — never 26.11.31.
+        versionCode 20261126
+        versionName "26.11.26"
     }
 
     buildTypes {

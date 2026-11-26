@@ -155,7 +155,8 @@ node apps/rootzd/tools/agent-demo.mjs \
   `adb forward tcp:8399`; Lane A moves the SHELL COMMAND transport, not the
   model HTTP.
 - **Live 2026-11-26:** the relay E2E handshake and `session_info` work
-  (`name=Pixel 5 tier=shell version=v26.11.35`). The app daemon returned
+  (`name=Pixel 5 tier=shell`; the pre-fix app reported the invalid
+  `v26.11.35`, corrected to `26.11.26` / `20261126`). The app daemon returned
   `wireless adb not ready on the device` for the first command; the first
   Lane A run is blocked on the device's Wireless debugging state, not the
   transport. Open Rootz → Wireless debugging and wait for
