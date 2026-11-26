@@ -21,6 +21,7 @@ const common: typeof en = {
   footerWhy: '为什么要 root？',
   footerRoms: 'ROM',
   footerDevices: '设备',
+  footerMarketplace: 'Marketplace',
   footerRootz: 'Rootz',
   footerGa: 'Guardian Angel',
   footerGurus: 'Gurus',

@@ -30,6 +30,7 @@ const common = {
   footerWhy: 'Why Root?',
   footerRoms: 'ROMs',
   footerDevices: 'Devices',
+  footerMarketplace: 'Marketplace',
   footerRootz: 'Rootz',
   footerGa: 'Guardian Angel',
   footerGurus: 'Gurus',

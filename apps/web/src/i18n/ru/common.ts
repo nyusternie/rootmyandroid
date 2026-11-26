@@ -23,6 +23,7 @@ const common: typeof en = {
   footerWhy: 'Зачем рутировать?',
   footerRoms: 'Прошивки',
   footerDevices: 'Устройства',
+  footerMarketplace: 'Marketplace',
   footerRootz: 'Rootz',
   footerGa: 'Guardian Angel',
   footerGurus: 'Gurus',

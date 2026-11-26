@@ -22,6 +22,7 @@ const common: typeof en = {
   footerWhy: '왜 루팅하나요?',
   footerRoms: '롬',
   footerDevices: '기기',
+  footerMarketplace: 'Marketplace',
   footerRootz: 'Rootz',
   footerGa: 'Guardian Angel',
   footerGurus: 'Gurus',

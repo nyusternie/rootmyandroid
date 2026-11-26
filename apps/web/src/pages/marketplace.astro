@@ -1,0 +1,191 @@
+---
+// src/pages/marketplace.astro — reseller marketplace. Static content page,
+// zero JS (repo rule 4). Copy is English-only and inline, the same pattern
+// as /refunds: the vendor program is not part of the localized route set
+// (LOCALIZED_ROUTES in src/i18n/i18n.ts).
+//
+// Owner ruling 2026-10-19T18:10:25Z (session …2026-10-19T15-25-09-793Z…,
+// line 2326): "purchases MUST be tiered up to 40% discount, at the highest
+// tier". The ladder below is the owner-accepted proposal (2026-11-26) and
+// is the ONLY commercial term this page publishes.
+//
+// Deliberately absent from this PUBLIC file (AGENTS.md rule 3a — this repo
+// is public): margins beyond the published tier discount, vendor agreement
+// terms, settlement and payment details, entity information, and the
+// vendor-conduct clauses that go beyond the buy-back statement below. Those
+// live in the private working set, never here.
+//
+// The voucher rail this page describes already exists in rootmyandroid-api:
+// scripts/make-codes.js (batch generator, `--batch reseller-…`) and
+// redeem_codes.batch (src/schema.js:143-152). Redemption is POST /v1/redeem,
+// surfaced for customers on /account.
+import Base from '../layouts/Base.astro'
+
+// Wholesale ladder: vouchers per order -> discount off the list price.
+// Discounts are percentages; no currency amounts are published here because
+// /pricing is the single source of truth for list prices.
+const tiers = [
+  { range: '1–9', discount: '0%', pays: 'list price' },
+  { range: '10–24', discount: '10%', pays: '90% of list' },
+  { range: '25–49', discount: '20%', pays: '80% of list' },
+  { range: '50–99', discount: '30%', pays: '70% of list' },
+  { range: '100 or more', discount: '40%', pays: '60% of list' },
+]
+---
+
+<Base
+  title="Reseller marketplace"
+  description="Independent vendors sell Root My Android subscription and AI-inference vouchers. Wholesale tiers up to 40% off list, with buy-back of unsold, unspent inventory."
+>
+  <section class="hero">
+    <div class="container">
+      <p class="small mb-3 font-semibold uppercase tracking-[0.14em] text-ok">
+        Reseller program
+      </p>
+      <h1>Reseller marketplace</h1>
+      <p class="lede">
+        Independent vendors buy Root My Android vouchers wholesale and sell
+        them on their own terms, through their own payment processing. We do
+        not take card payments directly.
+      </p>
+      <div class="row mt-6">
+        <a class="btn btn-primary" href="mailto:support@rootmyandroid.com?subject=Vendor%20application">
+          Apply as a vendor
+        </a>
+        <a class="btn" href="#tiers">See the tiers</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="container prose px-5 pb-12">
+    <h2>Why this exists</h2>
+    <p>
+      Root My Android sells prepaid subscriptions and AI inference credit. We
+      do not have a card merchant account, so we do not accept credit or debit
+      cards ourselves. Vendors do: you buy vouchers from us at wholesale, you
+      sell them to your customers at whatever retail price you choose, and you
+      keep the difference. Card acceptance, chargebacks and customer billing
+      stay on your side of the transaction.
+    </p>
+
+    <h2>How it works</h2>
+    <ol>
+      <li>
+        <strong>Apply.</strong> Write to
+        <a href="mailto:support@rootmyandroid.com?subject=Vendor%20application">support@rootmyandroid.com</a>
+        with the subject <em>Vendor application</em> and tell us what you sell
+        and where.
+      </li>
+      <li>
+        <strong>Buy a batch.</strong> You order vouchers in units. Each unit is
+        one voucher: either subscription time (Guardian Angel or Rootz Pro) or
+        AI inference credit (Guru Balance). The tier is set by the number of
+        vouchers in the order.
+      </li>
+      <li>
+        <strong>Distribute.</strong> Each voucher is a single-use code in the
+        form <span class="mono">XXXX-XXXX-XXXX-XXXX</span>. Hand them out,
+        print them, or deliver them however your business works. Treat a batch
+        like cash: whoever redeems the code first is credited.
+      </li>
+      <li>
+        <strong>Your customer redeems.</strong> At
+        <a href="/account">/account</a> — no email, no password, just the
+        16-digit account number the voucher is credited to.
+      </li>
+    </ol>
+
+    <h2 id="tiers">Wholesale tiers</h2>
+    <p>
+      Discounts apply to the order total, per order. List prices are on
+      <a href="/pricing">/pricing</a>; the percentages below are the whole of
+      the discount schedule.
+    </p>
+
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-[0.92rem]">
+        <caption class="faint small mb-2 text-left">
+          Wholesale tiers — vouchers per order, discount off the list price.
+        </caption>
+        <thead>
+          <tr>
+            <th class="border border-line bg-raise px-3 py-[0.6rem] text-left" scope="col">
+              Vouchers per order
+            </th>
+            <th class="border border-line bg-raise px-3 py-[0.6rem] text-left" scope="col">
+              Discount
+            </th>
+            <th class="border border-line bg-raise px-3 py-[0.6rem] text-left" scope="col">
+              You pay
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            tiers.map((t) => (
+              <tr>
+                <td class="border border-line px-3 py-[0.6rem]">{t.range}</td>
+                <td class="border border-line px-3 py-[0.6rem] font-semibold">{t.discount}</td>
+                <td class="border border-line px-3 py-[0.6rem] text-dim">{t.pays}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <h2>What you can sell</h2>
+    <ul>
+      <li>
+        <strong>Subscription vouchers</strong> — prepaid time for Guardian
+        Angel (Lite or Pro) or Rootz Pro. Time is added to the account and does
+        not auto-renew.
+      </li>
+      <li>
+        <strong>AI inference vouchers</strong> — Guru Balance credit, spent
+        pay-per-use against the Gurus, always quoted before a request runs.
+      </li>
+    </ul>
+
+    <h2>Unsold inventory</h2>
+    <p>
+      Following the vendor-conduct principles we adopted, <strong>unsold and
+      unspent vouchers can be returned to us</strong>. The conditions — what
+      counts as returnable, and how the credit is settled — are set out in the
+      reseller agreement you sign before your first order.
+    </p>
+
+    <h2>Refunds and disputes</h2>
+    <p>
+      Vouchers are non-refundable once redeemed. Unredeemed codes are subject
+      to your own refund terms, because your customer bought from you, not
+      from us — that is stated in our
+      <a href="/refunds">refund policy</a>.
+    </p>
+
+    <h2>What we do not do</h2>
+    <ul>
+      <li>We do not accept credit or debit cards from end customers.</li>
+      <li>We do not set your retail price. That is your decision.</li>
+      <li>
+        We do not sell above the published tiers, and we do not negotiate
+        inside them — the ladder above is the schedule.
+      </li>
+    </ul>
+
+    <h2>Apply</h2>
+    <p>
+      Email
+      <a href="mailto:support@rootmyandroid.com?subject=Vendor%20application">support@rootmyandroid.com</a>
+      with the subject <em>Vendor application</em>. Tell us your business, the
+      regions you serve, and the volumes you expect. We reply with the reseller
+      agreement and the order process.
+    </p>
+
+    <p class="small faint">
+      Vendors are independent businesses. They are not employees, agents, or
+      representatives of Root My Android, and they have no authority to bind
+      us or to make commitments on our behalf.
+    </p>
+  </div>
+</Base>
