@@ -339,17 +339,39 @@ copy, code, class names, or asset filenames). Pricing is plain dollar
 top-up subscriptions (Mullvad-style: add time anytime, no auto-renewal,
 no stored card). The authoritative price table (also live on `/pricing`):
 
-- **The unit of measure is GURU** (owner ruling 2026-11-26). 1 GURU is one
-  unit of AI-inference credit; an account's wallet is its **GURU balance**
-  (`guruBalance` on the wire, `guru_balance` in D1). Display it in caps,
-  like USD — this supersedes the 2026-11-08 display string "Guru Balance".
+- **The unit of measure is GURU** (owner ruling 2026-11-26). An account's
+  wallet is its **GURU balance** (`guruBalance` on the wire, `guru_balance`
+  in D1). Display it in caps, like USD — this supersedes the 2026-11-08
+  display string "Guru Balance".
+- **1 GURU = USD 0.01, fixed peg** (owner ruling 2026-11-26: *"treat GURU as
+  a stablecoin, pegged to USD — 1 GURU == $0.01"*). 100 GURU = $1. The peg
+  is what makes a per-request price publishable at all: price the request in
+  GURU, and the dollar figure is arithmetic, not a second price list.
+- **GURU is inference ONLY** (same ruling). It never buys subscription time,
+  never converts to plan days, and is never a general-purpose balance. Days
+  for plans, GURU for inference.
 - **Subscriptions are NOT denominated in GURU.** They are time (days) at
   dollar prices. A single unit covering both time and consumption is
   exactly why Halo failed (`1 Halo = 30 days` of a lineup that no longer
-  exists). Days for plans, GURU for inference — never one unit for both.
-- **The face value of 1 GURU is NOT ruled.** No GURU price may be published
-  anywhere until the owner rules how many GURU make a dollar (AGENTS.md
-  requires a published per-request price before each request).
+  exists) — do not re-merge them.
+- **Peg ≠ redeemability — do not publish the word "stablecoin".** The peg
+  is a fixed conversion rate, not a promise to buy GURU back: `/gurus`
+  states *"GURU balance top-ups are non-refundable"* (gurus.astro:212) and
+  `/terms` states subscription time is *"not redeemable, exchangeable, or
+  refundable for cash or cryptocurrency"* (terms.astro:51). Publishing
+  "stablecoin" would imply cash-out and contradict both. The peg may be
+  published; the label needs a terms change first.
+- **The ledger's smallest unit is unresolved.** D1 stores
+  `accounts.guru_balance` as INTEGER (`rootmyandroid-api/src/schema.js:15`)
+  and 1 GURU is one cent, so the ledger cannot express a charge below
+  $0.01 — while a single inference request typically costs a fraction of a
+  cent. Either the column becomes milli-GURU (1 GURU = 1000 stored units) or
+  requests are priced in whole cents. Owner/API decision, not an agent's.
+- **Discounts do not move the peg.** Wholesale tiers discount the USD a
+  vendor pays for a batch; they never change what 1 GURU is worth at retail
+  — and the crypto discount already never applies to GURU top-ups
+  (gurus.astro:213). If a discount ever reduced the GURU-per-dollar rate,
+  the peg would be broken.
 - **The Halo retirement is about the BILLING UNIT only.** The Guardian
   Angel has a golden halo — `dl-halo`, the lottie layer named `halo`,
   `guardian_notif.xml`, `App.tsx` backdrop, and alt text saying "a green

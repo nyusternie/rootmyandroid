@@ -16,10 +16,17 @@
 
 ## 1. The ruling, and what it does not decide
 
-**1 GURU is the unit of AI-inference credit.** An account's wallet is its
-**GURU balance** — `guruBalance` on the wire, `guru_balance` in D1. The display
-name is "GURU balance" (unit in caps, like USD), which supersedes the
-2026-11-08 display string "Guru Balance".
+**1 GURU = USD 0.01, fixed peg; 100 GURU = $1** (owner ruling 2026-11-26:
+*"treat GURU as a stablecoin, pegged to USD — 1 GURU == $0.01 — which can be
+used for inference ONLY"*). An account's wallet is its **GURU balance** —
+`guruBalance` on the wire, `guru_balance` in D1. The display name is "GURU
+balance" (unit in caps, like USD), which supersedes the 2026-11-08 display
+string "Guru Balance".
+
+**GURU is inference only.** It never buys subscription time and never
+converts to plan days.
+
+**The peg is publishable; the word "stablecoin" is not** — see §7.1.
 
 **Subscriptions are NOT denominated in GURU.** They are time (days) at dollar
 prices — Guardian Angel Lite $5/30d, Pro $15/30d, Rootz Pro $15/365d. This is
@@ -29,11 +36,17 @@ Basic, 2 Halos = Advanced, 3 Halos = Pro"*). When the plan lineup changed, the
 unit stopped meaning anything. Do not repeat that: **days for plans, GURU for
 inference, never one unit for both.**
 
-**NOT decided — do not invent:** the face value of 1 GURU (how many GURU per
-USD). `AGENTS.md` requires a published per-request price before each request,
-so no GURU price may appear in any surface until the owner rules the
-conversion. If a migration needs a placeholder, use the existing
-`HALO_PACKS` dollar prices unchanged and rename only the unit.
+**Still undecided — do not invent:**
+
+1. **The ledger's smallest unit.** `accounts.guru_balance` is INTEGER
+   (`rootmyandroid-api/src/schema.js:15`) and 1 GURU is one cent, so nothing
+   below $0.01 can be charged — while one inference request normally costs a
+   fraction of a cent. Milli-GURU (1 GURU = 1000 stored units) or whole-cent
+   pricing: an owner/API decision.
+2. **Redeemability.** A peg is a conversion rate, not a buy-back promise.
+   `/gurus:212` says top-ups are non-refundable and `/terms:51` says the
+   balance is not redeemable for cash — so the word "stablecoin" cannot go
+   on the site until the Terms change. See §7.1.
 
 ---
 
@@ -185,12 +198,33 @@ Needed before a real vendor order can be honoured:
 
 ## 7. Open questions this handoff cannot answer
 
-1. Face value of 1 GURU (see §1). Blocks any published GURU price.
+1. The ledger's smallest unit — GURU or milli-GURU (§1).
 2. Whether subscription vouchers are denominated in **days** (recommended,
    consistent with §1) or in a dollar amount that buys days.
 3. Whether the buy-back covers unredeemed **GURU** vouchers as well as
    subscription vouchers. `redeemed_at` makes it checkable; `vendor_id`
-   (§5) makes it billable.
+   (§5) makes it billable. The peg makes the amount exact: 100 GURU = $1.
+
+### 7.1 Why the word "stablecoin" is not on the site
+
+The owner's framing is "a stablecoin pegged to USD". Two live documents
+contradict the label, not the peg:
+
+- `apps/web/src/pages/gurus.astro:212` — *"Guru Balance top-ups are
+  **non-refundable** — stated plainly before you pay."*
+- `apps/web/src/pages/terms.astro:51` — the balance *"is not redeemable,
+  exchangeable, or refundable for cash or cryptocurrency"*.
+
+A stablecoin is redeemable at par by construction. A balance that is pegged
+but non-redeemable is **prepaid credit at a fixed rate** — which is a
+defensible product, and is what the pages currently describe. Publishing
+"stablecoin" would promise a cash-out the Terms refuse, and invite the
+money-transmission framing that comes with issuing a redeemable pegged
+asset.
+
+So: publish the peg (`1 GURU = $0.01`), keep the label off the site, and if
+the owner wants the label, change `/gurus` + `/terms` first. That is an
+owner/legal call, not an agent's.
 
 ---
 

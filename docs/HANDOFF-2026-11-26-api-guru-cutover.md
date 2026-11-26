@@ -6,7 +6,9 @@
 **For:** `rootmyandroid-api` (REST worker + GraphQL worker + scripts)
 **Status:** PROPOSED — nothing has been applied. This is a request, not a change.
 **Ruling:** owner, 2026-11-26 — *"let's use `GURU` as our unit of measure"*,
-*"make sure `HALO` is retired 100%"*.
+*"make sure `HALO` is retired 100%"*, then the peg: *"treat `GURU` as a
+stablecoin, pegged to USD — `1 GURU == $0.01` — which can be used for
+inference ONLY"*.
 **Companion:** `docs/HANDOFF-2026-11-26-guru-unit.md` in this repo is the
 cross-team summary (web / admin / relay). **This file is the detailed API
 version and supersedes it for anything inside `rootmyandroid-api`.**
@@ -41,9 +43,15 @@ sequence an iOS release first, **this cutover has no client to coordinate.**
 
 ## 2. The ruling, and the two things it does not decide
 
-**1 GURU = one unit of AI-inference credit.** The wallet is the **GURU
+**1 GURU = USD 0.01, fixed peg; 100 GURU = $1.** The wallet is the **GURU
 balance** (`guruBalance` on the wire, `guru_balance` in D1), displayed
 "GURU balance" — caps, like USD.
+
+**GURU is inference ONLY.** It never buys subscription time and never
+converts to plan days. This is the peg doing useful work: a request priced
+at *n* GURU has a dollar figure that is arithmetic, not a second price list,
+so the "published per-request price before each request" rule is satisfied
+by one number.
 
 **Subscriptions are not denominated in GURU.** They are time (days) at dollar
 prices. Halo died because one unit covered both time and consumption
@@ -52,15 +60,18 @@ prices. Halo died because one unit covered both time and consumption
 
 **Not decided — do not invent:**
 
-1. **The face value of 1 GURU** (GURU per USD). `AGENTS.md` in this repo
-   requires a published per-request price before each request, so no GURU
-   price may appear in any surface until the owner rules it. **The safe
-   migration renames the unit and leaves every amount exactly as it is.**
+1. **The ledger's smallest unit.** `accounts.guru_balance` is INTEGER
+   (`src/schema.js:15`) and one GURU is one cent, so the column cannot
+   express a charge below $0.01 — while a single inference request normally
+   costs a fraction of a cent. Either store milli-GURU (1 GURU = 1000
+   stored units) or price requests in whole cents. **Decide before the
+   consume path is unfrozen**; the rename itself can leave the column as-is.
 2. **Whether the pack ladder stays a credit ladder.** `HALO_PACKS`
    (`src/lib/halo.js:15-17`) still encodes the retired `$5 = 1 Halo`
    economics, which no longer matches the published plan table on `/pricing`.
-   Renaming `halo_*` → `guru_*` preserves that mismatch; fixing it is a
-   separate, owner-gated decision. Do not fix it inside the rename.
+   The peg now makes the arithmetic trivial ($5 = 500 GURU), but whether the
+   ladder *should* be re-derived is still an owner decision. **Rename only;
+   do not re-derive amounts inside the rename commit.**
 
 ---
 
@@ -232,7 +243,9 @@ None of this blocks the rename; the rename should land first and alone.
 
 | # | Question | Recommendation |
 |---|---|---|
-| Q1 | Pack ids: `guru_1/4/6` (rename) or new ids matched to the published plans? | **Rename only** — new ids are a product decision, and the face value is unruled (§2.1) |
+| Q1 | Pack ids: `guru_1/4/6` (rename) or new ids matched to the peg ($5 = 500 GURU)? | **Rename only** in the cutover commit; re-deriving the ladder is a separate owner-gated change (§2.2) |
+| Q1b | Does the ledger store GURU or milli-GURU? | **Decide before the consume path unfreezes** — see §2.1. Not required for the rename. |
+| Q1c | May the API describe GURU as a "stablecoin" in descriptions? | **No** — the peg is publishable, the label is not: `/gurus` states top-ups are non-refundable and `/terms` states the balance is not redeemable for cash. A "stablecoin" that cannot be redeemed contradicts both. |
 | Q2 | Does `POST /v1/guru/consume` stay frozen after the rename? | **Yes** — carry the 2026-11-04 ruling forward verbatim |
 | Q3 | Wire break on `POST /v1/accounts`: emit `guru_balance` only, or both for a release? | **Only** — D3 says no aliases, and there is no consumer to break |
 | Q4 | GraphQL: rename the types (breaking schema) or add aliases? | **Rename** — same ruling; nothing in this repo queries GraphQL |
