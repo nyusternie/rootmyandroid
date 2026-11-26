@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 150ms colour/transform transition. Unlinked rows stay inert — they
       // are not links, so they must not answer the pointer.
       row.className = linked
-        ? 'group flex w-full flex-wrap items-baseline justify-between gap-x-3 rounded-[0.35rem] border-l-[3px] border-l-accent bg-raise py-[0.35rem] pl-2 pr-1 text-left no-underline transition-colors duration-150 hover:border-l-accent-hover hover:bg-accent/10 focus-visible:border-l-accent-hover focus-visible:bg-accent/10'
+        ? 'group flex w-full flex-wrap items-baseline justify-between gap-x-3 rounded-[0.35rem] border-l-[3px] border-l-accent bg-raise py-[0.35rem] pl-2 pr-1 text-left no-underline transition-colors duration-150 hover:border-l-accent-hover hover:bg-accent/10 focus-visible:border-l-accent-hover focus-visible:bg-accent/10 active:border-l-accent-hover active:bg-accent/16'
         : 'flex w-full flex-wrap items-baseline justify-between gap-x-3 border-l-[3px] border-l-transparent py-[0.35rem] pl-2 pr-1 text-left'
       if (linked) row.setAttribute('href', `/app/${app.package}`)
       const name = document.createElement('span')
@@ -165,8 +165,11 @@ document.addEventListener('DOMContentLoaded', () => {
       row.append(name, meta)
       if (linked) {
         const affordance = document.createElement('span')
+        // Touch devices never fire :hover, so the press state (active:)
+        // carries the same nudge — the row answers a finger as well as a
+        // pointer (measured on the Pixel 5, 2026-11-26).
         affordance.className =
-          'text-accent text-[0.85rem] font-semibold transition-transform duration-150 group-hover:translate-x-[2px]'
+          'text-accent text-[0.85rem] font-semibold transition-transform duration-150 group-hover:translate-x-[2px] group-active:translate-x-[2px]'
         affordance.textContent = 'Details ›'
         row.append(affordance)
       }
