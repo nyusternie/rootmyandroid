@@ -15,7 +15,6 @@ class MainActivity : ReactActivity() {
     super.onCreate(savedInstanceState)
     // Keep the entry-point notification alive while the app is in use —
     // there is no launcher icon to come back through.
-    GuardianNotifier.post(this)
     // Android 13+ drops the notification without this grant, and the
     // notification IS the entry point — ask once, on the first open.
     if (Build.VERSION.SDK_INT >= 33 &&
@@ -23,6 +22,17 @@ class MainActivity : ReactActivity() {
     ) {
       requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1001)
     }
+  }
+
+  /**
+   * Re-post the entry notification on every return to the app, not just at
+   * process start: the user may have dismissed it, and with no launcher icon
+   * the shade is the only way back in (measured on redfin 2026-11-25 — an
+   * already-running activity never re-ran onCreate, so no notification).
+   */
+  override fun onResume() {
+    super.onResume()
+    GuardianNotifier.post(this)
   }
 
   /**
