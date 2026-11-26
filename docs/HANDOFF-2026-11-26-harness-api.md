@@ -268,9 +268,11 @@ Then:
 
 ## 8. Open items after the reply
 
-- **Rate-limit numbers — SHIPPED, review flag:** 60/h/IP heartbeat does not
-  fit the tool's 15 s floor (240/h) and does not fit two devices at 60 s
-  behind one IP. The API team chose the constants; see the ACK for the math.
+- **Rate-limit numbers — SHIPPED, follow-up requested:** 60/h/IP heartbeat
+  does not fit the tool's 15 s floor (240/h) and does not fit two devices at
+  60 s behind one IP. See the ACK for the math and
+  `docs/HANDOFF-2026-11-26-harness-rate-limits.md` for the two-constant
+  request.
 - **Staleness/TTL** — not implemented; `received_at` is returned and the page
   shows it without a stale badge (owner has not ruled a threshold).
 - **`harness_snapshots` table name** — shipped as proposed; a rename costs a

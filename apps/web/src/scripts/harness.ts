@@ -108,6 +108,17 @@ document.addEventListener('DOMContentLoaded', () => {
     sourceEl.textContent = text
   }
 
+  /** Use the API's retry_after when present; otherwise keep it generic. */
+  function rateLimitMessage(
+    data: { retry_after?: unknown } | null | undefined,
+    what: string,
+  ): string {
+    const wait = Number(data?.retry_after)
+    return Number.isFinite(wait) && wait > 0
+      ? `Too many ${what} requests — retry in ${wait}s.`
+      : `Too many ${what} requests — wait a minute, then retry.`
+  }
+
   function setBadge(text: string, tone: keyof typeof badgeTone): void {
     badgeEl.textContent = text
     badgeEl.className = `shrink-0 rounded-full border px-[0.6rem] py-[0.15rem] text-[0.72rem] font-bold tracking-[0.08em] ${badgeTone[tone]}`
@@ -319,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
           'muted',
         )
       } else if (harness.status === 429) {
-        setStatus('Too many harness requests — wait a minute, then retry.', 'warn')
+        setStatus(rateLimitMessage(harness.data, 'harness'), 'warn')
         return
       } else {
         setStatus('Could not read the harness route. Retry in a moment.', 'warn')
@@ -332,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (res.status === 404) {
           setStatus('Account not found — check the 16-digit number.', 'warn')
         } else if (res.status === 429) {
-          setStatus('Too many snapshot requests — wait a minute, then retry.', 'warn')
+          setStatus(rateLimitMessage(res.data, 'snapshot'), 'warn')
         } else {
           setStatus('Could not read the snapshot. Retry in a moment.', 'warn')
         }

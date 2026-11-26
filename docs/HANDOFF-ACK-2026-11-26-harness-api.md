@@ -106,7 +106,8 @@ five-device ceiling and the 15 s floor do not.
   that assumption; the tool's `--interval < 60` warning covers the rest.
 
 The tool and page work with any of the three; the constants are four exports
-in `src/lib/harness.js`.
+in `src/lib/harness.js`. The standalone request for the first option is
+`docs/HANDOFF-2026-11-26-harness-rate-limits.md`.
 
 ---
 
@@ -114,8 +115,9 @@ in `src/lib/harness.js`.
 
 - Page 404 distinction: `isAccountNotFound` + test.
 - Page copy: the dedicated route is live; the audit snapshot is the fallback.
-- Tool: 16 KiB size warning, B `413` → audit fallback when `--audit-fallback`,
-  `retry_after` surfaced, `--interval < 60` warning.
+- Page + tool: 429 `retry_after` surfaced; the tool also has the 16 KiB size
+  warning, B `413` → audit fallback when `--audit-fallback`, and the
+  `--interval < 60` warning.
 - Docs: the API handoff now points at the reply, carries the shipped rate
   limits, and its heartbeat example includes `device.id` (the reply's §8
   caught the invalid `"device": {}` example).

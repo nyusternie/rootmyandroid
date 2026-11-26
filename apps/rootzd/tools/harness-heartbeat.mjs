@@ -127,8 +127,10 @@ async function post(url, body) {
 let lastHealth = null
 let auditWarned = false
 let sizeWarned = false
+let nextDelay = INTERVAL
 
 async function heartbeatOnce() {
+  nextDelay = INTERVAL
   let snapshot
   try {
     snapshot = loadSnapshot()
@@ -232,6 +234,12 @@ async function heartbeatOnce() {
       console.log(JSON.stringify(audit.data, null, 2))
       return true
     }
+    if (audit.res.status === 429) {
+      nextDelay = Math.max(
+        INTERVAL,
+        Number(audit.data?.retry_after) || INTERVAL,
+      )
+    }
     const auditRetry = audit.data?.retry_after
       ? ` retry_after=${audit.data.retry_after}s`
       : ''
@@ -241,6 +249,15 @@ async function heartbeatOnce() {
     return false
   }
 
+  if (primary.res.status === 429) {
+    nextDelay = Math.max(
+      INTERVAL,
+      Number(primary.data?.retry_after) || INTERVAL,
+    )
+    console.error(
+      `[harness-heartbeat] rate limited; next attempt in ${nextDelay}s`,
+    )
+  }
   const retry = primary.data?.retry_after
     ? ` retry_after=${primary.data.retry_after}s`
     : ''
@@ -260,7 +277,7 @@ if (!WATCH) {
 
 if (INTERVAL < 60) {
   console.error(
-    '[harness-heartbeat] warning: the current API heartbeat IP limit is 60/h; an interval below 60s will hit 429 for one device. Raise the API limit or use --interval 60+.',
+    '[harness-heartbeat] warning: the API heartbeat IP limit shipped at 60/h on 2026-11-26; an interval below 60s will hit 429 for one device. Raise the API limit or use --interval 60+.',
   )
 }
 console.log(
@@ -274,5 +291,5 @@ for (const signal of ['SIGINT', 'SIGTERM']) {
 }
 while (true) {
   await heartbeatOnce()
-  await new Promise((resolve) => setTimeout(resolve, INTERVAL * 1000))
+  await new Promise((resolve) => setTimeout(resolve, nextDelay * 1000))
 }
