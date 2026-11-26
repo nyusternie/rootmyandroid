@@ -15,17 +15,26 @@
 ## 1. What happened, and why the card is silent
 
 The API renamed the server-side analytics event `halo_consumed` →
-`guru_consumed` **and renamed the historical rows in place**
-(`rootmyandroid-api/src/lib/analytics.js:210`:
+`guru_consumed`, and added a historical-row rename at
+`rootmyandroid-api/src/lib/analytics.js:210`:
 
 ```sql
 UPDATE events SET name = 'guru_consumed' WHERE name = 'halo_consumed'
 ```
 
+**Commit attribution — corrected 2026-11-26.** That `UPDATE` was added in
+`6313e2b` ("docs: record the shipped GURU cutover", 12:58:16 -0500), one
+commit *after* the cutover `4876c62` (12:48:57 -0500). `4876c62` touched
+`analytics.js` only in comments (`:92`). The API's own cutover handoff
+records the deploy of `4876c62` alone (CI `45870899506`); **no repo document
+records a deploy of `6313e2b`**, so whether the `UPDATE` has run in
+production is an open question — see §5.1.
+
 Both workers bind the **same** D1 — `rootmyandroid-analytics`
 (`29cb0c75-8ecb-4ebf-be4e-4965c35405fa`), per the admin's own
-`wrangler.jsonc:53-58` and the API's `wrangler.jsonc:34-43`. So the rename
-already happened in the database this dashboard reads.
+`wrangler.jsonc:54-58` and the API's `wrangler.jsonc:34-43`. If the rename
+has run, this dashboard is reading a table that no longer holds the old
+name.
 
 The admin still asks for the old name:
 
@@ -35,14 +44,16 @@ AND name IN ('account_created', 'checkout_started', 'payment_completed',
              'halo_consumed', 'voucher_redeemed')
 ```
 
-That `IN` list no longer matches any row. **No data was lost** — the events
-are all there under the new name. The card simply reports 0, which looks
-exactly like "nobody used the service", which is the worst possible failure
+`halo_consumed` in that list no longer matches any row — the other four
+names (`account_created`, `checkout_started`, `payment_completed`,
+`voucher_redeemed`) still match. **No data was lost**: the events are there
+under the new name. The card reports 0 through the `|| 0` at `:1050`, which
+looks exactly like "nobody used the service" — the worst possible failure
 mode for a dashboard.
 
 ---
 
-## 2. The change — four code points and one test
+## 2. The change — five code points and two test lines
 
 | file:line | today | after |
 |---|---|---|
@@ -67,13 +78,19 @@ meaning. Do not turn it into a money figure — the admin does not read amounts.
 
 ## 3. Do not backfill, and do not write
 
-`rootmyandroid-admin` binds `ANALYTICS_DB` **read-only**, and the rename has
-already been applied upstream. There is nothing to migrate here: this is a
-rename of the key the dashboard asks for, and nothing else.
+**Correction 2026-11-26: the binding is not read-only.** No read-only flag
+exists in `wrangler.jsonc` — only a comment claiming it
+(`wrangler.jsonc:52-53`, and `:14`). The worker writes the `goals` table into
+that same D1: `INSERT` at `src/lib/analytics.js:232`, `DELETE` at `:244`,
+called from `src/index.js:334` and `:341`. The comment and the feature
+contradict each other.
 
-If you find rows still named `halo_consumed`, that means the API's one-shot
-did not run against that database — report it rather than fixing it from the
-dashboard.
+The instruction stands, for a different reason: `events` is the API's table,
+written by its collector, and the historical rename is the API's one-shot.
+A second rename from the dashboard would be a no-op at best and a
+double-apply at worst. If rows are still named `halo_consumed`, that is
+evidence the API's one-shot has not run — report it (§5.1) rather than
+fixing it here.
 
 ---
 
@@ -86,8 +103,10 @@ dashboard.
   sessions (`src/index.js:128,175,188,202,210`); funnel numbers are computed
   per request, so no stale key carries the old field name.
 - **`SNAPSHOT_META`** (the agent-facing glossary, `src/lib/analytics.js:132`)
-  does not mention Halo — no change needed there. Re-read it after the edit to
-  confirm the funnel description still matches the field it documents.
+  does not mention Halo — no change needed there. **Correction:** it has no
+  `funnel` entry at all; the only funnel it describes is `apk_funnel`
+  (`:151`), the APK click → sideload → download funnel, which is unrelated to
+  `funnel.guru_consumed`. Do not edit it as part of this change.
 
 ---
 
@@ -106,7 +125,50 @@ grep -rniI "halo" docs                   # expect: roadmap-2026-11-10.md:394-395
 #      SELECT COUNT(*) FROM events WHERE name='guru_consumed' AND ts >= …
 ```
 
-Definition of done: the four code points and the two test lines renamed, CI
+### 5.1 The one premise this handoff cannot verify
+
+Everything above assumes the historical rows have already been renamed in
+production. That assumption rests on three things, and **none of them is
+established by the repo**:
+
+1. That `6313e2b` was deployed. Its push triggers the deploy job
+   (`rootmyandroid-api/.github/workflows/ci.yml:43-47`), but no CI run record
+   for that commit exists in the repository, and the cutover handoff documents
+   only the deploy of `4876c62`.
+2. That at least one analytics write has happened since that deploy. The
+   `UPDATE` is **lazy**: it fires from `ensureAnalyticsSchemaOnce` on analytics
+   writes (`rootmyandroid-api/src/lib/analytics.js:457, 485, 573, 605, 711`),
+   not at deploy time.
+3. The live split of old and new names:
+
+```sql
+SELECT name, COUNT(*) AS n FROM events
+ WHERE name IN ('halo_consumed','guru_consumed') GROUP BY name;
+```
+
+**What the dashboard shows if this is wrong:** if the `UPDATE` has not run,
+both names are in use, and a card that queries only `guru_consumed` reports a
+count that is too low rather than zero — a quieter version of the same bug.
+That is why the metric rename and the verification belong in one change set.
+
+**D1 access, checked 2026-11-26.** The query above cannot be run from this
+workstation or from the sanctioned credential stores:
+
+- `blackhost:/root/.cloudflare/api_token` is active but account-scoped: it
+  cannot list accounts and returns `7403` for the account id used here.
+- `sansbank:~/.cloudflare/api-token-d1` is active and D1-capable, but it is
+  scoped to **Sansbank DAO** (`cff27acd0f4e86139f6cf3f1a295d4b0`), whose D1
+  databases are `dashswap`, `dashswap-testnet`, `platform`, `dao`, `yappr`,
+  `evonext`, `bootstrap`, `logs` — `rootmyandroid-analytics` is not among
+  them, so the query returns `7404 could not be found`.
+- `apecsdev:~/.config/cloudflare/api_token` is the same token as blackhost's
+  (rule 11 dual store).
+
+The rootmyandroid account id lives only in a GitHub secret
+(`CLOUDFLARE_ACCOUNT_ID`, `ci.yml:68,74,80`), so the check has to be run by
+whoever holds that credential — the API team, at deploy time.
+
+Definition of done: the five code points and the two test lines renamed, CI
 green, and the card showing the same count that the old label showed before
 the API cutover.
 
