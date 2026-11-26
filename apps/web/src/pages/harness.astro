@@ -1,0 +1,552 @@
+---
+// src/pages/harness.astro — /harness: the on-device AI agent registry.
+//
+// APP PAGE (JavaScript allowed, AGENTS.md rule 4). The vanilla module
+// src/scripts/harness.ts drives the sync flow; the snapshot contract and
+// the labeled sample live in src/lib/harness.ts.
+//
+// First version: the page reads the latest `harness-agents` audit snapshot
+// through the EXISTING audit pipeline (POST /v1/device/audit/list) — no new
+// API route is required. The device picker uses the real paired-device list
+// (POST /v1/relay/devices/list). Until the device app writes a snapshot, the
+// registry is HARNESS_SAMPLE behind a visible SAMPLE badge. The live
+// heartbeat route and the other options are written up in
+// docs/HANDOFF-2026-11-26-harness-page.md.
+//
+// DATA PROVENANCE: the model sizes and the Pixel 5 RAM anchor come from the
+// verified /models catalog (Hugging Face + /proc/meminfo, 2026-11-11). The
+// sample agent names, battery, thermal, and heartbeat values are labeled
+// mock data, never presented as a read from the visitor's device.
+import Base from '../layouts/Base.astro'
+import {
+  HARNESS_SAMPLE,
+  formatContext,
+  formatGiB,
+  formatStamp,
+  memoryBudget,
+  statusLabel,
+} from '../lib/harness'
+
+const sample = HARNESS_SAMPLE
+const budget = memoryBudget(sample)
+const sampleJson = JSON.stringify(sample, null, 2)
+
+// Same tone map as src/scripts/harness.ts (the client re-renders cards).
+const statusClass: Record<string, string> = {
+  running: 'border-ok/45 bg-ok/12 text-ok-ink',
+  idle: 'border-warn/45 bg-warn/12 text-warn-ink',
+  stopped: 'border-line bg-inset text-faint',
+}
+
+const cellClass = 'border border-line px-3 py-[0.6rem] align-top'
+const headClass = 'border border-line bg-raise px-3 py-[0.6rem] align-top text-left'
+
+// A deliberately labeled estimate: the KV/runtime allowance added to each
+// model's weights when comparing against the sample headroom. The model
+// sizes themselves are the verified Q4_K_M files on /models.
+const sampleAgentOverhead = 0.35
+
+const modelRows = [
+  {
+    model: 'Qwen2.5-0.5B-Instruct',
+    quant: 'Q4_K_M',
+    weights: 0.46,
+    role: 'Background classifier',
+  },
+  {
+    model: 'Qwen2.5-1.5B-Instruct',
+    quant: 'Q4_K_M',
+    weights: 1.04,
+    role: 'Digest / summarizer',
+  },
+  {
+    model: 'Qwen3-4B-Instruct-2507',
+    quant: 'Q4_K_M',
+    weights: 2.33,
+    role: 'Main tool-calling agent',
+  },
+]
+
+// Visible <details> copy AND the FAQPage JSON-LD use these exact strings.
+const faqs = [
+  {
+    q: 'What is the Harness?',
+    a: 'The Harness is the device-side registry for the AI agents that report to it: each agent’s runtime, model, quantization, memory footprint, status, and heartbeat. It is the device view. Gurus are the advisor layer that can explain what the Harness reports; they never act on their own.',
+  },
+  {
+    q: 'Does the Harness upload my prompts or chats?',
+    a: 'No. The snapshot is registry metadata only: agent name, runtime, model, quantization, memory, status, endpoint, and heartbeat. Prompts, completions, chat history, model weights, files, and shell output are not part of the contract.',
+  },
+  {
+    q: 'Why 4-bit quantization on an 8 GB phone?',
+    a: 'Because memory is the binding constraint. On our measured Pixel 5, Android 14, the device reports 7.29 GiB total RAM and 3.71 GiB free at idle (2026-11-11). Q4_K_M is roughly half a byte per parameter, so a 4B model is about 2.33 GiB of weights before the runtime and KV cache. Higher-bit quants are larger; lower-bit quants fit more but lose fidelity.',
+  },
+  {
+    q: 'Can I run two agents at once?',
+    a: 'It depends on their resident memory, not their model names. In the sample snapshot the 4B agent uses 2.68 GiB including its runtime, and the harness supervisor adds 0.12 GiB, leaving about 0.91 GiB of the 3.71 GiB free budget. That is enough for the 0.5B agent (0.46 GiB of weights plus a sample 0.35 GiB of runtime/KV), not the 1.5B. The page shows the budget so you can see why.',
+  },
+  {
+    q: 'Is the Harness live?',
+    a: 'Not yet. The registry on this page is a labeled sample. The device picker uses your real paired devices, and the page is wired to read a real harness-agents audit snapshot as soon as the device app writes one. A dedicated live-heartbeat route is the next step.',
+  },
+]
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+}
+---
+
+<Base
+  title="Harness — on-device AI agents, synced"
+  description="See the AI agents that report to the Harness on your Android device: runtime, model, 4-bit quantization, memory budget, and sync status. Read-only, account-synced, and no prompts leave the device."
+  banner
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
+  <section class="hero relative before:pointer-events-none before:absolute before:inset-x-0 before:-top-24 before:h-[32rem] before:bg-[radial-gradient(60%_70%_at_70%_30%,rgba(61,220,132,0.14),transparent_70%)] before:content-['']">
+    <div class="container relative">
+      <p class="small faint m-0 mb-3">
+        <span class="inline-block rounded-full border border-warn/45 bg-warn/12 px-[0.6rem] py-[0.15rem] text-[0.72rem] font-bold tracking-[0.08em] text-warn-ink">PREVIEW</span>
+        The registry below is a labeled sample until the device app ships the harness manifest.
+      </p>
+      <h1>The <span class="hl text-accent">Harness</span>.</h1>
+      <p class="lede">
+        Every harness-aware AI agent on your phone, in one place: what is
+        installed, what is running, which model and quantization it uses, and
+        how much of your RAM it is holding.
+      </p>
+      <p class="panel text-[1.1rem]">
+        <strong>Read-only by design.</strong> The Harness reports the registry;
+        it never starts, stops, or commands an agent. Prompts and chats stay on
+        the device.
+      </p>
+      <div class="row mt-7">
+        <a class="btn btn-primary" href="#sync">Sync a device</a>
+        <a class="btn" href="#sample">See the sample snapshot</a>
+        <a class="btn" href="/models">Browse on-device models</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container pt-4 pb-8">
+    <div class="grid-3 steps-grid">
+      <div class="panel">
+        <p class="m-0 text-[0.75rem] uppercase tracking-[0.06em] text-faint">Agents</p>
+        <p class="m-0 mt-1 text-[2rem] font-bold" id="stat-agents">{sample.agents.length}</p>
+        <p class="m-0 text-[0.9rem] text-body">installed, idle, or running</p>
+      </div>
+      <div class="panel">
+        <p class="m-0 text-[0.75rem] uppercase tracking-[0.06em] text-faint">Running now</p>
+        <p class="m-0 mt-1 text-[2rem] font-bold text-ok" id="stat-running">{sample.agents.filter((agent) => agent.status === 'running').length}</p>
+        <p class="m-0 text-[0.9rem] text-body">one 4B model at a time on 8 GB</p>
+      </div>
+      <div class="panel">
+        <p class="m-0 text-[0.75rem] uppercase tracking-[0.06em] text-faint">Free RAM</p>
+        <p class="m-0 mt-1 text-[2rem] font-bold" id="stat-free">{formatGiB(sample.device.free_ram_gib)}</p>
+        <p class="m-0 text-[0.9rem] text-body">reported by the device</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="sync" class="container scroll-mt-[4.5rem] pb-8">
+    <h2>Sync with a device</h2>
+    <div class="panel">
+      <p class="break-words text-body text-[1.05rem]">
+        Enter the 16-digit account number your Rootz device is paired to. The
+        page reads the latest <code>harness-agents</code> snapshot the device
+        wrote through the existing audit pipeline — no new API route is
+        required for this first version.
+      </p>
+      <div class="stack">
+        <input
+          id="account-number"
+          class="text-[1.2rem]"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="1234 5678 9012 3456"
+        />
+        <div class="row">
+          <select id="device-select" class="min-w-0 flex-1 text-[1.2rem]" aria-label="Device">
+            <option value="">Devices load once your account number is complete…</option>
+          </select>
+          <button type="button" class="btn" id="load-devices-btn">Refresh list</button>
+        </div>
+        <div class="row">
+          <button type="button" class="btn btn-primary" id="sync-btn">Sync agents</button>
+          <button type="button" class="btn" id="demo-btn">Load sample snapshot</button>
+        </div>
+      </div>
+      <p id="sync-status" class="text-body text-[1.15rem]">
+        Sample snapshot loaded. Enter an account number to sync a real device.
+      </p>
+      <p id="sync-source" class="small faint m-0">
+        Sample data · no account request was made
+      </p>
+    </div>
+  </section>
+
+  <section id="sample" class="container scroll-mt-[4.5rem] pb-8">
+    <div class="flex flex-wrap items-center gap-3">
+      <h2 class="m-0">Agent registry</h2>
+      <span id="snapshot-badge" class="shrink-0 rounded-full border border-warn/45 bg-warn/12 px-[0.6rem] py-[0.15rem] text-[0.72rem] font-bold tracking-[0.08em] text-warn-ink">SAMPLE</span>
+    </div>
+    <p id="snapshot-note" class="muted">
+      Labeled sample snapshot — not a read from your device. The device picker
+      above uses the real paired-device list; the registry switches to a real
+      snapshot when the device app writes one.
+    </p>
+
+    <div class="panel">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h3 class="m-0" id="device-name">{sample.device.name}</h3>
+          <p class="m-0 text-[0.9rem] text-faint" id="device-model">{sample.device.model} · {sample.device.android}</p>
+        </div>
+        <span class="small faint">snapshot v{sample.schema}</span>
+      </div>
+      <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-[0.9rem] min-[560px]:grid-cols-4">
+        <div>
+          <dt class="text-faint">Total RAM</dt>
+          <dd class="m-0" id="device-total-ram">{formatGiB(sample.device.total_ram_gib)}</dd>
+        </div>
+        <div>
+          <dt class="text-faint">Free RAM</dt>
+          <dd class="m-0" id="device-free-ram">{formatGiB(sample.device.free_ram_gib)}</dd>
+        </div>
+        <div>
+          <dt class="text-faint">Thermal</dt>
+          <dd class="m-0" id="device-thermal">{sample.device.thermal}</dd>
+        </div>
+        <div>
+          <dt class="text-faint">Battery</dt>
+          <dd class="m-0" id="device-battery">{sample.device.battery_pct}%</dd>
+        </div>
+        <div>
+          <dt class="text-faint">Runtime</dt>
+          <dd class="m-0" id="runtime-name">{sample.runtime.name} {sample.runtime.version}</dd>
+        </div>
+        <div>
+          <dt class="text-faint">Backend</dt>
+          <dd class="m-0" id="runtime-backend">{sample.runtime.backend} · {sample.runtime.threads} threads</dd>
+        </div>
+        <div>
+          <dt class="text-faint">Collected</dt>
+          <dd class="m-0" id="collected-at">{formatStamp(sample.collected_at)}</dd>
+        </div>
+        <div>
+          <dt class="text-faint">Last sync</dt>
+          <dd class="m-0" id="last-sync">{formatStamp(sample.device.last_sync)}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div id="agent-list" class="grid-3 steps-grid mt-4">
+      {sample.agents.map((agent) => (
+        <article class="panel flex flex-col gap-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <h3 class="m-0 text-[1.15rem]">{agent.name}</h3>
+              <p class="m-0 text-[0.85rem] text-faint">{agent.runtime} · {agent.id}</p>
+            </div>
+            <span class={`shrink-0 rounded-full border px-[0.6rem] py-[0.15rem] text-[0.72rem] font-bold tracking-[0.08em] ${statusClass[agent.status]}`}>
+              {statusLabel(agent.status)}
+            </span>
+          </div>
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-[0.9rem]">
+            <div>
+              <dt class="text-faint">Model</dt>
+              <dd class="m-0 break-words">{agent.model}</dd>
+            </div>
+            <div>
+              <dt class="text-faint">Quant</dt>
+              <dd class="m-0">{agent.quantization}</dd>
+            </div>
+            <div>
+              <dt class="text-faint">Params</dt>
+              <dd class="m-0">{agent.parameters_b.toFixed(2)}B</dd>
+            </div>
+            <div>
+              <dt class="text-faint">Context</dt>
+              <dd class="m-0">{formatContext(agent.context)}</dd>
+            </div>
+            <div>
+              <dt class="text-faint">Weights</dt>
+              <dd class="m-0">{formatGiB(agent.model_gib)}</dd>
+            </div>
+            <div>
+              <dt class="text-faint">Resident</dt>
+              <dd class="m-0">{agent.resident_gib > 0 ? formatGiB(agent.resident_gib) : 'not resident'}</dd>
+            </div>
+            <div>
+              <dt class="text-faint">Endpoint</dt>
+              <dd class="m-0 break-all font-mono text-[0.8rem]">{agent.endpoint ?? '—'}</dd>
+            </div>
+            <div>
+              <dt class="text-faint">Heartbeat</dt>
+              <dd class="m-0">{formatStamp(agent.last_heartbeat)}</dd>
+            </div>
+          </dl>
+          <div class="flex flex-wrap gap-[0.45rem]">
+            {agent.capabilities.map((capability) => (
+              <span class="rounded-[2rem] border border-line bg-inset px-[0.7rem] py-[0.2rem] font-mono text-[0.8rem] text-dim">
+                {capability}
+              </span>
+            ))}
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="container pb-8">
+    <h2>The 8 GB reality: 4-bit, one big model at a time</h2>
+    <p>
+      On the Pixel 5 we measured 7.29 GiB total RAM and 3.71 GiB free at idle
+      (2026-11-11). A 4-bit Q4_K_M model uses roughly half a byte per
+      parameter, so a 4B model is about 2.33 GiB of weights before the runtime
+      and KV cache. That is why the Harness reports the budget, not just the
+      model list: on 8 GB, the question is not “which model is best?” but
+      “which model fits right now?”
+    </p>
+
+    <div class="grid-2 steps-grid mt-6">
+      <div class="panel">
+        <h3>Why 4-bit (Q4_K_M) fits an 8 GB phone</h3>
+        <p class="muted">
+          Q4_K_M is a 4-bit quantization — the model is compressed to roughly
+          half a byte per parameter. That is what makes multi-billion-parameter
+          models fit on a phone at all. Q8_0 is larger and higher-fidelity;
+          smaller quants fit more but lose fidelity. The Harness shows the
+          actual quantization each agent reports, so the page never assumes
+          one.
+        </p>
+        <ul class="text-body text-[1.05rem]">
+          <li>4B at Q4_K_M ≈ 2.33 GiB of weights</li>
+          <li>1.5B at Q4_K_M ≈ 1.04 GiB</li>
+          <li>0.5B at Q4_K_M ≈ 0.46 GiB</li>
+        </ul>
+        <p class="small faint">
+          Sizes verified against Hugging Face on 2026-11-11 — see the
+          <a href="/models">on-device model catalog</a>.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Resident budget</h3>
+        <p class="muted">
+          Running agents + the harness supervisor, against the free RAM the
+          device reported. The sample uses a 0.35 GiB runtime/KV estimate per
+          agent and a 0.12 GiB supervisor; a real snapshot reports its own
+          values.
+        </p>
+        <div class="mt-4 flex items-baseline justify-between gap-3 text-[0.9rem]">
+          <span class="text-faint">Resident</span>
+          <span>
+            <strong id="budget-used">{formatGiB(budget.residentGiB)}</strong>
+            of <span id="budget-free">{formatGiB(budget.freeGiB)}</span>
+          </span>
+        </div>
+        <div class="mt-2 h-[10px] overflow-hidden rounded-full border border-line bg-inset">
+          <div
+            id="budget-fill"
+            class="h-full rounded-full bg-accent w-(--bar-w)"
+            style={`--bar-w: ${budget.usedPct}%`}
+          ></div>
+        </div>
+        <div class="mt-2 flex flex-wrap justify-between gap-2 text-[0.85rem] text-faint">
+          <span><span id="budget-pct">{budget.usedPct}%</span> used</span>
+          <span><span id="budget-headroom">{formatGiB(budget.headroomGiB)}</span> headroom</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel mt-6">
+      <h3>What fits in the sample budget</h3>
+      <p class="small muted">
+        “Fits alone” compares the model plus the sample 0.35 GiB runtime/KV
+        estimate against the 3.71 GiB free RAM. “Fits now” compares it against
+        the 0.91 GiB headroom left while the 4B agent is running.
+      </p>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-[0.9rem]">
+          <thead>
+            <tr>
+              <th class={headClass}>Model</th>
+              <th class={headClass}>Quant</th>
+              <th class={headClass}>Weights</th>
+              <th class={headClass}>+ estimate</th>
+              <th class={headClass}>Fits alone</th>
+              <th class={headClass}>Fits now</th>
+            </tr>
+          </thead>
+          <tbody>
+            {modelRows.map((row) => {
+              const total = row.weights + sampleAgentOverhead
+              const fitsAlone = total <= budget.freeGiB
+              const fitsNow = total <= budget.headroomGiB
+              return (
+                <tr>
+                  <td class={cellClass}>
+                    <strong>{row.model}</strong>
+                    <span class="block text-[0.8rem] text-faint">{row.role}</span>
+                  </td>
+                  <td class={cellClass}>{row.quant}</td>
+                  <td class={cellClass}>{row.weights.toFixed(2)} GiB</td>
+                  <td class={cellClass}>{total.toFixed(2)} GiB</td>
+                  <td class={cellClass}>{fitsAlone ? 'yes' : 'no'}</td>
+                  <td class={cellClass}>{fitsNow ? 'yes' : 'no'}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="container pb-8">
+    <h2>How sync works</h2>
+    <div class="panel">
+      <ol class="text-body text-[1.05rem]">
+        <li class="mb-3">
+          <strong class="text-ink">The device writes a snapshot.</strong> The
+          Rootz app (or another harness-aware app) posts a
+          <code>harness-agents</code> audit snapshot to
+          <code>POST /v1/device/audit</code> — the same endpoint Guardian Angel
+          uses for its app inventory.
+        </li>
+        <li class="mb-3">
+          <strong class="text-ink">The API keeps the snapshot in the account’s audit history.</strong>
+          No prompts, completions, model weights, files, or shell output are
+          part of the snapshot.
+        </li>
+        <li class="mb-3">
+          <strong class="text-ink">This page reads it.</strong>
+          <code>POST /v1/device/audit/list</code> with
+          <code>audit_type: "harness-agents"</code> returns the latest row; the
+          page renders the registry and the memory budget.
+        </li>
+      </ol>
+      <p class="text-body text-[1rem]">
+        For live heartbeats and remote start/stop controls, a dedicated
+        <code>/v1/harness/*</code> route is the next step. This first version
+        deliberately uses the existing audit pipeline so the page can ship
+        before the API work — and so the device only ever publishes metadata.
+      </p>
+    </div>
+
+    <details class="panel">
+      <summary class="cursor-pointer font-semibold">
+        Proposed <code>harness-agents</code> snapshot (v1)
+      </summary>
+      <p class="small muted">
+        This is the labeled sample payload. A real snapshot carries the same
+        shape; the device app is the only writer.
+      </p>
+      <pre class="overflow-x-auto whitespace-pre rounded-[0.5rem] border border-line bg-inset p-[1rem] text-[0.8rem] text-body">{sampleJson}</pre>
+    </details>
+  </section>
+
+  <section class="container pb-8">
+    <h2>Privacy and safety</h2>
+    <div class="grid-3 steps-grid">
+      <div class="panel">
+        <h3>Read-only</h3>
+        <p class="muted">
+          The page never starts, stops, or commands an agent. It renders the
+          snapshot the device chose to publish.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Metadata only</h3>
+        <p class="muted">
+          No prompts, completions, chat history, model weights, files, or
+          shell output. The snapshot is a registry, not a transcript.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Account-scoped</h3>
+        <p class="muted">
+          The 16-digit account number is the credential, exactly as on
+          <a href="/terminal">/terminal</a> and <a href="/guardian">/guardian</a>.
+          The page stores it in this browser only.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container pb-12">
+    <h2>Questions</h2>
+    {faqs.map((faq) => (
+      <details class="panel">
+        <summary class="cursor-pointer font-semibold">{faq.q}</summary>
+        <p class="mt-3 text-body">{faq.a}</p>
+      </details>
+    ))}
+    <div class="row mt-7">
+      <a class="btn btn-primary" href="/scan">Scan your device — free</a>
+      <a class="btn" href="/gurus">Meet the Gurus</a>
+      <a class="btn" href="/rootz">Explore Rootz</a>
+    </div>
+  </section>
+
+  <template id="agent-card-template">
+    <article class="panel flex flex-col gap-4">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h3 class="m-0 text-[1.15rem]" data-field="name"></h3>
+          <p class="m-0 text-[0.85rem] text-faint" data-field="runtime"></p>
+        </div>
+        <span class="shrink-0 rounded-full border px-[0.6rem] py-[0.15rem] text-[0.72rem] font-bold tracking-[0.08em]" data-field="status"></span>
+      </div>
+      <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-[0.9rem]">
+        <div>
+          <dt class="text-faint">Model</dt>
+          <dd class="m-0 break-words" data-field="model"></dd>
+        </div>
+        <div>
+          <dt class="text-faint">Quant</dt>
+          <dd class="m-0" data-field="quant"></dd>
+        </div>
+        <div>
+          <dt class="text-faint">Params</dt>
+          <dd class="m-0" data-field="params"></dd>
+        </div>
+        <div>
+          <dt class="text-faint">Context</dt>
+          <dd class="m-0" data-field="context"></dd>
+        </div>
+        <div>
+          <dt class="text-faint">Weights</dt>
+          <dd class="m-0" data-field="weights"></dd>
+        </div>
+        <div>
+          <dt class="text-faint">Resident</dt>
+          <dd class="m-0" data-field="resident"></dd>
+        </div>
+        <div>
+          <dt class="text-faint">Endpoint</dt>
+          <dd class="m-0 break-all font-mono text-[0.8rem]" data-field="endpoint"></dd>
+        </div>
+        <div>
+          <dt class="text-faint">Heartbeat</dt>
+          <dd class="m-0" data-field="heartbeat"></dd>
+        </div>
+      </dl>
+      <div class="flex flex-wrap gap-[0.45rem]" data-field="capabilities"></div>
+    </article>
+  </template>
+
+  <script>
+    import '../scripts/analytics.ts'
+    import '../scripts/harness.ts'
+    import '../scripts/support.ts'
+  </script>
+</Base>

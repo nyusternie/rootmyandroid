@@ -34,6 +34,7 @@ const common = {
   footerRootz: 'Rootz',
   footerGa: 'Guardian Angel',
   footerGurus: 'Gurus',
+  footerHarness: 'Harness',
   footerParents: 'For Parents',
   footerAgents: 'For Agents',
   footerMcp: 'MCP',

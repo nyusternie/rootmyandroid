@@ -101,7 +101,7 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    (`astro build` → `dist/`). No SSR, no Astro server adapters. Client-side
    JavaScript is limited to the vanilla TS modules on the app pages
    (`/account`, `/audit`, `/pay`, `/profile`, `/scan`, `/guardian`,
-   `/terminal`, and `/app/<package>` — the last one ships exactly three
+   `/terminal`, `/harness`, and `/app/<package>` — the last one ships exactly three
    modules: the analytics beacon, the inline "is it on your device?" block,
    and the support widget; its indexed content is static HTML, and the
    device answer is fetched only after the visitor types an account number,

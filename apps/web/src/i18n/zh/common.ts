@@ -25,6 +25,7 @@ const common: typeof en = {
   footerRootz: 'Rootz',
   footerGa: 'Guardian Angel',
   footerGurus: 'Gurus',
+  footerHarness: 'Harness',
   footerParents: '致家长',
   footerAgents: '致 AI Agent',
   footerMcp: 'MCP',
