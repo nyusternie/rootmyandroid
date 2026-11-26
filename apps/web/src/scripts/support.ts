@@ -13,7 +13,7 @@
 // keeps multi-line formatting.
 // GURU LAYER (docs/HANDOFF-2026-11-08-guru-support-chat.md §4/§4.1): Sage
 // (free) auto-answers every visitor message server-side; The Elder (paid
-// from Guru Balance) is requested via the quote -> consent -> POST .../guru
+// from GURU balance) is requested via the quote -> consent -> POST .../guru
 // flow; "Talk to a human" escalates (POST .../escalate) and mutes Sage.
 // Pending turns are NOT messages: they arrive as `pending_guru` on the poll
 // payload; only terminal states (complete|failed) become thread rows with
@@ -312,7 +312,7 @@ elderQuote.appendChild(elderQuoteRow)
 const elderQuoteError = el('p', 'support-error')
 elderQuoteError.hidden = true
 elderQuote.appendChild(elderQuoteError)
-const elderTopUp = el('a', 'support-link', 'Top up Guru Balance on your account page →')
+const elderTopUp = el('a', 'support-link', 'Top up GURU balance on your account page →')
 elderTopUp.href = '/account'
 elderTopUp.hidden = true
 elderQuote.appendChild(elderTopUp)
@@ -475,7 +475,7 @@ function renderMessage(msg: SupportMessage) {
   // straight off guru.chargeUsd (§4 — the receipt rides the message).
   if (author === 'elder' && msg.guru?.status === 'complete' && msg.guru.chargeUsd) {
     row.appendChild(
-      el('p', 'support-receipt', `Charged ${msg.guru.chargeUsd} USD from Guru Balance`),
+      el('p', 'support-receipt', `Charged ${msg.guru.chargeUsd} USD from GURU balance`),
     )
   }
   const time = el('time', 'support-msg-meta')
@@ -735,7 +735,7 @@ function handleGuruError(err: unknown, target: HTMLElement) {
   if (e?.error === 'insufficient_guru_balance' || e?.code === '402') {
     const d = e?.data ?? {}
     // USD strings verbatim — never arithmetic on them (§4.1-F2).
-    target.textContent = `Insufficient Guru Balance — this turn needs up to ${String(d.requiredUsd ?? '?')} USD; your balance is ${String(d.balanceUsd ?? '?')} USD.`
+    target.textContent = `Insufficient GURU balance — this turn needs up to ${String(d.requiredUsd ?? '?')} USD; your balance is ${String(d.balanceUsd ?? '?')} USD.`
     target.hidden = false
     elderTopUp.hidden = false
     return
@@ -753,8 +753,8 @@ function showElderEntry() {
   elderEntryError.hidden = true
   elderTopUp.hidden = true
   elderEntryText.textContent = accountLinked
-    ? 'This conversation is linked to an account. Enter its 16-digit number — The Elder is charged to that account’s Guru Balance, always quoted before anything runs.'
-    : 'The Elder is pay-per-use from Guru Balance — the maximum charge is quoted before anything runs. Enter your 16-digit account number (no sign-up, no email).'
+    ? 'This conversation is linked to an account. Enter its 16-digit number — The Elder is charged to that account’s GURU balance, always quoted before anything runs.'
+    : 'The Elder is pay-per-use from GURU balance — the maximum charge is quoted before anything runs. Enter your 16-digit account number (no sign-up, no email).'
   if (elderAccountNumber) {
     elderInput.value = elderAccountNumber
     elderContinue.disabled = false
@@ -787,8 +787,8 @@ async function fetchElderQuote() {
     elderQuoteError.hidden = true
     const sufficient = q.sufficient === true
     elderQuoteText.textContent = sufficient
-      ? `Maximum charge ${String(q.quoteUsd)} USD · Guru Balance ${String(q.balanceUsd)} USD. The quote is a cap — the receipt shows the actual charge.`
-      : `Maximum charge ${String(q.quoteUsd)} USD · Guru Balance ${String(q.balanceUsd)} USD — insufficient balance. Top up first; nothing was charged.`
+      ? `Maximum charge ${String(q.quoteUsd)} USD · GURU balance ${String(q.balanceUsd)} USD. The quote is a cap — the receipt shows the actual charge.`
+      : `Maximum charge ${String(q.quoteUsd)} USD · GURU balance ${String(q.balanceUsd)} USD — insufficient balance. Top up first; nothing was charged.`
     elderConfirm.disabled = !sufficient
     elderTopUp.hidden = sufficient
   } catch (err) {

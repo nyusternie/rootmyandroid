@@ -38,11 +38,12 @@ inference, never one unit for both.**
 
 **Still undecided — do not invent:**
 
-1. **The ledger's smallest unit.** `accounts.guru_balance` is INTEGER
-   (`rootmyandroid-api/src/schema.js:15`) and 1 GURU is one cent, so nothing
-   below $0.01 can be charged — while one inference request normally costs a
-   fraction of a cent. Milli-GURU (1 GURU = 1000 stored units) or whole-cent
-   pricing: an owner/API decision.
+1. **The ledger's smallest unit — answered by the existing pricing record.**
+   `rootmyandroid-api/docs/ai-pricing.md:17` charges in integer nano-USD and
+   its examples are 525,000 nUSD ($0.000525) and 15,525,000 nUSD
+   ($0.015525). Since 1 GURU = $0.01 = 10,000,000 nUSD, **1 nano-GURU ==
+   1 nano-USD** and no rescaling is needed. A whole-GURU column is five
+   orders too coarse (the cheap turn is 0.0525 GURU) — store nano-GURU.
 2. **Redeemability.** A peg is a conversion rate, not a buy-back promise.
    `/gurus:212` says top-ups are non-refundable and `/terms:51` says the
    balance is not redeemable for cash — so the word "stablecoin" cannot go
@@ -120,6 +121,21 @@ satisfy "retire Halo 100%" would be a regression.
 | `--halo N` (`make-codes.js`) | `--guru N` |
 | `halo_consumed` (analytics) | `guru_consumed` |
 | "Guru Balance" (display) | "GURU balance" |
+
+---
+
+## 3.5 The AI ledger is greenfield — build it in GURU from row one
+
+`docs/ai-pricing.md` in the API repo defines the inference accounting
+(`ai_sessions` / `ai_requests` / `ai_ledger_entries` / `model_price_versions`)
+as a **future** handoff, and `grep -rli guru` over `rootmyandroid-api` returns
+that document and nothing else. Meanwhile `apps/web/src/lib/api.js:196,207`
+already calls `POST /v1/support/conversations/{id}/guru` and `…/guru/quote`,
+which the API does not implement (only `POST /conversations` and the two
+`/messages` routes exist, `src/index.js:1503`).
+
+So there is nothing to migrate on the AI side — there is something to build.
+When it lands, the unit is nano-GURU and the peg makes it equal to nano-USD.
 
 ---
 

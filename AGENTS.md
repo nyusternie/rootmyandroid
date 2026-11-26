@@ -374,12 +374,22 @@ no stored card). The authoritative price table (also live on `/pricing`):
   refundable for cash or cryptocurrency"* (terms.astro:51). Publishing
   "stablecoin" would imply cash-out and contradict both. The peg may be
   published; the label needs a terms change first.
-- **The ledger's smallest unit is unresolved.** D1 stores
-  `accounts.guru_balance` as INTEGER (`rootmyandroid-api/src/schema.js:15`)
-  and 1 GURU is one cent, so the ledger cannot express a charge below
-  $0.01 — while a single inference request typically costs a fraction of a
-  cent. Either the column becomes milli-GURU (1 GURU = 1000 stored units) or
-  requests are priced in whole cents. Owner/API decision, not an agent's.
+- **The ledger must be nano-GURU, not whole GURU.** The owner-ruled AI
+  pricing record charges customers in integer **nano-USD** (1e-9 USD) and
+  rounds UP (`rootmyandroid-api/docs/ai-pricing.md:17`, ruling 3); its
+  worked examples are 525,000 nUSD ($0.000525) and 15,525,000 nUSD
+  ($0.015525). With the peg, 1 GURU = $0.01 = 10,000,000 nUSD, so
+  **1 nano-GURU == 1 nano-USD** — the inference ledger and the GURU ledger
+  are numerically identical and need no rescaling. A whole-GURU INTEGER
+  column is five orders of magnitude too coarse: the cheap turn is 0.0525
+  GURU. Store nano-GURU.
+- **The AI billing backend does not exist yet.** `ai-pricing.md` describes
+  `ai_sessions` / `ai_requests` / `ai_ledger_entries` / `model_price_versions`
+  as a future handoff, and `grep -rli guru` in `rootmyandroid-api` finds only
+  that document — while `apps/web/src/lib/api.js:196,207` already calls
+  `POST /v1/support/conversations/{id}/guru` and `…/guru/quote`, which the
+  API does not implement. So the GURU ledger is greenfield: build it in
+  nano-GURU from the first row, never in cents.
 - **Discounts do not move the peg.** Wholesale tiers discount the USD a
   vendor pays for a batch; they never change what 1 GURU is worth at retail
   — and the crypto discount already never applies to GURU top-ups

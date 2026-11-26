@@ -60,12 +60,19 @@ prices. Halo died because one unit covered both time and consumption
 
 **Not decided — do not invent:**
 
-1. **The ledger's smallest unit.** `accounts.guru_balance` is INTEGER
-   (`src/schema.js:15`) and one GURU is one cent, so the column cannot
-   express a charge below $0.01 — while a single inference request normally
-   costs a fraction of a cent. Either store milli-GURU (1 GURU = 1000
-   stored units) or price requests in whole cents. **Decide before the
-   consume path is unfrozen**; the rename itself can leave the column as-is.
+1. **The ledger's smallest unit is already decided by your own record — use
+   it.** `docs/ai-pricing.md:17` (owner ruling 2026-11-08, ruling 3) charges
+   customers in integer **nano-USD** (1e-9 USD), rounded up, and its worked
+   examples are 525,000 nUSD ($0.000525) and 15,525,000 nUSD ($0.015525).
+   With the peg, 1 GURU = $0.01 = **10,000,000 nUSD**, so
+   **1 nano-GURU == 1 nano-USD**: the two ledgers are numerically identical
+   and need no rescaling.
+
+   Consequence: a whole-GURU INTEGER column (`src/schema.js:15`) is five
+   orders of magnitude too coarse — the cheap Sage turn is **0.0525 GURU**.
+   Store **nano-GURU** (`guru_balance_nano`, 1e7 per GURU). Milli-GURU would
+   still be 50× too coarse. This is a real change, so it belongs in its own
+   commit, not inside the mechanical rename.
 2. **Whether the pack ladder stays a credit ladder.** `HALO_PACKS`
    (`src/lib/halo.js:15-17`) still encodes the retired `$5 = 1 Halo`
    economics, which no longer matches the published plan table on `/pricing`.
@@ -244,7 +251,7 @@ None of this blocks the rename; the rename should land first and alone.
 | # | Question | Recommendation |
 |---|---|---|
 | Q1 | Pack ids: `guru_1/4/6` (rename) or new ids matched to the peg ($5 = 500 GURU)? | **Rename only** in the cutover commit; re-deriving the ladder is a separate owner-gated change (§2.2) |
-| Q1b | Does the ledger store GURU or milli-GURU? | **Decide before the consume path unfreezes** — see §2.1. Not required for the rename. |
+| Q1b | Does the ledger store GURU or nano-GURU? | **nano-GURU** — 1 nGURU == 1 nUSD under the peg, so it reuses the `ai-pricing.md` arithmetic unchanged (§2.1) |
 | Q1c | May the API describe GURU as a "stablecoin" in descriptions? | **No** — the peg is publishable, the label is not: `/gurus` states top-ups are non-refundable and `/terms` states the balance is not redeemable for cash. A "stablecoin" that cannot be redeemed contradicts both. |
 | Q2 | Does `POST /v1/guru/consume` stay frozen after the rename? | **Yes** — carry the 2026-11-04 ruling forward verbatim |
 | Q3 | Wire break on `POST /v1/accounts`: emit `guru_balance` only, or both for a release? | **Only** — D3 says no aliases, and there is no consumer to break |
