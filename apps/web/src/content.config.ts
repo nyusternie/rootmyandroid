@@ -182,7 +182,15 @@ const models = defineCollection({
 // The package name IS the file id, so the URL is the identifier people
 // actually search for.
 const apps = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/apps' }),
+  loader: glob({
+    pattern: '**/*.md',
+    base: './src/content/apps',
+    // The file name IS the package name, dots included. Astro's default id
+    // generation slugs the path, and a slug drops dots — "com.topjohnwu.magisk"
+    // became "comtopjohnwumagisk" and every /app/ URL 404'd (measured live
+    // 2026-11-26). Strip the extension only.
+    generateId: ({ entry }) => entry.replace(/\.md$/, ''),
+  }),
   schema: z.object({
     // Display name, e.g. "Magisk".
     name: z.string(),
