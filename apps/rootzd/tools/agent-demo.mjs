@@ -82,6 +82,20 @@ if (TRANSPORT === 'relay') {
 //                          evidence — UNSTUCK greedy decoding (measured)
 const MODE = opt('mode', 'loopguard')
 
+// Handoff §5.2: a negative answer is UNVERIFIED until a pinned canonical
+// probe set agrees. The set is driver-owned, read-only, and runs at DONE
+// time only; it never goes through the model's action loop.
+const NEGATIVE_RE =
+  /\b(not found|absent|unknown|no root|not rooted|not present|not detected|missing|no evidence|without root)\b/i
+const ROOT_NEGATIVE_RE =
+  /\b(no|without)\s+(root|su)\b|\b(root|su)\b[^.]*\b(not|no|absent|missing|unknown)\b/i
+const CANONICAL_PROBES = [
+  ['getenforce', 'getenforce'],
+  ['which su', 'which su 2>/dev/null || echo not found'],
+  ['ro.build.tags', 'getprop ro.build.tags'],
+  ['ro.debuggable', 'getprop ro.debuggable'],
+]
+
 // ---------------------------------------------------------------- guard
 // MIRRORED from CommandGuard.kt — keep 1:1.
 
@@ -345,6 +359,27 @@ async function main() {
     transcript.push({ role: 'assistant', text: actionJson })
     if (typeof action.done === 'string') {
       say(`turn ${turn} | DONE — model's findings: ${action.done}`)
+      if (NEGATIVE_RE.test(action.done)) {
+        say(`turn ${turn} | NEGATIVE VERIFICATION — pinned canonical probes (driver-owned, read-only):`)
+        const probes = CANONICAL_PROBES.map(([label, cmd]) => {
+          const r = shell(cmd, 15000)
+          say(`  ${label}: rc=${r.rc} out=${JSON.stringify((r.stdout || r.stderr || '').slice(0, 200))}`)
+          return { label, r }
+        })
+        const su = probes.find((p) => p.label === 'which su')
+        const suOut = (su?.r.stdout || '').trim()
+        if (
+          ROOT_NEGATIVE_RE.test(action.done) &&
+          su &&
+          su.r.rc === 0 &&
+          suOut &&
+          !/not found/i.test(suOut)
+        ) {
+          say(`turn ${turn} | NEGATIVE VERIFICATION: CONTRADICTED — root-negative is UNVERIFIED; 'which su' returned ${JSON.stringify(suOut.slice(0, 200))}`)
+        } else {
+          say(`turn ${turn} | NEGATIVE VERIFICATION: probes recorded — negative remains UNVERIFIED until reviewed`)
+        }
+      }
       break
     }
     if (action.tool !== 'shell' || typeof action.cmd !== 'string' || !action.cmd.trim()) {

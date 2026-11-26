@@ -1020,7 +1020,9 @@ the `audit_report` price). Lane A transport is now in
 `apps/rootzd/tools/agent-demo.mjs` (`--transport relay --account … --device …`):
 each model command runs through the production E2E relay via
 `e2e-probe.mjs --json`; the model loop and guard are unchanged. First live
-run pending. Handoffs:
+run pending. Negative answers trigger the pinned canonical probes and a
+`NEGATIVE VERIFICATION` log line; a root-negative contradicted by `which su`
+is marked UNVERIFIED. Handoffs:
 `docs/HANDOFF-2026-11-26-harness-page.md`,
 `docs/HANDOFF-2026-11-26-harness-api.md`, the reviewed reply
 `docs/HANDOFF-ACK-2026-11-26-harness-api.md`, and the rate-limit follow-up

@@ -153,6 +153,14 @@ node apps/rootzd/tools/agent-demo.mjs \
 - First live run pending: pair/run the Rootz relay daemon, forward llama-server,
   then run the command above. Watch the §5.1 shell-vs-root tier difference in
   what the audit can see.
+- **Negative verification (§5.2) is implemented** in the same driver. When
+  the model's `done` text matches a negative (`not found`, `absent`,
+  `unknown`, `no root`, …), the driver runs the pinned canonical probes
+  `getenforce`, `which su 2>/dev/null || echo not found`,
+  `getprop ro.build.tags`, and `getprop ro.debuggable`, logs every result,
+  and marks the negative `UNVERIFIED`. A root-negative contradicted by
+  `which su` is logged as `CONTRADICTED`. The probes are driver-owned and
+  read-only; they do not go through the model's action loop.
 
 — end of handoff. Questions: the 7 logs + the profile page are the
 ground truth; this doc is the map, not the territory.
