@@ -228,6 +228,14 @@ Then:
   `Dedicated harness route · received …` when B is live.
 - Run the tool with `--dry-run` first, then without:
   `node apps/rootzd/tools/harness-heartbeat.mjs --snapshot apps/rootzd/tools/harness-snapshot.example.json --account <16 digits> --device <64 hex> --device-name "Pixel 5"`.
+- For a continuous test, add `--watch --interval 60`; the tool re-reads the
+  snapshot file each cycle. With `--audit-fallback`, the first audit write
+  carries the audit-route charge and later refreshes are free.
+- To exercise the page's B path before the Worker route exists, run the
+  DEV-ONLY mock: `node apps/web/tools/mock-harness-api.mjs` (port 8787),
+  then set `window.__RMA_API_BASE__ = 'http://127.0.0.1:8787/v1'` in the
+  browser console. The mock preloads account `1234567890123456` and device
+  `aaaa…`; the page's **Sync agents** reads the mock heartbeat route.
 
 ---
 
@@ -235,7 +243,8 @@ Then:
 
 - [ ] D1 migration for `harness_snapshots`.
 - [ ] `POST /v1/harness/heartbeat` handler: validation, 16 KiB cap, upsert,
-      free, `received_at`.
+      free, `received_at`; return `free: true` and never call
+      `chargeService`.
 - [ ] `POST /v1/harness/agents/list` handler: read, 404 shapes, free.
 - [ ] Router entries + the route catalog (the API's `/` route list).
 - [ ] Rate limits through the existing helper.

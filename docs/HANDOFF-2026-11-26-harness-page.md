@@ -325,9 +325,14 @@ needs an owner-ruled threshold; no threshold is shipped.
   Vitest files (`harness.test.ts`, `ai-surfaces.test.js`, `api.test.js`).
 - `apps/rootzd/tools/harness-heartbeat.mjs --dry-run` prints the exact
   heartbeat payload without a network call; the example snapshot is
-  `apps/rootzd/tools/harness-snapshot.example.json`.
+  `apps/rootzd/tools/harness-snapshot.example.json`. `--watch --interval 60`
+  re-reads the snapshot each cycle; `--audit-fallback` keeps the audit
+  fallback available.
 - The page's sample is labeled in three places: the hero PREVIEW badge, the
   registry SAMPLE badge, and the registry note. A real sync changes the badge
   to LIVE SNAPSHOT and the note to the route/timestamp.
 - The page asks Option B first and falls back to Option A on 404; the
   `listHarnessAgents` client call is pinned in `api.test.js`.
+- The DEV-ONLY mock `apps/web/tools/mock-harness-api.mjs` exercises the B
+  path (heartbeat/list, relay device list, audit fallback) without the Worker
+  route; set `window.__RMA_API_BASE__` to its base in the browser console.

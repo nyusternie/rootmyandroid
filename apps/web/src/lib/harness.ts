@@ -71,6 +71,11 @@ export interface HarnessBudget {
   headroomGiB: number
 }
 
+export interface HarnessRouteResponse {
+  snapshot: HarnessSnapshot
+  receivedAt: string | null
+}
+
 /**
  * A labeled sample snapshot. The values that are real measurements are the
  * model sizes (Q4_K_M file sizes verified on /models, 2026-11-11) and the
@@ -261,6 +266,21 @@ export function parseHarnessSnapshot(value: unknown): HarnessSnapshot | null {
 }
 
 /**
+ * Read a dedicated-route response: either the §5 contract shape
+ * `{ ok, snapshot, received_at }` or a bare snapshot (older/alternate
+ * shape). Returns null when the payload has no valid v1 snapshot.
+ */
+export function readHarnessRouteResponse(
+  value: unknown,
+): HarnessRouteResponse | null {
+  if (!isRecord(value)) return null
+  const raw = isRecord(value.snapshot) ? value.snapshot : value
+  const snapshot = parseHarnessSnapshot(raw)
+  if (!snapshot) return null
+  return { snapshot, receivedAt: text(value.received_at) }
+}
+
+/**
  * The page's memory readout: resident memory of RUNNING agents plus the
  * shared harness supervisor, against the free RAM the device reported.
  * Idle/stopped agents hold no resident memory in this model.
@@ -295,6 +315,22 @@ export function formatStamp(iso: string): string {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return iso
   return `${date.toISOString().slice(0, 16).replace('T', ' ')} UTC`
+}
+
+/** Coarse age label; the exact timestamp stays visible next to it. */
+export function formatAge(iso: string, now: Date = new Date()): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  const seconds = Math.max(
+    0,
+    Math.floor((now.getTime() - date.getTime()) / 1000),
+  )
+  if (seconds < 60) return 'just now'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes} min ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} h ago`
+  return `${Math.floor(hours / 24)} d ago`
 }
 
 export function statusLabel(status: HarnessAgentStatus): string {

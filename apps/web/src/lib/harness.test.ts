@@ -4,11 +4,13 @@
 import { describe, expect, it } from 'vitest'
 import {
   HARNESS_SAMPLE,
+  formatAge,
   formatContext,
   formatGiB,
   formatStamp,
   memoryBudget,
   parseHarnessSnapshot,
+  readHarnessRouteResponse,
   statusLabel,
 } from './harness'
 
@@ -106,6 +108,30 @@ describe('parseHarnessSnapshot', () => {
   })
 })
 
+describe('readHarnessRouteResponse', () => {
+  it('reads the §5 response shape', () => {
+    const route = readHarnessRouteResponse({
+      ok: true,
+      snapshot: HARNESS_SAMPLE,
+      received_at: '2026-11-26T19:00:00Z',
+    })
+    expect(route?.snapshot.agents).toHaveLength(1)
+    expect(route?.receivedAt).toBe('2026-11-26T19:00:00Z')
+  })
+
+  it('accepts a bare snapshot and a missing received_at', () => {
+    const route = readHarnessRouteResponse(HARNESS_SAMPLE)
+    expect(route?.snapshot.schema).toBe(1)
+    expect(route?.receivedAt).toBeNull()
+  })
+
+  it('rejects a payload with no valid snapshot', () => {
+    expect(readHarnessRouteResponse(null)).toBeNull()
+    expect(readHarnessRouteResponse({ ok: true, snapshot: null })).toBeNull()
+    expect(readHarnessRouteResponse({ snapshot: { schema: 2 } })).toBeNull()
+  })
+})
+
 describe('formatting helpers', () => {
   it('formats GiB and context with two decimals / thousands separators', () => {
     expect(formatGiB(2.33)).toBe('2.33 GiB')
@@ -116,6 +142,15 @@ describe('formatting helpers', () => {
   it('formats an ISO timestamp deterministically in UTC', () => {
     expect(formatStamp('2026-11-26T18:55:00Z')).toBe('2026-11-26 18:55 UTC')
     expect(formatStamp('not-a-date')).toBe('not-a-date')
+  })
+
+  it('formats a coarse age against a fixed now', () => {
+    const now = new Date('2026-11-26T19:10:00Z')
+    expect(formatAge('2026-11-26T19:09:30Z', now)).toBe('just now')
+    expect(formatAge('2026-11-26T19:05:00Z', now)).toBe('5 min ago')
+    expect(formatAge('2026-11-26T17:10:00Z', now)).toBe('2 h ago')
+    expect(formatAge('2026-11-24T19:10:00Z', now)).toBe('2 d ago')
+    expect(formatAge('not-a-date', now)).toBe('')
   })
 
   it('labels all three agent states', () => {

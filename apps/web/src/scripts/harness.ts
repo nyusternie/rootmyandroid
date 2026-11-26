@@ -16,11 +16,13 @@
 import { listDeviceAudits, listHarnessAgents, listRelayDevices } from '../lib/api.js'
 import {
   HARNESS_SAMPLE,
+  formatAge,
   formatContext,
   formatGiB,
   formatStamp,
   memoryBudget,
   parseHarnessSnapshot,
+  readHarnessRouteResponse,
   statusLabel,
   type HarnessAgentStatus,
   type HarnessSnapshot,
@@ -288,15 +290,15 @@ document.addEventListener('DOMContentLoaded', () => {
       // existing audit pipeline (Option A).
       const harness = await listHarnessAgents(account, deviceId)
       if (harness.ok) {
-        const snapshot = parseHarnessSnapshot(
-          harness.data?.snapshot ?? harness.data,
-        )
-        if (snapshot) {
+        const route = readHarnessRouteResponse(harness.data)
+        if (route) {
+          const { snapshot, receivedAt } = route
+          const when = receivedAt ?? snapshot.collected_at
           localStorage.setItem(LS_DEVICE, deviceId)
           renderSnapshot(snapshot, 'device')
           setStatus('Snapshot synced from the dedicated harness route.', 'ok')
           setSource(
-            `Dedicated harness route · received ${formatStamp(harness.data?.received_at ?? snapshot.collected_at)}`,
+            `Dedicated harness route · received ${formatStamp(when)} (${formatAge(when)})`,
           )
           return
         }
@@ -349,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderSnapshot(snapshot, 'device')
       setStatus('Snapshot synced through the audit fallback.', 'ok')
       setSource(
-        `Audit fallback · collected ${formatStamp(snapshot.collected_at)}`,
+        `Audit fallback · collected ${formatStamp(snapshot.collected_at)} (${formatAge(snapshot.collected_at)})`,
       )
     } catch {
       setStatus('Network error while reading the snapshot.', 'warn')
