@@ -1,30 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- apps/guardian-angel/android/app/src/main/res/drawable/guardian_notif.xml -->
-<!-- Status-bar / notification icon: an outlined shield with a check —
-     protection, in one glyph. Monochrome by design: Android tints
-     status-bar icons, so any colour would be flattened to a white
-     silhouette. Stroked, not filled: a cut-out check (evenOdd) ate the
-     shield's left edge at 24dp (measured in a 24dp rasterisation), and
-     notification icons have no background colour to draw a filled check
-     against. -->
+<!-- Status-bar / notification icon: the halo (owner order 2026-11-26) —
+     the Guardian Angel's own emblem, and the one mark that still reads at
+     status-bar size (~18dp). Monochrome by design: Android tints status-bar
+     icons, so any colour is flattened to a white silhouette — which is also
+     why this is a vector and not the 😇 glyph: an emoji is a colour bitmap
+     and VectorDrawable has no <text>.
+     A single ring, nothing else: sparkles and a face turn to mush at 18dp
+     (checked in a 24dp rasterisation), and a bare ring is the shape the
+     emoji's halo is recognised by. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
-    <!-- shield outline -->
     <path
         android:fillColor="@android:color/transparent"
         android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="1.9"
-        android:strokeLineJoin="round"
-        android:pathData="M12,2.3 L19.9,5.1 L19.9,11.2 C19.9,16.3 16.5,20.5 12,21.9 C7.5,20.5 4.1,16.3 4.1,11.2 L4.1,5.1 Z" />
-    <!-- check -->
-    <path
-        android:fillColor="@android:color/transparent"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.1"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M8.3,12.4 L10.8,14.9 L15.6,10.1" />
+        android:strokeWidth="2"
+        android:pathData="M3.9,12 a8.1,4.7 0 1,0 16.2,0 a8.1,4.7 0 1,0 -16.2,0 Z" />
 </vector>
