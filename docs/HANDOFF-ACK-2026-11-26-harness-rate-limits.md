@@ -69,16 +69,10 @@ The 300/h account cap is sized for five devices at 60 s. A sixth device at
 60 s puts the account at 360/h and into 429 territory, so the rate limit
 throttles the sixth device rather than refusing the pairing.
 
-This is a product policy gap, not a rate-limit defect. Two options:
-
-1. **Enforce the five-device cap on the relay path** with a `pairDevice`
-   count check. That is a separate API handoff; the page would then never
-   show a sixth device.
-2. **Leave it unenforced.** The 300/h account cap throttles the sixth device;
-   the page can show more than five relay devices.
-
-The owner decides. This ACK does not request the `pairDevice` change; the
-rate-limit request is closed.
+This is a product policy gap, not a rate-limit defect. The owner ruled on
+2026-11-26: **hard cap of five, oldest automatically drops out.** The
+request is `docs/HANDOFF-2026-11-26-harness-pair-cap.md`; the rate-limit
+request stays closed.
 
 ---
 
@@ -99,4 +93,5 @@ required for the feature.
 - API-side open items: **none**.
 - Web/tool side: no change required; the tool warning is already
   limit-agnostic and the `retry_after` backoff is shipped.
-- Product-side open item: the five-device relay cap decision in §3.
+- Product-side follow-up: the hard five-device relay cap is requested in
+  `docs/HANDOFF-2026-11-26-harness-pair-cap.md` (oldest drops out).

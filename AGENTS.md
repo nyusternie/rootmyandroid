@@ -453,9 +453,12 @@ no stored card). The authoritative price table (also live on `/pricing`):
   enforcement is server-side in `rootmyandroid-api` — do NOT hard-code
   discounted amounts in clients.
 - Each account links up to 5 devices (Mullvad parity, owner ruling
-  2026-11-05) via `POST /v1/guardian-angel/sync` (API team, 2026-11-05); a
-  device-swap cooldown (~72h) is PROPOSED, not ruled — do not state an exact
-  cooldown in user-facing copy until the owner rules it.
+  2026-11-05) via `POST /v1/guardian-angel/sync` (API team, 2026-11-05). The
+  Rootz relay path carries the same hard cap with oldest-drop (owner ruling
+  2026-11-26; requested in
+  `docs/HANDOFF-2026-11-26-harness-pair-cap.md`). A device-swap cooldown
+  (~72h) is PROPOSED, not ruled — do not state an exact cooldown in
+  user-facing copy until the owner rules it.
 - Changing any price requires explicit owner approval; a pinned API test
   locks the table.
 - The AI-usage balance is `guruBalance` ("GURU balance", unit GURU) —
@@ -1019,5 +1022,6 @@ the `audit_report` price). Handoffs:
 `docs/HANDOFF-ACK-2026-11-26-harness-api.md`, and the rate-limit follow-up
 `docs/HANDOFF-2026-11-26-harness-rate-limits.md` (APPLIED: 300/h both
 heartbeat scopes, API `8172e88`, CI `45898642676`; review
-`docs/HANDOFF-ACK-2026-11-26-harness-rate-limits.md`; open product decision:
-the five-device relay cap is not enforced).
+`docs/HANDOFF-ACK-2026-11-26-harness-rate-limits.md`; follow-up ruling: hard
+five-device relay cap, oldest drops
+(`docs/HANDOFF-2026-11-26-harness-pair-cap.md`)).

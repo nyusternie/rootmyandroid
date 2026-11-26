@@ -108,6 +108,9 @@ internal class RelayDaemon(
     private var sentInWindow = 0
     private var lastSweepMs = 0L
 
+    /** Name of the device evicted by the last successful pair, if any. */
+    @Volatile private var evictedDeviceName: String? = null
+
     // --- lifecycle ---------------------------------------------------------------
 
     fun start() {
@@ -151,6 +154,8 @@ internal class RelayDaemon(
                 return park("relay: the account revoked this device (403) — unpair it in account settings to reuse this identity")
             PostOutcome.FatalConfig ->
                 return park("relay: this device identity is paired to another account (409) — delete app data to mint a new one")
+            PostOutcome.DeviceDropped ->
+                return park(DROPPED_MESSAGE)
             is PostOutcome.Ok -> Unit
         }
         if (stopped || parked) return
@@ -161,6 +166,16 @@ internal class RelayDaemon(
                 return park("relay: the account revoked this device (403) — unpair it in account settings to reuse this identity")
             PostOutcome.FatalConfig ->
                 return park("relay: this device identity is paired to another account (409) — delete app data to mint a new one")
+            PostOutcome.DeviceDropped -> {
+                // The row is gone: a newer pairing hit the 5-device cap. Drop
+                // the paired marker, write the dropped marker so a reboot does
+                // not auto-repair in a loop, and park until the user taps
+                // Start relay (which clears the dropped marker).
+                val relayDir = File(context.filesDir, "relay")
+                File(relayDir, "paired").delete()
+                File(relayDir, "dropped").writeText("$account\n")
+                return park(DROPPED_MESSAGE)
+            }
             is PostOutcome.Ok -> out.body
         }
         val challenge = try {
@@ -263,7 +278,13 @@ internal class RelayDaemon(
             is E2eSession.Frame.Enc -> onEnc(frame)
             E2eSession.Frame.Authed -> {
                 backoffMs = BACKOFF_INIT_MS
-                onStatus("relay: up — device reachable through the relay ✓")
+                val dropped = evictedDeviceName
+                if (dropped != null) {
+                    evictedDeviceName = null
+                    onStatus("relay: up — dropped $dropped (5-device limit)")
+                } else {
+                    onStatus("relay: up — device reachable through the relay ✓")
+                }
                 onReceipt("✓ relay tunnel authenticated (device ${identity.deviceId.take(12)}…)")
             }
             else -> Unit // Welcome/Err/Other: daemon-originated or noise — ignored
@@ -459,10 +480,16 @@ internal class RelayDaemon(
         object Retry : PostOutcome()
         object Revoked : PostOutcome()
         object FatalConfig : PostOutcome()
+        object DeviceDropped : PostOutcome()
     }
 
     private fun ensurePaired(): PostOutcome {
-        val marker = File(File(context.filesDir, "relay"), "paired")
+        val relayDir = File(context.filesDir, "relay")
+        val dropped = File(relayDir, "dropped")
+        if (dropped.isFile && dropped.readText().trimEnd('\n') == account) {
+            return PostOutcome.DeviceDropped
+        }
+        val marker = File(relayDir, "paired")
         val saved = if (marker.isFile) marker.readText().trimEnd('\n') else null
         if (saved == account) return PostOutcome.Ok("")
         val out = postJson(
@@ -471,7 +498,21 @@ internal class RelayDaemon(
                 .put("account_number", account)
                 .put("device_pubkey", E2eSession.B64.encode(identity.pubkey)),
         )
-        if (out is PostOutcome.Ok) marker.writeText("$account\n")
+        if (out is PostOutcome.Ok) {
+            marker.writeText("$account\n")
+            dropped.delete()
+            if (out.body.isNotEmpty()) {
+                try {
+                    val name = JSONObject(out.body).optString("evicted_device_name")
+                    if (name.isNotEmpty()) {
+                        evictedDeviceName = name
+                        onReceipt("✓ paired — dropped $name (5-device limit)")
+                    }
+                } catch (_: Exception) {
+                    // Older API response without the additive eviction fields.
+                }
+            }
+        }
         return out
     }
 
@@ -481,9 +522,14 @@ internal class RelayDaemon(
             JSONObject()
                 .put("account_number", account)
                 .put("device_id", identity.deviceId),
+            notFound = PostOutcome.DeviceDropped,
         )
 
-    private fun postJson(path: String, body: JSONObject): PostOutcome {
+    private fun postJson(
+        path: String,
+        body: JSONObject,
+        notFound: PostOutcome = PostOutcome.Retry,
+    ): PostOutcome {
         val conn = try {
             (URL(API_BASE + path).openConnection() as HttpsURLConnection).apply {
                 connectTimeout = HTTP_TIMEOUT_MS
@@ -500,6 +546,7 @@ internal class RelayDaemon(
             when (conn.responseCode) {
                 in 200..299 -> PostOutcome.Ok(conn.inputStream.use { it.readBytes().toString(Charsets.UTF_8) })
                 403 -> PostOutcome.Revoked
+                404 -> notFound
                 409 -> PostOutcome.FatalConfig
                 else -> PostOutcome.Retry
             }
@@ -515,6 +562,8 @@ internal class RelayDaemon(
     companion object {
         private const val API_BASE = "https://rootmyandroid.com/v1"
         private const val RELAY_HOST = "relay.rootmyandroid.com"
+        private const val DROPPED_MESSAGE =
+            "relay: this device was dropped by a newer pairing (5-device limit) — tap Start relay to re-pair"
 
         /** relay.rs: MAX_SESSIONS. */
         private const val MAX_SESSIONS = 8

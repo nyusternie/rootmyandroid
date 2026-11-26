@@ -110,8 +110,9 @@ API commit `8172e88`, CI `45898642676`. The 240/240 option is withdrawn.
 The request is `docs/HANDOFF-2026-11-26-harness-rate-limits.md`; the reply
 review is `docs/HANDOFF-ACK-2026-11-26-harness-rate-limits.md`. The API team
 owns only the two constants; the tool warning is limit-agnostic in this
-repo. The rate-limit request is closed; the only open item is the product
-decision on the five-device relay cap.
+repo. The rate-limit request is closed. The owner's follow-up ruling (hard
+five-device relay cap, oldest drops out) is requested in
+`docs/HANDOFF-2026-11-26-harness-pair-cap.md`.
 
 ---
 

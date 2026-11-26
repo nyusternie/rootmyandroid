@@ -26,6 +26,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
+import java.io.File
 import java.net.Socket
 import kotlin.concurrent.thread
 
@@ -420,6 +421,9 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             getSharedPreferences(PREFS_RELAY, MODE_PRIVATE).edit().putString(KEY_ACCOUNT, account).apply()
+            // A dropped device re-pairs only on an explicit Start relay tap;
+            // clearing the marker is what lets the daemon pair again.
+            File(File(filesDir, "relay"), "dropped").delete()
             relayStatus.text = "relay: starting…"
             setPairingQrVisible(false)
             startRelayDaemon(account)

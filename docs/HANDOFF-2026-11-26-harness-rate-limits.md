@@ -119,5 +119,6 @@ warning; that string lives in this repo and is limit-agnostic.
 Applied 2026-11-26 in `rootmyandroid-api` commit `8172e88` (CI
 `45898642676`): both heartbeat caps are 300/h; the list caps are unchanged.
 The reply records a 61/61 live burst and the 429 tests. The review is
-`docs/HANDOFF-ACK-2026-11-26-harness-rate-limits.md`; the only open item is
-the product decision on the five-device relay cap, not the rate limit.
+`docs/HANDOFF-ACK-2026-11-26-harness-rate-limits.md`. The rate limit is
+closed; the owner's follow-up ruling (hard five-device relay cap, oldest
+drops out) is `docs/HANDOFF-2026-11-26-harness-pair-cap.md`.
