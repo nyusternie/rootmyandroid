@@ -84,6 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const detailDevice = el<HTMLElement>('app-detail-device')
   const detailShared = el<HTMLElement>('app-detail-shared')
   const detailNote = el<HTMLParagraphElement>('app-detail-note')
+  const detailPosition = el<HTMLParagraphElement>('app-detail-position')
+  const detailExtra = el<HTMLDivElement>('app-detail-extra')
+  const detailExtraList = el<HTMLDListElement>('app-detail-extra-list')
   const detailClose = el<HTMLButtonElement>('app-detail-close')
   const appsRefresh = el<HTMLButtonElement>('apps-refresh')
   const appsStatus = el<HTMLParagraphElement>('apps-status')
@@ -376,6 +379,56 @@ document.addEventListener('DOMContentLoaded', () => {
    *  second click must not paint the first app's answer into it). */
   let detailToken = 0
 
+  /** "app 42 of 315" — where this app sits in the shared snapshot. The
+   *  index comes from the array the page already holds, so it is only
+   *  trustworthy while the server's `count` matches that array; when a newer
+   *  snapshot has landed, only the size is stated. */
+  function setDetailPosition(index: number, total: number | undefined): void {
+    if (!total || total < 1) {
+      detailPosition.textContent = ''
+      return
+    }
+    detailPosition.textContent =
+      index >= 1 && index <= total ? `app ${index} of ${total}` : `${total} apps in this snapshot`
+  }
+
+  /** A value from the server's `details` map → display text. Unknown shapes
+   *  are stringified rather than hidden: the whole point of the slot is that
+   *  the API can add fields without a web deploy. */
+  function formatDetailValue(value: unknown): string {
+    if (value === null || value === undefined) return '—'
+    if (typeof value === 'boolean') return value ? 'yes' : 'no'
+    if (typeof value === 'string') return value || '—'
+    if (typeof value === 'number') return String(value)
+    return JSON.stringify(value)
+  }
+
+  /** Render `app.details` (empty today; fields TBD by the owner). The section
+   *  stays hidden while the map is empty, so the dialog looks the same as
+   *  before the API adds anything. */
+  function renderDetailExtras(details: unknown): void {
+    detailExtraList.innerHTML = ''
+    if (!details || typeof details !== 'object' || Array.isArray(details)) {
+      detailExtra.classList.add('hidden')
+      return
+    }
+    const entries = Object.entries(details as Record<string, unknown>)
+    if (!entries.length) {
+      detailExtra.classList.add('hidden')
+      return
+    }
+    for (const [key, value] of entries) {
+      const dt = document.createElement('dt')
+      dt.className = 'text-faint'
+      dt.textContent = key.replace(/_/g, ' ')
+      const dd = document.createElement('dd')
+      dd.className = 'm-0 break-all'
+      dd.textContent = formatDetailValue(value)
+      detailExtraList.append(dt, dd)
+    }
+    detailExtra.classList.remove('hidden')
+  }
+
   /** Show one app. The dialog paints from the list snapshot immediately —
    *  that data is already here — then asks /v1/guardian/apps/get for the
    *  server's record (contract: docs/HANDOFF-2026-11-26-guardian-app-detail.md).
@@ -391,6 +444,9 @@ document.addEventListener('DOMContentLoaded', () => {
       ? `${device.device_name || 'Unnamed device'} — ${shortId(device.device_id ?? '')}`
       : '—'
     detailShared.textContent = appsWhen || '—'
+    const index = apps.findIndex((row) => row.package === app.package) + 1
+    setDetailPosition(index, apps.length)
+    renderDetailExtras(null)
     detailNote.textContent = ''
     if (!appDetail.open) appDetail.showModal()
     void loadAppDetail(app)
@@ -418,6 +474,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (servedDevice?.device_name) {
           detailDevice.textContent = `${servedDevice.device_name} — ${shortId(servedDevice.device_id ?? deviceId)}`
         }
+        const servedCount = typeof res.data?.count === 'number' ? res.data.count : undefined
+        // The page's index is only meaningful while the server's count is the
+        // array it indexed (a newer share changes both).
+        const servedIndex = apps.findIndex((row) => row.package === app.package) + 1
+        setDetailPosition(servedCount === apps.length ? servedIndex : 0, servedCount ?? apps.length)
+        renderDetailExtras((res.data.app as { details?: unknown }).details)
         detailNote.textContent = ''
         return
       }
