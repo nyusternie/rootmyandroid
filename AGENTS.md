@@ -371,6 +371,11 @@ no stored card). The authoritative price table (also live on `/pricing`):
   GURU = 5,000,000 µGURU. The peg is what makes a per-request price
   publishable: price the request in GURU and the dollar figure is
   arithmetic, not a second price list.
+- **SHIPPED in `rootmyandroid-api` `9bc6e0a`** (2026-11-26): the re-peg, the
+  µGURU columns, `guru_5/20/30`, the nine String GraphQL fields, and the
+  `ceil(nano/1000)` rule are live. The old pack ids survive only in
+  `LEGACY_PACKS` (`src/index.js:82-86`) so a pre-rename invoice still
+  settles; checkout rejects them.
 - **Balances travel as integer µGURU, typed String.** µGURU is the only
   representation — never a float. REST and GraphQL both carry it as a
   decimal string, and GraphQL types it `String` (owner ruling 2026-11-26)

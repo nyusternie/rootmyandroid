@@ -4,7 +4,10 @@
 
 **From:** web workstream in `rootmyandroid` (the public repo)
 **For:** `rootmyandroid-api` (REST worker + GraphQL worker + scripts)
-**Status:** PROPOSED — nothing applied. This is a request.
+**Status:** SHIPPED — implemented by the API team as `9bc6e0a` (test fix
+`2eda473`, verification `cf3dde7`, CI `45877148312`). This document keeps the
+request, the six review gates, and the corrections the implementation forced
+on it (§12.5).
 **Rulings:** owner, 2026-11-26 —
 *"perhaps 1 GURU should equal $1.00 instead… and then give it 6-decimal places"*,
 *"use STRING for GURU balances in GraphQL"*,
@@ -168,7 +171,9 @@ new scale. A sub-µGURU remainder is always charged, never dropped.
 
 ```sh
 # 1. no whole-GURU scale left
-grep -rn "guru_500\|guru_2000\|guru_3000" src workers scripts   # expect: 0
+#    EXCEPTION: LEGACY_PACKS (src/index.js:82-86) is the one place the old ids
+#    may remain — settlement must accept invoices created before the rename.
+grep -rn "guru_500\|guru_2000\|guru_3000" src workers scripts
 
 # 2. a $5 purchase credits exactly 5,000,000
 #    (pack guru_5 settled → guru_balance "5000000")
@@ -180,6 +185,20 @@ grep -rn "guru_500\|guru_2000\|guru_3000" src workers scripts   # expect: 0
 
 # 5. rounding
 #    a 525,000 nUSD charge debits exactly 525 µGURU
+
+# 9. production data is really on the new scale (read-only; the one check that
+#    cannot be done from a test suite)
+#    SELECT COUNT(*), SUM(guru_balance) FROM accounts WHERE guru_balance > 0;
+#    SELECT COUNT(*), SUM(guru_amount)  FROM redeem_codes WHERE redeemed_at IS NULL;
+#    SELECT COUNT(*) FROM payments
+#     WHERE raw_ipn LIKE '%guru_500%' OR raw_ipn LIKE '%guru_2000%'
+#        OR raw_ipn LIKE '%guru_3000%';
+
+# 10. test values are µGURU now, not dollars
+#     test/redeem.test.js inserts 100/75/350 and the funding helpers use 100;
+#     after the re-peg those are µGURU (100 = $0.0001). The suite passes because
+#     consumption is frozen, but the dollar semantics are 10,000x smaller. Any
+#     future assertion on a dollar value must account for it.
 ```
 
 Definition of done: the three data tables scaled once, packs re-idded, GraphQL
@@ -226,7 +245,7 @@ note must say µGURU, not GURU.
 ### G2. Old pack ids must not strand a paid invoice — **agreed, and this is money**
 
 `PACKS[planFromIpn(...)]` is looked up in two settlement paths:
-`src/index.js:613` (IPN) and `:1051` (status poll). A NOWPayments order created
+`src/index.js:621` (IPN) and `:1059` (status poll). A NOWPayments order created
 as `guru_500` before the rename resolves to `undefined` after it, so a **paid**
 invoice credits nothing — silently, because the `if (pack)` guard simply does
 not fire.
@@ -244,12 +263,19 @@ const LEGACY_PACKS = {
 const packFor = (id) => PACKS[id] || LEGACY_PACKS[id]
 ```
 
-Then `packFor()` at `:613`, `:873` (checkout validation) and `:1051`. Checkout
-should keep *rejecting* the old ids (`:873`), so only settlement accepts them.
+Then `packFor()` at the two settlement paths (`:621`, `:1059`) and nowhere
+else: checkout validation (`:881`) keeps reading `PACKS[body.pack]`, so a new
+invoice can never be created with a retired id. Settlement accepts both
+generations; creation accepts one.
 
-### G3. `schema_meta` + one batch, and the rename option is four columns — **agreed, my §4 was under-specified**
+*Implemented exactly this way* — `LEGACY_PACKS` at `src/index.js:82-86`,
+`packFor()` at `:87`, used at `:621` and `:1059`.
 
-My §4 named only `accounts.guru_balance`. The full set is:
+### G3. `schema_meta` + one batch, and the rename option is four columns — **agreed; the error was in the rename option, not the conversion list**
+
+§4's conversion list already named all four columns; it was the *rename
+option* in the same section that described a single `accounts.guru_balance`
+rename. The full set is:
 
 | table | columns |
 |---|---|
@@ -298,5 +324,36 @@ document, quote them and they go into §9 verbatim.
 2. **`PLANS` must not move.** `monthly` ($5 / 30 days, `src/index.js:71`) is
    time, not GURU. It is untouched by the re-peg — and by the pack rename.
 3. **Cost vs charge stay in their own units.** `ai-pricing.md`'s `cost_nusd`
-   is provider cost in nano-USD; `charge_nguru` is what the customer pays.
+   is provider cost in nano-USD; `charge_micro` (the name the API uses,
+   `docs/ai-pricing.md:34`) is what the customer pays.
    Converting the provider cost to GURU would destroy the margin check.
+
+### 12.5 What the implementation corrected in this document
+
+Three factual errors, all found by the API team during implementation, all now
+fixed above:
+
+1. **G2 line numbers and a contradiction.** §12 named `:613`, `:873` and
+   `:1051` and then said checkout rejects the old ids — two sentences that
+   cannot both be true of `:873`. The implemented shape is `packFor()` at
+   `:621` and `:1059` only; checkout (`:881`) reads `PACKS`.
+2. **G3 attribution.** The complaint was against the *rename option*, not
+   §4's conversion list, which named all four columns from the start.
+3. **Field name.** `charge_nguru` was my invention; the API uses
+   `charge_micro` (`docs/ai-pricing.md:34`).
+
+### 12.6 Shipped
+
+- `9bc6e0a` re-peg · `2eda473` test fix (`test/redeem.test.js:132` —
+  `balance_after` is now a string) · `cf3dde7` verification record.
+- CI `45877148312` passed `pnpm test:coverage` on blackhost and deployed the
+  API, MCP and GraphQL workers. The first run caught the stale test
+  expectation; the fix is in the final green run.
+- Live, re-verified from this side: `GET /v1/guru/services` →
+  `"price_guru": "0"` (String); `POST /v1/guru` with an unknown account →
+  404, so the production `guru_balance` / `guru_ledger` re-peg is in place.
+- Migration test: 340 old Halo → **1,700,000,000** µGURU; 100 → **500,000,000**.
+- Their record: `rootmyandroid-api/docs/HANDOFF-2026-11-26-guru-repeg.md`.
+
+**One check remains open and it is not a code check:** the production-data read
+(item 9 above). It answers whether the "only test data" premise in §2 held.

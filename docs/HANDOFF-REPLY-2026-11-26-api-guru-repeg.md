@@ -4,8 +4,9 @@
 
 **From:** web workstream in `rootmyandroid` (the public repo)
 **For:** `rootmyandroid-api`
-**Status:** all six gates ACCEPTED. Four of them correct omissions in
-`HANDOFF-2026-11-26-api-guru-repeg.md` §4–§7.
+**Status:** all six gates ACCEPTED and SHIPPED (`9bc6e0a`, `2eda473`,
+`cf3dde7`). Three corrections this reply itself needed are recorded in the
+Outcome section at the end.
 **Answers:** your review of `HANDOFF-2026-11-26-api-guru-repeg.md`
 (the ×10,000 re-peg to 1 GURU = $1.00, 6 decimals).
 **Verified against:** API `4876c62`, read 2026-11-26.
@@ -41,7 +42,7 @@ My omission. `const args = { count: 100, guru: 500, batch: null, dir: null }`
 ## G2 — old pack ids must not strand a paid invoice · ACCEPTED, and this is money
 
 `PACKS[planFromIpn(...)]` is resolved in two settlement paths —
-`src/index.js:613` (IPN) and `:1051` (status poll). A NOWPayments order
+`src/index.js:621` (IPN) and `:1059` (status poll). A NOWPayments order
 created as `guru_500` before the rename resolves to `undefined` after it, so
 the `if (pack)` guard does not fire and a **paid** invoice credits nothing,
 silently.
@@ -59,15 +60,19 @@ const LEGACY_PACKS = {
 const packFor = (id) => PACKS[id] || LEGACY_PACKS[id]
 ```
 
-- `packFor()` at `:613` and `:1051` (settlement accepts both generations).
-- `:873` (checkout validation) keeps rejecting the old ids — new invoices must
-  never be created with a retired pack id.
+- `packFor()` at the two settlement paths (`:621`, `:1059`) and nowhere else.
+- `:881` (checkout validation) keeps reading `PACKS[body.pack]`, so a new
+  invoice can never be created with a retired pack id.
+
+Settlement accepts both generations; creation accepts one.
 
 ---
 
 ## G3 — `schema_meta` marker plus one batch · ACCEPTED, and the rename option is wider than I wrote
 
-My §4 named one column. The real set is four columns across three tables:
+§4's conversion list already named all four columns; the *rename option* in
+that section described a single `accounts.guru_balance` rename. The real set is
+four columns across three tables:
 
 | table | columns |
 |---|---|
@@ -138,8 +143,8 @@ time, not GURU. Untouched by the re-peg and by the pack rename. A conversion
 applied there would turn a 30-day plan into a 30-µGURU plan.
 
 **C. Cost and charge stay in their own units.** `ai-pricing.md`'s
-`cost_nusd` is provider cost in nano-USD; `charge_nguru` is what the customer
-pays. Converting the provider cost to GURU would destroy the margin check the
+`cost_nusd` is provider cost in nano-USD; `charge_micro` is what the customer
+pays (`docs/ai-pricing.md:34`). Converting the provider cost to GURU would destroy the margin check the
 document exists to make possible.
 
 ---
@@ -160,3 +165,34 @@ Per `rootmyandroid` AGENTS.md rule 9, `rootmyandroid-api` is READ-ONLY for
 this workstream. Everything above was read (`src/`, `workers/`, `scripts/`,
 `test/`, `docs/`); nothing was written, migrated or deployed. Ownership of the
 change set, its sequencing and its rollback stays with your team.
+
+---
+
+## Outcome (2026-11-26)
+
+Shipped the same day: `9bc6e0a` (re-peg), `2eda473` (test fix —
+`test/redeem.test.js:132`, `balance_after` is a string), `cf3dde7`
+(verification record). CI `45877148312` green on blackhost, API + MCP +
+GraphQL deployed.
+
+**Three things this reply got wrong**, corrected above and in the handoff's
+§12.5:
+
+1. G2 line numbers (`:613`/`:873`/`:1051` → `:621`/`:1059`, checkout `:881`)
+   plus a sentence that contradicted itself about checkout.
+2. G3 attribution — the defect was in the rename option, not in §4's
+   conversion list, which named all four columns from the start.
+3. `charge_nguru` was my invention; the API's field is `charge_micro`.
+
+**G6 is answered:** items 9 and 10 came from the API review, not from this
+handoff. Both are now in the handoff's §9 — the production-data read and the
+µGURU test values (`test/redeem.test.js` 100/75/350, funding helpers 100,
+which are now µGURU, i.e. 100 = $0.0001).
+
+**Still open, and not a code check:** the production-data read. It answers
+whether the "only test data" premise held. `rootmyandroid-admin` also still
+queries `halo_consumed` (`rootmyandroid-admin/src/lib/analytics.js:566`) — its
+deploy must follow the API's rename (`rootmyandroid-api/src/lib/analytics.js:210`).
+
+**No web change is needed.** The web has published `1 GURU = $1` since
+`a64bc2f`, and no client parses a GURU amount.
