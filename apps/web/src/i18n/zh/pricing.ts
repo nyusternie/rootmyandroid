@@ -66,7 +66,7 @@ const pricing: typeof en = {
   ],
   offerSuffix: '充值式订阅：随时加时——不自动续费、不保存银行卡。',
   footnote:
-    '所有套餐均为充值式订阅：随时加时——不自动续费、不保存银行卡。Guardian Angel 订阅者可随时在 Lite 与 Pro 之间切换；Rootz Pro 按年续期，无论有无 Guardian Angel 套餐均可使用。本站不直接收款：订阅时间与 GURU 推理额度由集市商贩以兑换码形式出售——向经销商购买兑换码，然后在账户页面兑换。GURU 仅用于推理：1 GURU = 0.01 美元（100 GURU = 1 美元），按次用于 Guru，绝不用于订阅时间。功能包正在最终确定中——以上阵容为当前方案。',
+    '所有套餐均为充值式订阅：随时加时——不自动续费、不保存银行卡。Guardian Angel 订阅者可随时在 Lite 与 Pro 之间切换；Rootz Pro 按年续期，无论有无 Guardian Angel 套餐均可使用。本站不直接收款：订阅时间与 GURU 推理额度由集市商贩以兑换码形式出售——向经销商购买兑换码，然后在账户页面兑换。GURU 仅用于推理：1 GURU = 1 美元，按次用于 Guru，绝不用于订阅时间。功能包正在最终确定中——以上阵容为当前方案。',
 }
 
 export default pricing

@@ -364,10 +364,23 @@ no stored card). The authoritative price table (also live on `/pricing`):
   wallet is its **GURU balance** (`guruBalance` on the wire, `guru_balance`
   in D1). Display it in caps, like USD — this supersedes the 2026-11-08
   display string "Guru Balance".
-- **1 GURU = USD 0.01, fixed peg** (owner ruling 2026-11-26: *"treat GURU as
-  a stablecoin, pegged to USD — 1 GURU == $0.01"*). 100 GURU = $1. The peg
-  is what makes a per-request price publishable at all: price the request in
-  GURU, and the dollar figure is arithmetic, not a second price list.
+- **1 GURU = USD 1.00, fixed peg, 6 decimals** (owner ruling 2026-11-26,
+  superseding the same-day $0.01 peg). 1 GURU = 1,000,000 µGURU, so **one
+  stored unit is exactly one micro-dollar** — the ledger's integer and µUSD
+  are the same number, which is the whole reason for the change. $5 = 5
+  GURU = 5,000,000 µGURU. The peg is what makes a per-request price
+  publishable: price the request in GURU and the dollar figure is
+  arithmetic, not a second price list.
+- **Balances travel as integer µGURU, typed String.** µGURU is the only
+  representation — never a float. REST and GraphQL both carry it as a
+  decimal string, and GraphQL types it `String` (owner ruling 2026-11-26)
+  because `Int` caps a balance at $2,147.48 (2,147,483,647 µGURU), which a
+  reseller batch exceeds. Clients format by inserting a decimal point six
+  from the right and trimming zeros — never `Number()`.
+- **Charges round UP to the whole µGURU** (owner ruling 2026-11-26):
+  `micro = ceil(nano / 1000)`. This extends the 2026-11-08 "never silently
+  under-recover" rule; 1 µGURU = 1000 nUSD, so the cheap Sage turn
+  (525,000 nUSD) is 525 µGURU exactly.
 - **GURU is inference ONLY** (same ruling). It never buys subscription time,
   never converts to plan days, and is never a general-purpose balance. Days
   for plans, GURU for inference.
@@ -382,22 +395,20 @@ no stored card). The authoritative price table (also live on `/pricing`):
   refundable for cash or cryptocurrency"* (terms.astro:51). Publishing
   "stablecoin" would imply cash-out and contradict both. The peg may be
   published; the label needs a terms change first.
-- **The ledger must be nano-GURU, not whole GURU.** The owner-ruled AI
-  pricing record charges customers in integer **nano-USD** (1e-9 USD) and
-  rounds UP (`rootmyandroid-api/docs/ai-pricing.md:17`, ruling 3); its
-  worked examples are 525,000 nUSD ($0.000525) and 15,525,000 nUSD
-  ($0.015525). With the peg, 1 GURU = $0.01 = 10,000,000 nUSD, so
-  **1 nano-GURU == 1 nano-USD** — the inference ledger and the GURU ledger
-  are numerically identical and need no rescaling. A whole-GURU INTEGER
-  column is five orders of magnitude too coarse: the cheap turn is 0.0525
-  GURU. Store nano-GURU.
+- **The ledger stores µGURU — not whole GURU, not nano-GURU.** The AI
+  pricing record bills in integer nano-USD (`rootmyandroid-api/docs/
+  ai-pricing.md:17`, ruling 3) and its worked examples are 525,000 nUSD
+  ($0.000525) and 15,525,000 nUSD ($0.015525). At the $1 peg, 1 µGURU =
+  1000 nUSD, so a charge is `ceil(nano/1000)` µGURU. A whole-GURU column
+  cannot express the cheap turn (0.000525 GURU); a nano-GURU column is
+  1,000× larger than any display needs and overflows `GraphQLInt` at $5.
 - **The AI billing backend does not exist yet.** `ai-pricing.md` describes
   `ai_sessions` / `ai_requests` / `ai_ledger_entries` / `model_price_versions`
   as a future handoff, and `grep -rli guru` in `rootmyandroid-api` finds only
   that document — while `apps/web/src/lib/api.js:196,207` already calls
   `POST /v1/support/conversations/{id}/guru` and `…/guru/quote`, which the
   API does not implement. So the GURU ledger is greenfield: build it in
-  nano-GURU from the first row, never in cents.
+  µGURU from the first row, never in cents.
 - **Discounts do not move the peg.** Wholesale tiers discount the USD a
   vendor pays for a batch; they never change what 1 GURU is worth at retail
   — and the crypto discount already never applies to GURU top-ups

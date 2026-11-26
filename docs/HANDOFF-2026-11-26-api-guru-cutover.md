@@ -2,6 +2,11 @@
 
 # Handoff — `rootmyandroid-api`: Halo → GURU cutover
 
+> **HISTORICAL for the peg only.** This cutover shipped as `4876c62` and
+> its rename work stands. The `1 GURU == $0.01` peg it records was
+> superseded the same day by the $1.00 / 6-decimal ruling — see
+> `HANDOFF-2026-11-26-api-guru-repeg.md` for the current scale.
+
 **From:** web workstream in `rootmyandroid` (the public repo)
 **For:** `rootmyandroid-api` (REST worker + GraphQL worker + scripts)
 **Status:** PROPOSED — nothing has been applied. This is a request, not a change.

@@ -82,7 +82,7 @@ const pricing = {
   offerSuffix:
     'Top-up subscription: add time anytime — no auto-renew, no stored card.',
   footnote:
-    'All plans are top-up subscriptions: add time whenever you like — no auto-renew, no stored card. Guardian Angel subscribers can switch between Lite and Pro anytime; Rootz Pro renews yearly and works with or without a Guardian Angel plan. We take no payment on this site: subscription time and GURU inference credit are sold as vouchers by marketplace vendors — buy a code from a reseller, then redeem it on your account page. GURU is the inference unit only: 1 GURU = $0.01 (100 GURU = $1), spent pay-per-use on the Gurus and never on subscription time. Feature packages are being finalized — the lineup above is the current offer.',
+    'All plans are top-up subscriptions: add time whenever you like — no auto-renew, no stored card. Guardian Angel subscribers can switch between Lite and Pro anytime; Rootz Pro renews yearly and works with or without a Guardian Angel plan. We take no payment on this site: subscription time and GURU inference credit are sold as vouchers by marketplace vendors — buy a code from a reseller, then redeem it on your account page. GURU is the inference unit only: 1 GURU = $1, spent pay-per-use on the Gurus and never on subscription time. Feature packages are being finalized — the lineup above is the current offer.',
 }
 
 export default pricing

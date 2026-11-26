@@ -16,9 +16,10 @@
 
 ## 1. The ruling, and what it does not decide
 
-**1 GURU = USD 0.01, fixed peg; 100 GURU = $1** (owner ruling 2026-11-26:
-*"treat GURU as a stablecoin, pegged to USD — 1 GURU == $0.01 — which can be
-used for inference ONLY"*). An account's wallet is its **GURU balance** —
+**1 GURU = USD 1.00, fixed peg, 6 decimals** (owner ruling 2026-11-26;
+this supersedes the same-day $0.01 peg). 1 GURU = 1,000,000 µGURU, so one
+stored unit is exactly one micro-dollar. Balances are integer µGURU carried
+as a String; charges round up to the whole µGURU (`ceil(nano/1000)`). An account's wallet is its **GURU balance** —
 `guruBalance` on the wire, `guru_balance` in D1. The display name is "GURU
 balance" (unit in caps, like USD), which supersedes the 2026-11-08 display
 string "Guru Balance".
@@ -38,12 +39,13 @@ inference, never one unit for both.**
 
 **Still undecided — do not invent:**
 
-1. **The ledger's smallest unit — answered by the existing pricing record.**
+1. **The ledger's smallest unit — settled: µGURU.**
    `rootmyandroid-api/docs/ai-pricing.md:17` charges in integer nano-USD and
    its examples are 525,000 nUSD ($0.000525) and 15,525,000 nUSD
-   ($0.015525). Since 1 GURU = $0.01 = 10,000,000 nUSD, **1 nano-GURU ==
-   1 nano-USD** and no rescaling is needed. A whole-GURU column is five
-   orders too coarse (the cheap turn is 0.0525 GURU) — store nano-GURU.
+   ($0.015525). At the $1 peg, 1 µGURU = 1000 nUSD, so a charge is
+   `ceil(nano/1000)` µGURU: 525 and 15,525 respectively. A whole-GURU column
+   cannot express the cheap turn; a nano-GURU column overflows `GraphQLInt`
+   at $5 and is 1,000× finer than any display needs.
 2. **Redeemability.** A peg is a conversion rate, not a buy-back promise.
    `/gurus:212` says top-ups are non-refundable and `/terms:51` says the
    balance is not redeemable for cash — so the word "stablecoin" cannot go
@@ -135,7 +137,7 @@ which the API does not implement (only `POST /conversations` and the two
 `/messages` routes exist, `src/index.js:1503`).
 
 So there is nothing to migrate on the AI side — there is something to build.
-When it lands, the unit is nano-GURU and the peg makes it equal to nano-USD.
+When it lands, the unit is µGURU (one micro-dollar) and charges round up.
 
 ---
 
@@ -219,7 +221,7 @@ Needed before a real vendor order can be honoured:
    consistent with §1) or in a dollar amount that buys days.
 3. Whether the buy-back covers unredeemed **GURU** vouchers as well as
    subscription vouchers. `redeemed_at` makes it checkable; `vendor_id`
-   (§5) makes it billable. The peg makes the amount exact: 100 GURU = $1.
+   (§5) makes it billable. The peg makes the amount exact: 1 GURU = $1.
 
 ### 7.1 Why the word "stablecoin" is not on the site
 
@@ -238,7 +240,7 @@ defensible product, and is what the pages currently describe. Publishing
 money-transmission framing that comes with issuing a redeemable pegged
 asset.
 
-So: publish the peg (`1 GURU = $0.01`), keep the label off the site, and if
+So: publish the peg (`1 GURU = $1`), keep the label off the site, and if
 the owner wants the label, change `/gurus` + `/terms` first. That is an
 owner/legal call, not an agent's.
 
