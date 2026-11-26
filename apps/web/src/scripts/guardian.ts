@@ -32,7 +32,7 @@ type InstalledApp = {
   system?: boolean
 }
 
-/** The installed-app snapshot the app uploads (audit_type guardian_apps). */
+/** The installed-app snapshot the app uploads (audit_type guardian-apps). */
 type AppsSnapshot = {
   count?: number
   collected_at?: string
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     appsPage.textContent = `Page ${appsPageNo} of ${pages}`
   }
 
-  /** Load the selected device's app inventory (audit_type guardian_apps). */
+  /** Load the selected device's app inventory (audit_type guardian-apps). */
   async function loadApps(): Promise<void> {
     const account = loadedAccount || accountInput.value.replace(/[^0-9]/g, '')
     const deviceId = deviceSelect.value
@@ -410,6 +410,14 @@ document.addEventListener('DOMContentLoaded', () => {
         detailVersion.textContent = served.version || '—'
         detailKind.textContent = served.system ? 'system' : 'user-installed'
         if (res.data?.collected_at) detailShared.textContent = formatDate(res.data.collected_at)
+        // The server's device registry wins over the picker label (it can be
+        // renamed between the list load and this click).
+        const servedDevice = res.data?.device as
+          | { device_id?: string; device_name?: string | null }
+          | undefined
+        if (servedDevice?.device_name) {
+          detailDevice.textContent = `${servedDevice.device_name} — ${shortId(servedDevice.device_id ?? deviceId)}`
+        }
         detailNote.textContent = ''
         return
       }

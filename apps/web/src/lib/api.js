@@ -65,7 +65,7 @@ export function listGuardianDevices(accountNumber) {
 /**
  * Latest audit snapshots for an account (optionally one audit_type).
  * Used by /guardian to render the installed-app inventory the Guardian
- * Angel app uploads (audit_type "guardian_apps").
+ * Angel app uploads (audit_type "guardian-apps").
  * @param {string} accountNumber
  * @param {string} [auditType]
  */

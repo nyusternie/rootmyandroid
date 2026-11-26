@@ -70,7 +70,7 @@ or how long it is kept.
 Answer 1–4 (one line each is enough). Then the build order I would follow:
 
 1. **Lite slice**: installed-app inventory → `POST /v1/device/audit`
-   (`audit_type: "guardian_apps"`), rendered on `/guardian` for the selected
+   (`audit_type: "guardian-apps"`), rendered on `/guardian` for the selected
    device. No new API route; the existing audit endpoints are open-ended.
 2. **Pro slice**: whatever 1(b)/(c) turns out to be, behind the plan gate.
 3. **Assistant**: the avatar's "Ask the Guardian…" field gets a real
