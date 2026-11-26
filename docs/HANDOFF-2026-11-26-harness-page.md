@@ -191,7 +191,7 @@ page's “Proposed snapshot” `<details>`. Field contract:
 - Registry metadata only. No prompts, completions, chat history, model
   weights, files, shell output, or user identifiers.
 - Proposed size cap: 16 KiB for the whole snapshot. A device with more
-  agents should truncate capabilities, not grow the payload.
+  agents truncates capabilities, not grows the payload.
 - `device.id` must be the relay device id, not a fresh UUID. The page's
   picker and the snapshot must join on that value.
 - The page is read-only. A snapshot never carries a command or an action.
@@ -268,10 +268,10 @@ credentials are for this project's Pages deploy, not the API's D1).
 - Once B is live and the Rootz heartbeat writes it, A stays for older devices.
 - One valid snapshot is enough; the page never requires both.
 - **The audit fallback is not free on the first write.** `POST /v1/device/audit`
-  charges the first `(device, audit_type)` slot at the `audit_report` price
-  (5 GURU, `rootmyandroid-api/src/lib/guru.js:40`); refreshing an existing
-  slot is free. The dedicated B route should be free for the harness
-  heartbeat, or carry an owner-ruled price — no price is set here.
+  charges the first `(device, audit_type)` slot at the API's `audit_report`
+  price (`rootmyandroid-api/src/lib/guru.js`); refreshing an existing slot is
+  free. The proposal is a free harness heartbeat, or an owner-ruled price —
+  no price is set here.
 
 ### 5.5 Staleness
 
@@ -292,9 +292,9 @@ needs an owner-ruled threshold; no threshold is shipped.
 3. **Heartbeat interval and staleness.** Option B needs a TTL (for example,
    “stale after N minutes”). No interval is ruled yet; do not hard-code one
    in copy.
-4. **Start/stop or model switching.** v1 is read-only. If the Harness should
-   ever start/stop an agent, that is a new privileged surface and needs an
-   explicit owner ruling plus a relay/daemon design.
+4. **Start/stop or model switching.** v1 is read-only. If the Harness ever
+   adds start/stop, that is a new privileged surface and needs an explicit
+   owner ruling plus a relay/daemon design.
 5. **Cost/usage.** Does the Harness show tokens or GURU spend per agent, or
    does that stay on the Gurus/billing surface? The snapshot contract above
    deliberately omits cost.
@@ -304,7 +304,7 @@ needs an owner-ruled threshold; no threshold is shipped.
    Useful for trust, but it grows the payload and needs a device-side
    implementation.
 8. **Reference device.** The page uses the measured Pixel 5 numbers as the
-   anchor. Confirm that is the device the copy should keep naming.
+   anchor. Confirm that is the device the copy keeps naming.
 
 ---
 
