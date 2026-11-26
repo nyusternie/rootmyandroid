@@ -355,5 +355,17 @@ fixed above:
 - Migration test: 340 old Halo → **1,700,000,000** µGURU; 100 → **500,000,000**.
 - Their record: `rootmyandroid-api/docs/HANDOFF-2026-11-26-guru-repeg.md`.
 
-**One check remains open and it is not a code check:** the production-data read
-(item 9 above). It answers whether the "only test data" premise in §2 held.
+**Item 9 — the production-data read — is CLOSED (2026-11-26).** Run against
+`rootmyandroid-db` (`a06c0e3a-…`) with the rootmyandroid Cloudflare env on
+blackhost (`/root/.cloudflare/rootmyandroid.env`, dual-copied byte-identically
+to apecsdev per rule 11):
+
+| check | result | reading |
+|---|---|---|
+| `SELECT key, value FROM schema_meta` | `guru_scale = micro` | the re-peg ran in production |
+| `accounts WHERE guru_balance > 0` | **2 accounts, SUM 10,000,000 µGURU** | $10.00 total — test data, as §2 assumed |
+| `redeem_codes WHERE redeemed_at IS NULL` | **0 rows** | no unredeemed voucher is outstanding, so nothing printed can be misread |
+| `payments` with `raw_ipn LIKE '%guru_500%'` etc. | **0 rows** | no in-flight legacy invoice; `LEGACY_PACKS` is defensive only |
+
+The §2 premise held: there was no real money on the old scale at the moment of
+the flip.

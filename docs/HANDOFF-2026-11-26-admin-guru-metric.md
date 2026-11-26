@@ -167,22 +167,32 @@ nothing. A card that queries only `guru_consumed` then reports a count that is
 too low rather than zero — a quieter version of the same bug.
 That is why the metric rename and the verification belong in one change set.
 
-**D1 access, checked 2026-11-26.** The query above cannot be run from this
-workstation or from the sanctioned credential stores:
+**D1 access — resolved 2026-11-26.** The rootmyandroid credentials are not
+the generic `api_token` files; they live in a dedicated env on both stores
+(rule 11, byte-identical, `sha256 b31d1815…`):
 
-- `blackhost:/root/.cloudflare/api_token` is active but account-scoped: it
-  cannot list accounts and returns `7403` for the account id used here.
-- `sansbank:~/.cloudflare/api-token-d1` is active and D1-capable, but it is
-  scoped to **Sansbank DAO** (`cff27acd0f4e86139f6cf3f1a295d4b0`), whose D1
-  databases are `dashswap`, `dashswap-testnet`, `platform`, `dao`, `yappr`,
-  `evonext`, `bootstrap`, `logs` — `rootmyandroid-analytics` is not among
-  them, so the query returns `7404 could not be found`.
-- `apecsdev:~/.config/cloudflare/api_token` is the same token as blackhost's
-  (rule 11 dual store).
+- `blackhost:/root/.cloudflare/rootmyandroid.env`
+- `apecsdev:~/.config/cloudflare/rootmyandroid.env`
 
-The rootmyandroid account id lives only in a GitHub secret
-(`CLOUDFLARE_ACCOUNT_ID`, `ci.yml:68,74,80`), so the check has to be run by
-whoever holds that credential — the API team, at deploy time.
+holding `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, the R2 keys and the
+zone id. `blackhost:/root/.cloudflare/api_token` is **not** it: that token is
+active but account-scoped (empty `/accounts` list, `7403` on the account id
+used here). `sansbank:~/.cloudflare/api-token-d1` is D1-capable but belongs to
+Sansbank DAO, where `rootmyandroid-analytics` returns `7404 could not be
+found`.
+
+**The result — the `UPDATE` ran:**
+
+```sql
+SELECT name, COUNT(*) AS n FROM events
+ WHERE name IN ('halo_consumed','guru_consumed') GROUP BY name;
+-- guru_consumed  1
+-- halo_consumed  0
+```
+
+So production holds no `halo_consumed` rows: the historical rename ran, and
+the card reports the full total rather than an under-report. The
+under-reporting case described above did not occur.
 
 Definition of done: the five code points and the two test lines renamed, CI
 green, and the card showing the same count that the old label showed before
@@ -228,10 +238,6 @@ Verified from this side after the deploy:
   `guru_consumed`, with no `halo_consumed` left;
 - `grep -rniI "halo" src public test` in the repo → **0**.
 
-**Still open, and it is not a code change:** the row split in §5.1. It needs
-the `CLOUDFLARE_ACCOUNT_ID` credential, which exists only as a GitHub secret
-(`rootmyandroid-api/.github/workflows/ci.yml:68,74,80`). Neither this
-workstation nor the sanctioned credential stores can run it: blackhost's token
-is account-scoped, apecsdev holds the same token, and sansbank's D1-capable
-token belongs to a different account (Sansbank DAO), where
-`rootmyandroid-analytics` returns `7404 could not be found`.
+**Closed 2026-11-26:** the row split was run against production (see §5.1) —
+`guru_consumed` 1, `halo_consumed` 0. The rename ran; the card is correct.
+Nothing is outstanding on this handoff.

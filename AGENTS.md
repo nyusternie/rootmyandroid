@@ -220,6 +220,13 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    (`/home/gh-runner/secrets/` vs `apecsdev:~/.config/rootmyandroid/secrets/`),
    the Cloudflare envs (`/root/.cloudflare/` vs `apecsdev:~/.config/cloudflare/`)
    and the gh config (`/root/.config/gh/` vs `apecsdev:~/.config/gh/`).
+   **This repo's Cloudflare credentials are in `rootmyandroid.env` in those two
+   directories** — `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, the R2 keys
+   and the zone id (byte-identical, `sha256 b31d1815…`, checked 2026-11-26).
+   The sibling `api_token` file is **not** it: it is account-scoped elsewhere
+   (empty `/accounts` list, `7403`), and reaching for it wastes a session.
+   `sansbank:~/.cloudflare/api-token-d1` is D1-capable but belongs to Sansbank
+   DAO, which does not contain this project's databases.
    Complements rule 9
    (possession confers no authority) and rule 3a. History: the 2026-11-10
    wording ("EVERYTHING SHOULD STAY ON blackhost",
