@@ -339,6 +339,25 @@ copy, code, class names, or asset filenames). Pricing is plain dollar
 top-up subscriptions (Mullvad-style: add time anytime, no auto-renewal,
 no stored card). The authoritative price table (also live on `/pricing`):
 
+- **The unit of measure is GURU** (owner ruling 2026-11-26). 1 GURU is one
+  unit of AI-inference credit; an account's wallet is its **GURU balance**
+  (`guruBalance` on the wire, `guru_balance` in D1). Display it in caps,
+  like USD — this supersedes the 2026-11-08 display string "Guru Balance".
+- **Subscriptions are NOT denominated in GURU.** They are time (days) at
+  dollar prices. A single unit covering both time and consumption is
+  exactly why Halo failed (`1 Halo = 30 days` of a lineup that no longer
+  exists). Days for plans, GURU for inference — never one unit for both.
+- **The face value of 1 GURU is NOT ruled.** No GURU price may be published
+  anywhere until the owner rules how many GURU make a dollar (AGENTS.md
+  requires a published per-request price before each request).
+- **The Halo retirement is about the BILLING UNIT only.** The Guardian
+  Angel has a golden halo — `dl-halo`, the lottie layer named `halo`,
+  `guardian_notif.xml`, `App.tsx` backdrop, and alt text saying "a green
+  Android robot with a golden halo". Those are the character, not the
+  unit: never rename or remove them to "finish" the purge.
+- Migration request to the API team (Halo → GURU, column by column):
+  docs/HANDOFF-2026-11-26-guru-unit.md.
+
 | product        | plan | price | period    |
 | -------------- | ---- | ----- | --------- |
 | — (free core)  | Free | $0    | —         |
@@ -361,11 +380,11 @@ no stored card). The authoritative price table (also live on `/pricing`):
   cooldown in user-facing copy until the owner rules it.
 - Changing any price requires explicit owner approval; a pinned API test
   locks the table.
-- The AI-usage balance is `guruBalance` ("Guru Balance") — pay-per-use
-  with a published per-request price before each request, a running
-  balance, and an itemized receipt. Guru Balance top-ups are
+- The AI-usage balance is `guruBalance` ("GURU balance", unit GURU) —
+  pay-per-use with a published per-request price before each request, a
+  running balance, and an itemized receipt. GURU balance top-ups are
   NON-refundable, and the 15% crypto discount NEVER applies to them
-  (owner rulings 2026-11-08). The Guru Balance contract is owned by
+  (owner rulings 2026-11-08, unit 2026-11-26). The GURU contract is owned by
   `rootmyandroid-api` — do NOT invent it client-side
   (docs/HANDOFF-2026-11-08-gurus-page.md).
 - The subscription-plan catalog is live via the MCP
