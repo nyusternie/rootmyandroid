@@ -101,8 +101,11 @@ build, and only then deploys `apps/web/dist` to Cloudflare Pages (see
    (`astro build` → `dist/`). No SSR, no Astro server adapters. Client-side
    JavaScript is limited to the vanilla TS modules on the app pages
    (`/account`, `/audit`, `/pay`, `/profile`, `/scan`, `/guardian`,
-   `/terminal`, and `/app/<package>` — the last one only for its inline
-   "is it on your device?" block; its indexed content is static HTML) that
+   `/terminal`, and `/app/<package>` — the last one ships exactly three
+   modules: the analytics beacon, the inline "is it on your device?" block,
+   and the support widget; its indexed content is static HTML, and the
+   device answer is fetched only after the visitor types an account number,
+   because an indexed page must never reveal who has what installed) that
    talk to the API Worker at `rootmyandroid.com/v1`. Content pages
    (`/`, `/guides/*`) must ship
    **zero JavaScript**. All dynamic/backend functionality lives in the

@@ -147,7 +147,13 @@ document.addEventListener('DOMContentLoaded', () => {
         : 'flex w-full flex-wrap items-baseline justify-between gap-x-3 border-l-[3px] border-l-transparent py-[0.35rem] pl-2 pr-1 text-left'
       if (linked) row.setAttribute('href', `/app/${app.package}`)
       const name = document.createElement('span')
-      name.className = linked ? 'font-semibold text-ink text-[1rem]' : 'text-body text-[1rem]'
+      // mr-auto parks the label on the left and lets the package name (and
+      // "Details ›" after it) sit at the right edge — otherwise a linked row
+      // pushes the package name into the middle while an unlinked row keeps it
+      // right, so the package column zig-zags down the list.
+      name.className = linked
+        ? 'mr-auto font-semibold text-ink text-[1rem]'
+        : 'mr-auto text-body text-[1rem]'
       name.textContent = app.label || app.package || '(unnamed)'
       const meta = document.createElement('span')
       meta.className = 'text-faint text-[0.85rem]'
