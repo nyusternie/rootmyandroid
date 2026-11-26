@@ -173,4 +173,43 @@ missing/malformed snapshot, no 405 (non-POST → `404 not_found`), and
 Verified on our side before accepting: `AppInventoryModule.kt` really sends
 `pkg.versionName ?: ""`, `AUDIT_TYPE_PATTERN` is `/^[a-z][a-z0-9-]{0,31}$/`,
 and the live route answers `404 {"ok":false,"error":"not_found","path":"/v1/guardian/apps/get"}`.
-Re-verification after the API deploy follows the reply's four steps.
+Re-verification after the API deploy follows the reply's four steps — done
+the same day, see §9.
+
+## 9. Live verification — route shipped 2026-11-26 (same day)
+
+The API deployed `/v1/guardian/apps/get` without a web deploy; every claim in
+the reply holds. Curl matrix against production:
+
+| case | result |
+| --- | --- |
+| valid (account + device + package) | `200` `{ok:true, …, charged:0, count:315}` |
+| account with spaces `0711 4655 4856 8044` | `200` (normalized) |
+| account with dashes `0711-4655-4856-8044` | `200` (normalized) |
+| package absent from snapshot | `404 app_not_found` |
+| `../etc/passwd` as package | `400 invalid_package` |
+| single-segment `chrome` | `400 invalid_package` |
+| 4-digit account | `400 invalid_account_number` |
+| unknown account `0000000000000000` | `404 account_not_found` |
+| unknown device | `404 device_not_found` |
+| missing device | `400 invalid_device_id` |
+| `GET` | `404 not_found` + `path` (no 405, as the reply said) |
+| `com.android.Chrome` (case differs) | `404 app_not_found` (exact match) |
+
+Client, on the live page (account `0711 4655 4856 8044`, Pixel 5):
+
+1. Clicking a row opens the dialog and the 200 clears the note — the server's
+   `label` / `version` / `system` / `collected_at` are what render.
+2. `device.device_name` is applied: a synthetic 200 carrying
+   `device_name: "SERVER DEVICE NAME"` repaints the device row to
+   `SERVER DEVICE NAME — 8e2c2b1b…` (this is the correction-1 fix; the
+   snapshot value alone would have kept the picker's name).
+3. `app_not_found` copy is reachable by the code path above (verified by
+   curl; the UI branch is a plain 404 slug check).
+4. Pagination and "Show all apps" are unaffected: `315 of 315 apps ·
+   page 1 of 16`, 20 rows per page, Next/Prev bounds correct.
+
+Display note (not a defect): `collected_at` is rendered with
+`toLocaleDateString`, so a viewer west of UTC sees the previous calendar day
+for a midnight-UTC timestamp. That is the viewer's local date, consistent
+with the list panel.
