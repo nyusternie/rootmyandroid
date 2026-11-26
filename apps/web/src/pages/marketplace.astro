@@ -15,6 +15,15 @@
 // vendor-conduct clauses that go beyond the buy-back statement below. Those
 // live in the private working set, never here.
 //
+// MOCK (owner request 2026-11-26): the order builder and the vendor slots
+// below are a prototype — no accounts, no ordering, no settlement, no API
+// call. They are deliberately CSS-ONLY (native radio inputs + Tailwind's
+// has-checked: variant) so this stays a zero-JS content page per rule 4: the
+// sanctioned client-JS surfaces are /account, /audit, /pay, /profile and
+// /scan, and /marketplace is not one of them. When the real vendor flow is
+// built, either it ships on one of those surfaces or the owner rules a JS
+// exception — do not quietly add a <script> here.
+//
 // The voucher rail this page describes already exists in rootmyandroid-api:
 // scripts/make-codes.js (batch generator, `--batch reseller-…`) and
 // redeem_codes.batch (src/schema.js:143-152). Redemption is POST /v1/redeem,
@@ -53,6 +62,7 @@ const tiers = [
           Apply as a vendor
         </a>
         <a class="btn" href="#tiers">See the tiers</a>
+        <a class="btn" href="#builder">Try the order builder</a>
       </div>
     </div>
   </section>
@@ -132,6 +142,103 @@ const tiers = [
           }
         </tbody>
       </table>
+    </div>
+
+    <h2 id="builder">Order builder <span class="small faint">(mock)</span></h2>
+    <p class="notice notice-info text-info-ink">
+      <strong>Preview.</strong> Vendor accounts, ordering and settlement are
+      not live. The controls below are a prototype of the vendor order
+      builder: pick a tier to see what it means. Nothing is ordered, stored
+      or sent.
+    </p>
+
+    <fieldset class="m-0 border-0 p-0">
+      <legend class="small faint mb-3">Vouchers per order</legend>
+
+      <!-- CSS only (rule 4): one native radio per tier; each card highlights
+           itself with has-checked:, the same no-JS variant the Keep Android
+           Open banner uses (Base.astro). No named peers, no script. -->
+      <div class="grid grid-cols-1 gap-[0.9rem] min-[560px]:grid-cols-2 min-[760px]:grid-cols-5">
+        <div class="rounded-[0.65rem] border border-line bg-inset p-[1rem] transition-[border-color] duration-150 hover:border-accent has-checked:border-accent has-checked:bg-accent/10">
+          <label class="flex cursor-pointer items-start gap-[0.6rem]">
+            <input type="radio" name="mp-tier" class="mt-[0.35rem] shrink-0 accent-accent" checked />
+            <span class="block">
+              <span class="block text-[0.75rem] uppercase tracking-[0.08em] text-faint">1&ndash;9</span>
+              <span class="mt-[0.15rem] block text-[1.35rem] font-bold leading-tight">List</span>
+              <span class="block text-[0.85rem] text-dim">0% off</span>
+            </span>
+          </label>
+        </div>
+        <div class="rounded-[0.65rem] border border-line bg-inset p-[1rem] transition-[border-color] duration-150 hover:border-accent has-checked:border-accent has-checked:bg-accent/10">
+          <label class="flex cursor-pointer items-start gap-[0.6rem]">
+            <input type="radio" name="mp-tier" class="mt-[0.35rem] shrink-0 accent-accent" />
+            <span class="block">
+              <span class="block text-[0.75rem] uppercase tracking-[0.08em] text-faint">10&ndash;24</span>
+              <span class="mt-[0.15rem] block text-[1.35rem] font-bold leading-tight">10%</span>
+              <span class="block text-[0.85rem] text-dim">90% of list</span>
+            </span>
+          </label>
+        </div>
+        <div class="rounded-[0.65rem] border border-line bg-inset p-[1rem] transition-[border-color] duration-150 hover:border-accent has-checked:border-accent has-checked:bg-accent/10">
+          <label class="flex cursor-pointer items-start gap-[0.6rem]">
+            <input type="radio" name="mp-tier" class="mt-[0.35rem] shrink-0 accent-accent" />
+            <span class="block">
+              <span class="block text-[0.75rem] uppercase tracking-[0.08em] text-faint">25&ndash;49</span>
+              <span class="mt-[0.15rem] block text-[1.35rem] font-bold leading-tight">20%</span>
+              <span class="block text-[0.85rem] text-dim">80% of list</span>
+            </span>
+          </label>
+        </div>
+        <div class="rounded-[0.65rem] border border-line bg-inset p-[1rem] transition-[border-color] duration-150 hover:border-accent has-checked:border-accent has-checked:bg-accent/10">
+          <label class="flex cursor-pointer items-start gap-[0.6rem]">
+            <input type="radio" name="mp-tier" class="mt-[0.35rem] shrink-0 accent-accent" />
+            <span class="block">
+              <span class="block text-[0.75rem] uppercase tracking-[0.08em] text-faint">50&ndash;99</span>
+              <span class="mt-[0.15rem] block text-[1.35rem] font-bold leading-tight">30%</span>
+              <span class="block text-[0.85rem] text-dim">70% of list</span>
+            </span>
+          </label>
+        </div>
+        <div class="rounded-[0.65rem] border border-line bg-inset p-[1rem] transition-[border-color] duration-150 hover:border-accent has-checked:border-accent has-checked:bg-accent/10">
+          <label class="flex cursor-pointer items-start gap-[0.6rem]">
+            <input type="radio" name="mp-tier" class="mt-[0.35rem] shrink-0 accent-accent" />
+            <span class="block">
+              <span class="block text-[0.75rem] uppercase tracking-[0.08em] text-faint">100+</span>
+              <span class="mt-[0.15rem] block text-[1.35rem] font-bold leading-tight">40%</span>
+              <span class="block text-[0.85rem] text-dim">60% of list</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="panel mt-[1.25rem]">
+        <p class="m-0 small faint">
+          Selecting a tier highlights it. Order totals are calculated against
+          the live catalog when a real order is placed &mdash; this preview
+          shows the percentages only, never a hard-coded price.
+        </p>
+      </div>
+    </fieldset>
+
+    <h2>Vendor slots <span class="small faint">(mock)</span></h2>
+    <p>
+      Placeholder for the vendor directory. Real entries are added only after
+      a reseller agreement is signed — the word “authorized” in our
+      <a href="/refunds">refund policy</a> refers to that list.
+    </p>
+    <div class="grid grid-cols-1 gap-[0.9rem] min-[560px]:grid-cols-3">
+      <div class="panel text-center">
+        <p class="small faint m-0 uppercase tracking-[0.08em]">Slot 1</p>
+        <p class="m-0 mt-2 font-semibold">Your business here</p>
+      </div>
+      <div class="panel text-center">
+        <p class="small faint m-0 uppercase tracking-[0.08em]">Slot 2</p>
+        <p class="m-0 mt-2 font-semibold">Your business here</p>
+      </div>
+      <div class="panel text-center">
+        <p class="small faint m-0 uppercase tracking-[0.08em]">Slot 3</p>
+        <p class="m-0 mt-2 font-semibold">Your business here</p>
+      </div>
     </div>
 
     <h2>What you can sell</h2>
