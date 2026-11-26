@@ -420,7 +420,8 @@ const faqSchema = {
           <strong class="text-ink">The Rootz harness writes a heartbeat.</strong>
           The heartbeat tool posts the snapshot to
           <code>POST /v1/harness/heartbeat</code> with the account number,
-          relay device id, and the registry payload.
+          relay device id, and the registry payload. The heartbeat is free
+          (owner ruling 2026-11-26).
         </li>
         <li class="mb-3">
           <strong class="text-ink">The API keeps one row per device.</strong>
@@ -470,6 +471,8 @@ const faqSchema = {
         <p class="muted">
           No prompts, completions, chat history, model weights, files, or
           shell output. The snapshot is a registry, not a transcript.
+          Endpoints are device-local (<code>127.0.0.1</code>); the page shows
+          them for the operator.
         </p>
       </div>
       <div class="panel">

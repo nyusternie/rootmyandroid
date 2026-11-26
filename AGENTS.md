@@ -1009,8 +1009,9 @@ caps — their published numbers depend on them. Full handoff:
 
 The web `/harness` registry reads the Rootz harness through Option B
 (`POST /v1/harness/agents/list`; requested) with the `harness-agents` audit
-snapshot as fallback. The first writer is
-`apps/rootzd/tools/harness-heartbeat.mjs` (dry-run with the example snapshot;
-`--audit-fallback` writes the audit route, which charges the first slot at
-the `audit_report` price). Handoff:
-`docs/HANDOFF-2026-11-26-harness-page.md`.
+snapshot as fallback. The heartbeat is FREE (owner ruling 2026-11-26). The
+first writer is `apps/rootzd/tools/harness-heartbeat.mjs` (dry-run with the
+example snapshot; `--audit-fallback` writes the audit route, which charges
+the first slot at the `audit_report` price). Handoffs:
+`docs/HANDOFF-2026-11-26-harness-page.md` and
+`docs/HANDOFF-2026-11-26-harness-api.md`.

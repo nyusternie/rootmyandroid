@@ -6,8 +6,10 @@
 **From:** web workstream (`rootmyandroid`, apps/web)
 **Date:** 2026-11-26
 **Status:** Option B chosen (owner, 2026-11-26). The web read side and the
-Rootz heartbeat tool are SHIPPED; the Worker route is REQUESTED here. The
-page falls back to Option A until the route ships.
+Rootz heartbeat tool are SHIPPED; the Worker route is REQUESTED in
+`docs/HANDOFF-2026-11-26-harness-api.md`. Owner rulings: **the heartbeat is
+FREE**, device-local endpoints are shown, and the scope is the Rootz harness
+only. The page falls back to Option A until the route ships.
 
 Per `AGENTS.md` rule 9 this document is the only write channel into a sibling
 repo. Nothing below has been applied to `rootmyandroid-api`.
@@ -35,7 +37,7 @@ The page is wired to real infrastructure on three legs:
 | leg | route | status |
 | --- | --- | --- |
 | device picker | `POST /v1/relay/devices/list` | LIVE (the same route `/terminal` uses) |
-| agent registry (Option B) | `POST /v1/harness/agents/list` | REQUESTED — 404 today, page falls back |
+| agent registry (Option B) | `POST /v1/harness/agents/list` | REQUESTED — 404 today, page falls back; heartbeat FREE |
 | agent registry fallback (Option A) | `POST /v1/device/audit/list` with `audit_type: "harness-agents"` | LIVE route; the heartbeat tool writes it with `--audit-fallback` |
 
 Until the Rootz harness writes a heartbeat, the registry is
@@ -200,6 +202,10 @@ page's “Proposed snapshot” `<details>`. Field contract:
 
 ## 5. Option B route contract (requested from the API team)
 
+The standalone request is `docs/HANDOFF-2026-11-26-harness-api.md`. The
+summary below stays here so the page contract and the API contract live
+together.
+
 ### 5.1 `POST /v1/harness/heartbeat` — device writes
 
 Request body:
@@ -221,6 +227,8 @@ Rules:
   snapshot on that value.
 - Upsert one row per `(account_number, device_id)`; `received_at` is the
   server timestamp.
+- **FREE (owner ruling 2026-11-26):** no GURU charge, no `audit_report` gate,
+  no first-slot charge. The audit fallback keeps its existing charge.
 - The account number is the credential, exactly as on the audit route.
 - Mirror the audit route's body/account validation and rate limits; no new
   numeric limits without an owner ruling.
@@ -267,11 +275,10 @@ credentials are for this project's Pages deploy, not the API's D1).
 - The heartbeat tool calls B first; with `--audit-fallback` it calls A on 404.
 - Once B is live and the Rootz heartbeat writes it, A stays for older devices.
 - One valid snapshot is enough; the page never requires both.
-- **The audit fallback is not free on the first write.** `POST /v1/device/audit`
-  charges the first `(device, audit_type)` slot at the API's `audit_report`
-  price (`rootmyandroid-api/src/lib/guru.js`); refreshing an existing slot is
-  free. The proposal is a free harness heartbeat, or an owner-ruled price —
-  no price is set here.
+- **B is free (owner ruling 2026-11-26).** The audit fallback is not free on
+  the first write: `POST /v1/device/audit` charges the first
+  `(device, audit_type)` slot at the API's `audit_report` price
+  (`rootmyandroid-api/src/lib/guru.js`); refreshing an existing slot is free.
 
 ### 5.5 Staleness
 
@@ -286,9 +293,9 @@ needs an owner-ruled threshold; no threshold is shipped.
    can report its own runtime; another app's internal runtime needs a defined
    integration (or a privileged path) that we have not chosen or verified.
    Do not promise third-party discovery until that integration exists.
-2. **Endpoints.** Show `127.0.0.1:8399`-style endpoints on the page, or hide
-   them behind a disclosure? The sample shows them; they are device-local,
-   but the owner may prefer not to publish them.
+2. **Endpoints — RESOLVED 2026-11-26: shown.** The page displays the
+   device-local `127.0.0.1:8399`-style endpoint for the operator; it is not
+   exposed off-device.
 3. **Heartbeat interval and staleness.** Option B needs a TTL (for example,
    “stale after N minutes”). No interval is ruled yet; do not hard-code one
    in copy.

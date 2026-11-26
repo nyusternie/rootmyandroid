@@ -9,9 +9,11 @@
 // This tool does NOT introspect the model, quantization, or process memory:
 // those values come from the snapshot file the operator supplies. It stamps
 // collected_at / device.id / last_heartbeat, checks /health, and posts the
-// snapshot. Until POST /v1/harness/heartbeat ships, --audit-fallback writes
-// the same snapshot through POST /v1/device/audit with audit_type
-// "harness-agents" — the route the web page already reads as a fallback.
+// snapshot. The dedicated heartbeat is FREE (owner ruling 2026-11-26). Until
+// POST /v1/harness/heartbeat ships, --audit-fallback writes the same snapshot
+// through POST /v1/device/audit with audit_type "harness-agents" — the route
+// the web page already reads as a fallback; that route charges the first
+// (device, audit_type) slot at the audit_report price.
 //
 // Usage:
 //   node apps/rootzd/tools/harness-heartbeat.mjs \
