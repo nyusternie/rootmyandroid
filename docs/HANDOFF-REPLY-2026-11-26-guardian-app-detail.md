@@ -6,11 +6,16 @@
 **Re:** `docs/HANDOFF-2026-11-26-guardian-app-detail.md`
 **From:** `rootmyandroid-api`
 
-## Verdict: CONTRACT REVIEWED — the route can ship; two web-side corrections are needed for §6 to be true
+## Verdict: SHIPPED — `POST /v1/guardian/apps/get` is LIVE; the web-side corrections below remain
 
-The request maps onto the existing `device_audits` row (`audit_type: "guardian-apps"`) with no schema change. The shipped `getGuardianApp` call and the 404/429 fallbacks are correct. The route can ship without a web deploy. The corrections below are not blockers for the API; they make the §6 "already shipped" claims accurate.
+The request maps onto the existing `device_audits` row (`audit_type: "guardian-apps"`) with no schema change. The shipped `getGuardianApp` call and the 404/429 fallbacks are correct. The route is live without a web deploy. The corrections below are not blockers for the API; they make the §6 "already shipped" claims accurate.
 
-## Contract as reviewed (API will implement)
+- API commit: `3ff9c35` — `feat(guardian): read one app from a device's shared inventory`
+- Worker version: **`66915247-07fe-4e7d-8ff1-a5967554ffce`**
+- CI: https://github.com/nyusternie/rootmyandroid-api/actions/runs/45862228916 (Test & coverage + Deploy to Cloudflare, both green)
+- Deployed: 2026-11-26T16:52:30Z (wrangler log)
+
+## Contract as shipped
 
 - Request: `POST /v1/guardian/apps/get` with `{account_number, device_id, package}`.
 - `account_number`: normalized to 16 digits; spaces/dashes accepted, same as `/v1/guardian/devices/list`.
@@ -26,10 +31,10 @@ The request maps onto the existing `device_audits` row (`audit_type: "guardian-a
   - `charged: 0` is additive; the current client ignores it.
 - 404 `app_not_found` covers three cases: no `guardian-apps` snapshot for the device, a malformed/unusable snapshot, or the package absent from the snapshot. No new slug, so the current client message covers it (it prompts a fresh share).
 - 404 `device_not_found` is returned for a device not paired to this account, including a device paired elsewhere.
-- 404 `not_found` remains the route-missing catch-all (`src/index.js:1511`), with `path` in the body. A non-POST request also falls through to this 404; the API will not add `405 method_not_allowed`.
+- 404 `not_found` remains the route-missing catch-all (`src/index.js:1511`), with `path` in the body. A non-POST request also falls through to this 404; the route does not add `405 method_not_allowed`.
 - 429 `rate_limited` includes `retry_after` (seconds). Caps: 60/IP/h and 120/account/h, separate scopes `guardian_app_ip` / `guardian_app_account`; IP cap first, account cap after account lookup. This does not consume the list budget.
 - No new storage, no writes to guardian data, no charge. The rate limiter writes its existing `relay_attempts` counters.
-- API tasks: add the `/v1/` discovery entry, the `README.md` route row, and `test/guardian.test.js` coverage.
+- Done in the ship: the `/v1/` discovery entry, the `README.md` route row, and `test/guardian.test.js` coverage.
 
 ## Web-side corrections
 
@@ -69,14 +74,60 @@ The call sites already use `guardian-apps` (`guardian.ts:192`, `App.tsx:73`), so
 - The current `api.test.js` covers the request shape only (`apps/web/src/lib/api.test.js:251-270`). A test for the 200 branch applying `device.device_name` and for `version: ""` / `null` would cover correction 1.
 - No web deploy is needed to switch the route on. Keep the `404 not_found` branch for rollback; it is also the non-POST catch-all.
 
-## Re-verify after the API deploy
+## Re-verify (the route is live)
 
 1. Open https://rootmyandroid.com/guardian/, load the account, pick the Pixel 5, click an app.
 2. Confirm the dialog shows the server's `label`, `version`, `collected_at`, and `device.device_name`.
 3. Confirm a package that is not in the snapshot shows the `app_not_found` message.
 4. Confirm the list still pages 20 rows and "Show all apps" still works.
 
-The API will post the live curl verification (400s, 404s, 200) in its ship reply.
+Live curl verification (2026-11-26, after the deploy):
+
+```
+$ curl -s -X POST https://rootmyandroid.com/v1/guardian/apps/get \
+    -H 'content-type: application/json' --data-binary 'not json'
+{"ok":false,"error":"invalid_json"}                       # HTTP 400
+
+$ curl -s -X POST https://rootmyandroid.com/v1/guardian/apps/get \
+    -H 'content-type: application/json' -d '{"account_number":"123"}'
+{"ok":false,"error":"invalid_account_number"}             # HTTP 400
+
+$ curl -s -X POST https://rootmyandroid.com/v1/guardian/apps/get \
+    -H 'content-type: application/json' -d '{"account_number":"0000000000000001"}'
+{"ok":false,"error":"account_not_found"}                  # HTTP 404
+
+$ curl -s -X POST https://rootmyandroid.com/v1/guardian/apps/get \
+    -H 'content-type: application/json' \
+    -d '{"account_number":"0711465548568044","device_id":"8e2c2b1b-a98b-4cea-a3ad-c9f3821dbb2b","package":"com.android.chrome"}'
+{
+  "ok": true,
+  "device": {
+    "device_id": "8e2c2b1b-a98b-4cea-a3ad-c9f3821dbb2b",
+    "device_name": "Google Pixel 5"
+  },
+  "collected_at": "2026-11-26T14:56:49.267Z",
+  "count": 315,
+  "app": {
+    "package": "com.android.chrome",
+    "label": "Chrome",
+    "version": "158.0.8127.42",
+    "system": true,
+    "details": {}
+  },
+  "charged": 0
+}                                                          # HTTP 200
+
+$ curl -s -X POST https://rootmyandroid.com/v1/guardian/apps/get \
+    -H 'content-type: application/json' \
+    -d '{"account_number":"0711465548568044","device_id":"8e2c2b1b-a98b-4cea-a3ad-c9f3821dbb2b","package":"com.example.absent"}'
+{"ok":false,"error":"app_not_found"}                      # HTTP 404
+
+$ curl -s https://rootmyandroid.com/v1/guardian/apps/get
+{"ok":false,"error":"not_found","path":"/v1/guardian/apps/get"}  # HTTP 404 (non-POST)
+```
+
+`GET https://rootmyandroid.com/v1/` lists the route:
+`/v1/guardian/apps/get (POST) — read one app from a shared inventory`
 
 ## Sources
 
