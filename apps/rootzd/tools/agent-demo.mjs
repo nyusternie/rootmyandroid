@@ -30,6 +30,12 @@
 // Usage:
 //   node apps/rootzd/tools/agent-demo.mjs [--serial 0C151FDD400648]
 //        [--turns 8] [--url http://127.0.0.1:8399] [--temp 0.6]
+//        [--transport adb|relay] [--account <16 digits>] [--device <64 hex>]
+//
+// --transport relay (Lane A convergence) runs each model command through the
+// production E2E relay via e2e-probe.mjs --json instead of local adb. The
+// model loop and the guard are identical; only the transport changes. The
+// account number is a credential and is never written to the transcript.
 
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -46,6 +52,24 @@ const SERIAL = opt('serial', '0C151FDD400648')
 const MAX_TURNS = parseInt(opt('turns', '8'), 10)
 const SERVER = opt('url', 'http://127.0.0.1:8399')
 const TEMP = parseFloat(opt('temp', '0'))
+const TRANSPORT = opt('transport', 'adb')
+const ACCOUNT = opt('account', '').trim()
+const RELAY_DEVICE = opt('device', '').trim().toLowerCase()
+const PROBE = join(HERE, 'e2e-probe.mjs')
+if (TRANSPORT !== 'adb' && TRANSPORT !== 'relay') {
+  console.error('agent-demo: --transport must be adb or relay')
+  process.exit(2)
+}
+if (TRANSPORT === 'relay') {
+  if (!/^[0-9]{16}$/.test(ACCOUNT.replace(/[^0-9]/g, ''))) {
+    console.error('agent-demo: --account (16 digits) is required for --transport relay')
+    process.exit(2)
+  }
+  if (!/^[0-9a-f]{64}$/.test(RELAY_DEVICE)) {
+    console.error('agent-demo: --device (64-hex relay device id) is required for --transport relay')
+    process.exit(2)
+  }
+}
 // Stuck-recovery policy, compared head-to-head at temp 0 (greedy is
 // the production decode for agents, so the question was: can a DRIVER
 // strategy rescue it without sampling?). Measured 2026-11-12 on redfin:
@@ -160,6 +184,41 @@ function adb(shellCmd, timeoutMs = 20000) {
   }
 }
 
+// Lane A convergence: one E2E session per model command through the
+// production relay. e2e-probe.mjs --json buffers the command's stdout/stderr
+// and prints one JSON object; the probe's own logs go to stderr so they never
+// contaminate the command result. The `; exit` is what closes the session.
+function relay(shellCmd, timeoutMs = 30000) {
+  try {
+    const out = execFileSync('node', [
+      PROBE,
+      '--device', RELAY_DEVICE,
+      '--account', ACCOUNT,
+      '--cmd', `${shellCmd}; exit`,
+      '--json',
+    ], { timeout: timeoutMs, maxBuffer: 4 * 1024 * 1024 })
+    const parsed = JSON.parse(out.toString())
+    return {
+      rc: typeof parsed.code === 'number' ? parsed.code : 0,
+      stdout: String(parsed.stdout || '').trim(),
+      stderr: String(parsed.stderr || '').trim(),
+      tier: parsed.tier,
+      name: parsed.name,
+    }
+  } catch (e) {
+    const stdout = e.stdout ? e.stdout.toString().trim() : ''
+    const stderr = e.stderr ? e.stderr.toString().trim() : ''
+    if (e.killed || (e.signal === null && e.code === 'ETIMEDOUT')) {
+      return { rc: 124, stdout, stderr: stderr || 'host-side timeout' }
+    }
+    return { rc: typeof e.status === 'number' ? e.status : 1, stdout, stderr: stderr || 'relay transport failed' }
+  }
+}
+
+function shell(cmd, timeoutMs) {
+  return TRANSPORT === 'relay' ? relay(cmd, timeoutMs) : adb(cmd, timeoutMs)
+}
+
 function thermal() {
   const dump = adb('dumpsys thermalservice').stdout
   const statuses = [...dump.matchAll(/mStatus=(\d)/g)].map(m => parseInt(m[1], 10))
@@ -245,7 +304,10 @@ const log = []
 const say = s => { log.push(s); console.log(s) }
 
 async function main() {
-  say(`[agent-demo ${new Date().toISOString()}] Lane-B harness demo — serial=${SERIAL} server=${SERVER} turns<=${MAX_TURNS} temp=${TEMP} mode=${MODE}`)
+  const where = TRANSPORT === 'relay'
+    ? `device=${RELAY_DEVICE.slice(0, 12)}…`
+    : `serial=${SERIAL}`
+  say(`[agent-demo ${new Date().toISOString()}] Lane-B harness demo — transport=${TRANSPORT} ${where} server=${SERVER} turns<=${MAX_TURNS} temp=${TEMP} mode=${MODE}`)
   const th = thermal()
   say(`[agent-demo] preflight thermal: status=${th.status} cpu=${th.cpu}C`)
   say('[agent-demo] thermal caps REMOVED per owner ruling 2026-11-11 (test device) — proceeding regardless of status')
@@ -262,6 +324,7 @@ async function main() {
   // ALREADY-EXECUTED command is refused to execute and nudged back.
   const executed = new Set()
   let parseFails = 0
+  let relayInfoLogged = false
   try {
   for (let turn = 1; turn <= MAX_TURNS; turn++) {
     const t = thermal()
@@ -304,7 +367,11 @@ async function main() {
       }
     } else {
       executed.add(action.cmd.trim().replace(/\s+/g, ' '))
-      const ex = adb(action.cmd, 15000)
+      const ex = shell(action.cmd, 15000)
+      if (TRANSPORT === 'relay' && !relayInfoLogged) {
+        relayInfoLogged = true
+        say(`turn ${turn} | relay session_info: tier=${ex.tier ?? '?'} name=${ex.name ?? '?'}`)
+      }
       result = JSON.stringify({ rc: ex.rc, stdout: ex.stdout.slice(0, 400), stderr: ex.stderr.slice(0, 200) })
     }
     say(`turn ${turn} | result: ${result}`)

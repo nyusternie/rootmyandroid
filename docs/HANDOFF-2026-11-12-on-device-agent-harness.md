@@ -131,5 +131,28 @@ devices — do not generalize beyond what is logged.
   proved the model can recite 4 explicit rules and violate all 4.
   Verify in the driver.
 
+## 7. 2026-11-26 update — Lane A transport implemented
+
+`agent-demo.mjs` now has `--transport relay` (Lane A convergence):
+
+```bash
+node apps/rootzd/tools/agent-demo.mjs \
+  --transport relay --account <16 digits> --device <64-hex relay id> \
+  --turns 12 --temp 0.6 --mode loopguard
+```
+
+- The model loop and the mirrored guard are unchanged; only the command
+  transport changes. `e2e-probe.mjs --json` runs one E2E session per command
+  (`${cmd}; exit`), buffers the command's stdout/stderr, and returns one JSON
+  object with `code`, `stdout`, `stderr`, `name`, `tier`, `version`.
+- The agent-demo logs the first `session_info` tier/name and never writes the
+  account number to the transcript. The account number is a credential.
+- The llama-server model endpoint stays on the host via
+  `adb forward tcp:8399`; Lane A moves the SHELL COMMAND transport, not the
+  model HTTP.
+- First live run pending: pair/run the Rootz relay daemon, forward llama-server,
+  then run the command above. Watch the §5.1 shell-vs-root tier difference in
+  what the audit can see.
+
 — end of handoff. Questions: the 7 logs + the profile page are the
 ground truth; this doc is the map, not the territory.

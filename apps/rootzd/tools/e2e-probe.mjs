@@ -57,7 +57,7 @@ function deriveKey(shared, clientEph, daemonEph) {
 
 // --- drift guard: re-derive the pinned cross-implementation vector ------------
 
-function selftest() {
+function selftest(log = console.log) {
   const v = JSON.parse(readFileSync(FIXTURE, 'utf8'))
   const sid = b64d(v.sid_b64)
   const clientSeed = b64d(v.client_eph_seed_b64)
@@ -67,7 +67,7 @@ function selftest() {
 
   const eq = (name, got, want) => {
     if (got !== want) throw new Error(`SELFTEST FAIL ${name}: got ${got} want ${want}`)
-    console.log(`selftest: ${name} ok`)
+    log(`selftest: ${name} ok`)
   }
 
   const clientEph = x25519FromSeed(clientSeed)
@@ -84,7 +84,7 @@ function selftest() {
   if (!verify(idKp.publicKey, t, b64d(v.expect.welcome_sig_b64))) {
     throw new Error('SELFTEST FAIL welcome_sig: signature does not verify')
   }
-  console.log(`selftest: welcome_sig ok (transcript ${t.length} bytes)`)
+  log(`selftest: welcome_sig ok (transcript ${t.length} bytes)`)
 
   const shared = sharedKey(clientSeed, daemonEph.publicKey)
   const key = deriveKey(shared, clientEph.publicKey, daemonEph.publicKey)
@@ -96,7 +96,7 @@ function selftest() {
 
   const pt = new ChaCha20Poly1305(key).open(nonce, ct)
   eq('roundtrip', new TextDecoder().decode(pt), v.plaintext_inner_json)
-  console.log('selftest: all vectors match — probe crypto is in parity with the pinned implementations')
+  log('selftest: all vectors match — probe crypto is in parity with the pinned implementations')
 }
 
 // --- live probe -----------------------------------------------------------------
@@ -109,6 +109,7 @@ function parseArgs() {
     else if (args[i] === '--device') out.device = args[++i]
     else if (args[i] === '--account') out.account = args[++i]
     else if (args[i] === '--cmd') out.cmd = args[++i]
+    else if (args[i] === '--json') out.json = true
     // Seconds of silence between handshake and stdin — exercises relay
     // restore-on-wake across a mid-session eviction (handoff 2026-11-10).
     else if (args[i] === '--idle-before-cmd') out.idleSec = Number(args[++i])
@@ -116,14 +117,17 @@ function parseArgs() {
   return out
 }
 
-function live({ device, account, cmd }) {
+function live({ device, account, cmd, json }) {
   const url = `${RELAY_CONNECT}?device=${encodeURIComponent(device)}&account=${encodeURIComponent(account)}`
-  console.log(`probe: connecting ${RELAY_CONNECT} (device ${device.slice(0, 12)}…)`)
+  log(`probe: connecting ${RELAY_CONNECT} (device ${device.slice(0, 12)}…)`)
   const ws = new WebSocket(url)
   let opened = false
   let done = false
   let session = null // { sid, ephSecret, key }
   const dec = new TextDecoder()
+  const outChunks = []
+  const errChunks = []
+  let sessionInfo = { name: null, tier: null, version: null }
 
   const fail = (msg) => {
     done = true
@@ -147,7 +151,7 @@ function live({ device, account, cmd }) {
     session = { sid: randomBytes(16), ephSecret: kp.secretKey, key: null }
     const hello = JSON.stringify({ v: 1, type: 'hello', sid: b64e(session.sid), eph: b64e(kp.publicKey) })
     ws.send(hello)
-    console.log('probe: hello sent')
+    log('probe: hello sent')
   })
 
   ws.addEventListener('message', (event) => {
@@ -171,7 +175,7 @@ function live({ device, account, cmd }) {
         return fail(`welcome rejected: ${e.message}`)
       }
       clearTimeout(timer)
-      console.log('probe: welcome verified — E2E session key established ✓')
+      log('probe: welcome verified — E2E session key established ✓')
       const sendStdin = () => {
         const stdin = new TextEncoder().encode(`${cmd}\n`)
         const nonce = randomBytes(12)
@@ -183,10 +187,10 @@ function live({ device, account, cmd }) {
           d: b64e(new ChaCha20Poly1305(session.key).seal(nonce, innerJson)),
         })
         ws.send(enc)
-        console.log(`probe: stdin sent ($ ${cmd})`)
+        log(`probe: stdin sent ($ ${cmd})`)
       }
       if (args.idleSec) {
-        console.log(`probe: idling ${args.idleSec}s before stdin (mid-session eviction test)`)
+        log(`probe: idling ${args.idleSec}s before stdin (mid-session eviction test)`)
         setTimeout(sendStdin, args.idleSec * 1000)
       } else {
         sendStdin()
@@ -202,13 +206,22 @@ function live({ device, account, cmd }) {
       let inner
       try { inner = JSON.parse(new TextDecoder().decode(pt)) } catch { return }
       if (inner.type === 'session_info') {
-        console.log(`probe: session_info — name=${inner.name} tier=${inner.tier} version=v${inner.version}`)
+        sessionInfo = {
+          name: inner.name ?? null,
+          tier: inner.tier ?? null,
+          version: inner.version ?? null,
+        }
+        log(`probe: session_info — name=${inner.name} tier=${inner.tier} version=v${inner.version}`)
       } else if (inner.type === 'stdout') {
-        process.stdout.write(dec.decode(b64d(inner.d), { stream: true }))
+        const text = dec.decode(b64d(inner.d), { stream: true })
+        if (json) outChunks.push(text)
+        else process.stdout.write(text)
       } else if (inner.type === 'stderr') {
-        process.stderr.write(dec.decode(b64d(inner.d), { stream: true }))
+        const text = dec.decode(b64d(inner.d), { stream: true })
+        if (json) errChunks.push(text)
+        else process.stderr.write(text)
       } else if (inner.type === 'exit') {
-        console.log(`probe: exit (code ${inner.code ?? 'unknown'})`)
+        log(`probe: exit (code ${inner.code ?? 'unknown'})`)
         const nonce = randomBytes(12)
         const closeJson = new TextEncoder().encode(JSON.stringify({ type: 'close' }))
         ws.send(JSON.stringify({
@@ -218,8 +231,23 @@ function live({ device, account, cmd }) {
         ws.close()
         clearTimeout(hardTimer)
         done = true
-        console.log('probe: close sent, socket closed — FULL E2E ROUND-TRIP OK')
-        process.exit(0)
+        log('probe: close sent, socket closed — FULL E2E ROUND-TRIP OK')
+        if (json) {
+          outChunks.push(dec.decode())
+          errChunks.push(dec.decode())
+          process.stdout.write(
+            JSON.stringify({
+              ok: true,
+              code: typeof inner.code === 'number' ? inner.code : null,
+              stdout: outChunks.join(''),
+              stderr: errChunks.join(''),
+              ...sessionInfo,
+            }) + '\n',
+            () => process.exit(0),
+          )
+        } else {
+          process.exit(0)
+        }
       }
       return
     }
@@ -245,9 +273,10 @@ function live({ device, account, cmd }) {
 }
 
 const args = parseArgs()
-selftest()
+const log = args.json ? (...a) => console.error(...a) : (...a) => console.log(...a)
+selftest(log)
 if (args.selftestOnly) {
-  console.log('probe: --selftest-only, skipping network')
+  log('probe: --selftest-only, skipping network')
 } else if (!args.device || !args.account) {
   console.error('probe: --device and --account are required for the live run')
   process.exitCode = 1
