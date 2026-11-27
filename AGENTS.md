@@ -864,6 +864,11 @@ phase — every claim below is measured and cited there).
   setting up and hide automatically when `wireless adb: ready` and
   `relay: up`; the Device status card (with Disconnect) stays. They reappear
   if either state drops.
+- **5-device pair cap:** the API hard-deletes the oldest device on the sixth
+  pair (`docs/HANDOFF-2026-11-26-harness-pair-cap.md`). The app labels the
+  eviction with `evicted_device_name`, falling back to
+  `evicted_device_id` when the name is null (`RelayDaemon.kt`;
+  `JSONObject.optString` turns a JSON null into the string `"null"`).
 
 - **Wireless-ADB milestone COMPLETE (measured end-to-end on blueline,
   Pixel 3, Android 12, 2026-11-09):** mDNS discovery (`AdbWifiDiscovery`), SPAKE2 pairing

@@ -116,7 +116,7 @@ internal class RelayDaemon(
     private var sentInWindow = 0
     private var lastSweepMs = 0L
 
-    /** Name of the device evicted by the last successful pair, if any. */
+    /** Label of the device evicted by the last successful pair, if any. */
     @Volatile private var evictedDeviceName: String? = null
 
     // --- lifecycle ---------------------------------------------------------------
@@ -628,10 +628,18 @@ internal class RelayDaemon(
             dropped.delete()
             if (out.body.isNotEmpty()) {
                 try {
-                    val name = JSONObject(out.body).optString("evicted_device_name")
-                    if (name.isNotEmpty()) {
-                        evictedDeviceName = name
-                        onReceipt("✓ paired — dropped $name (5-device limit)")
+                    val json = JSONObject(out.body)
+                    val id = json.optString("evicted_device_id")
+                        .takeIf { it.isNotEmpty() && it != "null" }
+                    val name = json.optString("evicted_device_name")
+                        .takeIf { it.isNotEmpty() && it != "null" }
+                    // JSONObject.optString turns a JSON null into the string
+                    // "null"; the API's eviction name is nullable (handoff
+                    // §2), so fall back to the evicted device id.
+                    val label = name ?: id?.let { "device ${it.take(12)}…" }
+                    if (label != null) {
+                        evictedDeviceName = label
+                        onReceipt("✓ paired — dropped $label (5-device limit)")
                     }
                 } catch (_: Exception) {
                     // Older API response without the additive eviction fields.
