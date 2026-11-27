@@ -19,6 +19,7 @@ class MainApplication : Application(), ReactApplication {
           add(AuditPackage())
           add(QrScanPackage())
           add(ScanPackage())
+          add(RootzInstallerPackage())
         },
     )
   }

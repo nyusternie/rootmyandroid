@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- apps/android/android/app/src/main/res/xml/file_paths.xml — the only
+     path shared through the FileProvider: the downloaded Rootz APK. -->
+<paths>
+    <cache-path name="updates" path="updates/" />
+</paths>

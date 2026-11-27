@@ -536,6 +536,14 @@ binding rules are:
 `.github/workflows/android.yml` — two flavors since 2026-11-15 (`fdroid`
 and `appstore`); release APKs land as assets on tag `android-apk`.
 
+- **Tools → Install Rootz (owner order 2026-11-27):**
+  `RootzInstallerModule` downloads the rolling `rootz.apk`, verifies package
+  `com.rootmyandroid.rootz` + the pinned preview signer, and opens the system
+  installer (user confirmation; no silent install). Needs
+  `REQUEST_INSTALL_PACKAGES` + the user's “Install unknown apps” grant; the
+  FileProvider shares only the cached update. A production Rootz signer
+  needs a new pin.
+
 - **QR scanner VERIFIED on redfin (Pixel 5, 2026-11-16), fdroid build
   0ddbe5e:** the manual TextureView surface hand-off (commit 5389c36)
   ends the CameraX 5000 ms session-configure stall inside the RN Modal —
@@ -850,6 +858,12 @@ grid). CI: `.github/workflows/rootz.yml` (manual/mobile builds; `preview-apk`
 prerelease updated on master). Reference docs:
 `apps/rootz/docs/wireless-debugging-setup.md` (§1–8 pairing, §9 connect
 phase — every claim below is measured and cited there).
+
+- **Setup UI (owner order 2026-11-27):** STEP #1–#4 cards (Wireless
+  debugging → ADB pairing → account/relay → wait for ready) are shown while
+  setting up and hide automatically when `wireless adb: ready` and
+  `relay: up`; the Device status card (with Disconnect) stays. They reappear
+  if either state drops.
 
 - **Wireless-ADB milestone COMPLETE (measured end-to-end on blueline,
   Pixel 3, Android 12, 2026-11-09):** mDNS discovery (`AdbWifiDiscovery`), SPAKE2 pairing

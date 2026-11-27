@@ -576,6 +576,73 @@ function useStorage(): StorageInfo | null {
   return storage;
 }
 
+type RootzStatus = {
+  installed: boolean;
+  versionName?: string | null;
+  versionCode?: number;
+  canInstall: boolean;
+};
+
+/** Tools → Rootz: download & install the separate relay APK. The native
+ *  module verifies the package + signer and opens the system installer; the
+ *  user confirms the install. */
+// Native module (android/app/.../RootzInstallerModule.kt): downloads the
+// separate Rootz APK, verifies its package + pinned signer, and hands it to
+// the system installer. Undefined under jest / older builds.
+const RootzInstallerModule = NativeModules.RootzInstallerModule as
+  | {
+      getStatus(): Promise<{
+        installed: boolean;
+        versionName?: string | null;
+        versionCode?: number;
+        canInstall: boolean;
+      }>;
+      downloadAndInstall(): Promise<string>;
+      openRootz(): Promise<boolean>;
+    }
+  | undefined;
+
+function useRootzInstaller() {
+  const [status, setStatus] = useState<RootzStatus | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+  const refresh = () => {
+    Promise.resolve(RootzInstallerModule?.getStatus?.())
+      .then((next) => {
+        if (next) setStatus(next);
+      })
+      .catch(() => {});
+  };
+  useEffect(() => {
+    refresh();
+  }, []);
+  const install = async () => {
+    if (!RootzInstallerModule) {
+      setMessage('The Rootz installer is not available in this build.');
+      return;
+    }
+    setBusy(true);
+    setMessage('');
+    try {
+      const result = await RootzInstallerModule.downloadAndInstall();
+      setMessage(String(result));
+    } catch (e: any) {
+      setMessage(e?.message || 'Could not start the Rootz install.');
+    } finally {
+      setBusy(false);
+      refresh();
+    }
+  };
+  const open = async () => {
+    try {
+      await RootzInstallerModule?.openRootz?.();
+    } catch (e: any) {
+      setMessage(e?.message || 'Rootz is not installed yet.');
+    }
+  };
+  return { status, busy, message, install, open, refresh };
+}
+
 // Native module (android/app/.../ScanModule.kt): raw device facts for the
 // scan.ts rules engine. Undefined under jest.
 const ScanModule = NativeModules.ScanModule as {
@@ -1188,6 +1255,7 @@ const openSite = (path: string) => () => {
 function ToolsScreen({ onOpenStorage, onOpenScan }: { onOpenStorage: () => void; onOpenScan: () => void }) {
   const storage = useStorage();
   const [health, refreshHealth] = useHealth();
+  const rootz = useRootzInstaller();
   return (
     <View>
       <ScreenTitle title="Tools" animation={toolsTitle} />
@@ -1239,6 +1307,36 @@ function ToolsScreen({ onOpenStorage, onOpenScan }: { onOpenStorage: () => void;
           }
           onPress={onOpenStorage}
         />
+      </Panel>
+      <Panel title="Rootz">
+        <ToolRow
+          name={rootz.status?.installed ? 'Rootz installed' : 'Install Rootz'}
+          desc={
+            rootz.status?.installed
+              ? `Version ${rootz.status.versionName ?? 'unknown'} is installed on this phone.`
+              : 'Download and install the Rootz relay app (separate signed APK).'
+          }
+          note={
+            rootz.busy
+              ? 'Downloading the Rootz APK…'
+              : rootz.message ||
+                (rootz.status?.canInstall === false
+                  ? 'Allow “Install unknown apps” for Root My Android when prompted, then tap again.'
+                  : undefined)
+          }
+          onPress={() => {
+            void rootz.install();
+          }}
+        />
+        {rootz.status?.installed ? (
+          <ToolRow
+            name="Open Rootz"
+            desc="Open the relay daemon app on this phone."
+            onPress={() => {
+              void rootz.open();
+            }}
+          />
+        ) : null}
       </Panel>
     </View>
   );

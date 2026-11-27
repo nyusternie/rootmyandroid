@@ -10,6 +10,11 @@
          frames never leave the device. -->
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- Tools → Install Rootz: download the separate relay APK and hand it
+         to the system package installer. The user confirms the install; the
+         app never installs silently. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
@@ -19,6 +24,17 @@
       android:theme="@style/AppTheme"
       android:usesCleartextTraffic="${usesCleartextTraffic}"
       android:supportsRtl="true">
+      <!-- Shares the downloaded Rootz APK with the system installer. -->
+      <provider
+        android:name="androidx.core.content.FileProvider"
+        android:authorities="${applicationId}.fileprovider"
+        android:exported="false"
+        android:grantUriPermissions="true">
+        <meta-data
+          android:name="android.support.FILE_PROVIDER_PATHS"
+          android:resource="@xml/file_paths" />
+      </provider>
+
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name_short"

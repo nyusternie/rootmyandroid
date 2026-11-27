@@ -71,6 +71,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var relayQrWrap: LinearLayout
     private lateinit var relayQrHint: TextView
     private lateinit var relayDisconnect: MaterialButton
+    private lateinit var relayDisconnectReady: MaterialButton
     private lateinit var relayAccount: TextInputEditText
     private lateinit var outputScroll: ScrollView
     private val adbWifi by lazy { AdbWifi.get(this) }
@@ -78,6 +79,8 @@ class MainActivity : AppCompatActivity() {
     /** Daemon status → the card, fed by RelayBus (the daemon now lives in
      *  RelayService and outlives this activity). */
     private var relayStatusListener: ((String) -> Unit)? = null
+    /** STEP #1–#4 cards; hidden once wireless adb is ready and the relay is up. */
+    private var setupContainer: LinearLayout? = null
 
     // Relay roles (owner ruling 2026-11-11): the Rootz APK is the relay
     // DAEMON on non-rooted phones (the device lane — RelayDaemon.kt,
@@ -146,6 +149,45 @@ class MainActivity : AppCompatActivity() {
         textSize = 20.8f
         setTypeface(typeface, Typeface.BOLD)
         setTextColor(0xFFE8EAED.toInt())
+    }
+
+    /** Numbered setup card heading (owner order 2026-11-27: STEP #N style
+     *  cards while the device is being set up). */
+    private fun stepTitle(step: Int, title: String) = TextView(this).apply {
+        text = "STEP #$step · $title"
+        textSize = 18.2f
+        setTypeface(typeface, Typeface.BOLD)
+        setTextColor(0xFF66BB6A.toInt())
+    }
+
+    private fun stepDesc(text: String) = TextView(this).apply {
+        this.text = text
+        textSize = 15.6f // 12sp + 30%
+        setTextColor(0xFFB0BEC5.toInt())
+    }
+
+    private fun openDeveloperOptions() {
+        runCatching {
+            startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
+        }
+    }
+
+    private fun disconnectRelay() {
+        RelayService.stop(this)
+        getSharedPreferences(PREFS_RELAY, MODE_PRIVATE).edit().remove(KEY_ACCOUNT).apply()
+        relayDisconnect.isEnabled = false
+        relayDisconnectReady.isEnabled = false
+        RelayBus.set("relay: disconnected — scan the QR or enter your 16-digit account number")
+        setPairingQrVisible(true)
+    }
+
+    /** The setup cards are temporary: once both live states are ready, hide
+     *  them and leave the Device status card. They return if either drops. */
+    private fun refreshSetupVisibility() {
+        val complete =
+            relayStatus.text.toString().startsWith("relay: up") &&
+                wifiStatus.text.toString().startsWith("wireless adb: ready")
+        setupContainer?.visibility = if (complete) View.GONE else View.VISIBLE
     }
 
     /** Plain status line: Material body 14sp + 30% (owner order
@@ -255,6 +297,17 @@ class MainActivity : AppCompatActivity() {
         val devOptionsButton = MaterialButton(this).apply {
             text = "Open developer options"
             textSize = 18.2f // button label 14sp + 30%
+            setOnClickListener { openDeveloperOptions() }
+        }
+        relayDisconnectReady = MaterialButton(
+            this,
+            null,
+            com.google.android.material.R.attr.materialButtonOutlinedStyle,
+        ).apply {
+            text = "Disconnect"
+            textSize = 18.2f // 14sp + 30%
+            isEnabled = false
+            setOnClickListener { disconnectRelay() }
         }
         val deviceCard = sectionCard(
             sectionTitle("Device"),
@@ -263,6 +316,7 @@ class MainActivity : AppCompatActivity() {
             wifiStatus,
             devOptionsButton,
             status,
+            relayDisconnectReady,
         )
 
         // Section 2 — ACCOUNT PAIRING: the QR (until paired) and the
@@ -299,7 +353,7 @@ class MainActivity : AppCompatActivity() {
             isEnabled = false
         }
         val accountCard = sectionCard(
-            sectionTitle("Account pairing"),
+            stepTitle(3, "Pair your account and start the relay"),
             relayQrWrap,
             relayQrHint,
             relayAccountLayout,
@@ -326,7 +380,7 @@ class MainActivity : AppCompatActivity() {
         val pairButton = gradientButton("Pair (wireless debugging)")
         val armButton = gradientButton("Arm pairing notification (same-device)")
         val pairCard = sectionCard(
-            sectionTitle("Wireless debugging"),
+            stepTitle(2, "Pair this app with wireless ADB"),
             pairDesc,
             pairStatus,
             pairLayout,
@@ -348,6 +402,40 @@ class MainActivity : AppCompatActivity() {
         // apps. The buffer is kept (detached) because the relay receipts
         // (onReceipt) still write it.
 
+        // Setup cards (owner order 2026-11-27): STEP #1–#4 while the device
+        // is being set up; they hide once wireless adb is ready and the relay
+        // is up. The Device card stays as the live status surface.
+        val stepDevOptionsButton = MaterialButton(this).apply {
+            text = "Open developer options"
+            textSize = 18.2f // button label 14sp + 30%
+            setOnClickListener { openDeveloperOptions() }
+        }
+        val step1Card = sectionCard(
+            stepTitle(1, "Turn on Wireless debugging"),
+            stepDesc(
+                "Wireless debugging is the phone's own ADB server. Turn it on in " +
+                    "Developer options and accept “Always allow on this network”. " +
+                    "The Device card below shows the live wireless adb state.",
+            ),
+            stepDevOptionsButton,
+        )
+        val step4Card = sectionCard(
+            stepTitle(4, "Wait for ready"),
+            stepDesc(
+                "The Device card below shows the live wireless adb and relay " +
+                    "state. When wireless adb reads ready and the relay reads up, " +
+                    "setup is complete and these step cards disappear.",
+            ),
+        )
+        val setup = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(step1Card, cardMargins())
+            addView(pairCard, cardMargins())
+            addView(accountCard, cardMargins())
+            addView(step4Card, cardMargins())
+        }
+        setupContainer = setup
+
         // Page layout: fixed toolbar, then a SCROLLING content column.
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -361,9 +449,8 @@ class MainActivity : AppCompatActivity() {
             )
             val content = LinearLayout(this@MainActivity).apply {
                 orientation = LinearLayout.VERTICAL
+                addView(setup, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
                 addView(deviceCard, cardMargins())
-                addView(accountCard, cardMargins())
-                addView(pairCard, cardMargins())
             }
             addView(
                 ScrollView(this@MainActivity).apply { addView(content) },
@@ -390,12 +477,7 @@ class MainActivity : AppCompatActivity() {
                 wifiStatus.text = wifiHint()
                 wifiStatus.setTextColor(0xFFB0BEC5.toInt())
             }
-        }
-
-        devOptionsButton.setOnClickListener {
-            runCatching {
-                startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
-            }
+            refreshSetupVisibility()
         }
 
         pairButton.setOnClickListener { startPairing() }
@@ -432,17 +514,16 @@ class MainActivity : AppCompatActivity() {
         // account so the daemon does not auto-start on the next launch; the
         // pairing QR returns. The relay pairing marker is kept — re-pairing
         // the same key is idempotent (API: POST /v1/relay/devices).
-        relayDisconnect.setOnClickListener {
-            RelayService.stop(this)
-            getSharedPreferences(PREFS_RELAY, MODE_PRIVATE).edit().remove(KEY_ACCOUNT).apply()
-            relayDisconnect.isEnabled = false
-            RelayBus.set("relay: disconnected — scan the QR or enter your 16-digit account number")
-            setPairingQrVisible(true)
-        }
+        relayDisconnect.setOnClickListener { disconnectRelay() }
         // The daemon lives in RelayService (reboot survival); its status
         // reaches this card through RelayBus. Adding the listener delivers
         // the current line immediately, so a running lane paints as "up".
-        val busListener: (String) -> Unit = { text -> runOnUiThread { relayStatus.text = text } }
+        val busListener: (String) -> Unit = { text ->
+            runOnUiThread {
+                relayStatus.text = text
+                refreshSetupVisibility()
+            }
+        }
         relayStatusListener = busListener
         RelayBus.addListener(busListener)
         runCommand("id", silent = true)
@@ -468,6 +549,7 @@ class MainActivity : AppCompatActivity() {
                     relayStatus.text = "relay: idle — scan the QR or enter your 16-digit account number"
                 }
                 relayDisconnect.isEnabled = saved != null
+                relayDisconnectReady.isEnabled = saved != null
                 setPairingQrVisible(saved == null)
                 if (saved != null) startRelayDaemon(saved)
             }
@@ -643,6 +725,7 @@ class MainActivity : AppCompatActivity() {
         // restarted by BootReceiver). The activity only asks for it.
         getSharedPreferences(PREFS_RELAY, MODE_PRIVATE).edit().putString(KEY_ACCOUNT, account).apply()
         relayDisconnect.isEnabled = true
+        relayDisconnectReady.isEnabled = true
         setPairingQrVisible(false)
         RelayService.start(this)
     }
