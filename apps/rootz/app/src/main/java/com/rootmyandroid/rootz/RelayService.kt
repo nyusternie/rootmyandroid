@@ -36,6 +36,12 @@ internal class RelayService : Service() {
     @Volatile
     private var identity: RelayIdentity? = null
 
+    @Volatile
+    private var heartbeat: HarnessHeartbeat? = null
+
+    @Volatile
+    private var stopping = false
+
     /** Daemon status → the persistent notification's text. */
     private val statusListener: (String) -> Unit = { text -> updateNotification(text) }
 
@@ -73,8 +79,11 @@ internal class RelayService : Service() {
     }
 
     override fun onDestroy() {
+        stopping = true
         running = false
         RelayBus.removeListener(statusListener)
+        heartbeat?.stop()
+        heartbeat = null
         daemon?.stop()
         daemon = null
         super.onDestroy()
@@ -90,7 +99,7 @@ internal class RelayService : Service() {
         // on the service's main thread (same rule as the activity's QR
         // build).
         thread {
-            if (daemon != null) return@thread
+            if (daemon != null || stopping) return@thread
             val id = identity ?: RelayIdentity.loadOrGenerate(this).also { identity = it }
             val version = packageManager.getPackageInfo(packageName, 0).versionName ?: "unknown"
             val d = RelayDaemon(
@@ -107,6 +116,12 @@ internal class RelayService : Service() {
             )
             daemon = d
             d.start()
+            if (stopping) {
+                d.stop()
+                daemon = null
+                return@thread
+            }
+            heartbeat = HarnessHeartbeat(this, account, id).also { it.start() }
         }
     }
 

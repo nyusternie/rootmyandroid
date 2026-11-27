@@ -73,14 +73,24 @@ class MainActivity : AppCompatActivity() {
     private lateinit var relayDisconnect: MaterialButton
     private lateinit var relayDisconnectReady: MaterialButton
     private lateinit var relayAccount: TextInputEditText
+    private lateinit var relayAccountLayout: TextInputLayout
+    private lateinit var relayButton: MaterialButton
+    private lateinit var accountDisplay: TextView
+    private lateinit var pairLayout: TextInputLayout
+    private lateinit var pairButton: MaterialButton
+    private lateinit var armButton: MaterialButton
+    private lateinit var stepDevOptionsButton: MaterialButton
+    private lateinit var step1State: TextView
+    private lateinit var step2State: TextView
+    private lateinit var step3State: TextView
+    private lateinit var step4State: TextView
     private lateinit var outputScroll: ScrollView
     private val adbWifi by lazy { AdbWifi.get(this) }
     private var relayIdentity: RelayIdentity? = null
     /** Daemon status → the card, fed by RelayBus (the daemon now lives in
      *  RelayService and outlives this activity). */
     private var relayStatusListener: ((String) -> Unit)? = null
-    /** STEP #1–#4 cards; hidden once wireless adb is ready and the relay is up. */
-    private var setupContainer: LinearLayout? = null
+    /** STEP #1–#4 cards; each completed step switches to display mode. */
 
     // Relay roles (owner ruling 2026-11-11): the Rootz APK is the relay
     // DAEMON on non-rooted phones (the device lane — RelayDaemon.kt,
@@ -166,6 +176,32 @@ class MainActivity : AppCompatActivity() {
         setTextColor(0xFFB0BEC5.toInt())
     }
 
+    /** One-line completed / waiting / failed state under a STEP title. */
+    private fun stepState() = TextView(this).apply {
+        textSize = 15.6f // 12sp + 30%
+        setTypeface(typeface, Typeface.BOLD)
+        setTextColor(0xFFB0BEC5.toInt())
+    }
+
+    private fun setStepState(view: TextView, text: String, done: Boolean, failed: Boolean = false) {
+        view.text = text
+        view.setTextColor(
+            when {
+                done -> 0xFF66BB6A.toInt()
+                failed -> 0xFFEF5350.toInt()
+                else -> 0xFFB0BEC5.toInt()
+            },
+        )
+    }
+
+    private fun setPairStatus(text: String) {
+        pairStatus.text = text
+        refreshSetupState()
+    }
+
+    private fun formatAccount(account: String): String =
+        account.chunked(4).joinToString(" ")
+
     private fun openDeveloperOptions() {
         runCatching {
             startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
@@ -179,15 +215,112 @@ class MainActivity : AppCompatActivity() {
         relayDisconnectReady.isEnabled = false
         RelayBus.set("relay: disconnected — scan the QR or enter your 16-digit account number")
         setPairingQrVisible(true)
+        refreshSetupState()
     }
 
-    /** The setup cards are temporary: once both live states are ready, hide
-     *  them and leave the Device status card. They return if either drops. */
-    private fun refreshSetupVisibility() {
-        val complete =
-            relayStatus.text.toString().startsWith("relay: up") &&
-                wifiStatus.text.toString().startsWith("wireless adb: ready")
-        setupContainer?.visibility = if (complete) View.GONE else View.VISIBLE
+    /**
+     * Completed steps switch from interactive controls to a display line
+     * (owner order 2026-11-27): the account input becomes the formatted
+     * account number, the pairing controls disappear once the ADB pair is
+     * live, and every card states success / waiting / failure.
+     */
+    private fun refreshSetupState() {
+        val wifi = wifiStatus.text.toString()
+        val relay = relayStatus.text.toString()
+        val pair = pairStatus.text.toString()
+        val adb = status.text.toString()
+        val saved = getSharedPreferences(PREFS_RELAY, MODE_PRIVATE)
+            .getString(KEY_ACCOUNT, null)
+            ?.trim()
+            ?.takeIf { it.length == 16 }
+
+        val wirelessOn = wifi.startsWith("wireless adb: ready")
+        val wirelessOff = wifi.startsWith("wireless adb: off")
+        val wirelessNotAdvertised = wifi.startsWith("wireless adb: on but not advertised")
+        val paired = pair.startsWith("pairing: SUCCESS") || adb.startsWith("adb: wireless (")
+        val pairFailed = pair.startsWith("pairing: FAILED")
+        val relayUp = relay.startsWith("relay: up")
+        val relayFailed = listOf("failed", "error", "dropped", "disconnected", "revoked", "fatal")
+            .any { relay.contains(it, ignoreCase = true) }
+        val accountSaved = saved != null
+
+        // STEP #1 — Wireless debugging.
+        stepDevOptionsButton.visibility = if (wirelessOn) View.GONE else View.VISIBLE
+        when {
+            wirelessOn -> setStepState(step1State, "✓ Wireless debugging is on.", done = true)
+            wirelessOff -> setStepState(
+                step1State,
+                "Wireless debugging is off — turn it on to continue.",
+                done = false,
+                failed = true,
+            )
+            wirelessNotAdvertised -> setStepState(
+                step1State,
+                "Wireless debugging is on, but adbd is not advertising — toggle it off/on.",
+                done = false,
+                failed = true,
+            )
+            else -> setStepState(step1State, "Waiting for Wireless debugging…", done = false)
+        }
+
+        // STEP #2 — ADB pairing.
+        val pairControls = if (paired) View.GONE else View.VISIBLE
+        pairLayout.visibility = pairControls
+        pairButton.visibility = pairControls
+        armButton.visibility = pairControls
+        when {
+            paired -> setStepState(step2State, "✓ Paired with wireless ADB.", done = true)
+            pairFailed -> setStepState(
+                step2State,
+                "✗ Pairing failed — check the code and retry.",
+                done = false,
+                failed = true,
+            )
+            pair.startsWith("pairing:") -> setStepState(step2State, "Pairing…", done = false)
+            else -> setStepState(step2State, "Not paired yet.", done = false)
+        }
+
+        // STEP #3 — Account + relay. The input, QR and Start button become
+        // a display of the saved account number.
+        relayQrWrap.visibility = if (accountSaved) View.GONE else View.VISIBLE
+        relayQrHint.visibility = if (accountSaved) View.GONE else View.VISIBLE
+        relayAccountLayout.visibility = if (accountSaved) View.GONE else View.VISIBLE
+        relayButton.visibility = if (accountSaved) View.GONE else View.VISIBLE
+        relayDisconnect.visibility = View.GONE // the Device card owns Disconnect
+        accountDisplay.visibility = if (accountSaved) View.VISIBLE else View.GONE
+        accountDisplay.text = saved?.let { formatAccount(it) }.orEmpty()
+        when {
+            accountSaved && relayUp -> setStepState(
+                step3State,
+                "✓ Account saved — relay is up.",
+                done = true,
+            )
+            accountSaved && relayFailed -> setStepState(
+                step3State,
+                "✗ Account saved — relay is not up. Disconnect on the Device card, then re-enter the account.",
+                done = false,
+                failed = true,
+            )
+            accountSaved -> setStepState(
+                step3State,
+                "Account saved — relay starting…",
+                done = false,
+            )
+            else -> setStepState(step3State, "No account saved yet.", done = false)
+        }
+
+        // STEP #4 — All three live states.
+        val ready = wirelessOn && paired && relayUp
+        val missing = buildList {
+            if (!wirelessOn) add("wireless ADB")
+            if (!paired) add("the ADB pair")
+            if (!relayUp) add("the relay")
+        }
+        if (ready) {
+            setStepState(step4State, "✓ Ready — relay up and wireless ADB paired.", done = true)
+        } else {
+            setStepState(step4State, "Waiting for ${missing.joinToString(" and ")}.", done = false)
+        }
     }
 
     /** Plain status line: Material body 14sp + 30% (owner order
@@ -336,11 +469,12 @@ class MainActivity : AppCompatActivity() {
             setTextColor(0xFFB0BEC5.toInt())
             textSize = 15.6f // 12sp + 30%
         }
-        val (relayAccountLayout, relayAccountEdit) = outlinedField("16-digit account number") {
+        val (relayAccountLayoutView, relayAccountEdit) = outlinedField("16-digit account number") {
             inputType = InputType.TYPE_CLASS_NUMBER
         }
+        relayAccountLayout = relayAccountLayoutView
         relayAccount = relayAccountEdit
-        val relayButton = gradientButton("Pair & start relay daemon")
+        relayButton = gradientButton("Pair & start relay daemon")
         // Secondary action: outlined (not the green filled style) so the
         // primary "pair & start" action keeps visual weight.
         relayDisconnect = MaterialButton(
@@ -352,13 +486,23 @@ class MainActivity : AppCompatActivity() {
             textSize = 18.2f // 14sp + 30%
             isEnabled = false
         }
+        step3State = stepState()
+        accountDisplay = TextView(this).apply {
+            textSize = 20.8f // 16sp + 30%
+            typeface = Typeface.MONOSPACE
+            setTextIsSelectable(true)
+            setTextColor(0xFFE8EAED.toInt())
+            visibility = View.GONE
+        }
         val accountCard = sectionCard(
             stepTitle(3, "Pair your account and start the relay"),
+            step3State,
             relayQrWrap,
             relayQrHint,
             relayAccountLayout,
             relayButton,
             relayDisconnect,
+            accountDisplay,
         )
 
         // Section 3 — WIRELESS ADB PAIRING (device setup, not control):
@@ -373,14 +517,17 @@ class MainActivity : AppCompatActivity() {
             textSize = 15.6f // 12sp + 30%
             setTextColor(0xFFB0BEC5.toInt())
         }
-        val (pairLayout, pairEdit) = outlinedField("6-digit pairing code") {
+        val (pairLayoutView, pairEdit) = outlinedField("6-digit pairing code") {
             inputType = InputType.TYPE_CLASS_NUMBER
         }
+        pairLayout = pairLayoutView
         pairInput = pairEdit
-        val pairButton = gradientButton("Pair (wireless debugging)")
-        val armButton = gradientButton("Arm pairing notification (same-device)")
+        pairButton = gradientButton("Pair (wireless debugging)")
+        armButton = gradientButton("Arm pairing notification (same-device)")
+        step2State = stepState()
         val pairCard = sectionCard(
             stepTitle(2, "Pair this app with wireless ADB"),
+            step2State,
             pairDesc,
             pairStatus,
             pairLayout,
@@ -403,15 +550,17 @@ class MainActivity : AppCompatActivity() {
         // (onReceipt) still write it.
 
         // Setup cards (owner order 2026-11-27): STEP #1–#4 while the device
-        // is being set up; they hide once wireless adb is ready and the relay
-        // is up. The Device card stays as the live status surface.
-        val stepDevOptionsButton = MaterialButton(this).apply {
+        // is being set up. Each completed step switches to display mode; the
+        // Device card below stays as the live status surface.
+        stepDevOptionsButton = MaterialButton(this).apply {
             text = "Open developer options"
             textSize = 18.2f // button label 14sp + 30%
             setOnClickListener { openDeveloperOptions() }
         }
+        step1State = stepState()
         val step1Card = sectionCard(
             stepTitle(1, "Turn on Wireless debugging"),
+            step1State,
             stepDesc(
                 "Wireless debugging is the phone's own ADB server. Turn it on in " +
                     "Developer options and accept “Always allow on this network”. " +
@@ -419,12 +568,14 @@ class MainActivity : AppCompatActivity() {
             ),
             stepDevOptionsButton,
         )
+        step4State = stepState()
         val step4Card = sectionCard(
             stepTitle(4, "Wait for ready"),
+            step4State,
             stepDesc(
                 "The Device card below shows the live wireless adb and relay " +
                     "state. When wireless adb reads ready and the relay reads up, " +
-                    "setup is complete and these step cards disappear.",
+                    "the step lines above switch to completed.",
             ),
         )
         val setup = LinearLayout(this).apply {
@@ -434,7 +585,6 @@ class MainActivity : AppCompatActivity() {
             addView(accountCard, cardMargins())
             addView(step4Card, cardMargins())
         }
-        setupContainer = setup
 
         // Page layout: fixed toolbar, then a SCROLLING content column.
         val root = LinearLayout(this).apply {
@@ -468,6 +618,7 @@ class MainActivity : AppCompatActivity() {
         wifiStatus.text = wifiHint()
         wifiStatus.setTextColor(0xFFB0BEC5.toInt())
         status.text = "daemon: not queried yet"
+        refreshSetupState()
         adbWifi.onEndpointsChanged = {
             val ep = adbWifi.connectEndpoint
             if (ep != null) {
@@ -477,7 +628,7 @@ class MainActivity : AppCompatActivity() {
                 wifiStatus.text = wifiHint()
                 wifiStatus.setTextColor(0xFFB0BEC5.toInt())
             }
-            refreshSetupVisibility()
+            refreshSetupState()
         }
 
         pairButton.setOnClickListener { startPairing() }
@@ -491,7 +642,7 @@ class MainActivity : AppCompatActivity() {
                 checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
             ) {
                 requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQ_POST_NOTIFICATIONS)
-                pairStatus.text = "pairing: allow notifications, then tap ARM PAIRING NOTIFICATION again"
+                setPairStatus("pairing: allow notifications, then tap ARM PAIRING NOTIFICATION again")
                 return@setOnClickListener
             }
             armPairingNotification()
@@ -521,7 +672,7 @@ class MainActivity : AppCompatActivity() {
         val busListener: (String) -> Unit = { text ->
             runOnUiThread {
                 relayStatus.text = text
-                refreshSetupVisibility()
+                refreshSetupState()
             }
         }
         relayStatusListener = busListener
@@ -552,6 +703,7 @@ class MainActivity : AppCompatActivity() {
                 relayDisconnectReady.isEnabled = saved != null
                 setPairingQrVisible(saved == null)
                 if (saved != null) startRelayDaemon(saved)
+                refreshSetupState()
             }
         }
     }
@@ -594,7 +746,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun armPairingNotification() {
         PairingNotifier.postPairingPrompt(this)
-        pairStatus.text = "pairing notification armed — open the Settings pairing dialog, then type the code into the notification"
+        setPairStatus("pairing notification armed — open the Settings pairing dialog, then type the code into the notification")
     }
 
     override fun onRequestPermissionsResult(
@@ -607,7 +759,7 @@ class MainActivity : AppCompatActivity() {
             if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
                 armPairingNotification()
             } else {
-                pairStatus.text = "pairing: notifications denied — the inline code field cannot be shown"
+                setPairStatus("pairing: notifications denied — the inline code field cannot be shown")
             }
         }
     }
@@ -621,7 +773,7 @@ class MainActivity : AppCompatActivity() {
     private fun startPairing() {
         val code = pairInput.text.toString().trim()
         if (code.length != 6 || code.any { !it.isDigit() }) {
-            pairStatus.text = "pairing: enter the 6-digit code shown on the device"
+            setPairStatus("pairing: enter the 6-digit code shown on the device")
             return
         }
         // The pairing server lives only ~37s after the dialog opens
@@ -630,7 +782,7 @@ class MainActivity : AppCompatActivity() {
         // TLS connect within ms. Fallback: refresh discovery and retry once
         // (long-running discovery silently stops surfacing new services —
         // also observed on blueline).
-        pairStatus.text = "pairing: starting…"
+        setPairStatus("pairing: starting…")
         thread {
             // Capture into an immutable: posting a lambda that reads the
             // var races with the refresh path nulling it (observed on
@@ -638,11 +790,11 @@ class MainActivity : AppCompatActivity() {
             val ep0 = adbWifi.pairingEndpoint
             var result: PairingSession.Result? = null
             if (ep0 != null) {
-                runOnUiThread { pairStatus.text = "pairing: contacting ${ep0.first}:${ep0.second}…" }
+                runOnUiThread { setPairStatus("pairing: contacting ${ep0.first}:${ep0.second}…") }
                 result = attemptPair(ep0, code)
             }
             if (result == null) {
-                runOnUiThread { pairStatus.text = "pairing: refreshing discovery…" }
+                runOnUiThread { setPairStatus("pairing: refreshing discovery…") }
                 adbWifi.restart()
                 var ep: Pair<String, Int>? = null
                 var tries = 0
@@ -654,21 +806,24 @@ class MainActivity : AppCompatActivity() {
                 val ep2 = ep
                 if (ep2 == null) {
                     runOnUiThread {
-                        pairStatus.text =
-                            "pairing: no _adb-tls-pairing service found — close & re-open the pairing dialog, then retry"
+                        setPairStatus(
+                            "pairing: no _adb-tls-pairing service found — close & re-open the pairing dialog, then retry",
+                        )
                     }
                     return@thread
                 }
-                runOnUiThread { pairStatus.text = "pairing: contacting ${ep2.first}:${ep2.second}…" }
+                runOnUiThread { setPairStatus("pairing: contacting ${ep2.first}:${ep2.second}…") }
                 result = attemptPair(ep2, code)
             }
             val res = result
             runOnUiThread {
-                pairStatus.text = if (res == null) {
-                    "pairing: FAILED — wrong code or timeout (see logcat tag RootzPair)"
-                } else {
-                    "pairing: SUCCESS — device guid ${res.deviceGuid}"
-                }
+                setPairStatus(
+                    if (res == null) {
+                        "pairing: FAILED — wrong code or timeout (see logcat tag RootzPair)"
+                    } else {
+                        "pairing: SUCCESS — device guid ${res.deviceGuid}"
+                    },
+                )
             }
         }
     }
@@ -728,6 +883,7 @@ class MainActivity : AppCompatActivity() {
         relayDisconnectReady.isEnabled = true
         setPairingQrVisible(false)
         RelayService.start(this)
+        refreshSetupState()
     }
 
     private fun runCommand(cmd: String, silent: Boolean = false) {
@@ -745,6 +901,7 @@ class MainActivity : AppCompatActivity() {
                         ?.substringAfter("=") ?: "device"
                     runOnUiThread {
                         status.text = "adb: wireless ($model @ ${ep.first}:${ep.second})"
+                        refreshSetupState()
                         if (!silent) appendOutput(cmd, r.output.trim())
                     }
                     return@thread
@@ -752,6 +909,7 @@ class MainActivity : AppCompatActivity() {
                     android.util.Log.e("Rootz", "wireless runCommand failed for '$cmd'", e)
                     runOnUiThread {
                         status.text = "adb: wireless FAILED (${e.message}) — trying daemon"
+                        refreshSetupState()
                     }
                 }
             }
@@ -778,6 +936,7 @@ class MainActivity : AppCompatActivity() {
                         else -> "unknown"
                     }
                     status.text = "daemon: connected (tier: $tier)"
+                    refreshSetupState()
                     if (!silent) appendOutput(cmd, result.trim())
                 }
             }

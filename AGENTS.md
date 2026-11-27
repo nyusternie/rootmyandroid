@@ -869,6 +869,17 @@ phase — every claim below is measured and cited there).
   eviction with `evicted_device_name`, falling back to
   `evicted_device_id` when the name is null (`RelayDaemon.kt`;
   `JSONObject.optString` turns a JSON null into the string `"null"`).
+- **Harness heartbeat is automatic (owner order 2026-11-27):** the Rootz
+  foreground relay service starts `HarnessHeartbeat.kt`, posting
+  `POST /v1/harness/heartbeat` every 60 s (free; 240/h account; 16 KiB).
+  The snapshot comes from Build/MemoryInfo/BatteryManager/PowerManager and
+  the llama-server `/health` + `/props`; the Qwen3-4B Q4_K_M profile carries
+  the measured 2.33 GiB model / 2.93 GiB resident. The manual
+  `apps/rootzd/tools/harness-heartbeat.mjs` is a debugging tool only.
+- **Setup display mode (owner order 2026-11-27):** completed STEP #1–#4
+  cards hide their controls and show a success/waiting/failure line; STEP
+  #3 replaces the account input with the formatted account number. The
+  cards remain visible; the Device card owns Disconnect.
 
 - **Wireless-ADB milestone COMPLETE (measured end-to-end on blueline,
   Pixel 3, Android 12, 2026-11-09):** mDNS discovery (`AdbWifiDiscovery`), SPAKE2 pairing
