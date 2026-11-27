@@ -98,3 +98,16 @@ tempting sentence is "66 engines say it is clean". `undetected` means the
 engine returned no verdict at all.
 **Gate:** `policy.md` §Security scan — quote the four counters, never a
 summary word. "0 malicious, 66 undetected" is the honest line.
+
+## P14 — Uploading a large APK through the slow leg (2026-11-27)
+
+**Symptom:** `virustotal.sh <apk>` stages the sample on the store host with
+`ssh "cat > /tmp/vt-upload-<sha>.apk"`. For a 17 MB APK that copy ran at
+~60 KB/s and the 55 s window killed it mid-transfer; the upload never
+reached VirusTotal.
+**Gate:** for anything over a few MB, fetch the artifact **on the store
+host** instead of copying the workstation file: the CI artifact URL
+(`/api/v4/projects/<fork>/jobs/<jid>/artifacts`) downloads there at full
+speed, then `sha256sum` must equal the locally tested APK before uploading.
+Measured 2026-11-27: 31 MB artifact in seconds on blackhost, 3.2 MB of 18 MB
+in 53 s from this workstation.

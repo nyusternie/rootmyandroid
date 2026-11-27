@@ -800,8 +800,12 @@ Four rules that are not negotiable:
 
 Rounds: `2026-11-21` (3 reviews), `2026-11-22` (2 reviews + TetheredNet
 ruling), `2026-11-23` (Usuals !58329 + Spunto !58328), `2026-11-24`
-(Counting Edge !53737, note 4324021185 — the first with a real upload scan:
-`malicious=0 suspicious=0 harmless=0 undetected=66`, 0 of 66 engines).
+(Counting Edge !53737, note 4324021185 — merged by linsui 2026-11-25 17:52Z,
+52 minutes after the review; the first with a real upload scan:
+`malicious=0 suspicious=0 harmless=0 undetected=66`, 0 of 66 engines),
+`2026-11-27` (DropSauce !57505, note 4343511730 — `undetected=66 timeout=1
+type-unsupported=5`, 0 detections; no app connections in a filtered
+capture; pitfalls P14 added for large-APK uploads).
 
 ### F-Droid MR SUBMISSION FORMAT — the rule that cost a rejection
 
