@@ -69,9 +69,15 @@ class PairingReplyReceiver : BroadcastReceiver() {
                 Log.e("RootzPair", "notification pairing attempt ${i + 1} failed", e)
             }
         }
+        // The activity is not running this flow (foregrounding it kills the
+        // Settings pairing server), so record the outcome for MainActivity
+        // to consume on its next resume — STEP #2 must leave "Pairing…".
+        val prefs = context.getSharedPreferences("relay", Context.MODE_PRIVATE)
         if (result != null) {
+            prefs.edit().putString("pair_guid", result!!.deviceGuid).apply()
             PairingNotifier.postResult(context, true, "device guid: ${result!!.deviceGuid}")
         } else {
+            prefs.edit().putString("pair_error", "Wrong code or the server expired").apply()
             PairingNotifier.postResult(context, false, "Wrong code or the server expired (~10 s window) — re-open the dialog and retry.")
             PairingNotifier.postPairingPrompt(context)
         }

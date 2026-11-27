@@ -624,6 +624,9 @@ class MainActivity : AppCompatActivity() {
             if (ep != null) {
                 wifiStatus.text = "wireless adb: ready — ${ep.first}:${ep.second}"
                 wifiStatus.setTextColor(0xFF66BB6A.toInt())
+                // The notification pairing path finishes headless; probe the
+                // freshly-paired endpoint so STEP #2 can leave "Pairing…".
+                if (!status.text.startsWith("adb: wireless (")) runCommand("id", silent = true)
             } else {
                 wifiStatus.text = wifiHint()
                 wifiStatus.setTextColor(0xFFB0BEC5.toInt())
@@ -718,6 +721,26 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (adbWifi.connectEndpoint == null) adbWifi.restartWithFreshBudget()
+        consumePairingResult()
+    }
+
+    /**
+     * PairingReplyReceiver runs the same-device pairing headless (the
+     * Settings server dies if this activity is foregrounded). It records
+     * the outcome in prefs; applying it here is what flips STEP #2 from
+     * "Pairing…" to ✓ Paired or ✗ failed.
+     */
+    private fun consumePairingResult() {
+        val prefs = getSharedPreferences(PREFS_RELAY, MODE_PRIVATE)
+        val guid = prefs.getString("pair_guid", null)
+        val error = prefs.getString("pair_error", null)
+        if (guid == null && error == null) return
+        prefs.edit().remove("pair_guid").remove("pair_error").apply()
+        if (guid != null) {
+            setPairStatus("pairing: SUCCESS — device guid $guid")
+        } else {
+            setPairStatus("pairing: FAILED — $error")
+        }
     }
 
     override fun onDestroy() {
