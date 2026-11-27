@@ -449,10 +449,15 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(LS_ACCOUNT, formatAccountNumber(account))
         setStatus(
           devices.length
-            ? `Loaded ${devices.length} device${devices.length === 1 ? '' : 's'} — pick one and press Sync agents.`
+            ? `Loaded ${devices.length} device${devices.length === 1 ? '' : 's'} — syncing the selected device.`
             : 'No devices paired to this account yet — pair one in the Rootz app.',
           devices.length ? 'ok' : 'warn',
         )
+        if (devices.length) {
+          // Owner order 2026-11-27: the page syncs the selected device
+          // automatically; the Sync agents button stays as a manual retry.
+          void syncAgents()
+        }
       } else if (res.status === 404) {
         loadedAccount = ''
         setDeviceOptions([])
@@ -627,6 +632,9 @@ document.addEventListener('DOMContentLoaded', () => {
       chatLog.replaceChildren()
       setChatStatus('Device changed — conversation cleared.', 'muted')
     }
+    // Owner order 2026-11-27: switching devices re-reads that device's
+    // latest harness snapshot without a second click.
+    void syncAgents()
   })
 
   demoBtn.addEventListener('click', loadSample)
