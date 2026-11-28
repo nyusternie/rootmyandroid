@@ -1055,9 +1055,15 @@ the `audit_report` price). Lane A transport is now in
 each model command runs through the production E2E relay via
 `e2e-probe.mjs --json` with the `__ROOTZ_HARNESS_DONE__<code>` marker (the
 Rootz app daemon does not emit an exit frame for a one-shot line); the model
-loop and guard are unchanged. Live 2026-11-26: relay handshake/session_info
-work; the first command hit the app daemon's `wireless adb not ready` state,
-so the first full run is pending Wireless debugging ready. Negative answers
+loop and guard are unchanged. Live 2026-11-27: Lane A is verified end-to-end
+(`id` -> `uid=2000(shell)`, session_info `Pixel 5` / tier=shell / 26.11.26;
+6/6 direct marker probes `code 0`). Two full 12-turn runs
+(`agent-demo-202611280240.log` / `-0245.log`) executed real commands but did
+not complete — the model looped on repeated props and the repeat guard
+blocked it. A stale tunnel shows the app's `relay: up` while the relay
+returns `503 device_offline` (WsClient has no read timeout); force-stop +
+relaunch restores it. The intermittent command failure is the phone's
+wireless-ADB mDNS endpoint dropping, not the relay. Negative answers
 trigger the pinned canonical probes and a
 `NEGATIVE VERIFICATION` log line; a root-negative contradicted by `which su`
 is marked UNVERIFIED. The `/harness` chat uses the Rootz app daemon's

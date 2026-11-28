@@ -1,0 +1,9 @@
+[agent-demo 2026-11-27T03:29:16.501Z] Lane-B harness demo — transport=relay device=f67cacf8567c… server=http://127.0.0.1:8399 turns<=1 temp=0.6 mode=loopguard
+[agent-demo] preflight thermal: status=0 cpu=40.100002C
+[agent-demo] thermal caps REMOVED per owner ruling 2026-11-11 (test device) — proceeding regardless of status
+[agent-demo] llama-server healthy. Guard: MIRRORED CommandGuard.kt, empty approval stores (fail closed).
+--- transcript ---
+turn 1 | assistant: {"tool":"shell","cmd":"cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_freqs"} (10286ms, gen 3.54 t/s, th 0/40.100002C)
+turn 1 | relay session_info: tier=? name=?
+turn 1 | result: {"rc":1,"stdout":"","stderr":"selftest: client_eph_pub ok\nselftest: daemon_pubkey ok\nselftest: device_id ok\nselftest: daemon_eph_pub ok\nselftest: welcome_sig ok (transcript 92 bytes)\nselftest: session_key ok\nselftest: ciphertext o"}
+--- end transcript ---

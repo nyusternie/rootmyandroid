@@ -174,5 +174,40 @@ node apps/rootzd/tools/agent-demo.mjs \
   `which su` is logged as `CONTRADICTED`. The probes are driver-owned and
   read-only; they do not go through the model's action loop.
 
-— end of handoff. Questions: the 7 logs + the profile page are the
+## 8. 2026-11-27 update — Lane A verified; the model loop remains
+
+Lane A now runs real commands through the production relay with the Rootz
+app daemon (`26.11.26` / `20261126`): `id` returns `uid=2000(shell)`, and
+`session_info` reports `Pixel 5` / `tier=shell`. Six consecutive direct
+probes (`id` + the marker) returned `code 0`; two full 12-turn runs at
+temp 0.6 / loopguard executed real prop reads.
+
+- **The 2026-11-26 blocker was a stale tunnel, not Wireless debugging.**
+  After the relay DO lost the daemon socket, the app still showed
+  `relay: up` (WsClient has no read timeout — `WsClient.kt:27-29`) while
+  the relay returned `503 device_offline` (probe exit 1006). Force-stop +
+  relaunch of Rootz restored the lane; the first command then succeeded.
+- **Intermittent command failure = wireless-ADB endpoint loss.** In run 1
+  (log `agent-demo-202611280240.log`) turn 3 returned `rc=1`; logcat shows
+  `_adb-tls-connect` lost at 21:38:02, the relay session opened at
+  21:38:08, and the endpoint re-resolved at 21:38:11 — no `AdbWifiConn`
+  line exists for that turn. The relay lane was not the cause.
+- **Two full runs did not complete.** Run 1 executed 6 commands (one
+  transport failure) then looped; run 2 (log
+  `agent-demo-202611280245.log`) executed 4 commands and the repeat guard
+  blocked 8 repeats of `getprop selinux.status`, `ro.product.model`,
+  `ro.build.version.release`. Neither run reached `done`. This is the
+  documented sampling variance; the Lane B 6–9 turn completion did not
+  reproduce over Lane A in these runs.
+- **Diagnostic gap:** `agent-demo.mjs:415` truncates the probe's stderr to
+  200 chars, which cuts off the `probe: FAIL — …` line (the selftest
+  preamble fills the window). Run `e2e-probe.mjs` directly to see a
+  transport failure; consider logging the stderr tail.
+- **llama-server has no auto-restart.** After the app restart the host
+  forward was gone and the server was not running; it was started with the
+  documented command (`taskset ff ./llama-server -m
+  Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf -t 8 -c 4096 --host 127.0.0.1
+  --port 8399`).
+
+— end of handoff. Questions: the results logs + the profile page are the
 ground truth; this doc is the map, not the territory.
